@@ -12,7 +12,7 @@
 import 'package:serverpod/serverpod.dart' as _i1;
 
 abstract class UuidDefaultPersist
-    implements _i1.TableRow, _i1.ProtocolSerialization {
+    implements _i1.TableRow<int>, _i1.ProtocolSerialization {
   UuidDefaultPersist._({
     this.id,
     this.uuidDefaultPersistRandom,
@@ -52,7 +52,7 @@ abstract class UuidDefaultPersist
   _i1.UuidValue? uuidDefaultPersistStr;
 
   @override
-  _i1.Table get table => t;
+  _i1.Table<int> get table => t;
 
   /// Returns a shallow copy of this [UuidDefaultPersist]
   /// with some or all fields replaced by the given arguments.
@@ -148,7 +148,7 @@ class _UuidDefaultPersistImpl extends UuidDefaultPersist {
   }
 }
 
-class UuidDefaultPersistTable extends _i1.Table {
+class UuidDefaultPersistTable extends _i1.Table<int> {
   UuidDefaultPersistTable({super.tableRelation})
       : super(tableName: 'uuid_default_persist') {
     uuidDefaultPersistRandom = _i1.ColumnUuid(
@@ -182,7 +182,7 @@ class UuidDefaultPersistInclude extends _i1.IncludeObject {
   Map<String, _i1.Include?> get includes => {};
 
   @override
-  _i1.Table get table => UuidDefaultPersist.t;
+  _i1.Table<int> get table => UuidDefaultPersist.t;
 }
 
 class UuidDefaultPersistIncludeList extends _i1.IncludeList {
@@ -202,7 +202,7 @@ class UuidDefaultPersistIncludeList extends _i1.IncludeList {
   Map<String, _i1.Include?> get includes => include?.includes ?? {};
 
   @override
-  _i1.Table get table => UuidDefaultPersist.t;
+  _i1.Table<int> get table => UuidDefaultPersist.t;
 }
 
 class UuidDefaultPersistRepository {
@@ -240,7 +240,7 @@ class UuidDefaultPersistRepository {
     _i1.OrderByListBuilder<UuidDefaultPersistTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
-    return session.db.find<UuidDefaultPersist>(
+    return session.db.find<int, UuidDefaultPersist>(
       where: where?.call(UuidDefaultPersist.t),
       orderBy: orderBy?.call(UuidDefaultPersist.t),
       orderByList: orderByList?.call(UuidDefaultPersist.t),
@@ -277,7 +277,7 @@ class UuidDefaultPersistRepository {
     _i1.OrderByListBuilder<UuidDefaultPersistTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
-    return session.db.findFirstRow<UuidDefaultPersist>(
+    return session.db.findFirstRow<int, UuidDefaultPersist>(
       where: where?.call(UuidDefaultPersist.t),
       orderBy: orderBy?.call(UuidDefaultPersist.t),
       orderByList: orderByList?.call(UuidDefaultPersist.t),
@@ -293,7 +293,7 @@ class UuidDefaultPersistRepository {
     int id, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.findById<UuidDefaultPersist>(
+    return session.db.findById<int, UuidDefaultPersist>(
       id,
       transaction: transaction,
     );
@@ -310,7 +310,7 @@ class UuidDefaultPersistRepository {
     List<UuidDefaultPersist> rows, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.insert<UuidDefaultPersist>(
+    return session.db.insert<int, UuidDefaultPersist>(
       rows,
       transaction: transaction,
     );
@@ -324,7 +324,7 @@ class UuidDefaultPersistRepository {
     UuidDefaultPersist row, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.insertRow<UuidDefaultPersist>(
+    return session.db.insertRow<int, UuidDefaultPersist>(
       row,
       transaction: transaction,
     );
@@ -341,7 +341,7 @@ class UuidDefaultPersistRepository {
     _i1.ColumnSelections<UuidDefaultPersistTable>? columns,
     _i1.Transaction? transaction,
   }) async {
-    return session.db.update<UuidDefaultPersist>(
+    return session.db.update<int, UuidDefaultPersist>(
       rows,
       columns: columns?.call(UuidDefaultPersist.t),
       transaction: transaction,
@@ -357,7 +357,7 @@ class UuidDefaultPersistRepository {
     _i1.ColumnSelections<UuidDefaultPersistTable>? columns,
     _i1.Transaction? transaction,
   }) async {
-    return session.db.updateRow<UuidDefaultPersist>(
+    return session.db.updateRow<int, UuidDefaultPersist>(
       row,
       columns: columns?.call(UuidDefaultPersist.t),
       transaction: transaction,
@@ -372,7 +372,7 @@ class UuidDefaultPersistRepository {
     List<UuidDefaultPersist> rows, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.delete<UuidDefaultPersist>(
+    return session.db.delete<int, UuidDefaultPersist>(
       rows,
       transaction: transaction,
     );
@@ -384,7 +384,7 @@ class UuidDefaultPersistRepository {
     UuidDefaultPersist row, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.deleteRow<UuidDefaultPersist>(
+    return session.db.deleteRow<int, UuidDefaultPersist>(
       row,
       transaction: transaction,
     );
@@ -396,7 +396,7 @@ class UuidDefaultPersistRepository {
     required _i1.WhereExpressionBuilder<UuidDefaultPersistTable> where,
     _i1.Transaction? transaction,
   }) async {
-    return session.db.deleteWhere<UuidDefaultPersist>(
+    return session.db.deleteWhere<int, UuidDefaultPersist>(
       where: where(UuidDefaultPersist.t),
       transaction: transaction,
     );
@@ -410,7 +410,7 @@ class UuidDefaultPersistRepository {
     int? limit,
     _i1.Transaction? transaction,
   }) async {
-    return session.db.count<UuidDefaultPersist>(
+    return session.db.count<int, UuidDefaultPersist>(
       where: where?.call(UuidDefaultPersist.t),
       limit: limit,
       transaction: transaction,
