@@ -991,6 +991,13 @@ class BuildRepositoryClass {
 
       var relation = field.relation as ListRelationDefinition;
 
+      var idTypeReference = relation.foreignKeyOwnerIdType.reference(
+        serverCode,
+        nullable: false,
+        subDirParts: classDefinition.subDirParts,
+        config: config,
+      );
+
       methodBuilder
         ..docs.add('''
 /// Creates a relation between this [$className] and the given [${field.type.generics.first.className}]s
@@ -1036,12 +1043,14 @@ class BuildRepositoryClass {
                 classFieldName,
                 relation.foreignFieldName,
                 foreignType,
+                idTypeReference,
               )
             : _buildAttachImplementationBlockExplicitListRelation(
                 otherClassFieldName,
                 classFieldName,
                 relation.foreignFieldName,
                 foreignType,
+                idTypeReference,
               );
       const Code('');
     });
@@ -1066,6 +1075,13 @@ class BuildRepositoryClass {
       );
 
       var relation = field.relation as ListRelationDefinition;
+
+      var idTypeReference = relation.foreignKeyOwnerIdType.reference(
+        serverCode,
+        nullable: false,
+        subDirParts: classDefinition.subDirParts,
+        config: config,
+      );
 
       methodBuilder
         ..docs.add('''
@@ -1107,12 +1123,14 @@ class BuildRepositoryClass {
                 classFieldName,
                 relation.foreignFieldName,
                 foreignType,
+                idTypeReference,
               )
             : _buildAttachRowImplementationBlockExplicit(
                 otherClassFieldName,
                 classFieldName,
                 relation.foreignFieldName,
                 foreignType,
+                idTypeReference,
               );
       const Code('');
     });
@@ -1131,6 +1149,13 @@ class BuildRepositoryClass {
       var relation = field.relation as ObjectRelationDefinition;
 
       var foreignType = field.type.reference(
+        serverCode,
+        nullable: false,
+        subDirParts: classDefinition.subDirParts,
+        config: config,
+      );
+
+      var idTypeReference = relation.parentTableIdType.reference(
         serverCode,
         nullable: false,
         subDirParts: classDefinition.subDirParts,
@@ -1176,12 +1201,14 @@ class BuildRepositoryClass {
                 otherClassFieldName,
                 relation.fieldName,
                 refer(className),
+                idTypeReference,
               )
             : _buildAttachRowImplementationBlockExplicit(
                 otherClassFieldName,
                 classFieldName,
                 relation.foreignFieldName,
                 foreignType,
+                idTypeReference,
               );
       const Code('');
     });
@@ -1193,6 +1220,7 @@ class BuildRepositoryClass {
     String otherClassFieldName,
     String foreignKeyField,
     Reference classReference,
+    TypeReference idTypeReference,
   ) {
     var implicitForeignKeyFieldName = createImplicitFieldName(foreignKeyField);
 
@@ -1211,6 +1239,7 @@ class BuildRepositoryClass {
               classFieldName,
               implicitForeignKeyFieldName,
               classReference,
+              idTypeReference,
               _UpdateMethod.update,
             ),
           ]))
@@ -1222,6 +1251,7 @@ class BuildRepositoryClass {
     String otherClassFieldName,
     String foreignKeyField,
     Reference classReference,
+    TypeReference idTypeReference,
   ) {
     return (BlockBuilder()
           ..statements.addAll([
@@ -1237,6 +1267,7 @@ class BuildRepositoryClass {
               classFieldName,
               foreignKeyField,
               classReference,
+              idTypeReference,
               _UpdateMethod.update,
             ),
           ]))
@@ -1248,6 +1279,7 @@ class BuildRepositoryClass {
     String otherClassFieldName,
     String foreignKeyField,
     Reference classReference,
+    TypeReference idTypeReference,
   ) {
     return (BlockBuilder()
           ..statements.addAll([
@@ -1263,6 +1295,7 @@ class BuildRepositoryClass {
               classFieldName,
               foreignKeyField,
               classReference,
+              idTypeReference,
               _UpdateMethod.updateRow,
             ),
           ]))
@@ -1275,6 +1308,7 @@ class BuildRepositoryClass {
     String otherClassFieldName,
     String foreignKeyField,
     Reference classReference,
+    TypeReference idTypeReference,
   ) {
     var implicitForeignKeyFieldName = createImplicitFieldName(foreignKeyField);
     return (BlockBuilder()
@@ -1292,6 +1326,7 @@ class BuildRepositoryClass {
               classFieldName,
               implicitForeignKeyFieldName,
               classReference,
+              idTypeReference,
               _UpdateMethod.updateRow,
             ),
           ]))
@@ -1352,6 +1387,13 @@ class BuildRepositoryClass {
         config: config,
       );
 
+      var idTypeReference = relation.foreignKeyOwnerIdType.reference(
+        serverCode,
+        nullable: false,
+        subDirParts: classDefinition.subDirParts,
+        config: config,
+      );
+
       methodBuilder
         ..docs.add('''
 /// Detaches the relation between this [$className] and the given [$classFieldName]
@@ -1396,6 +1438,7 @@ class BuildRepositoryClass {
                 classFieldName,
                 relation.foreignFieldName,
                 foreignType,
+                idTypeReference,
               )
             : _buildDetachImplementationBlockExplicitListRelation(
                 className,
@@ -1403,13 +1446,13 @@ class BuildRepositoryClass {
                 classFieldName,
                 relation.foreignFieldName,
                 foreignType,
+                idTypeReference,
               );
       const Code('');
     });
   }
 
-  Method _buildDetachRowFromListRelationField(
-    String className,
+  Method _buildDetachRowFromListRelationField(String className,
     SerializableModelFieldDefinition field,
     ClassDefinition classDefinition,
   ) {
@@ -1419,6 +1462,13 @@ class BuildRepositoryClass {
 
       var relation = field.relation as ListRelationDefinition;
       var foreignType = field.type.generics.first.reference(
+        serverCode,
+        nullable: false,
+        subDirParts: classDefinition.subDirParts,
+        config: config,
+      );
+
+      var idTypeReference = relation.foreignKeyOwnerIdType.reference(
         serverCode,
         nullable: false,
         subDirParts: classDefinition.subDirParts,
@@ -1468,6 +1518,7 @@ class BuildRepositoryClass {
                 classFieldName,
                 relation.foreignFieldName,
                 foreignType,
+                idTypeReference,
               )
             : _buildDetachRowImplementationBlockExplicitListRelation(
                 className,
@@ -1475,6 +1526,7 @@ class BuildRepositoryClass {
                 classFieldName,
                 relation.foreignFieldName,
                 foreignType,
+                idTypeReference,
               );
       const Code('');
     });
@@ -1487,6 +1539,13 @@ class BuildRepositoryClass {
       var fieldName = field.name;
 
       var relation = field.relation as ObjectRelationDefinition;
+
+      var idTypeReference = relation.parentTableIdType.reference(
+        serverCode,
+        nullable: false,
+        subDirParts: classDefinition.subDirParts,
+        config: config,
+      );
 
       methodBuilder
         ..docs.add('''
@@ -1525,6 +1584,7 @@ class BuildRepositoryClass {
                 classFieldName,
                 relation.fieldName,
                 className,
+                idTypeReference,
               )
             : _buildDetachRowImplementationBlockForeignSide(
                 fieldName,
@@ -1535,7 +1595,9 @@ class BuildRepositoryClass {
                   nullable: false,
                   subDirParts: classDefinition.subDirParts,
                   config: config,
-                ));
+                ),
+                idTypeReference,
+              );
       const Code('');
     });
   }
@@ -1546,6 +1608,7 @@ class BuildRepositoryClass {
     String classFieldName,
     String foreignKeyField,
     Reference foreignClass,
+    TypeReference foreignIdTypeReference,
   ) {
     var implicitForeignKeyFieldName = createImplicitFieldName(foreignKeyField);
     return (BlockBuilder()
@@ -1563,6 +1626,7 @@ class BuildRepositoryClass {
                 fieldName,
                 implicitForeignKeyFieldName,
                 foreignClass,
+                foreignIdTypeReference,
                 _UpdateMethod.update,
               ),
             ],
@@ -1576,6 +1640,7 @@ class BuildRepositoryClass {
     String classFieldName,
     String foreignKeyField,
     Reference foreignClass,
+    TypeReference foreignIdTypeReference,
   ) {
     return (BlockBuilder()
           ..statements.addAll(
@@ -1591,6 +1656,7 @@ class BuildRepositoryClass {
                 fieldName,
                 foreignKeyField,
                 foreignClass,
+                foreignIdTypeReference,
                 _UpdateMethod.update,
               ),
             ],
@@ -1603,6 +1669,7 @@ class BuildRepositoryClass {
     String classFieldName,
     String foreignKeyField,
     String className,
+    TypeReference foreignIdTypeReference,
   ) {
     return (BlockBuilder()
           ..statements.addAll(
@@ -1618,6 +1685,7 @@ class BuildRepositoryClass {
                 classFieldName,
                 foreignKeyField,
                 refer(className),
+                foreignIdTypeReference,
                 _UpdateMethod.updateRow,
               ),
             ],
@@ -1630,6 +1698,7 @@ class BuildRepositoryClass {
     String classFieldName,
     String foreignKeyField,
     Reference foreignClass,
+    TypeReference foreignIdTypeReference,
   ) {
     var localCopyVariable = '\$$fieldName';
     return (BlockBuilder()
@@ -1658,6 +1727,7 @@ class BuildRepositoryClass {
                 localCopyVariable,
                 foreignKeyField,
                 foreignClass,
+                foreignIdTypeReference,
                 _UpdateMethod.updateRow,
               ),
             ],
@@ -1671,6 +1741,7 @@ class BuildRepositoryClass {
     String classFieldName,
     String foreignKeyField,
     Reference foreignClass,
+    TypeReference foreignIdTypeReference,
   ) {
     return (BlockBuilder()
           ..statements.addAll(
@@ -1686,6 +1757,7 @@ class BuildRepositoryClass {
                 fieldName,
                 foreignKeyField,
                 foreignClass,
+                foreignIdTypeReference,
                 _UpdateMethod.updateRow,
               ),
             ],
@@ -1699,6 +1771,7 @@ class BuildRepositoryClass {
     String classFieldName,
     String foreignKeyField,
     Reference foreignClass,
+    TypeReference foreignIdTypeReference,
   ) {
     var implicitForeignKeyFieldName = createImplicitFieldName(foreignKeyField);
 
@@ -1717,6 +1790,7 @@ class BuildRepositoryClass {
                 fieldName,
                 implicitForeignKeyFieldName,
                 foreignClass,
+                foreignIdTypeReference,
                 _UpdateMethod.updateRow,
               ),
             ],
@@ -1885,6 +1959,7 @@ class BuildRepositoryClass {
     String rowName,
     String fieldName,
     Reference classReference,
+    TypeReference idTypeReference,
     _UpdateMethod updateMethod,
   ) {
     String property;
@@ -1912,6 +1987,7 @@ class BuildRepositoryClass {
                   ),
                   'transaction': refer('transaction'),
                 }, [
+                  idTypeReference,
                   classReference,
                 ])
                 .awaited
