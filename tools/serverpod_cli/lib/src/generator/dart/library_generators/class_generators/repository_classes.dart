@@ -18,6 +18,7 @@ class BuildRepositoryClass {
     String className,
     List<SerializableModelFieldDefinition> fields,
     ClassDefinition classDefinition,
+    TypeReference idTypeReference,
   ) {
     var relationFields = fields.where((field) =>
         field.relation is ObjectRelationDefinition ||
@@ -63,17 +64,17 @@ class BuildRepositoryClass {
             }),
         ])
         ..methods.addAll([
-          _buildFindMethod(className, relationFields),
-          _buildFindFirstRow(className, relationFields),
-          _buildFindByIdMethod(className, relationFields),
-          _buildInsertMethod(className),
-          _buildInsertRowMethod(className),
-          _buildUpdateMethod(className),
-          _buildUpdateRowMethod(className),
-          _buildDeleteMethod(className),
-          _buildDeleteRowMethod(className),
-          _buildDeleteWhereMethod(className),
-          _buildCountMethod(className),
+          _buildFindMethod(className, relationFields, idTypeReference),
+          _buildFindFirstRow(className, relationFields, idTypeReference),
+          _buildFindByIdMethod(className, relationFields, idTypeReference),
+          _buildInsertMethod(className, idTypeReference),
+          _buildInsertRowMethod(className, idTypeReference),
+          _buildUpdateMethod(className, idTypeReference),
+          _buildUpdateRowMethod(className, idTypeReference),
+          _buildDeleteMethod(className, idTypeReference),
+          _buildDeleteRowMethod(className, idTypeReference),
+          _buildDeleteWhereMethod(className, idTypeReference),
+          _buildCountMethod(className, idTypeReference),
         ]);
     });
   }
@@ -206,8 +207,11 @@ class BuildRepositoryClass {
     return relation is ObjectRelationDefinition && relation.nullableRelation;
   }
 
-  Method _buildFindMethod(String className,
-      Iterable<SerializableModelFieldDefinition> objectRelationFields) {
+  Method _buildFindMethod(
+    String className,
+    Iterable<SerializableModelFieldDefinition> objectRelationFields,
+    TypeReference idTypeReference,
+  ) {
     return Method((m) => m
       ..docs.add('''
 /// Returns a list of [$className]s matching the given query parameters.
@@ -319,6 +323,7 @@ class BuildRepositoryClass {
             'transaction': refer('transaction'),
             if (objectRelationFields.isNotEmpty) 'include': refer('include'),
           }, [
+            idTypeReference,
             refer(className)
           ])
           .returned
@@ -328,6 +333,7 @@ class BuildRepositoryClass {
   Method _buildFindFirstRow(
     String className,
     Iterable<SerializableModelFieldDefinition> objectRelationFields,
+    TypeReference idTypeReference,
   ) {
     return Method((m) => m
       ..docs.add('''
@@ -426,14 +432,17 @@ class BuildRepositoryClass {
               'transaction': refer('transaction'),
               if (objectRelationFields.isNotEmpty) 'include': refer('include'),
             },
-            [refer(className)],
+            [idTypeReference, refer(className)],
           )
           .returned
           .statement);
   }
 
-  Method _buildFindByIdMethod(String className,
-      Iterable<SerializableModelFieldDefinition> objectRelationFields) {
+  Method _buildFindByIdMethod(
+    String className,
+    Iterable<SerializableModelFieldDefinition> objectRelationFields,
+    TypeReference idTypeReference,
+  ) {
     return Method((m) => m
       ..docs.add(
         '/// Finds a single [$className] by its [id] or null if no such row exists.',
@@ -453,7 +462,7 @@ class BuildRepositoryClass {
           ..type = refer('Session', 'package:serverpod/serverpod.dart')
           ..name = 'session'),
         Parameter((p) => p
-          ..type = refer('int')
+          ..type = idTypeReference
           ..name = 'id'),
       ])
       ..optionalParameters.addAll([
@@ -482,13 +491,13 @@ class BuildRepositoryClass {
               'transaction': refer('transaction'),
               if (objectRelationFields.isNotEmpty) 'include': refer('include'),
             },
-            [refer(className)],
+            [idTypeReference, refer(className)],
           )
           .returned
           .statement);
   }
 
-  Method _buildInsertMethod(String className) {
+  Method _buildInsertMethod(String className, TypeReference idTypeReference) {
     return Method((methodBuilder) {
       methodBuilder
         ..docs.add('''
@@ -530,6 +539,7 @@ class BuildRepositoryClass {
             ], {
               'transaction': refer('transaction'),
             }, [
+              idTypeReference,
               refer(className)
             ])
             .returned
@@ -537,7 +547,10 @@ class BuildRepositoryClass {
     });
   }
 
-  Method _buildInsertRowMethod(String className) {
+  Method _buildInsertRowMethod(
+    String className,
+    TypeReference idTypeReference,
+  ) {
     return Method((methodBuilder) {
       methodBuilder
         ..docs.add('''
@@ -576,6 +589,7 @@ class BuildRepositoryClass {
             ], {
               'transaction': refer('transaction'),
             }, [
+              idTypeReference,
               refer(className)
             ])
             .returned
@@ -583,7 +597,7 @@ class BuildRepositoryClass {
     });
   }
 
-  Method _buildUpdateMethod(String className) {
+  Method _buildUpdateMethod(String className, TypeReference idTypeReference) {
     return Method((methodBuilder) {
       methodBuilder
         ..docs.add('''
@@ -634,6 +648,7 @@ class BuildRepositoryClass {
               ]),
               'transaction': refer('transaction'),
             }, [
+              idTypeReference,
               refer(className)
             ])
             .returned
@@ -641,7 +656,10 @@ class BuildRepositoryClass {
     });
   }
 
-  Method _buildUpdateRowMethod(String className) {
+  Method _buildUpdateRowMethod(
+    String className,
+    TypeReference idTypeReference,
+  ) {
     return Method((methodBuilder) {
       methodBuilder
         ..docs.add('''
@@ -690,6 +708,7 @@ class BuildRepositoryClass {
               ]),
               'transaction': refer('transaction'),
             }, [
+              idTypeReference,
               refer(className)
             ])
             .returned
@@ -697,7 +716,7 @@ class BuildRepositoryClass {
     });
   }
 
-  Method _buildDeleteMethod(String className) {
+  Method _buildDeleteMethod(String className, TypeReference idTypeReference) {
     return Method((methodBuilder) {
       methodBuilder
         ..docs.add('''
@@ -744,6 +763,7 @@ class BuildRepositoryClass {
             ], {
               'transaction': refer('transaction'),
             }, [
+              idTypeReference,
               refer(className)
             ])
             .returned
@@ -751,7 +771,8 @@ class BuildRepositoryClass {
     });
   }
 
-  Method _buildDeleteRowMethod(String className) {
+  Method _buildDeleteRowMethod(
+      String className, TypeReference idTypeReference) {
     return Method((methodBuilder) {
       methodBuilder
         ..docs.add('/// Deletes a single [$className].')
@@ -789,6 +810,7 @@ class BuildRepositoryClass {
             ], {
               'transaction': refer('transaction'),
             }, [
+              idTypeReference,
               refer(className)
             ])
             .returned
@@ -796,7 +818,8 @@ class BuildRepositoryClass {
     });
   }
 
-  Method _buildDeleteWhereMethod(String className) {
+  Method _buildDeleteWhereMethod(
+      String className, TypeReference idTypeReference) {
     return Method((methodBuilder) {
       methodBuilder
         ..docs.add('/// Deletes all rows matching the [where] expression.')
@@ -845,6 +868,7 @@ class BuildRepositoryClass {
               'where': refer('where').call([refer(className).property('t')]),
               'transaction': refer('transaction'),
             }, [
+              idTypeReference,
               refer(className)
             ])
             .returned
@@ -852,7 +876,7 @@ class BuildRepositoryClass {
     });
   }
 
-  Method _buildCountMethod(String className) {
+  Method _buildCountMethod(String className, TypeReference idTypeReference) {
     return Method((methodBuilder) {
       methodBuilder
         ..docs.add('''
@@ -902,6 +926,7 @@ class BuildRepositoryClass {
               'limit': refer('limit'),
               'transaction': refer('transaction'),
             }, [
+              idTypeReference,
               refer(className)
             ])
             .returned
