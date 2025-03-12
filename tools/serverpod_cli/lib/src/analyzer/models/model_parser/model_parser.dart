@@ -18,6 +18,7 @@ class ModelParser {
     YamlMap documentContents,
     YamlDocumentationExtractor docsExtractor,
     List<TypeDefinition> extraClasses,
+    SupportedIdType defaultIdType,
   ) {
     var isSealed = _parseIsSealed(documentContents);
 
@@ -37,6 +38,7 @@ class ModelParser {
         docsExtractor: docsExtractor,
         extraClasses: extraClasses,
         hasTable: tableName != null,
+        defaultIdType: defaultIdType,
         initialize: ({
           required String className,
           required TypeDefinition classType,
@@ -71,6 +73,7 @@ class ModelParser {
     YamlMap documentContents,
     YamlDocumentationExtractor docsExtractor,
     List<TypeDefinition> extraClasses,
+    SupportedIdType defaultIdType,
   ) {
     return _initializeFromClassFields(
       documentTypeName: documentTypeName,
@@ -80,6 +83,7 @@ class ModelParser {
       docsExtractor: docsExtractor,
       extraClasses: extraClasses,
       hasTable: false,
+      defaultIdType: defaultIdType,
       initialize: ({
         required String className,
         required TypeDefinition classType,
@@ -113,6 +117,7 @@ class ModelParser {
     required YamlDocumentationExtractor docsExtractor,
     required List<TypeDefinition> extraClasses,
     required bool hasTable,
+    required SupportedIdType defaultIdType,
     required T Function({
       required String className,
       required TypeDefinition classType,
@@ -150,6 +155,7 @@ class ModelParser {
       tableName != null,
       extraClasses,
       serverOnly,
+      defaultIdType,
     );
 
     return initialize(
@@ -243,6 +249,7 @@ class ModelParser {
     bool hasTable,
     List<TypeDefinition> extraClasses,
     bool serverOnlyClass,
+    SupportedIdType defaultIdType,
   ) {
     List<SerializableModelFieldDefinition> fields = [];
 
@@ -260,7 +267,6 @@ class ModelParser {
     }).toList());
 
     if (hasTable) {
-      final defaultIdType = SupportedIdType.int;
       var maybeIdColumn = fields.where((f) => f.name == 'id').firstOrNull;
       var defaultValue = (maybeIdColumn != null)
           ? maybeIdColumn.defaultPersistValue
