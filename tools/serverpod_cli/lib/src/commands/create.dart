@@ -1,5 +1,7 @@
 import 'package:cli_tools/cli_tools.dart';
+import 'package:serverpod_cli/src/config/config.dart';
 import 'package:serverpod_cli/src/create/create.dart';
+import 'package:serverpod_cli/src/generator/types.dart';
 import 'package:serverpod_cli/src/runner/serverpod_command.dart';
 import 'package:serverpod_cli/src/util/serverpod_cli_logger.dart';
 
@@ -41,6 +43,12 @@ enum CreateOption<V> implements OptionDefinition<V> {
     helpText: 'The name of the project to create.\n'
         'Can also be specified as the first argument.',
     mandatory: true,
+  )),
+  defaultIdType(EnumOption(
+    enumParser: EnumParser(IdTypeAlias.values),
+    argName: 'defaultIdType',
+    helpText: 'Default type for primary keys.',
+    allowedValues: IdTypeAlias.values,
   ));
 
   static const _templateGroup = MutuallyExclusive(
@@ -80,6 +88,8 @@ class CreateCommand extends ServerpodCommand<CreateOption> {
         : commandConfig.value(CreateOption.template);
     var force = commandConfig.value(CreateOption.force);
     var name = commandConfig.value(CreateOption.name);
+    var defaultIdTypeAlias =
+        commandConfig.optionalValue(CreateOption.defaultIdType);
 
     if (restrictedNames.contains(name) && !force) {
       log.error(
@@ -89,7 +99,22 @@ class CreateCommand extends ServerpodCommand<CreateOption> {
       throw ExitException.error();
     }
 
-    if (!await performCreate(name, template, force)) {
+    SupportedIdType? defaultIdType;
+
+    if (defaultIdTypeAlias != null) {
+      defaultIdType = SupportedIdType.fromString(defaultIdTypeAlias.name);
+    } else {
+      try {
+        var config = await GeneratorConfig.load();
+        defaultIdType = config.defaultIdType;
+      } on ServerpodProjectNotFoundException catch (_) {
+        // If no config file is found, it means we are creating a new project.
+      } catch (_) {
+        throw ExitException.error();
+      }
+    }
+
+    if (!await performCreate(name, template, force, defaultIdType)) {
       throw ExitException.error();
     }
   }

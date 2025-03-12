@@ -749,7 +749,7 @@ class SupportedIdType {
 
   /// The aliases for the id type as exposed to the user. Supports multiple,
   /// even though it is not recommended to use more than one to avoid confusion.
-  final List<String> aliases;
+  final List<IdTypeAlias> aliases;
 
   /// The default value for the column on the database definition. Must be one
   /// of the supported defaults for the type.
@@ -758,21 +758,21 @@ class SupportedIdType {
   /// Id type that generates sequential integer values.
   static SupportedIdType get int => SupportedIdType(
         type: TypeDefinition.int,
-        aliases: ['int'],
+        aliases: [IdTypeAlias.int],
         defaultValue: defaultIntSerial,
       );
 
   /// Id type that generates UUID v4 values.
   static SupportedIdType get uuidV4 => SupportedIdType(
         type: TypeDefinition.uuid,
-        aliases: ['uuidV4'],
+        aliases: [IdTypeAlias.uuidV4],
         defaultValue: defaultUuidValueRandom,
       );
 
   /// Id type that generates UUID v7 values.
   static SupportedIdType get uuidV7 => SupportedIdType(
         type: TypeDefinition.uuid,
-        aliases: ['uuidV7'],
+        aliases: [IdTypeAlias.uuidV7],
         defaultValue: defaultUuidValueRandomV7,
       );
 
@@ -780,17 +780,24 @@ class SupportedIdType {
   static List<SupportedIdType> get all => [int, uuidV4, uuidV7];
 
   /// All aliases exposed to the user.
-  static List<String> get userOptions => all.expand((e) => e.aliases).toList();
+  static List<String> get userOptions =>
+      all.expand((e) => e.aliases.map((a) => a.name)).toList();
 
   /// Get the [SupportedIdType] from a valid string alias. If the input is
   /// invalid, will throw a [FormatException].
   static SupportedIdType fromString(String input) {
     for (var idType in all) {
-      if (idType.aliases.contains(input)) return idType;
+      if (idType.aliases.map((e) => e.name).contains(input)) return idType;
     }
     var options = all.map((e) => "'${e.aliases.join("'|'")}'").join(', ');
     throw FormatException('Invalid id type $input. Valid options: $options.');
   }
+}
+
+enum IdTypeAlias {
+  int,
+  uuidV4,
+  uuidV7,
 }
 
 /// Parses a type from a string and deals with whitespace and generics.
