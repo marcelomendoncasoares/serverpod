@@ -599,3 +599,4 @@ const String defaultBooleanFalse = 'false';
 
 /// UuidValue
 const String defaultUuidValueRandom = 'random';
+const String defaultUuidValueRandomV7 = 'random_v7';

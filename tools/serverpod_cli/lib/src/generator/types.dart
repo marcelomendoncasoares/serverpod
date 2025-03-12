@@ -717,8 +717,14 @@ class SupportedIdType {
         defaultValue: defaultUuidValueRandom,
       );
 
+  static SupportedIdType get uuidV7 => SupportedIdType(
+        type: TypeDefinition.uuid,
+        aliases: ['uuidV7'],
+        defaultValue: defaultUuidValueRandomV7,
+      );
+
   /// All supported id types.
-  static List<SupportedIdType> get all => [int, uuidV4];
+  static List<SupportedIdType> get all => [int, uuidV4, uuidV7];
 
   /// All aliases exposed to the user.
   static List<String> get userOptions => all.expand((e) => e.aliases).toList();
