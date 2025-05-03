@@ -214,6 +214,14 @@ extension DatabaseDefinitionPgSqlGeneration on DatabaseDefinition {
     out += 'BEGIN;\n';
     out += '\n';
 
+    // Must be declared before any table creation.
+    if (tables.any(
+      (t) => t.columns.any((c) => c.columnType == ColumnType.vector),
+    )) {
+      out += _sqlCreateVectorExtensionIfAvailable();
+      out += '\n';
+    }
+
     // Must be declared at the beginning for the function to be available.
     if (tables.any(
       (t) => t.columns.any((c) => c.columnDefault == pgsqlFunctionRandomUuidV7),
@@ -451,6 +459,24 @@ extension DatabaseMigrationPgSqlGenerator on DatabaseMigration {
     out += 'BEGIN;\n';
     out += '\n';
 
+    // Must be declared before any table creation.
+    if (actions.any((e) {
+      if (e.createTable != null &&
+          e.createTable!.columns
+              .any((c) => c.columnType == ColumnType.vector)) {
+        return true;
+      }
+      if (e.alterTable != null &&
+          e.alterTable!.addColumns
+              .any((c) => c.columnType == ColumnType.vector)) {
+        return true;
+      }
+      return false;
+    })) {
+      out += _sqlCreateVectorExtensionIfAvailable();
+      out += '\n';
+    }
+
     // Must be declared at the beginning for the function to be available.
     out += _sqlUuidGenerateV7FunctionDeclaration();
     out += '\n';
@@ -647,6 +673,22 @@ String _sqlRemoveMigrationVersion(List<DatabaseMigrationVersion> modules) {
   out += '\n';
 
   return out;
+}
+
+String _sqlCreateVectorExtensionIfAvailable() {
+  return '--'
+      '\n-- CREATE VECTOR EXTENSION IF AVAILABLE'
+      '\n--'
+      '\nDO \$\$'
+      '\nBEGIN'
+      '\n  IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name = \'vector\') THEN'
+      "\n    EXECUTE 'CREATE EXTENSION IF NOT EXISTS vector';"
+      '\n  ELSE'
+      '\n    RAISE NOTICE \'Extension "vector" not available on this instance\';'
+      '\n  END IF;'
+      '\nEND'
+      '\n\$\$;'
+      '\n';
 }
 
 const pgsqlFunctionRandomUuidV7 = 'gen_random_uuid_v7()';
