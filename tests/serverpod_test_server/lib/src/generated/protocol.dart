@@ -3884,6 +3884,20 @@ class Protocol extends _i1.SerializationManagerServer {
           dartType: 'Vector(512)?',
           vectorDimension: 512,
         ),
+        _i2.ColumnDefinition(
+          name: 'vectorIndexedHnsw',
+          columnType: _i2.ColumnType.vector,
+          isNullable: false,
+          dartType: 'Vector(512)',
+          vectorDimension: 512,
+        ),
+        _i2.ColumnDefinition(
+          name: 'vectorIndexedIvfflat',
+          columnType: _i2.ColumnType.vector,
+          isNullable: false,
+          dartType: 'Vector(512)',
+          vectorDimension: 512,
+        ),
       ],
       foreignKeys: [],
       indexes: [
@@ -3899,7 +3913,46 @@ class Protocol extends _i1.SerializationManagerServer {
           type: 'btree',
           isUnique: true,
           isPrimary: true,
-        )
+        ),
+        _i2.IndexDefinition(
+          indexName: 'vector_index_default',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'vector',
+            )
+          ],
+          type: 'hnsw',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'vector_index_hnsw',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'vectorIndexedHnsw',
+            )
+          ],
+          type: 'hnsw',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'vector_index_ivfflat',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'vectorIndexedIvfflat',
+            )
+          ],
+          type: 'ivfflat',
+          isUnique: false,
+          isPrimary: false,
+        ),
       ],
       managed: true,
     ),

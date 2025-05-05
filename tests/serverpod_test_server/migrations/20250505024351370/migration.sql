@@ -35,8 +35,15 @@ volatile;
 CREATE TABLE "object_with_vector" (
     "id" bigserial PRIMARY KEY,
     "vector" vector(512) NOT NULL,
-    "vectorNullable" vector(512)
+    "vectorNullable" vector(512),
+    "vectorIndexedHnsw" vector(512) NOT NULL,
+    "vectorIndexedIvfflat" vector(512) NOT NULL
 );
+
+-- Indexes
+CREATE INDEX "vector_index_default" ON "object_with_vector" USING hnsw ("vector" vector_l2_ops) WITH (m=16, ef_construction=64);
+CREATE INDEX "vector_index_hnsw" ON "object_with_vector" USING hnsw ("vectorIndexedHnsw" vector_l2_ops) WITH (m=16, ef_construction=64);
+CREATE INDEX "vector_index_ivfflat" ON "object_with_vector" USING ivfflat ("vectorIndexedIvfflat" vector_l2_ops) WITH (lists=100);
 
 --
 -- ACTION ALTER TABLE
@@ -47,9 +54,9 @@ ALTER TABLE "types" ADD COLUMN "aVector" vector(3);
 -- MIGRATION VERSION FOR serverpod_test
 --
 INSERT INTO "serverpod_migrations" ("module", "version", "timestamp")
-    VALUES ('serverpod_test', '20250502024421330', now())
+    VALUES ('serverpod_test', '20250505024351370', now())
     ON CONFLICT ("module")
-    DO UPDATE SET "version" = '20250502024421330', "timestamp" = now();
+    DO UPDATE SET "version" = '20250505024351370', "timestamp" = now();
 
 --
 -- MIGRATION VERSION FOR serverpod

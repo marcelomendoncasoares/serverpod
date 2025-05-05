@@ -28,6 +28,20 @@
             "isNullable": true,
             "dartType": "Vector(512)?",
             "vectorDimension": 512
+          },
+          {
+            "name": "vectorIndexedHnsw",
+            "columnType": 10,
+            "isNullable": false,
+            "dartType": "Vector(512)",
+            "vectorDimension": 512
+          },
+          {
+            "name": "vectorIndexedIvfflat",
+            "columnType": 10,
+            "isNullable": false,
+            "dartType": "Vector(512)",
+            "vectorDimension": 512
           }
         ],
         "foreignKeys": [],
@@ -43,6 +57,42 @@
             "type": "btree",
             "isUnique": true,
             "isPrimary": true
+          },
+          {
+            "indexName": "vector_index_default",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "vector"
+              }
+            ],
+            "type": "hnsw",
+            "isUnique": false,
+            "isPrimary": false
+          },
+          {
+            "indexName": "vector_index_hnsw",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "vectorIndexedHnsw"
+              }
+            ],
+            "type": "hnsw",
+            "isUnique": false,
+            "isPrimary": false
+          },
+          {
+            "indexName": "vector_index_ivfflat",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "vectorIndexedIvfflat"
+              }
+            ],
+            "type": "ivfflat",
+            "isUnique": false,
+            "isPrimary": false
           }
         ],
         "managed": true
