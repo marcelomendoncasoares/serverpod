@@ -737,15 +737,38 @@ class Restrictions {
     var definition = documentDefinition;
     if (definition is! ModelClassDefinition) return [];
 
-    var indexType = definition.indexes
-        .firstWhere((index) => index.name == parentNodeName)
-        .type;
+    var index =
+        definition.indexes.firstWhere((index) => index.name == parentNodeName);
 
-    if (['ivfflat', 'hnsw'].contains(indexType)) {
+    if (index.isVectorIndex) {
       return [
         SourceSpanSeverityException(
           'The "unique" property cannot be used with vector indexes of '
-          'type "$indexType".',
+          'type "${index.type}".',
+          span,
+        )
+      ];
+    }
+
+    return [];
+  }
+
+  List<SourceSpanSeverityException> validateIndexParametersKey(
+    String parentNodeName,
+    dynamic content,
+    SourceSpan? span,
+  ) {
+    var definition = documentDefinition;
+    if (definition is! ModelClassDefinition) return [];
+
+    var index =
+        definition.indexes.firstWhere((index) => index.name == parentNodeName);
+
+    if (!index.isVectorIndex) {
+      return [
+        SourceSpanSeverityException(
+          'The "parameters" property can only be used with vector indexes of '
+          'type "${VectorIndexType.values.map((e) => e.name).join(", ")}".',
           span,
         )
       ];
@@ -1158,6 +1181,79 @@ class Restrictions {
     return [...missingFieldErrors, ...duplicateFieldErrors, ...vectorErrors];
   }
 
+  List<SourceSpanSeverityException> validateIndexParametersValue(
+    String parentNodeName,
+    dynamic content,
+    SourceSpan? span,
+  ) {
+    var errors = <SourceSpanSeverityException>[];
+
+    if (content is! YamlMap) {
+      return [
+        SourceSpanSeverityException(
+          'The "parameters" property must be a map.',
+          span,
+        )
+      ];
+    }
+
+    var definition = documentDefinition;
+    if (definition is! ModelClassDefinition) return [];
+
+    var index =
+        definition.indexes.firstWhere((index) => index.name == parentNodeName);
+    if (!index.isVectorIndex) return [];
+
+    Map<String, Set<String>> allowedParamsByType = {
+      'hnsw': {'m', 'ef_construction', 'distance'},
+      'ivfflat': {'lists', 'distance'},
+    };
+
+    Map<String, Type> parameterTypes = {
+      'm': int,
+      'ef_construction': int,
+      'lists': int,
+      'distance': String,
+    };
+
+    var allowedParams = allowedParamsByType[index.type] ?? <String>{};
+    var unknownKeys = content.keys.toSet().difference(allowedParams);
+    if (unknownKeys.isNotEmpty) {
+      errors.add(SourceSpanSeverityException(
+        'Unknown parameters for ${index.type} index: "${unknownKeys.join('", "')}". '
+        'Allowed parameters are: "${allowedParams.join('", "')}".',
+        span,
+      ));
+    }
+
+    for (var key in content.keys) {
+      if (allowedParams.contains(key) &&
+          parameterTypes.containsKey(key) &&
+          content[key] != null &&
+          content[key].runtimeType != parameterTypes[key]) {
+        errors.add(SourceSpanSeverityException(
+          'The "$key" parameter must be a '
+          '${parameterTypes[key]!.toString().toLowerCase()}.',
+          span,
+        ));
+      }
+    }
+
+    var distance = content['distance'];
+    if (distance is String) {
+      var validOptions = VectorIndexDistanceFunction.values.map((e) => e.name);
+      if (!validOptions.contains(distance)) {
+        errors.add(SourceSpanSeverityException(
+          'Invalid value for the "distance" parameter: "$distance". Valid '
+          'options are: "${validOptions.join('", "')}".',
+          span,
+        ));
+      }
+    }
+
+    return errors;
+  }
+
   List<SourceSpanSeverityException> validateIndexType(
     String parentNodeName,
     dynamic content,
@@ -1171,7 +1267,7 @@ class Restrictions {
         (f) => f.indexes.where((e) => e.name == parentNodeName).isNotEmpty,
       );
       if (indexFields.any((e) => e.type.isVectorType)) {
-        validIndexTypes = {'hnsw', 'ivfflat'};
+        validIndexTypes = VectorIndexType.values.map((e) => e.name).toSet();
       }
     }
 

@@ -336,6 +336,9 @@ class SerializableModelIndexDefinition {
     required this.unique,
     required this.fields,
   });
+
+  /// Whether the index is of vector type.
+  bool get isVectorIndex => VectorIndexType.values.any((e) => e.name == type);
 }
 
 /// A representation of a yaml file in the protocol directory defining an enum.
@@ -605,3 +608,20 @@ const String defaultBooleanFalse = 'false';
 /// UuidValue
 const String defaultUuidValueRandom = 'random';
 const String defaultUuidValueRandomV7 = 'random_v7';
+
+/// Allowed types for vector indexes.
+enum VectorIndexType {
+  hnsw,
+  ivfflat,
+}
+
+/// Allowed index distances for vector indexes.
+/// Reference: https://github.com/pgvector/pgvector?tab=readme-ov-file#indexing
+enum VectorIndexDistanceFunction {
+  l2,
+  ip,
+  cosine,
+  l1,
+  hamming,
+  jaccard,
+}

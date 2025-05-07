@@ -22,6 +22,7 @@ abstract class IndexDefinition implements _i1.SerializableModel {
     required this.isUnique,
     required this.isPrimary,
     this.predicate,
+    this.parameters,
   });
 
   factory IndexDefinition({
@@ -32,6 +33,7 @@ abstract class IndexDefinition implements _i1.SerializableModel {
     required bool isUnique,
     required bool isPrimary,
     String? predicate,
+    Map<String, String>? parameters,
   }) = _IndexDefinitionImpl;
 
   factory IndexDefinition.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -46,6 +48,11 @@ abstract class IndexDefinition implements _i1.SerializableModel {
       isUnique: jsonSerialization['isUnique'] as bool,
       isPrimary: jsonSerialization['isPrimary'] as bool,
       predicate: jsonSerialization['predicate'] as String?,
+      parameters:
+          (jsonSerialization['parameters'] as Map?)?.map((k, v) => MapEntry(
+                k as String,
+                v as String,
+              )),
     );
   }
 
@@ -71,6 +78,9 @@ abstract class IndexDefinition implements _i1.SerializableModel {
   /// The predicate of this partial index, if it is one.
   String? predicate;
 
+  /// Parameters for the index, if needed.
+  Map<String, String>? parameters;
+
   /// Returns a shallow copy of this [IndexDefinition]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -82,6 +92,7 @@ abstract class IndexDefinition implements _i1.SerializableModel {
     bool? isUnique,
     bool? isPrimary,
     String? predicate,
+    Map<String, String>? parameters,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -93,6 +104,7 @@ abstract class IndexDefinition implements _i1.SerializableModel {
       'isUnique': isUnique,
       'isPrimary': isPrimary,
       if (predicate != null) 'predicate': predicate,
+      if (parameters != null) 'parameters': parameters?.toJson(),
     };
   }
 
@@ -113,6 +125,7 @@ class _IndexDefinitionImpl extends IndexDefinition {
     required bool isUnique,
     required bool isPrimary,
     String? predicate,
+    Map<String, String>? parameters,
   }) : super._(
           indexName: indexName,
           tableSpace: tableSpace,
@@ -121,6 +134,7 @@ class _IndexDefinitionImpl extends IndexDefinition {
           isUnique: isUnique,
           isPrimary: isPrimary,
           predicate: predicate,
+          parameters: parameters,
         );
 
   /// Returns a shallow copy of this [IndexDefinition]
@@ -135,6 +149,7 @@ class _IndexDefinitionImpl extends IndexDefinition {
     bool? isUnique,
     bool? isPrimary,
     Object? predicate = _Undefined,
+    Object? parameters = _Undefined,
   }) {
     return IndexDefinition(
       indexName: indexName ?? this.indexName,
@@ -144,6 +159,16 @@ class _IndexDefinitionImpl extends IndexDefinition {
       isUnique: isUnique ?? this.isUnique,
       isPrimary: isPrimary ?? this.isPrimary,
       predicate: predicate is String? ? predicate : this.predicate,
+      parameters: parameters is Map<String, String>?
+          ? parameters
+          : this.parameters?.map((
+                key0,
+                value0,
+              ) =>
+                  MapEntry(
+                    key0,
+                    value0,
+                  )),
     );
   }
 }

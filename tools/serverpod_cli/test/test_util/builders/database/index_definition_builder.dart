@@ -6,6 +6,7 @@ class IndexDefinitionBuilder {
   String _type;
   bool _isUnique;
   bool _isPrimary;
+  Map<String, String>? _parameters;
   String? _predicate;
 
   IndexDefinitionBuilder()
@@ -14,6 +15,7 @@ class IndexDefinitionBuilder {
         _type = 'btree',
         _isUnique = false,
         _isPrimary = false,
+        _parameters = null,
         _predicate = null;
 
   IndexDefinition build() {
@@ -23,6 +25,7 @@ class IndexDefinitionBuilder {
       type: _type,
       isUnique: _isUnique,
       isPrimary: _isPrimary,
+      parameters: _parameters,
       predicate: _predicate,
     );
   }
@@ -61,6 +64,11 @@ class IndexDefinitionBuilder {
 
   IndexDefinitionBuilder withIsPrimary(bool isPrimary) {
     _isPrimary = isPrimary;
+    return this;
+  }
+
+  IndexDefinitionBuilder withParameters(Map<String, String>? parameters) {
+    _parameters = parameters;
     return this;
   }
 

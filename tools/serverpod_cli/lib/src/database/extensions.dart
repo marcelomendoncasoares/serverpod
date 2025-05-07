@@ -353,6 +353,7 @@ extension ColumnDefinitionPgSqlGeneration on ColumnDefinition {
         type = 'uuid';
         break;
       case ColumnType.vector:
+        // type = '$vectorType(${vectorDimension!})';
         type = 'vector(${vectorDimension!})';
         break;
       case ColumnType.unknown:
@@ -392,23 +393,21 @@ extension IndexDefinitionPgSqlGeneration on IndexDefinition {
     var elementStrs = elements.map((e) => '"${e.definition}"');
     var ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
 
-    // TODO: Support passing the distance as index configuration.
-    var distanceStr = '';
-    if (type == 'hnsw' || type == 'ivfflat') {
-      distanceStr = ' vector_l2_ops';
-    }
+    var distanceStr = (VectorIndexType.values.any((e) => e.name == type))
+        ? ' vector_${parameters?['distance'] ?? 'l2'}_ops'
+        : '';
 
-    // TODO: Support passing parameters as index configuration.
-    var pgvectorParams = '';
-    if (type == 'hnsw') {
-      pgvectorParams = ' WITH (m=16, ef_construction=64)';
-    } else if (type == 'ivfflat') {
-      pgvectorParams = ' WITH (lists=100)';
-    }
+    var paramStrings = parameters?.entries
+        .where((e) => e.key != 'distance')
+        .map((e) => '${e.key}=${e.value}')
+        .toList();
 
-    out +=
-        'CREATE$uniqueStr INDEX$ifNotExistsStr "$indexName" ON "$tableName" USING $type'
-        ' (${elementStrs.join(', ')}$distanceStr)$pgvectorParams;\n';
+    var pgvectorParams = (paramStrings?.isNotEmpty == true)
+        ? ' WITH (${paramStrings!.join(', ')})'
+        : '';
+
+    out += 'CREATE$uniqueStr INDEX$ifNotExistsStr "$indexName" ON "$tableName" '
+        'USING $type (${elementStrs.join(', ')}$distanceStr)$pgvectorParams;\n';
 
     return out;
   }

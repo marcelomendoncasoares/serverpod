@@ -16,3 +16,5 @@ fields:
   isPrimary: bool
   ### The predicate of this partial index, if it is one.
   predicate: String?
+  ### Parameters for the index, if needed.
+  parameters: Map<String, String>?
