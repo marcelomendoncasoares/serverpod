@@ -219,6 +219,18 @@ class ClassYamlDefinition {
                 keyRestriction: restrictions.validateIndexUniqueKey,
                 valueRestriction: BooleanValueRestriction().validate,
               ),
+              ValidateNode(
+                Keyword.distanceFunction,
+                keyRestriction: restrictions.validateIndexDistanceFunctionKey,
+                valueRestriction: EnumValueRestriction(
+                  enums: VectorDistanceFunction.values,
+                ).validate,
+              ),
+              ValidateNode(
+                Keyword.parameters,
+                keyRestriction: restrictions.validateIndexParametersKey,
+                valueRestriction: restrictions.validateIndexParametersValue,
+              ),
             },
           )
         },
