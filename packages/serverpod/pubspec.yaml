@@ -44,6 +44,8 @@ dev_dependencies:
   serverpod_lints: 2.6.0
 
 dependency_overrides:
+  pgvector:
+    path: ../pgvector
   serverpod_shared:
     path: ../serverpod_shared
   serverpod_serialization:

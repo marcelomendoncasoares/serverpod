@@ -47,6 +47,8 @@ dev_dependencies:
   test_descriptor: ^2.0.2
 
 dependency_overrides:
+  pgvector:
+    path: ../../packages/pgvector
   serverpod_shared:
     path: ../../packages/serverpod_shared
   serverpod_serialization:
