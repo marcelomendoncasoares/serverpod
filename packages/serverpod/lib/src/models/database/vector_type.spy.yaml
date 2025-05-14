@@ -1,0 +1,19 @@
+### Supported vector types implemented in the pgvector extension.
+### See https://github.com/pgvector/pgvector/tree/master for more information.
+enum: VectorType
+values:
+  ### Each vector takes 4 * dimensions + 8 bytes of storage.
+  ### Elements are single-precision floating-point finite numbers.
+  - vector
+
+  ### Each half vector takes 2 * dimensions + 8 bytes of storage.
+  ### Elements are half-precision floating-point finite numbers.
+  - halfvec
+
+  ### Each bit vector takes dimensions / 8 + 8 bytes of storage.
+  ### Elements can assume either 1 or 0 as value.
+  - bit
+
+  ### Each sparse vector takes 8 * non-zero elements + 16 bytes of storage.
+  ### Elements are single-precision floating-point finite numbers.
+  - sparsevec

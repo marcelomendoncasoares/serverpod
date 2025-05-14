@@ -325,11 +325,15 @@ class ColumnVector extends _ValueOperatorColumn<Vector>
   /// The dimension of the vector (number of elements).
   final int dimension;
 
+  // /// The type of the vector.
+  // final VectorType vectorType;
+
   /// Creates a new [Column], this is typically done in generated code only.
   ColumnVector(
     super.columnName,
     super.table, {
     required this.dimension,
+    // this.vectorType = VectorType.vector,
     super.hasDefault,
   });
 

@@ -1545,6 +1545,8 @@ extension on DatabaseDefinition {
                   'columnDefault': literalString(column.columnDefault!),
                 if (column.vectorDimension != null)
                   'vectorDimension': literalNum(column.vectorDimension!),
+                // if (column.vectorType != null)
+                //   'vectorType': literalString(column.vectorType!),
               }),
           ]),
           'foreignKeys': literalList([

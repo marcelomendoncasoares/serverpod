@@ -172,6 +172,13 @@ class ClassYamlDefinition {
                   Keyword.relation,
                 },
               ),
+              // ValidateNode(
+              //   Keyword.vectorType,
+              //   keyRestriction: restrictions.validateVectorTypeKey,
+              //   valueRestriction: EnumValueRestriction(
+              //     enums: VectorType.values,
+              //   ).validate,
+              // ),
               ValidateNode(
                 Keyword.defaultModelKey,
                 keyRestriction: restrictions.validateDefaultModelKey,

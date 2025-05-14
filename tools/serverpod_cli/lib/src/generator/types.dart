@@ -58,6 +58,10 @@ class TypeDefinition {
   /// Only populated for Vector types.
   final d.int? vectorDimension;
 
+  // /// The type of vector (e.g., halfvec, sparsevec, etc.);
+  // /// Only populated for Vector types.
+  // final VectorType? vectorType;
+
   EnumDefinition? enumDefinition;
 
   /// Creates an [TypeDefinition] from a given [DartType].
@@ -120,6 +124,7 @@ class TypeDefinition {
     this.projectModelDefinition,
     this.recordFieldName,
     this.vectorDimension,
+    // this.vectorType,
   });
 
   static const recordTypeClassName = '_Record';
@@ -176,6 +181,7 @@ class TypeDefinition {
     required bool nullable,
     bool customClass = false,
     d.int? vectorDimension,
+    // VectorType? vectorType,
   }) {
     var parts = mixed.split(':');
     var classname = parts.last;
@@ -190,6 +196,7 @@ class TypeDefinition {
       url: url.isNotEmpty ? url : null,
       customClass: customClass,
       vectorDimension: vectorDimension,
+      // vectorType: vectorType,
     );
   }
 
@@ -214,6 +221,7 @@ class TypeDefinition {
         projectModelDefinition: projectModelDefinition,
         recordFieldName: recordFieldName,
         vectorDimension: vectorDimension,
+        // vectorType: vectorType,
       );
 
   /// Get this [TypeDefinition], but non nullable.
@@ -228,6 +236,7 @@ class TypeDefinition {
         projectModelDefinition: projectModelDefinition,
         recordFieldName: recordFieldName,
         vectorDimension: vectorDimension,
+        // vectorType: vectorType,
       );
 
   /// Returns this [TypeDefinition] as a named record field
@@ -242,6 +251,7 @@ class TypeDefinition {
         projectModelDefinition: projectModelDefinition,
         recordFieldName: recordFieldName,
         vectorDimension: vectorDimension,
+        // vectorType: vectorType,
       );
 
   static String getRef(SerializableModelDefinition model) {
@@ -386,6 +396,7 @@ class TypeDefinition {
     if (className == 'UuidValue') return 'uuid';
     if (className == 'Uri') return 'text';
     if (className == 'BigInt') return 'text';
+    // if (className == 'Vector') return vectorType!.value;
     if (className == 'Vector') return 'vector';
 
     return 'json';
@@ -634,6 +645,7 @@ class TypeDefinition {
       url: isProjectModel ? defaultModuleAlias : url,
       recordFieldName: recordFieldName,
       vectorDimension: vectorDimension,
+      // vectorType: vectorType,
     );
   }
 
@@ -786,6 +798,7 @@ class SupportedIdType {
 TypeDefinition parseType(
   String input, {
   required List<TypeDefinition>? extraClasses,
+  // VectorType? vectorType,
 }) {
   var trimmedInput = input.trim();
 
@@ -836,6 +849,7 @@ TypeDefinition parseType(
     generics: generics,
     customClass: extraClasses == null,
     vectorDimension: vectorDimension,
+    // vectorType: vectorType,
   );
 }
 

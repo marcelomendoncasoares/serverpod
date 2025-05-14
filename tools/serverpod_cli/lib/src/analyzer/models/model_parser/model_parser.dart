@@ -341,6 +341,7 @@ class ModelParser {
     var typeResult = parseType(
       typeValue,
       extraClasses: extraClasses,
+      // vectorType: _parseVectorType(node),
     );
 
     var scope = _parseClassFieldScope(node, serverOnlyClass);

@@ -722,6 +722,7 @@ class DatabaseConnection {
     if (column is ColumnUuid) return 'uuid';
     if (column is ColumnUri) return 'text';
     if (column is ColumnBigInt) return 'text';
+    // if (column is ColumnVector) return column.vectorType.value;
     if (column is ColumnVector) return 'vector';
     if (column is ColumnSerializable) return 'json';
     if (column is ColumnEnumExtended) {
