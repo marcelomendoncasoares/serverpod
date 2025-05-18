@@ -168,15 +168,11 @@ extension VectorJsonExtension on Vector {
   static Vector fromJson(dynamic value) {
     if (value is UndecodedBytes) return Vector.fromBinary(value.bytes);
     if (value is Uint8List) return Vector.fromBinary(value);
-    if (value is String) return VectorJsonExtension._fromString(value);
+    if (value is String) return _fromString(value);
     if (value is List) return Vector(value.cast<double>());
     if (value is Vector) return value;
 
-    throw DeserializationTypeNotFoundException(
-      message: 'Could not deserialize $value as Vector. '
-          'Found not supported runtime type "${value.runtimeType}".',
-      type: value.runtimeType,
-    );
+    throw DeserializationTypeNotFoundException(type: value.runtimeType);
   }
 
   /// Returns a serialized version of the [Vector] as a [List<double>].
@@ -184,5 +180,85 @@ extension VectorJsonExtension on Vector {
 
   static Vector _fromString(String value) {
     return Vector((json.decode(value) as List).cast<double>());
+  }
+}
+
+/// Expose toJson on HalfVector
+extension HalfVectorJsonExtension on HalfVector {
+  /// Returns a deserialized version of the [HalfVector] from various formats.
+  static HalfVector fromJson(dynamic value) {
+    if (value is UndecodedBytes) return _fromString(utf8.decode(value.bytes));
+    if (value is Uint8List) return _fromString(utf8.decode(value));
+    if (value is String) return _fromString(value);
+    if (value is List) return HalfVector(value.cast<double>());
+    if (value is HalfVector) return value;
+
+    throw DeserializationTypeNotFoundException(type: value.runtimeType);
+  }
+
+  /// Returns a serialized version of the [HalfVector] as a [List<double>].
+  List<double> toJson() => toList();
+
+  static HalfVector _fromString(String value) {
+    return HalfVector((json.decode(value) as List).cast<double>());
+  }
+}
+
+/// Expose toJson on SparseVector
+extension SparseVectorJsonExtension on SparseVector {
+  /// Returns a deserialized version of the [SparseVector] from various formats.
+  static SparseVector fromJson(dynamic value) {
+    if (value is UndecodedBytes) return SparseVector.fromBinary(value.bytes);
+    if (value is Uint8List) return SparseVector.fromBinary(value);
+    if (value is String) return _fromString(value);
+    if (value is List) return SparseVector(value.cast<double>());
+    if (value is SparseVector) return value;
+
+    throw DeserializationTypeNotFoundException(type: value.runtimeType);
+  }
+
+  /// Returns a serialized version of the [SparseVector] as a [List<double>].
+  List<double> toJson() => toList();
+
+  static SparseVector _fromString(String value) {
+    // Handle string format like "{1:1.0,3:2.0,5:3.0}/6"
+    if (value.startsWith('{') && value.contains('/')) {
+      final parts = value.split('/');
+      final mapStr = parts.first.substring(1, parts.first.length - 1);
+      final map = <int, double>{
+        for (var v in mapStr.split(',').map((e) => e.split(':')))
+          int.parse(v.first) - 1: double.parse(v.last)
+      };
+      return SparseVector.fromMap(map, int.parse(parts.last));
+    }
+
+    return SparseVector((json.decode(value) as List).cast<double>());
+  }
+}
+
+/// Expose toJson on Bit
+extension BitJsonExtension on Bit {
+  /// Returns a deserialized version of the [Bit] from various formats.
+  static Bit fromJson(dynamic value) {
+    if (value is UndecodedBytes) return Bit.fromBinary(value.bytes);
+    if (value is Uint8List) return Bit.fromBinary(value);
+    if (value is String) return _fromString(value);
+    if (value is List) return _fromList(value);
+    if (value is Bit) return value;
+
+    throw DeserializationTypeNotFoundException(type: value.runtimeType);
+  }
+
+  /// Returns a serialized version of the [Bit] as a [List<bool>].
+  List<bool> toJson() => toList();
+
+  static Bit _fromList(List<dynamic> value) {
+    return Bit(value.map((v) => v == 1 || v == true).toList());
+  }
+
+  static Bit _fromString(String value) {
+    return value.contains('0') || value.contains('1')
+        ? Bit(value.split('').map((c) => c == '1').toList())
+        : _fromList(json.decode(value) as List);
   }
 }
