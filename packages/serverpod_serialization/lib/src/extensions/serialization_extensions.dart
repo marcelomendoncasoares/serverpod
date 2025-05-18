@@ -183,27 +183,6 @@ extension VectorJsonExtension on Vector {
   }
 }
 
-/// Expose toJson on HalfVector
-extension HalfVectorJsonExtension on HalfVector {
-  /// Returns a deserialized version of the [HalfVector] from various formats.
-  static HalfVector fromJson(dynamic value) {
-    if (value is UndecodedBytes) return _fromString(utf8.decode(value.bytes));
-    if (value is Uint8List) return _fromString(utf8.decode(value));
-    if (value is String) return _fromString(value);
-    if (value is List) return HalfVector(value.cast<double>());
-    if (value is HalfVector) return value;
-
-    throw DeserializationTypeNotFoundException(type: value.runtimeType);
-  }
-
-  /// Returns a serialized version of the [HalfVector] as a [List<double>].
-  List<double> toJson() => toList();
-
-  static HalfVector _fromString(String value) {
-    return HalfVector((json.decode(value) as List).cast<double>());
-  }
-}
-
 /// Expose toJson on SparseVector
 extension SparseVectorJsonExtension on SparseVector {
   /// Returns a deserialized version of the [SparseVector] from various formats.

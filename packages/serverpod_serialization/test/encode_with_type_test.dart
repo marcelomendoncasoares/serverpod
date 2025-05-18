@@ -287,30 +287,6 @@ void main() {
   });
 
   test(
-      'Given a HalfVector when encoding then output is the type name and value as a JSON string',
-      () {
-    HalfVector halfVector = const HalfVector([1.0, 2.0, 3.0]);
-    var typeName = protocol.encodeWithType(halfVector);
-    expect(typeName, '{"className":"HalfVector","data":[1.0,2.0,3.0]}');
-  });
-
-  test(
-      'Given a non-null nullable HalfVector when encoding then output is the type name and value as a JSON string',
-      () {
-    HalfVector? halfVector = const HalfVector([1.0, 2.0, 3.0]);
-    var typeName = protocol.encodeWithType(halfVector);
-    expect(typeName, '{"className":"HalfVector","data":[1.0,2.0,3.0]}');
-  });
-
-  test(
-      'Given a null nullable HalfVector when encoding then output is \'null\' for both the type name and data as a JSON string',
-      () {
-    HalfVector? halfVector;
-    var typeName = protocol.encodeWithType(halfVector);
-    expect(typeName, '{"className":"null","data":null}');
-  });
-
-  test(
       'Given a SparseVector when encoding then output is the type name and value as a JSON string',
       () {
     SparseVector sparseVector = SparseVector([1.0, 0.0, 2.0, 0.0, 3.0]);

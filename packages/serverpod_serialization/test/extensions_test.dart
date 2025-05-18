@@ -236,67 +236,6 @@ void main() {
   );
 
   test(
-    'Given a HalfVector, serializing to JSON returns a List<double> representation.',
-    () {
-      HalfVector vector = const HalfVector([1.0, 2.0, 3.0]);
-
-      expect(vector.toJson(), isA<List<double>>());
-      expect(vector.toJson(), [1.0, 2.0, 3.0]);
-    },
-  );
-
-  test(
-    'Given a string representing a List<double>, when deserialized to a HalfVector using HalfVectorJsonExtension.fromJson, then it creates a valid HalfVector.',
-    () {
-      String listAsString = '[1.0, 2.0, 3.0]';
-      HalfVector vector = HalfVectorJsonExtension.fromJson(listAsString);
-
-      expect(vector.toJson(), [1.0, 2.0, 3.0]);
-    },
-  );
-
-  test(
-    'Given a List<double>, when deserialized to a HalfVector and then serialized back to a List<double>, then it matches the original list.',
-    () {
-      List<double> value = [1.0, 2.0, 3.0];
-      HalfVector vector = HalfVectorJsonExtension.fromJson(value);
-
-      expect(vector.toJson(), value);
-    },
-  );
-
-  test(
-    'Given a String representation of a HalfVector, when deserialized using HalfVectorJsonExtension.fromJson, then it creates a valid HalfVector.',
-    () {
-      HalfVector original = const HalfVector([1.0, 2.0, 3.0]);
-      HalfVector vector = HalfVectorJsonExtension.fromJson(original.toString());
-
-      expect(original.toString(), '[1.0, 2.0, 3.0]');
-      expect(vector.toJson(), original.toJson());
-    },
-  );
-
-  test(
-    'Given a HalfVector object, when passed to HalfVectorJsonExtension.fromJson, then it remains unchanged.',
-    () {
-      HalfVector value = const HalfVector([1.0, 2.0, 3.0]);
-      HalfVector vector = HalfVectorJsonExtension.fromJson(value);
-
-      expect(vector, value);
-    },
-  );
-
-  test(
-    'Given an unsupported type, when deserialized to a HalfVector using HalfVectorJsonExtension.fromJson, then it throws a DeserializationTypeNotFoundException.',
-    () {
-      expect(
-        () => HalfVectorJsonExtension.fromJson(123),
-        throwsA(isA<DeserializationTypeNotFoundException>()),
-      );
-    },
-  );
-
-  test(
     'Given a SparseVector, serializing to JSON returns a List<double> representation.',
     () {
       SparseVector vector = SparseVector([1.0, 0.0, 2.0, 0.0, 3.0]);

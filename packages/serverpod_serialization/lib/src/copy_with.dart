@@ -26,15 +26,6 @@ extension CloneVector on Vector {
   }
 }
 
-/// Adds clone method that create a deep copy of a HalfVector.
-extension CloneHalfVector on HalfVector {
-  /// Creates a deep copy of the HalfVector, mutations to the original will
-  /// not affect the copy.
-  HalfVector clone() {
-    return HalfVector(List<double>.from(toList()));
-  }
-}
-
 /// Adds clone method that create a deep copy of a SparseVector.
 extension CloneSparseVector on SparseVector {
   /// Creates a deep copy of the SparseVector, mutations to the original will
@@ -62,7 +53,6 @@ final nonMutableTypeNames = _nonMutableTypes.map((t) => t.toString()).toList();
 const hasCloneExtensionTypes = [
   'ByteData',
   'Vector',
-  'HalfVector',
   'SparseVector',
   'Bit',
 ];

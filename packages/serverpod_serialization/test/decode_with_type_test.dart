@@ -341,36 +341,6 @@ void main() {
   );
 
   test(
-    'Given a HalfVector when encoding and decoding with type then output matches input',
-    () {
-      HalfVector halfVector = const HalfVector([1.0, 2.0, 3.0]);
-      var encoded = protocol.encodeWithType(halfVector);
-      var decoded = protocol.decodeWithType(encoded);
-      expect(decoded, halfVector);
-    },
-  );
-
-  test(
-    'Given a non-null nullable HalfVector when encoding and decoding with type then output matches input',
-    () {
-      HalfVector? halfVector = const HalfVector([1.0, 2.0, 3.0]);
-      var encoded = protocol.encodeWithType(halfVector);
-      var decoded = protocol.decodeWithType(encoded);
-      expect(decoded, halfVector);
-    },
-  );
-
-  test(
-    'Given a null nullable HalfVector when encoding and decoding with type then output matches input',
-    () {
-      HalfVector? halfVector;
-      var encoded = protocol.encodeWithType(halfVector);
-      var decoded = protocol.decodeWithType(encoded);
-      expect(decoded, halfVector);
-    },
-  );
-
-  test(
     'Given a SparseVector when encoding and decoding with type then output matches input',
     () {
       SparseVector sparseVector = SparseVector([1.0, 0.0, 2.0, 0.0, 3.0]);

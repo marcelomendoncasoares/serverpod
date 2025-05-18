@@ -122,9 +122,6 @@ abstract class SerializationManager {
     } else if (_isNullableType<Vector>(t)) {
       if (data == null) return null as T;
       return VectorJsonExtension.fromJson(data) as T;
-    } else if (_isNullableType<HalfVector>(t)) {
-      if (data == null) return null as T;
-      return HalfVectorJsonExtension.fromJson(data) as T;
     } else if (_isNullableType<SparseVector>(t)) {
       if (data == null) return null as T;
       return SparseVectorJsonExtension.fromJson(data) as T;
@@ -170,8 +167,6 @@ abstract class SerializationManager {
       return 'BigInt';
     } else if (data is Vector) {
       return 'Vector';
-    } else if (data is HalfVector) {
-      return 'HalfVector';
     } else if (data is SparseVector) {
       return 'SparseVector';
     } else if (data is Bit) {
@@ -209,8 +204,6 @@ abstract class SerializationManager {
         return deserialize<BigInt>(data['data']);
       case 'Vector':
         return deserialize<Vector>(data['data']);
-      case 'HalfVector':
-        return deserialize<HalfVector>(data['data']);
       case 'SparseVector':
         return deserialize<SparseVector>(data['data']);
       case 'Bit':
@@ -261,8 +254,6 @@ abstract class SerializationManager {
         } else if (nonEncodable is BigInt) {
           return nonEncodable.toString();
         } else if (nonEncodable is Vector) {
-          return nonEncodable.toList();
-        } else if (nonEncodable is HalfVector) {
           return nonEncodable.toList();
         } else if (nonEncodable is SparseVector) {
           return nonEncodable.toList();
@@ -360,7 +351,6 @@ const extensionSerializedTypes = [
   'Uri',
   'BigInt',
   'Vector',
-  'HalfVector',
   'SparseVector',
   'Bit',
   'Map',
