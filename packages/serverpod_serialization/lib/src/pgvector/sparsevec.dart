@@ -36,10 +36,14 @@ class SparseVector {
   /// Map keys are indices and values are the vector values at those positions.
   /// The [dimensions] parameter specifies the total vector length.
   factory SparseVector.fromMap(Map<int, double> map, int dimensions) {
+    if (map[0] != null) {
+      throw ArgumentError('SparseVector map is 1-indexed, but 0 was used.');
+    }
+
     var elements = map.entries.where((v) => v.value != 0).toList();
     elements.sort((a, b) => a.key.compareTo(b.key));
 
-    var indices = elements.map((v) => v.key).toList();
+    var indices = elements.map((v) => v.key - 1).toList();
     var values = elements.map((v) => v.value).toList();
 
     return SparseVector._(dimensions, indices, values);
