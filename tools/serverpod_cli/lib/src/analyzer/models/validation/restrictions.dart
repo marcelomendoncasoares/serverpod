@@ -168,6 +168,9 @@ class Restrictions {
       'Endpoints',
       'Protocol',
       'Vector',
+      'HalfVector',
+      'SparseVector',
+      'Bit',
       '_Record',
     };
     if (reservedClassNames.contains(className)) {
@@ -1233,11 +1236,16 @@ class Restrictions {
     if (field == null) return [];
 
     var validFunctionsPerClassName = {
-      'Vector': {
-        VectorDistanceFunction.l2,
-        VectorDistanceFunction.innerProduct,
-        VectorDistanceFunction.cosine,
-        VectorDistanceFunction.l1,
+      for (var className in {'Vector', 'HalfVector', 'SparseVector'})
+        className: {
+          VectorDistanceFunction.l2,
+          VectorDistanceFunction.innerProduct,
+          VectorDistanceFunction.cosine,
+          VectorDistanceFunction.l1,
+        },
+      'Bit': {
+        VectorDistanceFunction.jaccard,
+        VectorDistanceFunction.hamming,
       },
     };
 
@@ -1764,6 +1772,9 @@ class Restrictions {
     'BigInt',
     'ByteData',
     'Vector',
+    'HalfVector',
+    'SparseVector',
+    'Bit',
     'List',
     'Map',
     'Set',
