@@ -544,4 +544,241 @@ void main() {
       'The "sealed" property is mutually exclusive with the "table" property.',
     );
   });
+
+  group('ID field inheritance tests', () {
+    group('Given a parent class without table and child class with table', () {
+      var modelSources = [
+        ModelSourceBuilder().withYaml(
+          '''
+          class: ParentClass
+          fields:
+            name: String
+          ''',
+        ).build(),
+        ModelSourceBuilder().withFileName('child_class').withYaml(
+          '''
+          class: ChildClass
+          table: child_table
+          extends: ParentClass
+          fields:
+            age: int
+          ''',
+        ).build(),
+      ];
+
+      var collector = CodeGenerationCollector();
+      var models =
+          StatefulAnalyzer(config, modelSources, onErrorsCollector(collector))
+              .validateAll();
+
+      test('then no errors are collected', () {
+        expect(collector.errors, isEmpty);
+      });
+
+      late var childClass = models.last as ModelClassDefinition;
+
+      test('then child class has an id field', () {
+        expect(childClass.fields.first.name, 'id');
+      });
+
+      test('then child class id field has default int type', () {
+        expect(childClass.fields.first.type.className, 'int');
+        expect(childClass.fields.first.type.nullable, true);
+      });
+
+      test('then parent class fields are inherited (excluding id)', () {
+        var inheritedFields = childClass.inheritedFields;
+        expect(inheritedFields.length, 1);
+        expect(inheritedFields.first.name, 'name');
+      });
+    });
+
+    group('Given a parent class with table and child class without table', () {
+      var modelSources = [
+        ModelSourceBuilder().withYaml(
+          '''
+          class: ParentClass
+          table: parent_table
+          fields:
+            name: String
+          ''',
+        ).build(),
+        ModelSourceBuilder().withFileName('child_class').withYaml(
+          '''
+          class: ChildClass
+          extends: ParentClass
+          fields:
+            age: int
+          ''',
+        ).build(),
+      ];
+
+      var collector = CodeGenerationCollector();
+      var models =
+          StatefulAnalyzer(config, modelSources, onErrorsCollector(collector))
+              .validateAll();
+
+      test('then no errors are collected', () {
+        expect(collector.errors, isEmpty);
+      });
+
+      late var childClass = models.last as ModelClassDefinition;
+
+      test('then child class inherits all parent fields including id', () {
+        var inheritedFields = childClass.inheritedFields;
+        expect(inheritedFields.length, 2); // id and name
+        expect(inheritedFields.any((f) => f.name == 'id'), true);
+        expect(inheritedFields.any((f) => f.name == 'name'), true);
+      });
+
+      test('then child class does not have its own id field', () {
+        var ownFields = childClass.fields;
+        expect(ownFields.any((f) => f.name == 'id'), false);
+      });
+    });
+
+    group('Given a parent class with UuidValue id and child class with table',
+        () {
+      var modelSources = [
+        ModelSourceBuilder().withYaml(
+          '''
+          class: ParentClass
+          fields:
+            id: UuidValue?, defaultPersist=random
+            name: String
+          ''',
+        ).build(),
+        ModelSourceBuilder().withFileName('child_class').withYaml(
+          '''
+          class: ChildClass
+          table: child_table
+          extends: ParentClass
+          fields:
+            age: int
+          ''',
+        ).build(),
+      ];
+
+      var collector = CodeGenerationCollector();
+      var models =
+          StatefulAnalyzer(config, modelSources, onErrorsCollector(collector))
+              .validateAll();
+
+      test('then no errors are collected', () {
+        expect(collector.errors, isEmpty);
+      });
+
+      late var childClass = models.last as ModelClassDefinition;
+
+      test('then child class inherits UuidValue id type', () {
+        expect(childClass.fields.first.name, 'id');
+        expect(childClass.fields.first.type.className, 'UuidValue');
+        expect(childClass.fields.first.type.nullable, true);
+      });
+
+      test('then child class id field has inherited default value', () {
+        expect(childClass.fields.first.defaultPersistValue, 'random');
+      });
+    });
+
+    group('Given a child class with explicit different id type', () {
+      var modelSources = [
+        ModelSourceBuilder().withYaml(
+          '''
+          class: ParentClass
+          fields:
+            id: int?
+            name: String
+          ''',
+        ).build(),
+        ModelSourceBuilder().withFileName('child_class').withYaml(
+          '''
+          class: ChildClass
+          table: child_table
+          extends: ParentClass
+          fields:
+            id: UuidValue?, defaultPersist=random
+            age: int
+          ''',
+        ).build(),
+      ];
+
+      var collector = CodeGenerationCollector();
+      StatefulAnalyzer(config, modelSources, onErrorsCollector(collector))
+          .validateAll();
+
+      test('then an error is collected due to id field already defined', () {
+        expect(collector.errors, isNotEmpty);
+        expect(
+          collector.errors.first.message,
+          'The field name "id" is already defined in an inherited class ("ParentClass").',
+        );
+      });
+    });
+
+    group(
+        'Given multi-level inheritance with id at top level and table at bottom level',
+        () {
+      var modelSources = [
+        ModelSourceBuilder().withYaml(
+          '''
+          class: GrandparentClass
+          fields:
+            id: UuidValue?, defaultPersist=random
+            grandparentField: String
+          ''',
+        ).build(),
+        ModelSourceBuilder().withFileName('parent_class').withYaml(
+          '''
+          class: ParentClass
+          extends: GrandparentClass
+          fields:
+            parentField: String
+          ''',
+        ).build(),
+        ModelSourceBuilder().withFileName('child_class').withYaml(
+          '''
+          class: ChildClass
+          table: child_table
+          extends: ParentClass
+          fields:
+            childField: int
+          ''',
+        ).build(),
+      ];
+
+      var collector = CodeGenerationCollector();
+      var models =
+          StatefulAnalyzer(config, modelSources, onErrorsCollector(collector))
+              .validateAll();
+
+      test('then no errors are collected', () {
+        expect(collector.errors, isEmpty);
+      });
+
+      late var childClass = models.last as ModelClassDefinition;
+
+      test('then child class inherits id field from grandparent', () {
+        expect(childClass.fields.first.name, 'id');
+        expect(childClass.fields.first.type.className, 'UuidValue');
+      });
+
+      test('then child class inherits all ancestor fields except id', () {
+        var inheritedFields = childClass.inheritedFields;
+        expect(inheritedFields.length, 2);
+        expect(inheritedFields.any((f) => f.name == 'grandparentField'), true);
+        expect(inheritedFields.any((f) => f.name == 'parentField'), true);
+        expect(inheritedFields.any((f) => f.name == 'id'), false);
+      });
+
+      test('then all fields including inherited are accessible', () {
+        var allFields = childClass.fieldsIncludingInherited;
+        expect(allFields.length, 4);
+        expect(allFields.first.name, 'id');
+        expect(allFields.any((f) => f.name == 'grandparentField'), true);
+        expect(allFields.any((f) => f.name == 'parentField'), true);
+        expect(allFields.any((f) => f.name == 'childField'), true);
+      });
+    });
+  });
 }
