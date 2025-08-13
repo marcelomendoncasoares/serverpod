@@ -14,6 +14,10 @@ class ModelDependencyResolver {
     modelDefinitions.whereType<ClassDefinition>().forEach((classDefinition) {
       if (classDefinition is! ModelClassDefinition) return;
       _resolveInheritance(classDefinition, modelDefinitions);
+    });
+
+    modelDefinitions.whereType<ClassDefinition>().forEach((classDefinition) {
+      if (classDefinition is! ModelClassDefinition) return;
       _resolveIdField(classDefinition);
     });
 

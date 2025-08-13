@@ -277,6 +277,7 @@ class SerializableModelLibraryGenerator {
         shouldOverrideAbstractCopyWith: () => false,
         subDirParts: classDefinition.subDirParts,
         inheritedFields: [],
+        isIdInherited: false,
       ));
 
       classBuilder.methods.add(_buildModelClassToJsonMethod(fields));
@@ -405,6 +406,7 @@ class SerializableModelLibraryGenerator {
               _shouldOverrideAbstractCopyWithMethod(classDefinition),
           subDirParts: classDefinition.subDirParts,
           inheritedFields: classDefinition.inheritedFields,
+          isIdInherited: classDefinition.isIdInherited,
         ));
       } else if (!classDefinition.isSealed) {
         classBuilder.methods.add(_buildCopyWithMethod(
@@ -639,6 +641,7 @@ class SerializableModelLibraryGenerator {
     required bool Function() shouldOverrideAbstractCopyWith,
     required List<String> subDirParts,
     required List<SerializableModelFieldDefinition> inheritedFields,
+    required bool isIdInherited,
   }) {
     return Method((methodBuilder) {
       if (shouldOverrideAbstractCopyWith()) {
@@ -656,6 +659,7 @@ class SerializableModelLibraryGenerator {
             fields,
             subDirParts: subDirParts,
             inheritedFields: inheritedFields,
+            isIdInherited: isIdInherited,
           ),
         )
         ..returns = refer(className);
@@ -1615,6 +1619,7 @@ class SerializableModelLibraryGenerator {
     List<SerializableModelFieldDefinition> fields, {
     required List<String> subDirParts,
     required List<SerializableModelFieldDefinition> inheritedFields,
+    required bool isIdInherited,
   }) {
     return fields
         .where((field) => field.shouldIncludeField(serverCode))
@@ -1626,7 +1631,8 @@ class SerializableModelLibraryGenerator {
         config: config,
       );
 
-      var isInheritedField = inheritedFields.contains(field);
+      var isInheritedField = inheritedFields.contains(field) ||
+          (field.name == defaultPrimaryKeyName && isIdInherited);
 
       var type = field.type.nullable && isInheritedField
           ? refer('Object?')
