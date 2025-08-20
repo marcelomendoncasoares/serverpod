@@ -62,8 +62,7 @@ Future<UserInfo?> signInWithFirebase({
                   }
 
                   // Store the user info in the session manager.
-                  var sessionManager = await SessionManager.instance;
-                  await sessionManager.registerSignedInUser(
+                  await caller.client.auth.registerSignedInUser(
                     serverResponse.userInfo!,
                     serverResponse.keyId!,
                     serverResponse.key!,

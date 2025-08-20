@@ -31,8 +31,7 @@ class EmailAuthController {
       }
 
       // Authentication was successful, store the key.
-      var sessionManager = await SessionManager.instance;
-      sessionManager.registerSignedInUser(
+      await caller.client.auth.registerSignedInUser(
         serverResponse.userInfo!,
         serverResponse.keyId!,
         serverResponse.key!,

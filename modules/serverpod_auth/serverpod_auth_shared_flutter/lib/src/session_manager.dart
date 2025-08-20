@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
@@ -9,15 +10,17 @@ import 'package:serverpod_auth_shared_flutter/serverpod_auth_shared_flutter.dart
 const _prefsKey = 'serverpod_userinfo_key';
 const _prefsVersion = 2;
 
-/// The [SessionManager] keeps track of and manages the signed-in state of the
-/// user. Use the [instance] method to get access to the singleton instance.
+/// As applications can have more than one Serverpod client, they also need to
+/// have separate auth session managers for each.
+final _authSessionManagersCache =
+    HashMap<ServerpodClientShared, SessionManager>.identity();
+
+/// The [SessionManager] keeps track of and manages signed-in state of the user.
 /// Users are typically authenticated with Google, Apple, or other methods.
 /// Please refer to the documentation to see supported methods. Session
 /// information is stored in the shared preferences of the app and persists
 /// between restarts of the app.
 class SessionManager with ChangeNotifier {
-  static SessionManager? _instance;
-
   /// The auth module's caller.
   Caller caller;
 
@@ -31,18 +34,11 @@ class SessionManager with ChangeNotifier {
     required this.caller,
     Storage? storage,
   }) : _storage = storage ?? SharedPreferenceStorage() {
-    _instance = this;
     assert(caller.client.authenticationKeyManager != null,
         'The client needs an associated key manager');
+    _authSessionManagersCache[caller.client] = this;
     keyManager = caller.client.authenticationKeyManager!
         as FlutterAuthenticationKeyManager;
-  }
-
-  /// Returns a singleton instance of the session manager
-  static Future<SessionManager> get instance async {
-    assert(_instance != null,
-        'You need to create a SessionManager before the instance method can be called');
-    return _instance!;
   }
 
   UserInfo? _signedInUser;
@@ -185,5 +181,19 @@ class SessionManager with ChangeNotifier {
     } catch (e) {
       return false;
     }
+  }
+}
+
+/// Extension for ServerpodClientShared to provide auth session management.
+extension ClientAuthSessionManagerExtension on ServerpodClientShared {
+  /// The authentication session manager to sign in and manage user sessions.
+  SessionManager get auth {
+    final manager = _authSessionManagersCache[this];
+    if (manager == null) {
+      throw StateError(
+        'You need to create the session manager before using the auth instance.',
+      );
+    }
+    return manager;
   }
 }
