@@ -1,5 +1,4 @@
 import 'package:serverpod_cli/analyzer.dart';
-import 'package:serverpod_cli/src/analyzer/dart/definitions.dart';
 import 'package:serverpod_cli/src/generator/dart/client_code_generator.dart';
 import 'package:test/test.dart';
 
@@ -28,12 +27,12 @@ void main() {
               .withName('hello')
               .withReturnType(
                   TypeDefinitionBuilder().withFutureOf('String').build())
-              .withParameters([
-            ParameterDefinition(
-                name: 'name',
-                type: TypeDefinitionBuilder().withClassName('String').build(),
-                required: true)
-          ]).buildMethodCallDefinition()
+              .buildMethodCallDefinition(),
+          MethodDefinitionBuilder()
+              .withName('streaming')
+              .withReturnType(
+                  TypeDefinitionBuilder().withStreamOf('String').build())
+              .buildMethodStreamDefinition()
         ]).build()
       ],
       models: [],
@@ -44,24 +43,34 @@ void main() {
       config: config,
     );
 
-    late var clientCode = codeMap.values
-        .where((code) => code.contains('unauthenticatedEndpoints'))
-        .first;
+    test('then method calls have no authenticated parameter.', () {
+      var clientCode = codeMap.values
+          .where((code) => code.contains('callServerEndpoint'))
+          .first;
 
-    test('then client code overrides the unauthenticatedEndpoints property.',
-        () {
-      expect(
-        clientCode,
-        contains('@override\n  Set<String> get unauthenticatedEndpoints =>'),
+      expect(clientCode, contains('''\
+  Future<String> hello() => caller.callServerEndpoint<String>(
+        'example',
+        'hello',
+        {},
       );
+'''));
     });
 
-    test('then unauthenticatedEndpoints is empty.', () {
+    test('then streaming method calls have no authenticated parameter.', () {
       var clientCode = codeMap.values
-          .where((code) => code.contains('unauthenticatedEndpoints'))
-          .firstOrNull;
+          .where((code) => code.contains('callStreamingServerEndpoint'))
+          .first;
 
-      expect(clientCode, contains('unauthenticatedEndpoints => {}'));
+      expect(clientCode, contains('''\
+  Stream<String> streaming() =>
+      caller.callStreamingServerEndpoint<Stream<String>, String>(
+        'example',
+        'streaming',
+        {},
+        {},
+      );
+'''));
     });
   });
 
@@ -83,10 +92,10 @@ void main() {
                   TypeDefinitionBuilder().withFutureOf('String').build())
               .buildMethodCallDefinition(),
           MethodDefinitionBuilder()
-              .withName('world')
+              .withName('streaming')
               .withReturnType(
-                  TypeDefinitionBuilder().withFutureOf('String').build())
-              .buildMethodCallDefinition()
+                  TypeDefinitionBuilder().withStreamOf('String').build())
+              .buildMethodStreamDefinition()
         ]).build()
       ],
       models: [],
@@ -97,25 +106,41 @@ void main() {
       config: config,
     );
 
-    test('then unauthenticatedEndpoints contains all endpoint method.', () {
+    test('then method calls have the authenticated parameter.', () {
       var clientCode = codeMap.values
-          .where((code) => code.contains('unauthenticatedEndpoints'))
+          .where((code) => code.contains('callServerEndpoint'))
           .first;
 
-      expect(
-        clientCode,
-        contains(
-          'unauthenticatedEndpoints => {\n'
-          "        'example.hello',\n"
-          "        'example.world',\n"
-          '      };\n',
-        ),
+      expect(clientCode, contains('''\
+  Future<String> hello() => caller.callServerEndpoint<String>(
+        'example',
+        'hello',
+        {},
+        authenticated: false,
       );
+'''));
+    });
+
+    test('then streaming method calls have the authenticated parameter.', () {
+      var clientCode = codeMap.values
+          .where((code) => code.contains('callStreamingServerEndpoint'))
+          .first;
+
+      expect(clientCode, contains('''\
+  Stream<String> streaming() =>
+      caller.callStreamingServerEndpoint<Stream<String>, String>(
+        'example',
+        'streaming',
+        {},
+        {},
+        authenticated: false,
+      );
+'''));
     });
   });
 
   group(
-      'Given an endpoint with only one method annotated as @unauthenticated when generating client code',
+      'Given an endpoint with only a few methods annotated as @unauthenticated when generating client code',
       () {
     var protocolDefinition = ProtocolDefinition(
       endpoints: [
@@ -135,7 +160,19 @@ void main() {
               .withName('authenticated')
               .withReturnType(
                   TypeDefinitionBuilder().withFutureOf('String').build())
-              .buildMethodCallDefinition()
+              .buildMethodCallDefinition(),
+          MethodDefinitionBuilder()
+              .withName('streaming')
+              .withReturnType(
+                  TypeDefinitionBuilder().withStreamOf('String').build())
+              .withAnnotations([
+            AnnotationDefinitionBuilder().withName('unauthenticated').build()
+          ]).buildMethodStreamDefinition(),
+          MethodDefinitionBuilder()
+              .withName('streamingAuthenticated')
+              .withReturnType(
+                  TypeDefinitionBuilder().withStreamOf('String').build())
+              .buildMethodStreamDefinition(),
         ]).build()
       ],
       models: [],
@@ -146,17 +183,67 @@ void main() {
       config: config,
     );
 
+    test('then hello method call have the authenticated parameter.', () {
+      var clientCode =
+          codeMap.values.where((code) => code.contains('hello')).first;
+
+      expect(clientCode, contains('''\
+  Future<String> hello() => caller.callServerEndpoint<String>(
+        'example',
+        'hello',
+        {},
+        authenticated: false,
+      );
+'''));
+    });
+
+    test('then streaming method call have the authenticated parameter.', () {
+      var clientCode =
+          codeMap.values.where((code) => code.contains('streaming')).first;
+
+      expect(clientCode, contains('''\
+  Stream<String> streaming() =>
+      caller.callStreamingServerEndpoint<Stream<String>, String>(
+        'example',
+        'streaming',
+        {},
+        {},
+        authenticated: false,
+      );
+'''));
+    });
+
     test(
-        'then unauthenticatedEndpoints contains only the unauthenticated method.',
+        'then authenticated method call does not have the authenticated parameter.',
+        () {
+      var clientCode =
+          codeMap.values.where((code) => code.contains('authenticated')).first;
+
+      expect(clientCode, contains('''\
+  Future<String> authenticated() => caller.callServerEndpoint<String>(
+        'example',
+        'authenticated',
+        {},
+      );
+'''));
+    });
+
+    test(
+        'then streamingAuthenticated method call does not have the authenticated parameter.',
         () {
       var clientCode = codeMap.values
-          .where((code) => code.contains('unauthenticatedEndpoints'))
+          .where((code) => code.contains('streamingAuthenticated'))
           .first;
 
-      expect(
-        clientCode,
-        contains('unauthenticatedEndpoints => {\'example.hello\'}'),
+      expect(clientCode, contains('''\
+  Stream<String> streamingAuthenticated() =>
+      caller.callStreamingServerEndpoint<Stream<String>, String>(
+        'example',
+        'streamingAuthenticated',
+        {},
+        {},
       );
+'''));
     });
   });
 }

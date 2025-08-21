@@ -746,23 +746,6 @@ class LibraryGenerator {
                             refer('modules').property(module.nickname),
                     }).code,
                 ),
-              if (config.type != PackageType.module)
-                Method(
-                  (m) => m
-                    ..name = 'unauthenticatedEndpoints'
-                    ..annotations.add(refer('override'))
-                    ..type = MethodType.getter
-                    ..returns = TypeReference((t) => t
-                      ..symbol = 'Set'
-                      ..types.addAll([refer('String')]))
-                    ..body = literalSet({
-                      for (var endpointDef in protocolDefinition.endpoints)
-                        for (var methodDef in endpointDef.methods)
-                          if (endpointDef.annotations.has('unauthenticated') ||
-                              methodDef.annotations.has('unauthenticated'))
-                            '$modulePrefix${endpointDef.name}.${methodDef.name}',
-                    }).code,
-                ),
             ],
           ),
       ),
@@ -834,7 +817,10 @@ class LibraryGenerator {
           // For the records we need to transform them into a map that can be handled by the shared (non-project specific) serialization code
           literalString(parameterDef.name): handleParameter(parameterDef)
       })
-    ], {}, [
+    ], {
+      if (_isMethodUnauthenticated(endpointDef, methodDef))
+        'authenticated': literalBool(false),
+    }, [
       methodDef.returnType.generics.first.reference(false, config: config)
     ]).code;
   }
@@ -864,10 +850,21 @@ class LibraryGenerator {
         for (var parameterDef in streamingParams)
           literalString(parameterDef.name): refer(parameterDef.name),
       }),
-    ], {}, [
+    ], {
+      if (_isMethodUnauthenticated(endpointDef, methodDef))
+        'authenticated': literalBool(false),
+    }, [
       methodDef.returnType.reference(false, config: config),
       methodDef.returnType.generics.first.reference(false, config: config),
     ]).code;
+  }
+
+  bool _isMethodUnauthenticated(
+    EndpointDefinition endpointDef,
+    MethodDefinition methodDef,
+  ) {
+    return (endpointDef.annotations.has('unauthenticated') ||
+        methodDef.annotations.has('unauthenticated'));
   }
 
   String? _generatedDirectoryPathCache;

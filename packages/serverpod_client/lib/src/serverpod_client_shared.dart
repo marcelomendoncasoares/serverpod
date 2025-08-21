@@ -146,10 +146,6 @@ abstract class ServerpodClientShared extends EndpointCaller {
   /// Looks up module callers by their name. Overridden by generated code.
   Map<String, ModuleEndpointCaller> get moduleLookup;
 
-  /// List of endpoints marked with [@unauthenticated]. When calling these
-  /// endpoints, the authentication header will not be sent.
-  Set<String> get unauthenticatedEndpoints => {};
-
   Map<String, EndpointRef>? _consolidatedEndpointRefLookupCache;
 
   Map<String, EndpointRef> get _consolidatedEndpointRefLookup {
@@ -474,18 +470,14 @@ abstract class ServerpodClientShared extends EndpointCaller {
     );
   }
 
-  ClientAuthKeyProvider? _getAuthProviderFor(String endpoint, String method) {
-    if (unauthenticatedEndpoints.contains('$endpoint.$method')) return null;
-    return authKeyProvider;
-  }
-
   @override
   Future<T> callServerEndpoint<T>(
     String endpoint,
     String method,
-    Map<String, dynamic> args, [
+    Map<String, dynamic> args, {
+    bool authenticated = true,
     bool shouldRetryOnAuthFailed = true,
-  ]) async {
+  }) async {
     var callContext = MethodCallContext(
       endpointName: endpoint,
       methodName: method,
@@ -494,7 +486,7 @@ abstract class ServerpodClientShared extends EndpointCaller {
 
     try {
       var authenticationValue =
-          await _getAuthProviderFor(endpoint, method)?.authHeaderValue;
+          authenticated ? await authKeyProvider?.authHeaderValue : null;
       var body = formatArgs(args, method);
       var url = Uri.parse('$host$endpoint');
 
@@ -525,7 +517,8 @@ abstract class ServerpodClientShared extends EndpointCaller {
           keyProvider is RefresherClientAuthKeyProvider &&
           shouldRetryOnAuthFailed &&
           await keyProvider.refreshAuthKey()) {
-        return callServerEndpoint(endpoint, method, args, false);
+        return callServerEndpoint(endpoint, method, args,
+            shouldRetryOnAuthFailed: false);
       }
       rethrow;
     }
@@ -536,15 +529,16 @@ abstract class ServerpodClientShared extends EndpointCaller {
     String endpoint,
     String method,
     Map<String, dynamic> args,
-    Map<String, Stream> streams,
-  ) {
+    Map<String, Stream> streams, {
+    bool authenticated = true,
+  }) {
     var connectionDetails = MethodStreamConnectionDetails(
       endpoint: endpoint,
       method: method,
       args: args,
       parameterStreams: streams,
       outputController: StreamController<G>(),
-      authKeyProvider: _getAuthProviderFor(endpoint, method),
+      authKeyProvider: authenticated ? authKeyProvider : null,
     );
 
     _methodStreamManager.openMethodStream(connectionDetails).catchError((e, _) {
@@ -607,7 +601,11 @@ abstract class ModuleEndpointCaller extends EndpointCaller {
 
   @override
   Future<T> callServerEndpoint<T>(
-      String endpoint, String method, Map<String, dynamic> args) {
+    String endpoint,
+    String method,
+    Map<String, dynamic> args, {
+    bool authenticated = true,
+  }) {
     return client.callServerEndpoint<T>(endpoint, method, args);
   }
 
@@ -616,13 +614,15 @@ abstract class ModuleEndpointCaller extends EndpointCaller {
     String endpoint,
     String method,
     Map<String, dynamic> args,
-    Map<String, Stream> streams,
-  ) {
+    Map<String, Stream> streams, {
+    bool authenticated = true,
+  }) {
     return client.callStreamingServerEndpoint<T, G>(
       endpoint,
       method,
       args,
       streams,
+      authenticated: authenticated,
     );
   }
 }
@@ -636,7 +636,11 @@ abstract class EndpointCaller {
   /// Calls a server endpoint method by its name, passing arguments in a map.
   /// Typically, this method is called by generated code.
   Future<T> callServerEndpoint<T>(
-      String endpoint, String method, Map<String, dynamic> args);
+    String endpoint,
+    String method,
+    Map<String, dynamic> args, {
+    bool authenticated = true,
+  });
 
   /// Calls a server endpoint method that supports streaming. The [streams]
   /// parameter is a map of stream names to stream objects. The method will
@@ -653,8 +657,9 @@ abstract class EndpointCaller {
     String endpoint,
     String method,
     Map<String, dynamic> args,
-    Map<String, Stream> streams,
-  );
+    Map<String, Stream> streams, {
+    bool authenticated = true,
+  });
 }
 
 /// This class connects endpoints on the server with the client, it also
