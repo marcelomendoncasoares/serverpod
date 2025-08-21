@@ -6,11 +6,6 @@ extension ElementAnnotationExtensions on Element {
     return metadata
         .hasAnnotationOfType(ServerpodAnnotationClassNames.doNotGenerate);
   }
-
-  bool get markedAsUnauthenticated {
-    return metadata
-        .hasAnnotationOfType(ServerpodAnnotationClassNames.unauthenticated);
-  }
 }
 
 extension on List<ElementAnnotation> {
