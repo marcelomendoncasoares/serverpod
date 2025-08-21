@@ -4013,4 +4013,7 @@ class Client extends _i1.ServerpodClientShared {
         'auth': modules.auth,
         'module': modules.module,
       };
+
+  @override
+  Set<String> get unauthenticatedEndpoints => {};
 }

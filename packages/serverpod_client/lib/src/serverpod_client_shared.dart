@@ -146,6 +146,10 @@ abstract class ServerpodClientShared extends EndpointCaller {
   /// Looks up module callers by their name. Overridden by generated code.
   Map<String, ModuleEndpointCaller> get moduleLookup;
 
+  /// List of endpoints marked with [@unauthenticated]. When calling these
+  /// endpoints, the authentication header will not be sent.
+  Set<String> get unauthenticatedEndpoints => {};
+
   Map<String, EndpointRef>? _consolidatedEndpointRefLookupCache;
 
   Map<String, EndpointRef> get _consolidatedEndpointRefLookup {
@@ -470,6 +474,11 @@ abstract class ServerpodClientShared extends EndpointCaller {
     );
   }
 
+  ClientAuthKeyProvider? _getAuthProviderFor(String endpoint, String method) {
+    if (unauthenticatedEndpoints.contains('$endpoint.$method')) return null;
+    return authKeyProvider;
+  }
+
   @override
   Future<T> callServerEndpoint<T>(
     String endpoint,
@@ -484,7 +493,8 @@ abstract class ServerpodClientShared extends EndpointCaller {
     );
 
     try {
-      var authenticationValue = await authKeyProvider?.authHeaderValue;
+      var authenticationValue =
+          await _getAuthProviderFor(endpoint, method)?.authHeaderValue;
       var body = formatArgs(args, method);
       var url = Uri.parse('$host$endpoint');
 
@@ -534,7 +544,7 @@ abstract class ServerpodClientShared extends EndpointCaller {
       args: args,
       parameterStreams: streams,
       outputController: StreamController<G>(),
-      authKeyProvider: authKeyProvider,
+      authKeyProvider: _getAuthProviderFor(endpoint, method),
     );
 
     _methodStreamManager.openMethodStream(connectionDetails).catchError((e, _) {

@@ -77,4 +77,7 @@ class Client extends _i1.ServerpodClientShared {
   @override
   Map<String, _i1.ModuleEndpointCaller> get moduleLookup =>
       {'auth': modules.auth};
+
+  @override
+  Set<String> get unauthenticatedEndpoints => {};
 }

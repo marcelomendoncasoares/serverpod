@@ -746,6 +746,23 @@ class LibraryGenerator {
                             refer('modules').property(module.nickname),
                     }).code,
                 ),
+              if (config.type != PackageType.module)
+                Method(
+                  (m) => m
+                    ..name = 'unauthenticatedEndpoints'
+                    ..annotations.add(refer('override'))
+                    ..type = MethodType.getter
+                    ..returns = TypeReference((t) => t
+                      ..symbol = 'Set'
+                      ..types.addAll([refer('String')]))
+                    ..body = literalSet({
+                      for (var endpointDef in protocolDefinition.endpoints)
+                        for (var methodDef in endpointDef.methods)
+                          if (endpointDef.annotations.has('unauthenticated') ||
+                              methodDef.annotations.has('unauthenticated'))
+                            '$modulePrefix${endpointDef.name}.${methodDef.name}',
+                    }).code,
+                ),
             ],
           ),
       ),
@@ -1139,15 +1156,15 @@ class LibraryGenerator {
       ),
       Method((m) => m
         ..docs.add('''
-          /// Maps container types (like [List], [Map], [Set]) containing 
+          /// Maps container types (like [List], [Map], [Set]) containing
           /// [Record]s or non-String-keyed [Map]s to their JSON representation.
           ///
-          /// It should not be called for [SerializableModel] types. These 
+          /// It should not be called for [SerializableModel] types. These
           /// handle the "[Record] in container" mapping internally already.
           ///
           /// It is only supposed to be called from generated protocol code.
           ///
-          /// Returns either a `List<dynamic>` (for List, Sets, and Maps with 
+          /// Returns either a `List<dynamic>` (for List, Sets, and Maps with
           /// non-String keys) or a `Map<String, dynamic>` in case the input was
           /// a `Map<String, …>`.''')
         ..name = mapContainerToJsonFunctionName

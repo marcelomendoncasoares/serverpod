@@ -2,6 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:serverpod_cli/src/analyzer/code_analysis_collector.dart';
 import 'package:serverpod_cli/src/analyzer/dart/definitions.dart';
 import 'package:serverpod_cli/src/analyzer/dart/element_extensions.dart';
+import 'package:serverpod_cli/src/analyzer/dart/endpoint_analyzers/endpoint_method_analyzer.dart';
 import 'package:serverpod_cli/src/analyzer/dart/endpoint_analyzers/extension/element_ignore_endpoint_extension.dart';
 
 abstract class EndpointClassAnalyzer {
@@ -15,6 +16,8 @@ abstract class EndpointClassAnalyzer {
     var className = element.name;
     var endpointName = _formatEndpointName(className);
     var classDocumentationComment = element.documentationComment;
+    var annotations =
+        EndpointMethodAnalyzer.parseAnnotations(dartElement: element);
 
     return EndpointDefinition(
       name: endpointName,
@@ -22,6 +25,7 @@ abstract class EndpointClassAnalyzer {
       className: className,
       methods: methodDefinitions,
       filePath: filePath,
+      annotations: annotations,
     );
   }
 

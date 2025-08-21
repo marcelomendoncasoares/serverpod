@@ -33,7 +33,7 @@ abstract class EndpointMethodAnalyzer {
       return MethodStreamDefinition(
         name: method.name,
         documentationComment: method.documentationComment,
-        annotations: _parseAnnotations(dartElement: method),
+        annotations: parseAnnotations(dartElement: method),
         parameters: parameters.required,
         parametersNamed: parameters.named,
         parametersPositional: parameters.positional,
@@ -44,7 +44,7 @@ abstract class EndpointMethodAnalyzer {
     return MethodCallDefinition(
       name: method.name,
       documentationComment: method.documentationComment,
-      annotations: _parseAnnotations(dartElement: method),
+      annotations: parseAnnotations(dartElement: method),
       parameters: parameters.required,
       parametersNamed: parameters.named,
       parametersPositional: parameters.positional,
@@ -160,7 +160,7 @@ abstract class EndpointMethodAnalyzer {
     return argument != null ? ["'$argument'"] : null;
   }
 
-  static List<AnnotationDefinition> _parseAnnotations({
+  static List<AnnotationDefinition> parseAnnotations({
     required Element dartElement,
   }) {
     return dartElement.metadata.expand<AnnotationDefinition>((annotation) {
@@ -186,6 +186,11 @@ abstract class EndpointMethodAnalyzer {
               name: annotationName,
               methodCallAnalyzerIgnoreRule:
                   'deprecated_member_use_from_same_package',
+            ),
+          ],
+        'unauthenticated' => [
+            AnnotationDefinition(
+              name: annotationName,
             ),
           ],
         _ => [],

@@ -269,4 +269,7 @@ class Client extends _i1.ServerpodClientShared {
 
   @override
   Map<String, _i1.ModuleEndpointCaller> get moduleLookup => {};
+
+  @override
+  Set<String> get unauthenticatedEndpoints => {};
 }
