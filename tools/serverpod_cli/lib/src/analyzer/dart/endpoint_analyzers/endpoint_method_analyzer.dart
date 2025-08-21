@@ -163,7 +163,18 @@ abstract class EndpointMethodAnalyzer {
   static List<AnnotationDefinition> parseAnnotations({
     required Element dartElement,
   }) {
-    return dartElement.metadata.expand<AnnotationDefinition>((annotation) {
+    var annotations = _parseElementAnnotations(dartElement);
+    for (var annotation in _parseInheritedAnnotations(dartElement)) {
+      if (!annotations.any((e) => e.name == annotation.name)) {
+        annotations.add(annotation);
+      }
+    }
+    return annotations;
+  }
+
+  /// Parses annotations directly from an element's metadata.
+  static List<AnnotationDefinition> _parseElementAnnotations(Element element) {
+    return element.metadata.expand<AnnotationDefinition>((annotation) {
       var annotationElement = annotation.element;
       var annotationName = annotationElement is ConstructorElement
           ? annotationElement.enclosingElement.name
@@ -196,6 +207,24 @@ abstract class EndpointMethodAnalyzer {
         _ => [],
       };
     }).toList();
+  }
+
+  /// Parses annotations inherited from parent classes. May contain duplicates.
+  static List<AnnotationDefinition> _parseInheritedAnnotations(
+    Element dartElement,
+  ) {
+    if (dartElement is! ClassElement) return [];
+
+    var parentClasses = dartElement.allSupertypes
+        .map((s) => s.element)
+        .whereType<ClassElement>()
+        .where(EndpointClassAnalyzer.isEndpointInterface);
+
+    return [
+      for (var parentClass in parentClasses)
+        for (var annotation in _parseElementAnnotations(parentClass))
+          annotation,
+    ];
   }
 }
 
