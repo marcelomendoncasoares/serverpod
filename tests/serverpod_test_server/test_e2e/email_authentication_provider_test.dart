@@ -126,6 +126,7 @@ void main() {
             await client.modules.auth.email.authenticate(email, password);
         assert(authResponse.success, 'Failed to authenticate user');
         assert(authResponse.key != null, 'Failed to retrieve auth key');
+        // ignore: deprecated_member_use
         await client.authenticationKeyManager
             ?.put('${authResponse.keyId}:${authResponse.key}');
 
@@ -134,6 +135,7 @@ void main() {
       },
     );
 
+    // ignore: deprecated_member_use
     tearDown(() async => await client.authenticationKeyManager?.remove());
 
     test('when changing password then user can authenticate with new password',

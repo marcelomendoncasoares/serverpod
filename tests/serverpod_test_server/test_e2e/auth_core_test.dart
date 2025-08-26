@@ -26,6 +26,7 @@ void main() {
     });
 
     tearDownAll(() async {
+      // ignore: deprecated_member_use
       await client.authenticationKeyManager?.remove();
       await client.authentication.removeAllUsers();
       await client.authentication.signOut();
@@ -52,7 +53,7 @@ void main() {
     });
 
     test(
-        'when calling an authorizaed endpoint method without auth key '
+        'when calling an authorized endpoint method without auth key '
         'then it should fail', () async {
       var response = await http.post(
         Uri.parse('${serverUrl}echoRequest'),

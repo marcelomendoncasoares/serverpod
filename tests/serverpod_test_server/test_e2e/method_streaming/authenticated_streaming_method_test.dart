@@ -8,6 +8,10 @@ import 'package:serverpod_test_server/test_util/config.dart';
 import 'package:serverpod_test_server/test_util/test_key_manager.dart';
 import 'package:test/test.dart';
 
+// Ignore the usage of the `authenticationKeyManager` as it is deprecated. This
+// test targets the legacy authentication system, so it's acceptable to ignore.
+// ignore_for_file: deprecated_member_use
+
 void main() {
   var client = Client(
     serverUrl,

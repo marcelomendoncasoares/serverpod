@@ -139,8 +139,8 @@ abstract class ServerpodClientShared extends EndpointCaller {
   /// The [SerializationManager] used to serialize objects sent to the server.
   final SerializationManager serializationManager;
 
-  // TODO: Deprecate after the new authentication system is in place.
   /// Optional [AuthenticationKeyManager] if the client needs to sign the user in.
+  @Deprecated('Use the `authKeyProvider` parameter to provide authentication.')
   final AuthenticationKeyManager? authenticationKeyManager;
 
   /// Looks up module callers by their name. Overridden by generated code.
@@ -244,6 +244,7 @@ abstract class ServerpodClientShared extends EndpointCaller {
         disconnectStreamsOnLostInternetConnection;
 
     // TODO: Remove this backwards compatibility assignment.
+    // ignore: deprecated_member_use_from_same_package
     authKeyProvider ??= authenticationKeyManager;
   }
 

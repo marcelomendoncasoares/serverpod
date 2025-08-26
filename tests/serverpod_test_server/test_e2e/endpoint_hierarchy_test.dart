@@ -17,6 +17,7 @@ void main() {
   });
 
   tearDown(() async {
+    // ignore: deprecated_member_use
     await client.authenticationKeyManager?.remove();
     await client.authentication.removeAllUsers();
     await client.authentication.signOut();
@@ -49,6 +50,7 @@ void main() {
         'test@foo.bar',
         'password',
       );
+      // ignore: deprecated_member_use
       await client.authenticationKeyManager!
           .put('${loginResponse.keyId}:${loginResponse.key}');
 
@@ -81,6 +83,7 @@ void main() {
         'test@foo.bar',
         'password',
       );
+      // ignore: deprecated_member_use
       await client.authenticationKeyManager!
           .put('${loginResponse.keyId}:${loginResponse.key}');
 
@@ -102,6 +105,7 @@ void main() {
         'password',
         [Scope.admin.name!],
       );
+      // ignore: deprecated_member_use
       await client.authenticationKeyManager!
           .put('${loginResponse.keyId}:${loginResponse.key}');
 
@@ -134,6 +138,7 @@ void main() {
         'test@foo.bar',
         'password',
       );
+      // ignore: deprecated_member_use
       await client.authenticationKeyManager!
           .put('${loginResponse.keyId}:${loginResponse.key}');
 
@@ -155,6 +160,7 @@ void main() {
         'password',
         [Scope.admin.name!],
       );
+      // ignore: deprecated_member_use
       await client.authenticationKeyManager!
           .put('${loginResponse.keyId}:${loginResponse.key}');
 

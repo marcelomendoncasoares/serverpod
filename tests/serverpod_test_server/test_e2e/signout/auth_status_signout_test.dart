@@ -116,6 +116,7 @@ Future<void> _authenticateClient(Client client) async {
     'password',
   );
   expect(response.success, isTrue, reason: 'Authentication failed for client');
+  // ignore: deprecated_member_use
   await client.authenticationKeyManager
       ?.put('${response.keyId}:${response.key}');
 }
