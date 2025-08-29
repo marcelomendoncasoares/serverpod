@@ -9,25 +9,8 @@ abstract interface class ClientAuthKeyProvider {
 }
 
 /// Provides the authentication key for the client, with a method to refresh it.
-abstract class RefresherClientAuthKeyProvider implements ClientAuthKeyProvider {
-  /// Authentication header value getter that must be implemented. This getter
-  /// must get the header value directly from the source, without any locking.
-  /// The [authHeaderValue] getter will handle refreshing the key if needed,
-  /// with a lock to avoid concurrent refresh attempts.
-  Future<String?> get notLockedAuthHeaderValue;
-
-  @override
-  Future<String?> get authHeaderValue async {
-    // TODO: In the beginning of the getter, check validity and refresh if it is
-    // about to expire. Either way, before refreshing, check again if it's still
-    // about to expire to avoid racing conditions when multiple endpoints try to
-    // refresh and one has already refreshed. Then skip refresh and return true.
-
-    // TODO: Use Completer to implement a lock under the future of the getter to
-    // avoid multiple concurrent refresh attempts.
-    return await notLockedAuthHeaderValue;
-  }
-
+abstract interface class RefresherClientAuthKeyProvider
+    implements ClientAuthKeyProvider {
   /// Refreshes the authentication key. If the refresh is successful, should
   /// return true to retry requests that failed due to authentication errors.
   /// Be aware that the refresh endpoint must be annotated with @unauthenticated
