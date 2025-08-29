@@ -1784,6 +1784,60 @@ class SerializableModelLibraryGenerator {
     );
   }
 
+  /// Helper method to get generic types for column type declarations
+  List<Reference> _getColumnTypeGenerics(
+    SerializableModelFieldDefinition field,
+    List<String> subDirParts,
+  ) {
+    if (field.type.isEnumType) {
+      return [
+        field.type.reference(
+          serverCode,
+          nullable: false,
+          subDirParts: subDirParts,
+          config: config,
+        )
+      ];
+    } else if (field.type.isListType || field.type.isSetType) {
+      // For List<T> and Set<T>, add the element type
+      if (field.type.generics.isNotEmpty) {
+        return [
+          field.type.generics.first.reference(
+            serverCode,
+            subDirParts: subDirParts,
+            config: config,
+          )
+        ];
+      }
+    } else if (field.type.isMapType) {
+      // For Map<K,V>, add both key and value types
+      if (field.type.generics.length >= 2) {
+        return [
+          field.type.generics[0].reference(
+            serverCode,
+            subDirParts: subDirParts,
+            config: config,
+          ),
+          field.type.generics[1].reference(
+            serverCode,
+            subDirParts: subDirParts,
+            config: config,
+          ),
+        ];
+      }
+    } else if (field.type.columnType == 'ColumnSerializable') {
+      // For generic ColumnSerializable, add the field type itself
+      return [
+        field.type.reference(
+          serverCode,
+          subDirParts: subDirParts,
+          config: config,
+        )
+      ];
+    }
+    return [];
+  }
+
   List<Field> _buildModelTableClassFields(
     List<SerializableModelFieldDefinition> fields,
     List<String> subDirParts,
@@ -1802,16 +1856,7 @@ class SerializableModelLibraryGenerator {
           ..type = TypeReference((t) => t
             ..symbol = field.type.columnType
             ..url = serverpodUrl(true)
-            ..types.addAll(field.type.isEnumType
-                ? [
-                    field.type.reference(
-                      serverCode,
-                      nullable: false,
-                      subDirParts: subDirParts,
-                      config: config,
-                    )
-                  ]
-                : []))));
+            ..types.addAll(_getColumnTypeGenerics(field, subDirParts)))));
       } else if (field.relation is ObjectRelationDefinition) {
         // Add internal nullable table field
         tableFields.add(Field((f) => f
@@ -2102,10 +2147,11 @@ class SerializableModelLibraryGenerator {
     SerializableModelFieldDefinition field,
   ) {
     assert(!field.type.isEnumType);
+
     return TypeReference((t) => t
       ..symbol = field.type.columnType
       ..url = serverpodUrl(true)
-      ..types.addAll([])).call([
+      ..types.addAll(_getColumnTypeGenerics(field, []))).call([
       literalString(field.name),
       refer('this'),
     ], {

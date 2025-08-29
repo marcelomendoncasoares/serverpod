@@ -1,16 +1,11 @@
 import 'package:serverpod/database.dart';
 import 'package:test/test.dart';
 
-class CustomData {
-  final String value;
-  CustomData(this.value);
-}
-
 void main() {
-  group('Given a ColumnSerializable with generic type', () {
-    var columnName = 'configuration';
-    var column = ColumnSerializable<CustomData>(
-        columnName, Table<int?>(tableName: 'test'));
+  group('Given a ColumnMap', () {
+    var columnName = 'metadata';
+    var column =
+        ColumnMap<String, int>(columnName, Table<int?>(tableName: 'test'));
 
     test(
         'when toString is called then column name within double quotes is returned.',
@@ -26,18 +21,19 @@ void main() {
       expect(column.type, String);
     });
 
-    test('when created then it has correct generic type.', () {
-      expect(column, isA<ColumnSerializable<CustomData>>());
+    test('when created then it extends ColumnSerializable.', () {
+      expect(column, isA<ColumnSerializable<Map<String, int>>>());
     });
   });
 
-  group('Given a ColumnSerializable with different generic type', () {
+  group('Given a ColumnMap with different key-value types', () {
     var columnName = 'settings';
-    var column = ColumnSerializable<Map<String, dynamic>>(
-        columnName, Table<int?>(tableName: 'test'));
+    var column =
+        ColumnMap<int, String>(columnName, Table<int?>(tableName: 'test'));
 
     test('when created then it has correct generic type.', () {
-      expect(column, isA<ColumnSerializable<Map<String, dynamic>>>());
+      expect(column, isA<ColumnMap<int, String>>());
+      expect(column, isA<ColumnSerializable<Map<int, String>>>());
     });
 
     test(
@@ -47,9 +43,9 @@ void main() {
     });
   });
 
-  group('Given a ColumnSerializable with hasDefault true', () {
-    var columnName = 'defaultConfig';
-    var column = ColumnSerializable<CustomData>(
+  group('Given a ColumnMap with hasDefault true', () {
+    var columnName = 'defaultMetadata';
+    var column = ColumnMap<String, int>(
       columnName,
       Table<int?>(tableName: 'test'),
       hasDefault: true,

@@ -51,7 +51,7 @@ class ColumnByteData extends Column<ByteData> {
 
 /// A [Column] holding an [SerializableModel]. The entity will be stored in the
 /// database as a json column.
-class ColumnSerializable extends Column<String> {
+class ColumnSerializable<T> extends Column<String> {
   /// Creates a new [Column], this is typically done in generated code only.
   ColumnSerializable(
     super.columnName,
@@ -60,6 +60,61 @@ class ColumnSerializable extends Column<String> {
   });
 
 // TODO: Add comparisons and possibly other operations
+}
+
+/// A [Column] holding a [List]. The entity will be stored in the
+/// database as a json column.
+class ColumnList<T> extends ColumnSerializable<List<T>> {
+  /// Creates a new [Column], this is typically done in generated code only.
+  ColumnList(
+    super.columnName,
+    super.table, {
+    super.hasDefault,
+  });
+}
+
+/// A [Column] holding a [Set]. The entity will be stored in the
+/// database as a json column.
+class ColumnSet<T> extends ColumnSerializable<Set<T>> {
+  /// Creates a new [Column], this is typically done in generated code only.
+  ColumnSet(
+    super.columnName,
+    super.table, {
+    super.hasDefault,
+  });
+}
+
+/// A [Column] holding a [Map]. The entity will be stored in the
+/// database as a json column.
+class ColumnMap<K, V> extends ColumnSerializable<Map<K, V>> {
+  /// Creates a new [Column], this is typically done in generated code only.
+  ColumnMap(
+    super.columnName,
+    super.table, {
+    super.hasDefault,
+  });
+}
+
+/// A [Column] holding an [Iterable]. The entity will be stored in the
+/// database as a json column.
+class ColumnIterable<T> extends ColumnSerializable<Iterable<T>> {
+  /// Creates a new [Column], this is typically done in generated code only.
+  ColumnIterable(
+    super.columnName,
+    super.table, {
+    super.hasDefault,
+  });
+}
+
+/// A [Column] holding a [Record]. The entity will be stored in the
+/// database as a json column.
+class ColumnRecord extends ColumnSerializable<Record> {
+  /// Creates a new [Column], this is typically done in generated code only.
+  ColumnRecord(
+    super.columnName,
+    super.table, {
+    super.hasDefault,
+  });
 }
 
 abstract class _ValueOperatorColumn<T> extends Column<T> {

@@ -425,6 +425,13 @@ class TypeDefinition {
     if (className == 'SparseVector') return 'ColumnSparseVector';
     if (className == 'Bit') return 'ColumnBit';
 
+    // Specialized column types for collections
+    if (className == 'List') return 'ColumnList';
+    if (className == 'Set') return 'ColumnSet';
+    if (className == 'Map') return 'ColumnMap';
+    if (className == 'Iterable') return 'ColumnIterable';
+    if (isRecordType) return 'ColumnRecord';
+
     return 'ColumnSerializable';
   }
 

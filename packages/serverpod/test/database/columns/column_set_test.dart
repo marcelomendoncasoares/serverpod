@@ -1,16 +1,10 @@
 import 'package:serverpod/database.dart';
 import 'package:test/test.dart';
 
-class CustomData {
-  final String value;
-  CustomData(this.value);
-}
-
 void main() {
-  group('Given a ColumnSerializable with generic type', () {
-    var columnName = 'configuration';
-    var column = ColumnSerializable<CustomData>(
-        columnName, Table<int?>(tableName: 'test'));
+  group('Given a ColumnSet', () {
+    var columnName = 'tags';
+    var column = ColumnSet<String>(columnName, Table<int?>(tableName: 'test'));
 
     test(
         'when toString is called then column name within double quotes is returned.',
@@ -26,18 +20,18 @@ void main() {
       expect(column.type, String);
     });
 
-    test('when created then it has correct generic type.', () {
-      expect(column, isA<ColumnSerializable<CustomData>>());
+    test('when created then it extends ColumnSerializable.', () {
+      expect(column, isA<ColumnSerializable<Set<String>>>());
     });
   });
 
-  group('Given a ColumnSerializable with different generic type', () {
-    var columnName = 'settings';
-    var column = ColumnSerializable<Map<String, dynamic>>(
-        columnName, Table<int?>(tableName: 'test'));
+  group('Given a ColumnSet with int elements', () {
+    var columnName = 'uniqueNumbers';
+    var column = ColumnSet<int>(columnName, Table<int?>(tableName: 'test'));
 
     test('when created then it has correct generic type.', () {
-      expect(column, isA<ColumnSerializable<Map<String, dynamic>>>());
+      expect(column, isA<ColumnSet<int>>());
+      expect(column, isA<ColumnSerializable<Set<int>>>());
     });
 
     test(
@@ -47,9 +41,9 @@ void main() {
     });
   });
 
-  group('Given a ColumnSerializable with hasDefault true', () {
-    var columnName = 'defaultConfig';
-    var column = ColumnSerializable<CustomData>(
+  group('Given a ColumnSet with hasDefault true', () {
+    var columnName = 'defaultTags';
+    var column = ColumnSet<String>(
       columnName,
       Table<int?>(tableName: 'test'),
       hasDefault: true,
