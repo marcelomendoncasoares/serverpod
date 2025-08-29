@@ -131,6 +131,20 @@ class JwtUtil {
     );
   }
 
+  /// Extracts the expiration date from a JWT token.
+  DateTime extractExpirationDate(final String accessToken) {
+    final jwt = _verifyJwt(accessToken);
+
+    final payload = jwt.payload;
+    if (payload is! Map) throw ArgumentError('Invalid JWT payload');
+
+    final exp = payload['exp'];
+    if (exp is! num) throw ArgumentError('JWT payload missing "exp" key');
+
+    final expMillis = (exp * 1000).toInt();
+    return DateTime.fromMillisecondsSinceEpoch(expMillis, isUtc: true);
+  }
+
   /// Verifies the JWT's signature and returns its data.
   ///
   /// If reading with the primary algorithm fails, the fallback (if configured) is tried.
