@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart';
 
+import '/src/auth_key_providers/jwt_auth_key_provider.dart';
 import '/src/storage/base.dart';
 import '/src/storage/secure.dart';
 
@@ -11,9 +12,12 @@ import '/src/storage/secure.dart';
 /// or other methods. Please refer to the documentation to see supported
 /// methods. Session information is stored in the secure shared preferences of
 /// the app and persists between restarts of the app.
-class ClientAuthSessionManager implements ClientAuthKeyProvider {
+class ClientAuthSessionManager implements RefresherClientAuthKeyProvider {
   /// The auth module's caller.
   Caller? _caller;
+
+  /// The authentication key provider to use.
+  late final ClientAuthKeyProvider authKeyProviderDelegate;
 
   /// The secure storage to keep user authentication info.
   final ClientAuthInfoStorage storage;
@@ -24,11 +28,21 @@ class ClientAuthSessionManager implements ClientAuthKeyProvider {
     /// must be set before usage by calling [setCallerFromClient].
     Caller? caller,
 
+    /// The authentication key provider to use. If not provided, a default
+    /// [JwtAuthKeyProvider] will be created.
+    ClientAuthKeyProvider? authKeyProviderDelegate,
+
     /// The secure storage to keep user authentication info. If missing, the
     /// session manager will create a [SecureClientAuthInfoStorage].
     ClientAuthInfoStorage? storage,
   })  : _caller = caller,
-        storage = storage ?? SecureClientAuthInfoStorage();
+        storage = storage ?? SecureClientAuthInfoStorage() {
+    this.authKeyProviderDelegate = authKeyProviderDelegate ??
+        JwtAuthKeyProvider(
+          getAuthInfo: () async => authInfo.value,
+          refreshAuthInfo: refreshAuthentication,
+        );
+  }
 
   /// Sets the caller from the client's module lookup.
   void setCallerFromClient(ServerpodClientShared client) {
@@ -54,10 +68,14 @@ class ClientAuthSessionManager implements ClientAuthKeyProvider {
   bool get isAuthenticated => authInfo.value != null;
 
   @override
-  Future<String?> get authHeaderValue async {
-    final currentAuth = authInfo.value;
-    if (currentAuth == null) return null;
-    return wrapAsBearerAuthHeaderValue(currentAuth.token);
+  Future<String?> get authHeaderValue async =>
+      authKeyProviderDelegate.authHeaderValue;
+
+  @override
+  Future<bool> refreshAuthKey() async {
+    final authKeyProvider = authKeyProviderDelegate;
+    if (authKeyProvider is! RefresherClientAuthKeyProvider) return false;
+    return authKeyProvider.refreshAuthKey();
   }
 
   /// Restores any existing session from the storage and perform a refresh.
