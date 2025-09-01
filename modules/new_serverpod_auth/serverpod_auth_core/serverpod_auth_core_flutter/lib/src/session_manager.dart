@@ -3,6 +3,8 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart';
 
+import 'auth_key_providers/jwt_auth_key_provider.dart';
+import 'auth_key_providers/sas_auth_key_provider.dart';
 import 'storage/client_auth_info_storage.dart';
 import 'storage/secure_client_auth_info_storage.dart';
 
@@ -11,9 +13,12 @@ import 'storage/secure_client_auth_info_storage.dart';
 /// or other methods. Please refer to the documentation to see supported
 /// methods. Session information is stored in the secure shared preferences of
 /// the app and persists between restarts of the app.
-class ClientAuthSessionManager implements ClientAuthKeyProvider {
+class ClientAuthSessionManager implements RefresherClientAuthKeyProvider {
   /// The auth module's caller.
   Caller? _caller;
+
+  /// The authentication key provider to use.
+  late final Map<AuthStrategy, ClientAuthKeyProvider> _authKeyProviderDelegates;
 
   /// The secure storage to keep user authentication info.
   final ClientAuthInfoStorage storage;
@@ -21,14 +26,20 @@ class ClientAuthSessionManager implements ClientAuthKeyProvider {
   /// Creates a new [ClientAuthSessionManager].
   ClientAuthSessionManager({
     /// Optionally override the caller. If not provided directly, the caller
-    /// must be set before usage by calling [setCallerFromClient].
+    /// must be set before usage by calling [setCaller].
     Caller? caller,
+
+    /// The authentication key provider to use for each auth strategy. If not
+    /// provided, a default one will be created as needed.
+    Map<AuthStrategy, ClientAuthKeyProvider>? authKeyProviderDelegates,
 
     /// The secure storage to keep user authentication info. If missing, the
     /// session manager will create a [SecureClientAuthInfoStorage].
     ClientAuthInfoStorage? storage,
   })  : _caller = caller,
-        storage = storage ?? SecureClientAuthInfoStorage();
+        storage = storage ?? SecureClientAuthInfoStorage() {
+    _authKeyProviderDelegates = authKeyProviderDelegates ?? {};
+  }
 
   /// Sets the caller from the client's module lookup.
   void setCaller(Caller caller) {
@@ -53,11 +64,46 @@ class ClientAuthSessionManager implements ClientAuthKeyProvider {
   /// Whether an user is currently signed in.
   bool get isAuthenticated => authInfo.value != null;
 
+  /// The authentication key provider to use for the current auth strategy.
+  ClientAuthKeyProvider? get authKeyProviderDelegate {
+    final authStrategy = authInfo.value?.authStrategy;
+    if (authStrategy == null) return null;
+
+    var authKeyProvider = _authKeyProviderDelegates[authStrategy];
+    if (authKeyProvider != null) return authKeyProvider;
+
+    switch (authStrategy) {
+      case AuthStrategy.jwt:
+        authKeyProvider = JwtAuthKeyProvider(
+          getAuthInfo: () async => authInfo.value,
+          onRefreshAuthInfo: updateSignedInUser,
+          refreshEndpoint: caller.refreshJwtTokens,
+        );
+      case AuthStrategy.session:
+        authKeyProvider = SasAuthKeyProvider(
+          getAuthInfo: () async => authInfo.value,
+        );
+      default:
+        throw UnimplementedError(
+          'No authentication key provider found for auth strategy: $authStrategy',
+        );
+    }
+
+    _authKeyProviderDelegates[authStrategy] = authKeyProvider;
+    return authKeyProvider;
+  }
+
   @override
-  Future<String?> get authHeaderValue async {
-    final currentAuth = authInfo.value;
-    if (currentAuth == null) return null;
-    return wrapAsBearerAuthHeaderValue(currentAuth.token);
+  Future<String?> get authHeaderValue async =>
+      authKeyProviderDelegate?.authHeaderValue;
+
+  @override
+  Future<RefreshAuthKeyResult> refreshAuthKey() async {
+    final authKeyProvider = authKeyProviderDelegate;
+    if (authKeyProvider is! RefresherClientAuthKeyProvider) {
+      return RefreshAuthKeyResult.skipped;
+    }
+    return authKeyProvider.refreshAuthKey();
   }
 
   /// Restores any existing session from the storage and perform a refresh.
