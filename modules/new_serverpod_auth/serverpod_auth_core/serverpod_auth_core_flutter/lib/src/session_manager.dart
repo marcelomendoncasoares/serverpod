@@ -106,10 +106,14 @@ class ClientAuthSessionManager implements RefresherClientAuthKeyProvider {
     return authKeyProvider.refreshAuthKey();
   }
 
-  /// Restores any existing session from the storage and perform a refresh.
+  /// Restores any existing session from the storage and validates it. If the
+  /// authentication is no longer valid, the user is signed out from the current
+  /// device, updating the [authInfo] value. If the refresh fails due to other
+  /// reasons (network error, server error, etc.), returns false, but does not
+  /// sign out the user. Returns true if the authentication was validated.
   Future<bool> initialize() async {
     await restore();
-    return refreshAuthentication();
+    return validateAuthentication();
   }
 
   /// Restore the current sign in status from the storage.
@@ -124,21 +128,21 @@ class ClientAuthSessionManager implements RefresherClientAuthKeyProvider {
     await caller.client.updateStreamingConnectionAuthenticationKey();
   }
 
-  // MAYBE: Is this true/false return enough? A connection error could return
-  // false, but also a 401 due to a sign out on other device. What would be the
-  // best way for the app to know when to sign out forcefully, and when to just
-  // ignore safely and continue until next refresh?
   /// Verifies the current sign in status of the user with the server and
-  /// updates the information on the storage. Returns true if successful.
-  Future<bool> refreshAuthentication() async {
+  /// updates the authentication info, if needed. If the user authentication is
+  /// no longer valid, the user is signed out from the current device.
+  Future<bool> validateAuthentication() async {
     try {
       // TODO: Add the actual call to the authentication endpoint. Depending on
       // solving the code generation for the endpoints.
       // await updateSignedInUser(await caller.status.getUserInfo());
       return true;
-    } catch (e) {
-      return false;
+    } on ServerpodClientUnauthorized catch (_) {
+      await signOutDevice();
+    } on ServerpodClientException catch (_) {
+      // Other errors, like network errors, should not sign out the user.
     }
+    return false;
   }
 
   Future<bool> _signOut({required bool allDevices}) async {
