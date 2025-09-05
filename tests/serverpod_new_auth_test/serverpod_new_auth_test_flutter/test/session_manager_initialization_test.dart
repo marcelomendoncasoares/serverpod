@@ -95,6 +95,9 @@ void main() {
       expect(await client.auth.authHeaderValue, 'Bearer session-key');
     });
 
+    // TODO: Add tests to validate the behavior according to the alternatives
+    // of `validateAuthentication` (success, unauthorized, other error). Tests
+    // are pending on the implementation of the actual endpoint calls.
     test('when initialized again, then auth info is available.', () async {
       await client.auth.initialize();
 
