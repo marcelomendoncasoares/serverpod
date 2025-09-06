@@ -42,11 +42,6 @@ class _JwtAuthKeyProviderDelegate implements RefresherClientAuthKeyProvider {
     return wrapAsBearerAuthHeaderValue(currentAuth.token);
   }
 
-  // TODO: Add a control to only refresh once for a given key if the refresh
-  // fails. This will prevent further request from continuously try refresh
-  // when the refresh key is invalid. Now that we have the enum, we can
-  // distinguish between different failure types.
-
   /// Only performs a refresh if the token has a valid expiration time and is
   /// about to expire within the configured tolerance. Otherwise, returns skipped.
   @override
