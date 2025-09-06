@@ -19,7 +19,7 @@ void main() {
 
     test('when refresh fails then returns original auth header value.',
         () async {
-      delegate.setRefreshResult(false);
+      delegate.setRefreshResult(RefreshAuthKeyResult.failedOther);
 
       final result = await provider.authHeaderValue;
 
@@ -28,7 +28,7 @@ void main() {
     });
 
     test('when refresh succeeds then returns new auth header value.', () async {
-      delegate.setRefreshResult(true);
+      delegate.setRefreshResult(RefreshAuthKeyResult.success);
 
       final result = await provider.authHeaderValue;
 
@@ -39,20 +39,20 @@ void main() {
     test(
         'when multiple refreshAuthKey calls are made concurrently '
         'then only one call performs refresh due to locking.', () async {
-      delegate.setRefreshResult(true);
+      delegate.setRefreshResult(RefreshAuthKeyResult.success);
       delegate.setRefreshDelay(const Duration(milliseconds: 50));
 
       final futures = List.generate(3, (_) => provider.refreshAuthKey());
       final results = await Future.wait(futures);
 
-      expect(results, everyElement(true));
+      expect(results, everyElement(RefreshAuthKeyResult.success));
       expect(delegate.refreshCallCount, 1);
     });
 
     test(
         'when multiple authHeaderValue calls are made concurrently '
         'then only one call performs refresh due to locking.', () async {
-      delegate.setRefreshResult(true);
+      delegate.setRefreshResult(RefreshAuthKeyResult.success);
       delegate.setRefreshDelay(const Duration(milliseconds: 50));
 
       final futures = List.generate(3, (_) => provider.authHeaderValue);
@@ -66,7 +66,7 @@ void main() {
         'when refresh is already in progress and new call is made '
         'then it waits for existing refresh to complete and no new refresh is started.',
         () async {
-      delegate.setRefreshResult(true);
+      delegate.setRefreshResult(RefreshAuthKeyResult.success);
       delegate.setRefreshDelay(const Duration(milliseconds: 200));
 
       final firstRefresh = provider.refreshAuthKey();
@@ -75,20 +75,21 @@ void main() {
       final secondRefresh = provider.refreshAuthKey();
       final results = await Future.wait([firstRefresh, secondRefresh]);
 
-      expect(results, [true, true]);
+      expect(results, everyElement(RefreshAuthKeyResult.success));
       expect(delegate.refreshCallCount, 1);
     });
 
     test(
         'when multiple refreshAuthKey calls are made concurrently and refresh fails '
-        'then all calls return false and no new refresh is started.', () async {
-      delegate.setRefreshResult(false);
+        'then all calls return same failure and no new refresh is started.',
+        () async {
+      delegate.setRefreshResult(RefreshAuthKeyResult.failedOther);
       delegate.setRefreshDelay(const Duration(milliseconds: 50));
 
       final futures = List.generate(3, (_) => provider.refreshAuthKey());
       final results = await Future.wait(futures);
 
-      expect(results, everyElement(false));
+      expect(results, everyElement(RefreshAuthKeyResult.failedOther));
       expect(delegate.refreshCallCount, 1);
     });
 
@@ -114,13 +115,13 @@ void main() {
 
 class TestRefresherAuthKeyProvider implements RefresherClientAuthKeyProvider {
   String? _authKey;
-  bool _refreshResult = true;
+  RefreshAuthKeyResult _refreshResult = RefreshAuthKeyResult.success;
   Exception? _refreshException;
   Duration _refreshDelay = Duration.zero;
   int refreshCallCount = 0;
 
   void setAuthKey(String? key) => _authKey = key;
-  void setRefreshResult(bool result) => _refreshResult = result;
+  void setRefreshResult(RefreshAuthKeyResult result) => _refreshResult = result;
   void setRefreshException(Exception? exc) => _refreshException = exc;
   void setRefreshDelay(Duration delay) => _refreshDelay = delay;
 
@@ -128,11 +129,13 @@ class TestRefresherAuthKeyProvider implements RefresherClientAuthKeyProvider {
   Future<String?> get authHeaderValue async => _authKey;
 
   @override
-  Future<bool> refreshAuthKey() async {
+  Future<RefreshAuthKeyResult> refreshAuthKey() async {
     refreshCallCount++;
     if (_refreshDelay > Duration.zero) await Future.delayed(_refreshDelay);
     if (_refreshException != null) throw _refreshException!;
-    if (_refreshResult) _authKey = 'refreshed-token-$refreshCallCount';
+    if (_refreshResult == RefreshAuthKeyResult.success) {
+      _authKey = 'refreshed-token-$refreshCallCount';
+    }
     return _refreshResult;
   }
 }

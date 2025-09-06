@@ -77,7 +77,7 @@ class ClientAuthSessionManager implements RefresherClientAuthKeyProvider {
         authKeyProvider = JwtAuthKeyProvider(
           getAuthInfo: () async => authInfo.value,
           // TODO: Add the actual refresh endpoint call when it is implemented.
-          refreshAuthInfo: () async => true,
+          refreshAuthInfo: () async => RefreshAuthKeyResult.success,
         );
       case AuthStrategy.session:
         authKeyProvider = SasAuthKeyProvider(
@@ -98,10 +98,10 @@ class ClientAuthSessionManager implements RefresherClientAuthKeyProvider {
       authKeyProviderDelegate?.authHeaderValue;
 
   @override
-  Future<bool> refreshAuthKey() async {
+  Future<RefreshAuthKeyResult> refreshAuthKey() async {
     final authKeyProvider = authKeyProviderDelegate;
     if (authKeyProvider is! RefresherClientAuthKeyProvider) {
-      return false;
+      return RefreshAuthKeyResult.skipped;
     }
     return authKeyProvider.refreshAuthKey();
   }

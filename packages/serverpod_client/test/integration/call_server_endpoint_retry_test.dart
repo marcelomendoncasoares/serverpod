@@ -111,7 +111,7 @@ void main() {
         Response.ok(body: Body.fromString('"success"')),
       ];
 
-      authKeyProvider.setRefreshResult(true);
+      authKeyProvider.setRefreshResult(RefreshAuthKeyResult.success);
 
       final result = await client.callServerEndpoint<String>(
         'test',
@@ -133,7 +133,7 @@ void main() {
         Response.unauthorized(),
       ];
 
-      authKeyProvider.setRefreshResult(false);
+      authKeyProvider.setRefreshResult(RefreshAuthKeyResult.failedOther);
 
       await expectLater(
         client.callServerEndpoint<String>('test', 'method', {'arg': 'value'}),
@@ -153,7 +153,7 @@ void main() {
         Response.unauthorized(),
       ];
 
-      authKeyProvider.setRefreshResult(true);
+      authKeyProvider.setRefreshResult(RefreshAuthKeyResult.success);
 
       await expectLater(
         client.callServerEndpoint<String>('test', 'method', {'arg': 'value'}),

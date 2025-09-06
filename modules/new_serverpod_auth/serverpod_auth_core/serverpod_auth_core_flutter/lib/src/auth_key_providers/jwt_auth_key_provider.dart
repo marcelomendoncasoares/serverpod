@@ -11,7 +11,7 @@ class JwtAuthKeyProvider extends MutexRefresherClientAuthKeyProvider {
     required Future<AuthSuccess?> Function() getAuthInfo,
 
     /// The function to refresh the authentication info of the user.
-    required Future<bool> Function() refreshAuthInfo,
+    required Future<RefreshAuthKeyResult> Function() refreshAuthInfo,
 
     /// Tolerance to add to the token expiration time before refreshing.
     Duration refreshJwtTokenBefore = const Duration(seconds: 30),
@@ -26,7 +26,7 @@ class JwtAuthKeyProvider extends MutexRefresherClientAuthKeyProvider {
 
 class _JwtAuthKeyProviderDelegate implements RefresherClientAuthKeyProvider {
   final Future<AuthSuccess?> Function() getAuthInfo;
-  final Future<bool> Function() refreshAuthInfo;
+  final Future<RefreshAuthKeyResult> Function() refreshAuthInfo;
   final Duration refreshJwtTokenBefore;
 
   _JwtAuthKeyProviderDelegate({
@@ -44,18 +44,17 @@ class _JwtAuthKeyProviderDelegate implements RefresherClientAuthKeyProvider {
 
   // TODO: Add a control to only refresh once for a given key if the refresh
   // fails. This will prevent further request from continuously try refresh
-  // when the refresh key is invalid. For this to have a good effect, we might
-  // first change the bool return of refreshAuthKey to an enum, so we can
-  // distinguish between a failed refresh due to network error and a failed
-  // refresh due to invalid refresh key.
+  // when the refresh key is invalid. Now that we have the enum, we can
+  // distinguish between different failure types.
 
   /// Only performs a refresh if the token has a valid expiration time and is
-  /// about to expire within the configured tolerance. Otherwise, returns false.
+  /// about to expire within the configured tolerance. Otherwise, returns skipped.
   @override
-  Future<bool> refreshAuthKey() async {
+  Future<RefreshAuthKeyResult> refreshAuthKey() async {
     final currentExpiresAt = (await getAuthInfo())?.tokenExpiresAt;
-    if (currentExpiresAt == null) return false;
-    if (!currentExpiresAt.isExpiring(refreshJwtTokenBefore)) return false;
+    if (currentExpiresAt?.isExpiring(refreshJwtTokenBefore) != true) {
+      return RefreshAuthKeyResult.skipped;
+    }
     return refreshAuthInfo();
   }
 }

@@ -25,10 +25,10 @@ void main() {
       expect(result, isNull);
     });
 
-    test('when refreshing auth key then it returns false.', () async {
+    test('when refreshing auth key then it returns skipped.', () async {
       final result = await client.auth.refreshAuthKey();
 
-      expect(result, isFalse);
+      expect(result, RefreshAuthKeyResult.skipped);
     });
   });
 
@@ -61,17 +61,43 @@ void main() {
 
       expect(result, 'Bearer jwt-token');
     });
+  });
+
+  group('Given a ClientAuthSessionManager with non-expiring JWT auth info', () {
+    setUp(() async {
+      await client.auth.updateSignedInUser(_jwtAuthSuccess);
+    });
 
     test(
-        'when refreshing auth key '
-        'then it delegates to JWT provider and returns true.', () async {
+        'when refreshing auth key with non-expiring token '
+        'then it returns skipped.', () async {
       final result = await client.auth.refreshAuthKey();
 
-      expect(result, isTrue);
+      expect(result, RefreshAuthKeyResult.skipped);
     });
   });
 
-  group('Given a ClientAuthSessionManager with session auth info available', () {
+  group('Given a ClientAuthSessionManager with expiring JWT auth info', () {
+    setUp(() async {
+      await client.auth.updateSignedInUser(
+        _jwtAuthSuccess.copyWith(
+          tokenExpiresAt:
+              DateTime.now().toUtc().add(const Duration(seconds: 15)),
+        ),
+      );
+    });
+
+    test(
+        'when refreshing auth key '
+        'then it delegates to JWT provider and returns success.', () async {
+      final result = await client.auth.refreshAuthKey();
+
+      expect(result, RefreshAuthKeyResult.success);
+    });
+  });
+
+  group('Given a ClientAuthSessionManager with session auth info available',
+      () {
     setUp(() async {
       await client.auth.updateSignedInUser(_sessionAuthSuccess);
     });
@@ -103,11 +129,11 @@ void main() {
 
     test(
         'when refreshing auth key '
-        'then it returns false as session provider does not support refresh.',
+        'then it returns skipped as session provider does not support refresh.',
         () async {
       final result = await client.auth.refreshAuthKey();
 
-      expect(result, isFalse);
+      expect(result, RefreshAuthKeyResult.skipped);
     });
   });
 
@@ -149,7 +175,7 @@ void main() {
   group('Given a ClientAuthSessionManager with custom provider delegates', () {
     final customJwtProvider = JwtAuthKeyProvider(
       getAuthInfo: () async => _jwtAuthSuccess,
-      refreshAuthInfo: () async => true,
+      refreshAuthInfo: () async => RefreshAuthKeyResult.success,
     );
 
     final customSessionProvider = SasAuthKeyProvider(

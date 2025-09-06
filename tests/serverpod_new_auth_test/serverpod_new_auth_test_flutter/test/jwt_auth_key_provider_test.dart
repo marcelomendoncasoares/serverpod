@@ -4,7 +4,7 @@ import 'package:serverpod_auth_core_flutter/serverpod_auth_core_flutter.dart';
 void main() {
   late JwtAuthKeyProvider provider;
   late AuthSuccess? getAuthInfoReturn;
-  late bool refreshResult;
+  late RefreshAuthKeyResult refreshAuthInfoReturn;
   late int refreshCallCount;
 
   setUp(() {
@@ -14,7 +14,7 @@ void main() {
       getAuthInfo: () async => getAuthInfoReturn,
       refreshAuthInfo: () async {
         refreshCallCount++;
-        return refreshResult;
+        return refreshAuthInfoReturn;
       },
       refreshJwtTokenBefore: const Duration(seconds: 30),
     );
@@ -32,7 +32,7 @@ void main() {
     });
 
     group('when refreshing auth key', () {
-      late bool result;
+      late RefreshAuthKeyResult result;
 
       setUp(() async {
         result = await provider.refreshAuthKey();
@@ -42,8 +42,8 @@ void main() {
         expect(refreshCallCount, 0);
       });
 
-      test('then it returns false.', () async {
-        expect(result, isFalse);
+      test('then it returns skipped.', () async {
+        expect(result, RefreshAuthKeyResult.skipped);
       });
     });
   });
@@ -62,7 +62,7 @@ void main() {
   group(
       'Given a JwtAuthKeyProvider with auth info that has no expiration time '
       'when refreshing auth key ', () {
-    late bool result;
+    late RefreshAuthKeyResult result;
 
     setUp(() async {
       getAuthInfoReturn = _createAuthSuccess(tokenExpiresAt: null);
@@ -73,15 +73,15 @@ void main() {
       expect(refreshCallCount, 0);
     });
 
-    test('then it returns false as it does not expire.', () async {
-      expect(result, isFalse);
+    test('then it returns skipped as it does not expire.', () async {
+      expect(result, RefreshAuthKeyResult.skipped);
     });
   });
 
   group(
       'Given a JwtAuthKeyProvider with auth info that has future expiration time '
       'when refreshing auth key ', () {
-    late bool result;
+    late RefreshAuthKeyResult result;
 
     setUp(() async {
       getAuthInfoReturn = _createAuthSuccess(
@@ -94,14 +94,14 @@ void main() {
       expect(refreshCallCount, 0);
     });
 
-    test('then it returns false as it is not about to expire.', () async {
-      expect(result, isFalse);
+    test('then it returns skipped as it is not about to expire.', () async {
+      expect(result, RefreshAuthKeyResult.skipped);
     });
   });
 
   group('Given a JwtAuthKeyProvider with auth info that is about to expire',
       () {
-    late bool result;
+    late RefreshAuthKeyResult result;
 
     setUp(() {
       getAuthInfoReturn = _createAuthSuccess(
@@ -109,9 +109,9 @@ void main() {
       );
     });
 
-    group('when underlying refresh function returns false', () {
+    group('when underlying refresh function does not return success', () {
       setUp(() async {
-        refreshResult = false;
+        refreshAuthInfoReturn = RefreshAuthKeyResult.skipped;
         result = await provider.refreshAuthKey();
       });
 
@@ -119,14 +119,14 @@ void main() {
         expect(refreshCallCount, 1);
       });
 
-      test('then refreshAuthKey also returns false.', () async {
-        expect(result, isFalse);
+      test('then refreshAuthKey returns the same result.', () async {
+        expect(result, RefreshAuthKeyResult.skipped);
       });
     });
 
-    group('when underlying refresh function returns true', () {
+    group('when underlying refresh function returns success', () {
       setUp(() async {
-        refreshResult = true;
+        refreshAuthInfoReturn = RefreshAuthKeyResult.success;
         result = await provider.refreshAuthKey();
       });
 
@@ -134,8 +134,8 @@ void main() {
         expect(refreshCallCount, 1);
       });
 
-      test('then refreshAuthKey also returns true.', () async {
-        expect(result, isTrue);
+      test('then refreshAuthKey returns success.', () async {
+        expect(result, RefreshAuthKeyResult.success);
       });
     });
   });
