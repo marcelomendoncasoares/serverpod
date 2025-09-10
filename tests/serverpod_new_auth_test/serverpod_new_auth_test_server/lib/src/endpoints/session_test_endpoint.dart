@@ -20,6 +20,18 @@ class SessionTestEndpoint extends Endpoint {
     );
   }
 
+  Future<AuthSuccess> createJwt(
+    final Session session,
+    final UuidValue authUserId,
+  ) async {
+    return AuthenticationTokens.createTokens(
+      session,
+      authUserId: authUserId,
+      method: 'test',
+      scopes: {},
+    );
+  }
+
   Future<bool> checkSession(
     final Session session,
     final UuidValue authUserId,

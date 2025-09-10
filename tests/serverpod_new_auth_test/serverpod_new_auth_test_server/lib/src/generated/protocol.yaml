@@ -25,6 +25,7 @@ passwordImportingEmailAccount:
 sessionTest:
   - createTestUser:
   - createSession:
+  - createJwt:
   - checkSession:
 userProfile:
   - get:

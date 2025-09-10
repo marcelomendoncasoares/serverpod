@@ -410,6 +410,13 @@ class EndpointSessionTest extends _i1.EndpointRef {
         {'authUserId': authUserId},
       );
 
+  _i2.Future<_i5.AuthSuccess> createJwt(_i4.UuidValue authUserId) =>
+      caller.callServerEndpoint<_i5.AuthSuccess>(
+        'sessionTest',
+        'createJwt',
+        {'authUserId': authUserId},
+      );
+
   _i2.Future<bool> checkSession(_i4.UuidValue authUserId) =>
       caller.callServerEndpoint<bool>(
         'sessionTest',

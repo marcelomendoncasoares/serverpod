@@ -595,6 +595,24 @@ class Endpoints extends _i1.EndpointDispatch {
             params['authUserId'],
           ),
         ),
+        'createJwt': _i1.MethodConnector(
+          name: 'createJwt',
+          params: {
+            'authUserId': _i1.ParameterDescription(
+              name: 'authUserId',
+              type: _i1.getType<_i9.UuidValue>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['sessionTest'] as _i7.SessionTestEndpoint).createJwt(
+            session,
+            params['authUserId'],
+          ),
+        ),
         'checkSession': _i1.MethodConnector(
           name: 'checkSession',
           params: {
