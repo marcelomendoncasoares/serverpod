@@ -4,6 +4,11 @@ import 'package:serverpod_auth_core_server/session.dart';
 
 import '../google.dart';
 
+// TODO: As this class is abstract, it will generate a corresponding abstract
+// class on the client without method bodies to work as an interface. This
+// interface will be subclassed by any endpoint class that subclasses the
+// abstract base class.
+
 /// Base endpoint for Google Account-based authentication.
 abstract class GoogleAccountBaseEndpoint extends Endpoint {
   static const String _method = 'google';
