@@ -180,15 +180,33 @@ class EndpointFirebase extends _i1.EndpointRef {
       );
 }
 
+/// TODO: This is what the generated code should look like if [EndpointGoogle]
+/// was defined as an abstract endpoint class.
+abstract class BaseEndpointGoogle extends _i1.EndpointRef {
+  BaseEndpointGoogle(_i1.EndpointCaller caller) : super(caller);
+
+  /// Authenticates a user with Google using the serverAuthCode.
+  _i2.Future<_i4.AuthenticationResponse> authenticateWithServerAuthCode(
+    String authenticationCode,
+    String? redirectUri,
+  );
+
+  /// Authenticates a user using an id token.
+  _i2.Future<_i4.AuthenticationResponse> authenticateWithIdToken(
+      String idToken);
+}
+
+/// TODO: This is what an [EndpointGoogle] class would look like after extending
+/// the abstract [BaseEndpointGoogle] endpoint class.
 /// Endpoint for handling Sign in with Google.
 /// {@category Endpoint}
-class EndpointGoogle extends _i1.EndpointRef {
+class EndpointGoogle extends BaseEndpointGoogle {
   EndpointGoogle(_i1.EndpointCaller caller) : super(caller);
 
   @override
   String get name => 'serverpod_auth.google';
 
-  /// Authenticates a user with Google using the serverAuthCode.
+  @override
   _i2.Future<_i4.AuthenticationResponse> authenticateWithServerAuthCode(
     String authenticationCode,
     String? redirectUri,
@@ -202,7 +220,7 @@ class EndpointGoogle extends _i1.EndpointRef {
         },
       );
 
-  /// Authenticates a user using an id token.
+  @override
   _i2.Future<_i4.AuthenticationResponse> authenticateWithIdToken(
           String idToken) =>
       caller.callServerEndpoint<_i4.AuthenticationResponse>(
