@@ -554,7 +554,10 @@ class SerializableModelLibraryGenerator {
                 classDefinition.tableName,
                 setAsToThis: false,
                 subDirParts: classDefinition.subDirParts,
-                inheritedFields: classDefinition.inheritedFields,
+                inheritedFields: [
+                  if (classDefinition.isIdInherited) classDefinition.idField,
+                  ...classDefinition.inheritedFields
+                ],
               ),
             )
             ..optionalParameters.addAll(hiddenFields.map((field) {
