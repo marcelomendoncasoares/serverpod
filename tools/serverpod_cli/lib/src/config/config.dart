@@ -14,6 +14,7 @@ import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
 import '../generator/types.dart';
+import 'extra_classes_collector.dart';
 
 /// The type of the package.
 enum PackageType {
@@ -351,12 +352,35 @@ class GeneratorConfig implements ModelLoadConfig {
     if (configExtraClasses != null) {
       try {
         for (var extraClassConfig in configExtraClasses) {
-          extraClasses.add(
-            parseType(
-              extraClassConfig,
-              extraClasses: null,
-            ),
-          );
+          String configString = extraClassConfig.toString();
+
+          // Check if it's a wildcard pattern
+          if (configString.endsWith(':*') || !configString.contains(':')) {
+            // Extract library path
+            String libraryPath = configString.endsWith(':*')
+                ? configString.substring(0, configString.length - 2)
+                : configString;
+
+            // Get all types from the specified library
+            var discoveredTypes = await discoverTypesFromLibrary(libraryPath);
+
+            for (var typeSpec in discoveredTypes) {
+              extraClasses.add(
+                parseType(
+                  typeSpec,
+                  extraClasses: null,
+                ),
+              );
+            }
+          } else {
+            // Handle individual class specification as before
+            extraClasses.add(
+              parseType(
+                extraClassConfig,
+                extraClasses: null,
+              ),
+            );
+          }
         }
       } on SourceSpanException catch (_) {
         rethrow;
