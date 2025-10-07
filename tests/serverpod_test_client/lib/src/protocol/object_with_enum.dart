@@ -82,6 +82,7 @@ abstract class ObjectWithEnum implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'ObjectWithEnum',
       if (id != null) 'id': id,
       'testEnum': testEnum.toJson(),
       if (nullableEnum != null) 'nullableEnum': nullableEnum?.toJson(),

@@ -66,6 +66,7 @@ abstract class ModelWithRequiredField
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'ModelWithRequiredField',
       if (id != null) 'id': id,
       'name': name,
       if (email != null) 'email': email,
@@ -76,6 +77,7 @@ abstract class ModelWithRequiredField
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'ModelWithRequiredField',
       if (id != null) 'id': id,
       'name': name,
       if (email != null) 'email': email,

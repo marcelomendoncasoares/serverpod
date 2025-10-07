@@ -15,6 +15,7 @@
 import 'package:serverpod/serverpod.dart' as _i1;
 import '../../models_with_relations/one_to_many/customer.dart' as _i2;
 import '../../models_with_relations/one_to_many/comment.dart' as _i3;
+import '../../protocol.dart' as _i4;
 
 abstract class Order implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   Order._({
@@ -40,11 +41,12 @@ abstract class Order implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       customerId: jsonSerialization['customerId'] as int,
       customer: jsonSerialization['customer'] == null
           ? null
-          : _i2.Customer.fromJson(
-              (jsonSerialization['customer'] as Map<String, dynamic>)),
-      comments: (jsonSerialization['comments'] as List?)
-          ?.map((e) => _i3.Comment.fromJson((e as Map<String, dynamic>)))
-          .toList(),
+          : _i4.Protocol()
+              .deserialize<_i2.Customer>(jsonSerialization['customer']),
+      comments: jsonSerialization['comments'] == null
+          ? null
+          : _i4.Protocol()
+              .deserialize<List<_i3.Comment>>(jsonSerialization['comments']),
     );
   }
 
@@ -79,6 +81,7 @@ abstract class Order implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'Order',
       if (id != null) 'id': id,
       'description': description,
       'customerId': customerId,
@@ -91,6 +94,7 @@ abstract class Order implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'Order',
       if (id != null) 'id': id,
       'description': description,
       'customerId': customerId,

@@ -96,6 +96,7 @@ abstract class UuidDefaultModel
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'UuidDefaultModel',
       if (id != null) 'id': id,
       'uuidDefaultModelRandom': uuidDefaultModelRandom.toJson(),
       'uuidDefaultModelRandomV7': uuidDefaultModelRandomV7.toJson(),
@@ -110,6 +111,7 @@ abstract class UuidDefaultModel
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'UuidDefaultModel',
       if (id != null) 'id': id,
       'uuidDefaultModelRandom': uuidDefaultModelRandom.toJson(),
       'uuidDefaultModelRandomV7': uuidDefaultModelRandomV7.toJson(),

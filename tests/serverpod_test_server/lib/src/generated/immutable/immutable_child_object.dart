@@ -76,6 +76,7 @@ abstract class ImmutableChildObject extends _i2.ImmutableObject
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'ImmutableChildObject',
       'variable': variable,
       'childVariable': childVariable,
     };
@@ -84,6 +85,7 @@ abstract class ImmutableChildObject extends _i2.ImmutableObject
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'ImmutableChildObject',
       'variable': variable,
       'childVariable': childVariable,
     };

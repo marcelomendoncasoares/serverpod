@@ -74,6 +74,7 @@ abstract class DateTimeDefaultMix
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'DateTimeDefaultMix',
       if (id != null) 'id': id,
       'dateTimeDefaultAndDefaultModel': dateTimeDefaultAndDefaultModel.toJson(),
       'dateTimeDefaultAndDefaultPersist':
@@ -86,6 +87,7 @@ abstract class DateTimeDefaultMix
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'DateTimeDefaultMix',
       if (id != null) 'id': id,
       'dateTimeDefaultAndDefaultModel': dateTimeDefaultAndDefaultModel.toJson(),
       'dateTimeDefaultAndDefaultPersist':

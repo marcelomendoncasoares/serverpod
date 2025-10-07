@@ -58,12 +58,18 @@ abstract class ImmutableObjectWithList
 
   @override
   Map<String, dynamic> toJson() {
-    return {'listVariable': listVariable.toJson()};
+    return {
+      '__className__': 'ImmutableObjectWithList',
+      'listVariable': listVariable.toJson(),
+    };
   }
 
   @override
   Map<String, dynamic> toJsonForProtocol() {
-    return {'listVariable': listVariable.toJson()};
+    return {
+      '__className__': 'ImmutableObjectWithList',
+      'listVariable': listVariable.toJson(),
+    };
   }
 
   @override

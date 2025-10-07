@@ -36,16 +36,16 @@ abstract class ScopeServerOnlyFieldChild extends _i1.ScopeServerOnlyField
     return ScopeServerOnlyFieldChild(
       allScope: jsonSerialization['allScope'] == null
           ? null
-          : _i3.Types.fromJson(
-              (jsonSerialization['allScope'] as Map<String, dynamic>)),
+          : _i1.Protocol()
+              .deserialize<_i3.Types>(jsonSerialization['allScope']),
       serverOnlyScope: jsonSerialization['serverOnlyScope'] == null
           ? null
-          : _i3.Types.fromJson(
-              (jsonSerialization['serverOnlyScope'] as Map<String, dynamic>)),
+          : _i1.Protocol()
+              .deserialize<_i3.Types>(jsonSerialization['serverOnlyScope']),
       nested: jsonSerialization['nested'] == null
           ? null
-          : _i4.ScopeServerOnlyField.fromJson(
-              (jsonSerialization['nested'] as Map<String, dynamic>)),
+          : _i1.Protocol().deserialize<_i4.ScopeServerOnlyField>(
+              jsonSerialization['nested']),
       childFoo: jsonSerialization['childFoo'] as String,
     );
   }
@@ -65,6 +65,7 @@ abstract class ScopeServerOnlyFieldChild extends _i1.ScopeServerOnlyField
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'ScopeServerOnlyFieldChild',
       if (allScope != null) 'allScope': allScope?.toJson(),
       if (serverOnlyScope != null) 'serverOnlyScope': serverOnlyScope?.toJson(),
       if (nested != null) 'nested': nested?.toJson(),
@@ -75,6 +76,7 @@ abstract class ScopeServerOnlyFieldChild extends _i1.ScopeServerOnlyField
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'ScopeServerOnlyFieldChild',
       if (allScope != null) 'allScope': allScope?.toJsonForProtocol(),
       if (nested != null) 'nested': nested?.toJsonForProtocol(),
       'childFoo': childFoo,

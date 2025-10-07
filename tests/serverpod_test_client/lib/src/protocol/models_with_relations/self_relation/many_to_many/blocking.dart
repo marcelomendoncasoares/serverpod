@@ -13,6 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../models_with_relations/self_relation/many_to_many/member.dart'
     as _i2;
+import '../../../protocol.dart' as _i3;
 
 abstract class Blocking implements _i1.SerializableModel {
   Blocking._({
@@ -37,13 +38,13 @@ abstract class Blocking implements _i1.SerializableModel {
       blockedId: jsonSerialization['blockedId'] as int,
       blocked: jsonSerialization['blocked'] == null
           ? null
-          : _i2.Member.fromJson(
-              (jsonSerialization['blocked'] as Map<String, dynamic>)),
+          : _i3.Protocol()
+              .deserialize<_i2.Member>(jsonSerialization['blocked']),
       blockedById: jsonSerialization['blockedById'] as int,
       blockedBy: jsonSerialization['blockedBy'] == null
           ? null
-          : _i2.Member.fromJson(
-              (jsonSerialization['blockedBy'] as Map<String, dynamic>)),
+          : _i3.Protocol()
+              .deserialize<_i2.Member>(jsonSerialization['blockedBy']),
     );
   }
 
@@ -73,6 +74,7 @@ abstract class Blocking implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'Blocking',
       if (id != null) 'id': id,
       'blockedId': blockedId,
       if (blocked != null) 'blocked': blocked?.toJson(),

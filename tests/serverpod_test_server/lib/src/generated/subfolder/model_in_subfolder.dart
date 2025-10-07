@@ -15,7 +15,8 @@ import '../nullability.dart' as _i2;
 import '../test_enum_stringified.dart' as _i3;
 import 'package:serverpod_test_module_server/serverpod_test_module_server.dart'
     as _i4;
-import 'package:serverpod_test_server/src/generated/protocol.dart' as _i5;
+import '../protocol.dart' as _i5;
+import 'package:serverpod_test_server/src/generated/protocol.dart' as _i6;
 
 abstract class ModelInSubfolder
     implements _i1.SerializableModel, _i1.ProtocolSerialization {
@@ -51,8 +52,8 @@ abstract class ModelInSubfolder
     return ModelInSubfolder(
       classField: jsonSerialization['classField'] == null
           ? null
-          : _i2.Nullability.fromJson(
-              (jsonSerialization['classField'] as Map<String, dynamic>)),
+          : _i5.Protocol()
+              .deserialize<_i2.Nullability>(jsonSerialization['classField']),
       enumField: jsonSerialization['enumField'] == null
           ? null
           : _i3.TestEnumStringified.fromJson(
@@ -62,42 +63,42 @@ abstract class ModelInSubfolder
           .toList(),
       enumRecordField: jsonSerialization['enumRecordField'] == null
           ? null
-          : _i5.Protocol().deserialize<(_i3.TestEnumStringified,)?>(
+          : _i6.Protocol().deserialize<(_i3.TestEnumStringified,)?>(
               (jsonSerialization['enumRecordField'] as Map<String, dynamic>)),
       enumRecordListField: (jsonSerialization['enumRecordListField'] as List?)
-          ?.map((e) => _i5.Protocol().deserialize<(_i3.TestEnumStringified,)>(
+          ?.map((e) => _i6.Protocol().deserialize<(_i3.TestEnumStringified,)>(
               (e as Map<String, dynamic>)))
           .toList(),
       moduleClassRecordField:
           jsonSerialization['moduleClassRecordField'] == null
               ? null
-              : _i5.Protocol().deserialize<(_i4.ModuleClass,)?>(
+              : _i6.Protocol().deserialize<(_i4.ModuleClass,)?>(
                   (jsonSerialization['moduleClassRecordField']
                       as Map<String, dynamic>)),
       classRecordField: jsonSerialization['classRecordField'] == null
           ? null
-          : _i5.Protocol().deserialize<(_i2.Nullability,)?>(
+          : _i6.Protocol().deserialize<(_i2.Nullability,)?>(
               (jsonSerialization['classRecordField'] as Map<String, dynamic>)),
       enumNamedRecordField: jsonSerialization['enumNamedRecordField'] == null
           ? null
-          : _i5.Protocol().deserialize<({_i3.TestEnumStringified value})?>(
+          : _i6.Protocol().deserialize<({_i3.TestEnumStringified value})?>(
               (jsonSerialization['enumNamedRecordField']
                   as Map<String, dynamic>)),
       enumNamedRecordListField:
           (jsonSerialization['enumNamedRecordListField'] as List?)
-              ?.map((e) => _i5.Protocol()
+              ?.map((e) => _i6.Protocol()
                   .deserialize<({_i3.TestEnumStringified value})>(
                       (e as Map<String, dynamic>)))
               .toList(),
       moduleClassNamedRecordField:
           jsonSerialization['moduleClassNamedRecordField'] == null
               ? null
-              : _i5.Protocol().deserialize<({_i4.ModuleClass value})?>(
+              : _i6.Protocol().deserialize<({_i4.ModuleClass value})?>(
                   (jsonSerialization['moduleClassNamedRecordField']
                       as Map<String, dynamic>)),
       classNamedRecordField: jsonSerialization['classNamedRecordField'] == null
           ? null
-          : _i5.Protocol().deserialize<({_i2.Nullability value})?>(
+          : _i6.Protocol().deserialize<({_i2.Nullability value})?>(
               (jsonSerialization['classNamedRecordField']
                   as Map<String, dynamic>)),
     );
@@ -144,56 +145,58 @@ abstract class ModelInSubfolder
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'ModelInSubfolder',
       if (classField != null) 'classField': classField?.toJson(),
       if (enumField != null) 'enumField': enumField?.toJson(),
       if (enumListField != null)
         'enumListField': enumListField?.toJson(valueToJson: (v) => v.toJson()),
       if (enumRecordField != null)
-        'enumRecordField': _i5.mapRecordToJson(enumRecordField),
+        'enumRecordField': _i6.mapRecordToJson(enumRecordField),
       if (enumRecordListField != null)
-        'enumRecordListField': _i5.mapContainerToJson(enumRecordListField!),
+        'enumRecordListField': _i6.mapContainerToJson(enumRecordListField!),
       if (moduleClassRecordField != null)
-        'moduleClassRecordField': _i5.mapRecordToJson(moduleClassRecordField),
+        'moduleClassRecordField': _i6.mapRecordToJson(moduleClassRecordField),
       if (classRecordField != null)
-        'classRecordField': _i5.mapRecordToJson(classRecordField),
+        'classRecordField': _i6.mapRecordToJson(classRecordField),
       if (enumNamedRecordField != null)
-        'enumNamedRecordField': _i5.mapRecordToJson(enumNamedRecordField),
+        'enumNamedRecordField': _i6.mapRecordToJson(enumNamedRecordField),
       if (enumNamedRecordListField != null)
         'enumNamedRecordListField':
-            _i5.mapContainerToJson(enumNamedRecordListField!),
+            _i6.mapContainerToJson(enumNamedRecordListField!),
       if (moduleClassNamedRecordField != null)
         'moduleClassNamedRecordField':
-            _i5.mapRecordToJson(moduleClassNamedRecordField),
+            _i6.mapRecordToJson(moduleClassNamedRecordField),
       if (classNamedRecordField != null)
-        'classNamedRecordField': _i5.mapRecordToJson(classNamedRecordField),
+        'classNamedRecordField': _i6.mapRecordToJson(classNamedRecordField),
     };
   }
 
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'ModelInSubfolder',
       if (classField != null) 'classField': classField?.toJsonForProtocol(),
       if (enumField != null) 'enumField': enumField?.toJson(),
       if (enumListField != null)
         'enumListField': enumListField?.toJson(valueToJson: (v) => v.toJson()),
       if (enumRecordField != null)
-        'enumRecordField': _i5.mapRecordToJson(enumRecordField),
+        'enumRecordField': _i6.mapRecordToJson(enumRecordField),
       if (enumRecordListField != null)
-        'enumRecordListField': _i5.mapContainerToJson(enumRecordListField!),
+        'enumRecordListField': _i6.mapContainerToJson(enumRecordListField!),
       if (moduleClassRecordField != null)
-        'moduleClassRecordField': _i5.mapRecordToJson(moduleClassRecordField),
+        'moduleClassRecordField': _i6.mapRecordToJson(moduleClassRecordField),
       if (classRecordField != null)
-        'classRecordField': _i5.mapRecordToJson(classRecordField),
+        'classRecordField': _i6.mapRecordToJson(classRecordField),
       if (enumNamedRecordField != null)
-        'enumNamedRecordField': _i5.mapRecordToJson(enumNamedRecordField),
+        'enumNamedRecordField': _i6.mapRecordToJson(enumNamedRecordField),
       if (enumNamedRecordListField != null)
         'enumNamedRecordListField':
-            _i5.mapContainerToJson(enumNamedRecordListField!),
+            _i6.mapContainerToJson(enumNamedRecordListField!),
       if (moduleClassNamedRecordField != null)
         'moduleClassNamedRecordField':
-            _i5.mapRecordToJson(moduleClassNamedRecordField),
+            _i6.mapRecordToJson(moduleClassNamedRecordField),
       if (classNamedRecordField != null)
-        'classNamedRecordField': _i5.mapRecordToJson(classNamedRecordField),
+        'classNamedRecordField': _i6.mapRecordToJson(classNamedRecordField),
     };
   }
 

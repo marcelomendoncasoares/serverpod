@@ -66,6 +66,7 @@ abstract class BigIntDefault
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'BigIntDefault',
       if (id != null) 'id': id,
       'bigintDefaultStr': bigintDefaultStr.toJson(),
       if (bigintDefaultStrNull != null)
@@ -76,6 +77,7 @@ abstract class BigIntDefault
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'BigIntDefault',
       if (id != null) 'id': id,
       'bigintDefaultStr': bigintDefaultStr.toJson(),
       if (bigintDefaultStrNull != null)

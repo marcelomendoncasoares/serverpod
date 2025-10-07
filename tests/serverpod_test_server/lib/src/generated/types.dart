@@ -205,6 +205,7 @@ abstract class Types implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'Types',
       if (id != null) 'id': id,
       if (anInt != null) 'anInt': anInt,
       if (aBool != null) 'aBool': aBool,
@@ -233,6 +234,7 @@ abstract class Types implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'Types',
       if (id != null) 'id': id,
       if (anInt != null) 'anInt': anInt,
       if (aBool != null) 'aBool': aBool,

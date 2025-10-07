@@ -12,6 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
 import 'simple_data.dart' as _i2;
+import 'protocol.dart' as _i3;
 
 abstract class ObjectWithObject
     implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
@@ -44,59 +45,42 @@ abstract class ObjectWithObject
   factory ObjectWithObject.fromJson(Map<String, dynamic> jsonSerialization) {
     return ObjectWithObject(
       id: jsonSerialization['id'] as int?,
-      data: _i2.SimpleData.fromJson(
-          (jsonSerialization['data'] as Map<String, dynamic>)),
+      data:
+          _i3.Protocol().deserialize<_i2.SimpleData>(jsonSerialization['data']),
       nullableData: jsonSerialization['nullableData'] == null
           ? null
-          : _i2.SimpleData.fromJson(
-              (jsonSerialization['nullableData'] as Map<String, dynamic>)),
-      dataList: (jsonSerialization['dataList'] as List)
-          .map((e) => _i2.SimpleData.fromJson((e as Map<String, dynamic>)))
-          .toList(),
-      nullableDataList: (jsonSerialization['nullableDataList'] as List?)
-          ?.map((e) => _i2.SimpleData.fromJson((e as Map<String, dynamic>)))
-          .toList(),
-      listWithNullableData: (jsonSerialization['listWithNullableData'] as List)
-          .map((e) => e == null
-              ? null
-              : _i2.SimpleData.fromJson((e as Map<String, dynamic>)))
-          .toList(),
+          : _i3.Protocol()
+              .deserialize<_i2.SimpleData>(jsonSerialization['nullableData']),
+      dataList: _i3.Protocol()
+          .deserialize<List<_i2.SimpleData>>(jsonSerialization['dataList']),
+      nullableDataList: jsonSerialization['nullableDataList'] == null
+          ? null
+          : _i3.Protocol().deserialize<List<_i2.SimpleData>>(
+              jsonSerialization['nullableDataList']),
+      listWithNullableData: _i3.Protocol().deserialize<List<_i2.SimpleData?>>(
+          jsonSerialization['listWithNullableData']),
       nullableListWithNullableData:
-          (jsonSerialization['nullableListWithNullableData'] as List?)
-              ?.map((e) => e == null
-                  ? null
-                  : _i2.SimpleData.fromJson((e as Map<String, dynamic>)))
-              .toList(),
+          jsonSerialization['nullableListWithNullableData'] == null
+              ? null
+              : _i3.Protocol().deserialize<List<_i2.SimpleData?>>(
+                  jsonSerialization['nullableListWithNullableData']),
       nestedDataList: (jsonSerialization['nestedDataList'] as List?)
-          ?.map((e) => (e as List)
-              .map((e) => _i2.SimpleData.fromJson((e as Map<String, dynamic>)))
-              .toList())
+          ?.map((e) => _i3.Protocol().deserialize<List<_i2.SimpleData>>(e))
           .toList(),
       nestedDataListInMap: (jsonSerialization['nestedDataListInMap'] as Map?)
           ?.map((k, v) => MapEntry(
                 k as String,
                 (v as List)
                     .map((e) => (e as List?)
-                        ?.map((e) => (e as List).fold<Map<int, _i2.SimpleData>>(
-                            {},
-                            (t, e) => {
-                                  ...t,
-                                  e['k'] as int: _i2.SimpleData.fromJson(
-                                      (e['v'] as Map<String, dynamic>))
-                                }))
+                        ?.map((e) => _i3.Protocol()
+                            .deserialize<Map<int, _i2.SimpleData>>(e))
                         .toList())
                     .toList(),
               )),
       nestedDataMap:
           (jsonSerialization['nestedDataMap'] as Map?)?.map((k, v) => MapEntry(
                 k as String,
-                (v as List).fold<Map<int, _i2.SimpleData>>(
-                    {},
-                    (t, e) => {
-                          ...t,
-                          e['k'] as int: _i2.SimpleData.fromJson(
-                              (e['v'] as Map<String, dynamic>))
-                        }),
+                _i3.Protocol().deserialize<Map<int, _i2.SimpleData>>(v),
               )),
     );
   }
@@ -147,6 +131,7 @@ abstract class ObjectWithObject
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'ObjectWithObject',
       if (id != null) 'id': id,
       'data': data.toJson(),
       if (nullableData != null) 'nullableData': nullableData?.toJson(),
@@ -177,6 +162,7 @@ abstract class ObjectWithObject
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'ObjectWithObject',
       if (id != null) 'id': id,
       'data': data.toJsonForProtocol(),
       if (nullableData != null)

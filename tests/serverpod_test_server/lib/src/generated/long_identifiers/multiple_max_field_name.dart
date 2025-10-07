@@ -74,6 +74,7 @@ abstract class MultipleMaxFieldName
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'MultipleMaxFieldName',
       if (id != null) 'id': id,
       'thisFieldIsExactly61CharactersLongAndIsThereforeValidAsNames1':
           thisFieldIsExactly61CharactersLongAndIsThereforeValidAsNames1,
@@ -89,6 +90,7 @@ abstract class MultipleMaxFieldName
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'MultipleMaxFieldName',
       if (id != null) 'id': id,
       'thisFieldIsExactly61CharactersLongAndIsThereforeValidAsNames1':
           thisFieldIsExactly61CharactersLongAndIsThereforeValidAsNames1,

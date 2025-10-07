@@ -15,7 +15,8 @@ import 'dart:typed_data' as _i2;
 import 'test_enum.dart' as _i3;
 import 'test_enum_stringified.dart' as _i4;
 import 'types.dart' as _i5;
-import 'package:serverpod_test_server/src/generated/protocol.dart' as _i6;
+import 'protocol.dart' as _i6;
+import 'package:serverpod_test_server/src/generated/protocol.dart' as _i7;
 
 abstract class TypesSet
     implements _i1.SerializableModel, _i1.ProtocolSerialization {
@@ -113,28 +114,23 @@ abstract class TypesSet
                   _i4.TestEnumStringified.fromJson((e as String))),
       anObject: jsonSerialization['anObject'] == null
           ? null
-          : _i1.SetJsonExtension.fromJson(
-              (jsonSerialization['anObject'] as List),
-              itemFromJson: (e) =>
-                  _i5.Types.fromJson((e as Map<String, dynamic>))),
+          : _i6.Protocol()
+              .deserialize<Set<_i5.Types>>(jsonSerialization['anObject']),
       aMap: jsonSerialization['aMap'] == null
           ? null
           : _i1.SetJsonExtension.fromJson((jsonSerialization['aMap'] as List),
-              itemFromJson: (e) => (e as Map).map((k, v) => MapEntry(
-                    k as String,
-                    _i5.Types.fromJson((v as Map<String, dynamic>)),
-                  ))),
+              itemFromJson: (e) =>
+                  _i6.Protocol().deserialize<Map<String, _i5.Types>>(e)),
       aList: jsonSerialization['aList'] == null
           ? null
           : _i1.SetJsonExtension.fromJson((jsonSerialization['aList'] as List),
-              itemFromJson: (e) => (e as List)
-                  .map((e) => _i5.Types.fromJson((e as Map<String, dynamic>)))
-                  .toList()),
+              itemFromJson: (e) =>
+                  _i6.Protocol().deserialize<List<_i5.Types>>(e)),
       aRecord: jsonSerialization['aRecord'] == null
           ? null
           : _i1.SetJsonExtension.fromJson(
               (jsonSerialization['aRecord'] as List),
-              itemFromJson: (e) => _i6.Protocol()
+              itemFromJson: (e) => _i7.Protocol()
                   .deserialize<(int,)>((e as Map<String, dynamic>))),
       aNullableRecord: jsonSerialization['aNullableRecord'] == null
           ? null
@@ -142,7 +138,7 @@ abstract class TypesSet
               (jsonSerialization['aNullableRecord'] as List),
               itemFromJson: (e) => e == null
                   ? null
-                  : _i6.Protocol()
+                  : _i7.Protocol()
                       .deserialize<(int,)?>((e as Map<String, dynamic>))),
     );
   }
@@ -203,6 +199,7 @@ abstract class TypesSet
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'TypesSet',
       if (anInt != null) 'anInt': anInt?.toJson(),
       if (aBool != null) 'aBool': aBool?.toJson(),
       if (aDouble != null) 'aDouble': aDouble?.toJson(),
@@ -229,15 +226,16 @@ abstract class TypesSet
       if (aList != null)
         'aList': aList?.toJson(
             valueToJson: (v) => v.toJson(valueToJson: (v) => v.toJson())),
-      if (aRecord != null) 'aRecord': _i6.mapContainerToJson(aRecord!),
+      if (aRecord != null) 'aRecord': _i7.mapContainerToJson(aRecord!),
       if (aNullableRecord != null)
-        'aNullableRecord': _i6.mapContainerToJson(aNullableRecord!),
+        'aNullableRecord': _i7.mapContainerToJson(aNullableRecord!),
     };
   }
 
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'TypesSet',
       if (anInt != null) 'anInt': anInt?.toJson(),
       if (aBool != null) 'aBool': aBool?.toJson(),
       if (aDouble != null) 'aDouble': aDouble?.toJson(),
@@ -266,9 +264,9 @@ abstract class TypesSet
         'aList': aList?.toJson(
             valueToJson: (v) =>
                 v.toJson(valueToJson: (v) => v.toJsonForProtocol())),
-      if (aRecord != null) 'aRecord': _i6.mapContainerToJson(aRecord!),
+      if (aRecord != null) 'aRecord': _i7.mapContainerToJson(aRecord!),
       if (aNullableRecord != null)
-        'aNullableRecord': _i6.mapContainerToJson(aNullableRecord!),
+        'aNullableRecord': _i7.mapContainerToJson(aNullableRecord!),
     };
   }
 

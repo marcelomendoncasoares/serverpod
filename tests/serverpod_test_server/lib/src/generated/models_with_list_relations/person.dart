@@ -14,6 +14,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
 import '../models_with_list_relations/organization.dart' as _i2;
+import '../protocol.dart' as _i3;
 
 abstract class Person implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   Person._({
@@ -37,8 +38,8 @@ abstract class Person implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       organizationId: jsonSerialization['organizationId'] as int?,
       organization: jsonSerialization['organization'] == null
           ? null
-          : _i2.Organization.fromJson(
-              (jsonSerialization['organization'] as Map<String, dynamic>)),
+          : _i3.Protocol()
+              .deserialize<_i2.Organization>(jsonSerialization['organization']),
       $_cityCitizensCityId: jsonSerialization['_cityCitizensCityId'] as int?,
     );
   }
@@ -73,6 +74,7 @@ abstract class Person implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'Person',
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
@@ -85,6 +87,7 @@ abstract class Person implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'Person',
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,

@@ -1,0 +1,407 @@
+commit 3a328fec65e8f7412a752f54e9080f23da784758
+Author: Marcelo Soares <marcelo.me.soares@gmail.com>
+Date:   Sat Aug 16 22:02:50 2025 -0300
+
+    Modify generated files to fix the broken tests
+
+diff --git a/serverpod_inheritance_client/lib/src/protocol/inheritance/child.dart b/serverpod_inheritance_client/lib/src/protocol/inheritance/child.dart
+index fa3419b..d061ef3 100644
+--- a/serverpod_inheritance_client/lib/src/protocol/inheritance/child.dart
++++ b/serverpod_inheritance_client/lib/src/protocol/inheritance/child.dart
+@@ -46,6 +46,7 @@ class Child extends _i1.Parent implements _i2.SerializableModel {
+   @override
+   Map<String, dynamic> toJson() {
+     return {
++      '__className__': 'Child',
+       'parent': parent,
+       'child': child,
+     };
+diff --git a/serverpod_inheritance_client/lib/src/protocol/inheritance/container.dart b/serverpod_inheritance_client/lib/src/protocol/inheritance/container.dart
+index 8a24a54..588c680 100644
+--- a/serverpod_inheritance_client/lib/src/protocol/inheritance/container.dart
++++ b/serverpod_inheritance_client/lib/src/protocol/inheritance/container.dart
+@@ -12,6 +12,7 @@
+ // ignore_for_file: no_leading_underscores_for_library_prefixes
+ import 'package:serverpod_client/serverpod_client.dart' as _i1;
+ import '../inheritance/child.dart' as _i2;
++import '../protocol.dart' as _i3;
+
+ /// A class that holds child objects.
+ abstract class Container implements _i1.SerializableModel {
+@@ -28,17 +29,14 @@ abstract class Container implements _i1.SerializableModel {
+   }) = _ContainerImpl;
+
+   factory Container.fromJson(Map<String, dynamic> jsonSerialization) {
++    // TODO: All deserializations must use the protocol to avoid loosing the type.
++    // We can even leverage the existing match for List and Map.
+     return Container(
+-      child: _i2.Child.fromJson(
+-          (jsonSerialization['child'] as Map<String, dynamic>)),
+-      childrenList: (jsonSerialization['childrenList'] as List)
+-          .map((e) => _i2.Child.fromJson((e as Map<String, dynamic>)))
+-          .toList(),
+-      childrenMap:
+-          (jsonSerialization['childrenMap'] as Map).map((k, v) => MapEntry(
+-                k as String,
+-                _i2.Child.fromJson((v as Map<String, dynamic>)),
+-              )),
++      child: _i3.Protocol().deserialize<_i2.Child>(jsonSerialization['child']),
++      childrenList: _i3.Protocol()
++          .deserialize<List<_i2.Child>>(jsonSerialization['childrenList']),
++      childrenMap: _i3.Protocol().deserialize<Map<String, _i2.Child>>(
++          jsonSerialization['childrenMap']),
+     );
+   }
+
+@@ -62,6 +60,7 @@ abstract class Container implements _i1.SerializableModel {
+   @override
+   Map<String, dynamic> toJson() {
+     return {
++      '__className__': 'Container',
+       'child': child.toJson(),
+       'childrenList': childrenList.toJson(valueToJson: (v) => v.toJson()),
+       'childrenMap': childrenMap.toJson(valueToJson: (v) => v.toJson()),
+diff --git a/serverpod_inheritance_client/lib/src/protocol/inheritance/grandchild.dart b/serverpod_inheritance_client/lib/src/protocol/inheritance/grandchild.dart
+index 17a4dd2..00228fa 100644
+--- a/serverpod_inheritance_client/lib/src/protocol/inheritance/grandchild.dart
++++ b/serverpod_inheritance_client/lib/src/protocol/inheritance/grandchild.dart
+@@ -50,6 +50,7 @@ abstract class GrandChild extends _i1.Child implements _i2.SerializableModel {
+   @override
+   Map<String, dynamic> toJson() {
+     return {
++      '__className__': 'GrandChild',
+       'parent': parent,
+       'child': child,
+       'grandchild': grandchild,
+diff --git a/serverpod_inheritance_client/lib/src/protocol/inheritance/other.dart b/serverpod_inheritance_client/lib/src/protocol/inheritance/other.dart
+index c1df197..3d5d69c 100644
+--- a/serverpod_inheritance_client/lib/src/protocol/inheritance/other.dart
++++ b/serverpod_inheritance_client/lib/src/protocol/inheritance/other.dart
+@@ -31,7 +31,7 @@ abstract class Other implements _i1.SerializableModel {
+   Other copyWith({String? parent});
+   @override
+   Map<String, dynamic> toJson() {
+-    return {'parent': parent};
++    return {'__className__': 'Other', 'parent': parent};
+   }
+
+   @override
+diff --git a/serverpod_inheritance_client/lib/src/protocol/inheritance/parent.dart b/serverpod_inheritance_client/lib/src/protocol/inheritance/parent.dart
+index cb273da..7195bd2 100644
+--- a/serverpod_inheritance_client/lib/src/protocol/inheritance/parent.dart
++++ b/serverpod_inheritance_client/lib/src/protocol/inheritance/parent.dart
+@@ -32,7 +32,7 @@ class Parent implements _i1.SerializableModel {
+
+   @override
+   Map<String, dynamic> toJson() {
+-    return {'parent': parent};
++    return {'__className__': 'Parent', 'parent': parent};
+   }
+
+   @override
+diff --git a/serverpod_inheritance_client/lib/src/protocol/protocol.dart b/serverpod_inheritance_client/lib/src/protocol/protocol.dart
+index e2e56dd..850a87b 100644
+--- a/serverpod_inheritance_client/lib/src/protocol/protocol.dart
++++ b/serverpod_inheritance_client/lib/src/protocol/protocol.dart
+@@ -32,11 +32,37 @@ class Protocol extends _i1.SerializationManager {
+
+   static final Protocol _instance = Protocol._();
+
++  static Type? getRuntimeTypeFromJson(dynamic data) {
++    if (data is Map) {
++      switch (data['__className__']) {
++        case 'GrandChild':
++          return _i2.GrandChild;
++        case 'Child':
++          return _i3.Child;
++        case 'Greeting':
++          return _i4.Greeting;
++        case 'Container':
++          return _i5.Container;
++        case 'Other':
++          return _i6.Other;
++        case 'Parent':
++          return _i7.Parent;
++      }
++    }
++    return null;
++  }
++
+   @override
+   T deserialize<T>(
+     dynamic data, [
+     Type? t,
+   ]) {
++    // TODO: Route the deserialization for the subtype.
++    final runtimeType = getRuntimeTypeFromJson(data);
++    if (runtimeType != null && runtimeType != T && t == null) {
++      return deserialize<T>(data, runtimeType);
++    }
++
+     t ??= T;
+     if (t == _i2.GrandChild) {
+       return _i2.GrandChild.fromJson(data) as T;
+@@ -88,26 +114,31 @@ class Protocol extends _i1.SerializationManager {
+   String? getClassNameForObject(Object? data) {
+     String? className = super.getClassNameForObject(data);
+     if (className != null) return className;
++    // TODO: Types with inheritance must be sorted from the most derived to the least
++    // derived to avoid evaluating correct class.
+     switch (data) {
+       case _i2.GrandChild():
+         return 'GrandChild';
+       case _i3.Child():
+         return 'Child';
++      case _i7.Parent():
++        return 'Parent';
+       case _i4.Greeting():
+         return 'Greeting';
+       case _i5.Container():
+         return 'Container';
+       case _i6.Other():
+         return 'Other';
+-      case _i7.Parent():
+-        return 'Parent';
+     }
+     return null;
+   }
+
+   @override
+   dynamic deserializeByClassName(Map<String, dynamic> data) {
+-    var dataClassName = data['className'];
++    // TODO: Either add the always present '__className__' field support here
++    // or remove this alternative serialization/deserialization engine, since the
++    // default would now carry the class name information.
++    var dataClassName = data['className'] ?? data['__className__'];
+     if (dataClassName is! String) {
+       return super.deserializeByClassName(data);
+     }
+diff --git a/serverpod_inheritance_server/lib/src/generated/greeting.dart b/serverpod_inheritance_server/lib/src/generated/greeting.dart
+index e245c66..c4f093d 100644
+--- a/serverpod_inheritance_server/lib/src/generated/greeting.dart
++++ b/serverpod_inheritance_server/lib/src/generated/greeting.dart
+@@ -56,6 +56,7 @@ abstract class Greeting
+   @override
+   Map<String, dynamic> toJson() {
+     return {
++      '__className__': 'Greeting',
+       'message': message,
+       'author': author,
+       'timestamp': timestamp.toJson(),
+@@ -65,6 +66,7 @@ abstract class Greeting
+   @override
+   Map<String, dynamic> toJsonForProtocol() {
+     return {
++      '__className__': 'Greeting',
+       'message': message,
+       'author': author,
+       'timestamp': timestamp.toJson(),
+diff --git a/serverpod_inheritance_server/lib/src/generated/inheritance/child.dart b/serverpod_inheritance_server/lib/src/generated/inheritance/child.dart
+index 9453324..7b3614b 100644
+--- a/serverpod_inheritance_server/lib/src/generated/inheritance/child.dart
++++ b/serverpod_inheritance_server/lib/src/generated/inheritance/child.dart
+@@ -47,6 +47,7 @@ class Child extends _i1.Parent
+   @override
+   Map<String, dynamic> toJson() {
+     return {
++      '__className__': 'Child',
+       'parent': parent,
+       'child': child,
+     };
+@@ -55,6 +56,7 @@ class Child extends _i1.Parent
+   @override
+   Map<String, dynamic> toJsonForProtocol() {
+     return {
++      '__className__': 'Child',
+       'parent': parent,
+       'child': child,
+     };
+diff --git a/serverpod_inheritance_server/lib/src/generated/inheritance/container.dart b/serverpod_inheritance_server/lib/src/generated/inheritance/container.dart
+index b9cd931..d79787a 100644
+--- a/serverpod_inheritance_server/lib/src/generated/inheritance/container.dart
++++ b/serverpod_inheritance_server/lib/src/generated/inheritance/container.dart
+@@ -12,6 +12,7 @@
+ // ignore_for_file: no_leading_underscores_for_library_prefixes
+ import 'package:serverpod/serverpod.dart' as _i1;
+ import '../inheritance/child.dart' as _i2;
++import '../protocol.dart' as _i3;
+
+ /// A class that holds child objects.
+ abstract class Container
+@@ -29,17 +30,14 @@ abstract class Container
+   }) = _ContainerImpl;
+
+   factory Container.fromJson(Map<String, dynamic> jsonSerialization) {
++    // TODO: All deserializations must use the protocol to avoid loosing the type.
++    // We can even leverage the existing match for List and Map.
+     return Container(
+-      child: _i2.Child.fromJson(
+-          (jsonSerialization['child'] as Map<String, dynamic>)),
+-      childrenList: (jsonSerialization['childrenList'] as List)
+-          .map((e) => _i2.Child.fromJson((e as Map<String, dynamic>)))
+-          .toList(),
+-      childrenMap:
+-          (jsonSerialization['childrenMap'] as Map).map((k, v) => MapEntry(
+-                k as String,
+-                _i2.Child.fromJson((v as Map<String, dynamic>)),
+-              )),
++      child: _i3.Protocol().deserialize<_i2.Child>(jsonSerialization['child']),
++      childrenList: _i3.Protocol()
++          .deserialize<List<_i2.Child>>(jsonSerialization['childrenList']),
++      childrenMap: _i3.Protocol().deserialize<Map<String, _i2.Child>>(
++          jsonSerialization['childrenMap']),
+     );
+   }
+
+@@ -63,6 +61,7 @@ abstract class Container
+   @override
+   Map<String, dynamic> toJson() {
+     return {
++      '__className__': 'Container',
+       'child': child.toJson(),
+       'childrenList': childrenList.toJson(valueToJson: (v) => v.toJson()),
+       'childrenMap': childrenMap.toJson(valueToJson: (v) => v.toJson()),
+@@ -72,6 +71,7 @@ abstract class Container
+   @override
+   Map<String, dynamic> toJsonForProtocol() {
+     return {
++      '__className__': 'Container',
+       'child': child.toJsonForProtocol(),
+       'childrenList':
+           childrenList.toJson(valueToJson: (v) => v.toJsonForProtocol()),
+diff --git a/serverpod_inheritance_server/lib/src/generated/inheritance/grandchild.dart b/serverpod_inheritance_server/lib/src/generated/inheritance/grandchild.dart
+index 8ff216f..8089496 100644
+--- a/serverpod_inheritance_server/lib/src/generated/inheritance/grandchild.dart
++++ b/serverpod_inheritance_server/lib/src/generated/inheritance/grandchild.dart
+@@ -51,6 +51,7 @@ abstract class GrandChild extends _i1.Child
+   @override
+   Map<String, dynamic> toJson() {
+     return {
++      '__className__': 'GrandChild',
+       'parent': parent,
+       'child': child,
+       'grandchild': grandchild,
+@@ -60,6 +61,7 @@ abstract class GrandChild extends _i1.Child
+   @override
+   Map<String, dynamic> toJsonForProtocol() {
+     return {
++      '__className__': 'GrandChild',
+       'parent': parent,
+       'child': child,
+       'grandchild': grandchild,
+diff --git a/serverpod_inheritance_server/lib/src/generated/inheritance/other.dart b/serverpod_inheritance_server/lib/src/generated/inheritance/other.dart
+index 287cdc8..5886cce 100644
+--- a/serverpod_inheritance_server/lib/src/generated/inheritance/other.dart
++++ b/serverpod_inheritance_server/lib/src/generated/inheritance/other.dart
+@@ -32,12 +32,12 @@ abstract class Other
+   Other copyWith({String? parent});
+   @override
+   Map<String, dynamic> toJson() {
+-    return {'parent': parent};
++    return {'__className__': 'Other', 'parent': parent};
+   }
+
+   @override
+   Map<String, dynamic> toJsonForProtocol() {
+-    return {'parent': parent};
++    return {'__className__': 'Other', 'parent': parent};
+   }
+
+   @override
+diff --git a/serverpod_inheritance_server/lib/src/generated/inheritance/parent.dart b/serverpod_inheritance_server/lib/src/generated/inheritance/parent.dart
+index a49e18e..72468e8 100644
+--- a/serverpod_inheritance_server/lib/src/generated/inheritance/parent.dart
++++ b/serverpod_inheritance_server/lib/src/generated/inheritance/parent.dart
+@@ -32,12 +32,12 @@ class Parent implements _i1.SerializableModel, _i1.ProtocolSerialization {
+
+   @override
+   Map<String, dynamic> toJson() {
+-    return {'parent': parent};
++    return {'__className__': 'Parent', 'parent': parent};
+   }
+
+   @override
+   Map<String, dynamic> toJsonForProtocol() {
+-    return {'parent': parent};
++    return {'__className__': 'Parent', 'parent': parent};
+   }
+
+   @override
+diff --git a/serverpod_inheritance_server/lib/src/generated/protocol.dart b/serverpod_inheritance_server/lib/src/generated/protocol.dart
+index 551f116..befe9d3 100644
+--- a/serverpod_inheritance_server/lib/src/generated/protocol.dart
++++ b/serverpod_inheritance_server/lib/src/generated/protocol.dart
+@@ -36,11 +36,37 @@ class Protocol extends _i1.SerializationManagerServer {
+     ..._i2.Protocol.targetTableDefinitions
+   ];
+
++  static Type? getRuntimeTypeFromJson(dynamic data) {
++    if (data is Map) {
++      switch (data['__className__']) {
++        case 'GrandChild':
++          return _i3.GrandChild;
++        case 'Child':
++          return _i4.Child;
++        case 'Greeting':
++          return _i5.Greeting;
++        case 'Container':
++          return _i6.Container;
++        case 'Other':
++          return _i7.Other;
++        case 'Parent':
++          return _i8.Parent;
++      }
++    }
++    return null;
++  }
++
+   @override
+   T deserialize<T>(
+     dynamic data, [
+     Type? t,
+   ]) {
++    // TODO: Route the deserialization for the subtype.
++    final runtimeType = getRuntimeTypeFromJson(data);
++    if (runtimeType != null && t == null) {
++      return deserialize<T>(data, runtimeType);
++    }
++
+     t ??= T;
+     if (t == _i3.GrandChild) {
+       return _i3.GrandChild.fromJson(data) as T;
+@@ -95,19 +121,21 @@ class Protocol extends _i1.SerializationManagerServer {
+   String? getClassNameForObject(Object? data) {
+     String? className = super.getClassNameForObject(data);
+     if (className != null) return className;
++    // TODO: Types with inheritance must be sorted from the most derived to the least
++    // derived to avoid evaluating correct class.
+     switch (data) {
+       case _i3.GrandChild():
+         return 'GrandChild';
+       case _i4.Child():
+         return 'Child';
++      case _i8.Parent():
++        return 'Parent';
+       case _i5.Greeting():
+         return 'Greeting';
+       case _i6.Container():
+         return 'Container';
+       case _i7.Other():
+         return 'Other';
+-      case _i8.Parent():
+-        return 'Parent';
+     }
+     className = _i2.Protocol().getClassNameForObject(data);
+     if (className != null) {
+@@ -118,7 +146,10 @@ class Protocol extends _i1.SerializationManagerServer {
+
+   @override
+   dynamic deserializeByClassName(Map<String, dynamic> data) {
+-    var dataClassName = data['className'];
++    // TODO: Either add the always present '__className__' field support here
++    // or remove this alternative serialization/deserialization engine, since the
++    // default would now carry the class name information.
++    var dataClassName = data['className'] ?? data['__className__'];
+     if (dataClassName is! String) {
+       return super.deserializeByClassName(data);
+     }

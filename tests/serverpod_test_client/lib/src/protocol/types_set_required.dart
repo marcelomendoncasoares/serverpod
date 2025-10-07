@@ -32,7 +32,10 @@ abstract class TypesSetRequired implements _i1.SerializableModel {
   TypesSetRequired copyWith({Set<int>? anInt});
   @override
   Map<String, dynamic> toJson() {
-    return {'anInt': anInt.toJson()};
+    return {
+      '__className__': 'TypesSetRequired',
+      'anInt': anInt.toJson(),
+    };
   }
 
   @override

@@ -13,6 +13,7 @@
 import 'package:serverpod/serverpod.dart' as _i1;
 import 'dart:typed_data' as _i2;
 import 'simple_data.dart' as _i3;
+import 'protocol.dart' as _i4;
 
 abstract class Nullability
     implements _i1.SerializableModel, _i1.ProtocolSerialization {
@@ -148,12 +149,12 @@ abstract class Nullability
           ? null
           : _i1.UuidValueJsonExtension.fromJson(
               jsonSerialization['aNullableUuid']),
-      anObject: _i3.SimpleData.fromJson(
-          (jsonSerialization['anObject'] as Map<String, dynamic>)),
+      anObject: _i4.Protocol()
+          .deserialize<_i3.SimpleData>(jsonSerialization['anObject']),
       aNullableObject: jsonSerialization['aNullableObject'] == null
           ? null
-          : _i3.SimpleData.fromJson(
-              (jsonSerialization['aNullableObject'] as Map<String, dynamic>)),
+          : _i4.Protocol().deserialize<_i3.SimpleData>(
+              jsonSerialization['aNullableObject']),
       anIntList: (jsonSerialization['anIntList'] as List)
           .map((e) => e as int)
           .toList(),
@@ -168,24 +169,20 @@ abstract class Nullability
           (jsonSerialization['aNullableListWithNullableInts'] as List?)
               ?.map((e) => e as int?)
               .toList(),
-      anObjectList: (jsonSerialization['anObjectList'] as List)
-          .map((e) => _i3.SimpleData.fromJson((e as Map<String, dynamic>)))
-          .toList(),
-      aNullableObjectList: (jsonSerialization['aNullableObjectList'] as List?)
-          ?.map((e) => _i3.SimpleData.fromJson((e as Map<String, dynamic>)))
-          .toList(),
-      aListWithNullableObjects:
-          (jsonSerialization['aListWithNullableObjects'] as List)
-              .map((e) => e == null
-                  ? null
-                  : _i3.SimpleData.fromJson((e as Map<String, dynamic>)))
-              .toList(),
+      anObjectList: _i4.Protocol()
+          .deserialize<List<_i3.SimpleData>>(jsonSerialization['anObjectList']),
+      aNullableObjectList: jsonSerialization['aNullableObjectList'] == null
+          ? null
+          : _i4.Protocol().deserialize<List<_i3.SimpleData>>(
+              jsonSerialization['aNullableObjectList']),
+      aListWithNullableObjects: _i4.Protocol()
+          .deserialize<List<_i3.SimpleData?>>(
+              jsonSerialization['aListWithNullableObjects']),
       aNullableListWithNullableObjects:
-          (jsonSerialization['aNullableListWithNullableObjects'] as List?)
-              ?.map((e) => e == null
-                  ? null
-                  : _i3.SimpleData.fromJson((e as Map<String, dynamic>)))
-              .toList(),
+          jsonSerialization['aNullableListWithNullableObjects'] == null
+              ? null
+              : _i4.Protocol().deserialize<List<_i3.SimpleData?>>(
+                  jsonSerialization['aNullableListWithNullableObjects']),
       aDateTimeList: (jsonSerialization['aDateTimeList'] as List)
           .map((e) => _i1.DateTimeJsonExtension.fromJson(e))
           .toList(),
@@ -415,6 +412,7 @@ abstract class Nullability
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'Nullability',
       'anInt': anInt,
       if (aNullableInt != null) 'aNullableInt': aNullableInt,
       'aDouble': aDouble,
@@ -499,6 +497,7 @@ abstract class Nullability
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'Nullability',
       'anInt': anInt,
       if (aNullableInt != null) 'aNullableInt': aNullableInt,
       'aDouble': aDouble,

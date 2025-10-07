@@ -14,6 +14,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
 import '../empty_model/empty_model_relation_item.dart' as _i2;
+import '../protocol.dart' as _i3;
 
 abstract class RelationEmptyModel
     implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
@@ -30,10 +31,10 @@ abstract class RelationEmptyModel
   factory RelationEmptyModel.fromJson(Map<String, dynamic> jsonSerialization) {
     return RelationEmptyModel(
       id: jsonSerialization['id'] as int?,
-      items: (jsonSerialization['items'] as List?)
-          ?.map((e) =>
-              _i2.EmptyModelRelationItem.fromJson((e as Map<String, dynamic>)))
-          .toList(),
+      items: jsonSerialization['items'] == null
+          ? null
+          : _i3.Protocol().deserialize<List<_i2.EmptyModelRelationItem>>(
+              jsonSerialization['items']),
     );
   }
 
@@ -59,6 +60,7 @@ abstract class RelationEmptyModel
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'RelationEmptyModel',
       if (id != null) 'id': id,
       if (items != null) 'items': items?.toJson(valueToJson: (v) => v.toJson()),
     };
@@ -67,6 +69,7 @@ abstract class RelationEmptyModel
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'RelationEmptyModel',
       if (id != null) 'id': id,
       if (items != null)
         'items': items?.toJson(valueToJson: (v) => v.toJsonForProtocol()),

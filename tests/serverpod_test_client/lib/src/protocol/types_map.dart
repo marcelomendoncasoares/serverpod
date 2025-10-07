@@ -15,7 +15,8 @@ import 'dart:typed_data' as _i2;
 import 'test_enum.dart' as _i3;
 import 'test_enum_stringified.dart' as _i4;
 import 'types.dart' as _i5;
-import 'package:serverpod_test_client/src/protocol/protocol.dart' as _i6;
+import 'protocol.dart' as _i6;
+import 'package:serverpod_test_client/src/protocol/protocol.dart' as _i7;
 
 abstract class TypesMap implements _i1.SerializableModel {
   TypesMap._({
@@ -168,37 +169,36 @@ abstract class TypesMap implements _i1.SerializableModel {
               {},
               (t, e) => {
                     ...t,
-                    _i5.Types.fromJson((e['k'] as Map<String, dynamic>)):
+                    _i6.Protocol().deserialize<_i5.Types>(e['k']):
                         e['v'] as String
                   }),
-      aMapKey: (jsonSerialization['aMapKey'] as List?)?.fold<
-              Map<Map<_i5.Types, String>, String>>(
-          {},
-          (t, e) => {
-                ...t,
-                (e['k'] as List).fold<Map<_i5.Types, String>>(
-                    {},
-                    (t, e) => {
-                          ...t,
-                          _i5.Types.fromJson((e['k'] as Map<String, dynamic>)):
-                              e['v'] as String
-                        }): e['v'] as String
-              }),
-      aListKey: (jsonSerialization['aListKey'] as List?)?.fold<
-              Map<List<_i5.Types>, String>>(
-          {},
-          (t, e) => {
-                ...t,
-                (e['k'] as List)
-                    .map((e) => _i5.Types.fromJson((e as Map<String, dynamic>)))
-                    .toList(): e['v'] as String
-              }),
+      aMapKey: (jsonSerialization['aMapKey'] as List?)
+          ?.fold<Map<Map<_i5.Types, String>, String>>(
+              {},
+              (t, e) => {
+                    ...t,
+                    (e['k'] as List).fold<Map<_i5.Types, String>>(
+                        {},
+                        (t, e) => {
+                              ...t,
+                              _i6.Protocol().deserialize<_i5.Types>(e['k']):
+                                  e['v'] as String
+                            }): e['v'] as String
+                  }),
+      aListKey: (jsonSerialization['aListKey'] as List?)
+          ?.fold<Map<List<_i5.Types>, String>>(
+              {},
+              (t, e) => {
+                    ...t,
+                    _i6.Protocol().deserialize<List<_i5.Types>>(e['k']):
+                        e['v'] as String
+                  }),
       aRecordKey: (jsonSerialization['aRecordKey'] as List?)
           ?.fold<Map<(String,), String>>(
               {},
               (t, e) => {
                     ...t,
-                    _i6.Protocol().deserialize<(String,)>(
+                    _i7.Protocol().deserialize<(String,)>(
                         (e['k'] as Map<String, dynamic>)): e['v'] as String
                   }),
       anIntValue:
@@ -262,30 +262,24 @@ abstract class TypesMap implements _i1.SerializableModel {
                     k as String,
                     _i4.TestEnumStringified.fromJson((v as String)),
                   )),
-      anObjectValue:
-          (jsonSerialization['anObjectValue'] as Map?)?.map((k, v) => MapEntry(
-                k as String,
-                _i5.Types.fromJson((v as Map<String, dynamic>)),
-              )),
+      anObjectValue: jsonSerialization['anObjectValue'] == null
+          ? null
+          : _i6.Protocol().deserialize<Map<String, _i5.Types>>(
+              jsonSerialization['anObjectValue']),
       aMapValue:
           (jsonSerialization['aMapValue'] as Map?)?.map((k, v) => MapEntry(
                 k as String,
-                (v as Map).map((k, v) => MapEntry(
-                      k as String,
-                      _i5.Types.fromJson((v as Map<String, dynamic>)),
-                    )),
+                _i6.Protocol().deserialize<Map<String, _i5.Types>>(v),
               )),
       aListValue:
           (jsonSerialization['aListValue'] as Map?)?.map((k, v) => MapEntry(
                 k as String,
-                (v as List)
-                    .map((e) => _i5.Types.fromJson((e as Map<String, dynamic>)))
-                    .toList(),
+                _i6.Protocol().deserialize<List<_i5.Types>>(v),
               )),
       aRecordValue:
           (jsonSerialization['aRecordValue'] as Map?)?.map((k, v) => MapEntry(
                 k as String,
-                _i6.Protocol()
+                _i7.Protocol()
                     .deserialize<(String,)>((v as Map<String, dynamic>)),
               )),
       aNullableRecordValue: (jsonSerialization['aNullableRecordValue'] as Map?)
@@ -293,7 +287,7 @@ abstract class TypesMap implements _i1.SerializableModel {
                 k as String,
                 v == null
                     ? null
-                    : _i6.Protocol()
+                    : _i7.Protocol()
                         .deserialize<(String,)?>((v as Map<String, dynamic>)),
               )),
       aNullableRecordKey: (jsonSerialization['aNullableRecordKey'] as List?)
@@ -303,7 +297,7 @@ abstract class TypesMap implements _i1.SerializableModel {
                     ...t,
                     e['k'] == null
                         ? null
-                        : _i6.Protocol().deserialize<(String,)?>(
+                        : _i7.Protocol().deserialize<(String,)?>(
                             (e['k'] as Map<String, dynamic>)): e['v'] as String
                   }),
     );
@@ -419,6 +413,7 @@ abstract class TypesMap implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'TypesMap',
       if (anIntKey != null) 'anIntKey': anIntKey?.toJson(),
       if (aBoolKey != null) 'aBoolKey': aBoolKey?.toJson(),
       if (aDoubleKey != null) 'aDoubleKey': aDoubleKey?.toJson(),
@@ -448,7 +443,7 @@ abstract class TypesMap implements _i1.SerializableModel {
       if (aListKey != null)
         'aListKey': aListKey?.toJson(
             keyToJson: (k) => k.toJson(valueToJson: (v) => v.toJson())),
-      if (aRecordKey != null) 'aRecordKey': _i6.mapContainerToJson(aRecordKey!),
+      if (aRecordKey != null) 'aRecordKey': _i7.mapContainerToJson(aRecordKey!),
       if (anIntValue != null) 'anIntValue': anIntValue?.toJson(),
       if (aBoolValue != null) 'aBoolValue': aBoolValue?.toJson(),
       if (aDoubleValue != null) 'aDoubleValue': aDoubleValue?.toJson(),
@@ -482,11 +477,11 @@ abstract class TypesMap implements _i1.SerializableModel {
         'aListValue': aListValue?.toJson(
             valueToJson: (v) => v.toJson(valueToJson: (v) => v.toJson())),
       if (aRecordValue != null)
-        'aRecordValue': _i6.mapContainerToJson(aRecordValue!),
+        'aRecordValue': _i7.mapContainerToJson(aRecordValue!),
       if (aNullableRecordValue != null)
-        'aNullableRecordValue': _i6.mapContainerToJson(aNullableRecordValue!),
+        'aNullableRecordValue': _i7.mapContainerToJson(aNullableRecordValue!),
       if (aNullableRecordKey != null)
-        'aNullableRecordKey': _i6.mapContainerToJson(aNullableRecordKey!),
+        'aNullableRecordKey': _i7.mapContainerToJson(aNullableRecordKey!),
     };
   }
 

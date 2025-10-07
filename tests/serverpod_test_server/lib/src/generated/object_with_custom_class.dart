@@ -67,6 +67,7 @@ abstract class ObjectWithCustomClass
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'ObjectWithCustomClass',
       'customClassWithoutProtocolSerialization':
           customClassWithoutProtocolSerialization.toJson(),
       'customClassWithProtocolSerialization':
@@ -79,6 +80,7 @@ abstract class ObjectWithCustomClass
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'ObjectWithCustomClass',
       'customClassWithoutProtocolSerialization':
 // ignore: unnecessary_type_check
           customClassWithoutProtocolSerialization is _i1.ProtocolSerialization

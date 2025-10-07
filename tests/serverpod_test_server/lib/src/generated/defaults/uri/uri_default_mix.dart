@@ -73,6 +73,7 @@ abstract class UriDefaultMix
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'UriDefaultMix',
       if (id != null) 'id': id,
       'uriDefaultAndDefaultModel': uriDefaultAndDefaultModel.toJson(),
       'uriDefaultAndDefaultPersist': uriDefaultAndDefaultPersist.toJson(),
@@ -84,6 +85,7 @@ abstract class UriDefaultMix
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'UriDefaultMix',
       if (id != null) 'id': id,
       'uriDefaultAndDefaultModel': uriDefaultAndDefaultModel.toJson(),
       'uriDefaultAndDefaultPersist': uriDefaultAndDefaultPersist.toJson(),

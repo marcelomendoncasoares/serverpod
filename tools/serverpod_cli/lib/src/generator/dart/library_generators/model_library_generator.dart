@@ -285,13 +285,13 @@ class SerializableModelLibraryGenerator {
         isIdInherited: false,
       ));
 
-      classBuilder.methods.add(_buildModelClassToJsonMethod(fields));
+      classBuilder.methods.add(_buildModelClassToJsonMethod(fields, className));
 
       // Serialization for database and everything
       if (serverCode) {
         classBuilder.methods.add(
           _buildModelClassToJsonForProtocolMethod(
-              fields, classDefinition.serverOnly),
+              fields, classDefinition.serverOnly, className),
         );
       }
 
@@ -439,7 +439,8 @@ class SerializableModelLibraryGenerator {
       // Serialization
 
       if (!classDefinition.isSealed) {
-        classBuilder.methods.add(_buildModelClassToJsonMethod(fields));
+        classBuilder.methods
+            .add(_buildModelClassToJsonMethod(fields, className));
       }
 
       // Serialization for database and everything
@@ -447,7 +448,7 @@ class SerializableModelLibraryGenerator {
         if (!classDefinition.isSealed) {
           classBuilder.methods.add(
             _buildModelClassToJsonForProtocolMethod(
-                fields, classDefinition.serverOnly),
+                fields, classDefinition.serverOnly, className),
           );
         }
 
@@ -1241,7 +1242,7 @@ class SerializableModelLibraryGenerator {
   }
 
   Method _buildModelClassToJsonMethod(
-      Iterable<SerializableModelFieldDefinition> fields) {
+      Iterable<SerializableModelFieldDefinition> fields, String className) {
     return Method(
       (m) {
         m.returns = refer('Map<String,dynamic>');
@@ -1261,6 +1262,7 @@ class SerializableModelLibraryGenerator {
         m.body = _createToJsonBodyFromFields(
           filteredFields,
           _toJsonMethodName,
+          className,
         );
       },
     );
@@ -1269,6 +1271,7 @@ class SerializableModelLibraryGenerator {
   Method _buildModelClassToJsonForProtocolMethod(
     Iterable<SerializableModelFieldDefinition> fields,
     bool isServerOnlyClass,
+    String className,
   ) {
     return Method(
       (m) {
@@ -1282,6 +1285,8 @@ class SerializableModelLibraryGenerator {
         m.body = _createToJsonBodyFromFields(
           filteredFields,
           _toJsonForProtocolMethodName,
+          className,
+          includeClassName: !isServerOnlyClass,
         );
       },
     );
@@ -1450,8 +1455,15 @@ class SerializableModelLibraryGenerator {
   Code _createToJsonBodyFromFields(
     Iterable<SerializableModelFieldDefinition> fields,
     String toJsonMethodName,
-  ) {
-    var map = fields.fold<Map<Code, Expression>>({}, (map, field) {
+    String className, {
+    bool includeClassName = true,
+  }) {
+    var map = <Code, Expression>{
+      if (includeClassName)
+        const Code("'__className__'"): literalString(className),
+    };
+
+    map.addAll(fields.fold<Map<Code, Expression>>({}, (map, field) {
       var fieldName = _createSerializableFieldNameReference(
         serverCode,
         field,
@@ -1472,7 +1484,7 @@ class SerializableModelLibraryGenerator {
           Code("if (${fieldName.symbol} != null) '${field.name}'"): fieldRef,
         if (!field.type.nullable) Code("'${field.name}'"): fieldRef,
       };
-    });
+    }));
 
     return literalMap(map).returned.statement;
   }

@@ -55,6 +55,7 @@ abstract class ExceptionWithRequiredField
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'ExceptionWithRequiredField',
       'name': name,
       if (email != null) 'email': email,
       if (phone != null) 'phone': phone,
@@ -64,6 +65,7 @@ abstract class ExceptionWithRequiredField
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'ExceptionWithRequiredField',
       'name': name,
       if (email != null) 'email': email,
       if (phone != null) 'phone': phone,

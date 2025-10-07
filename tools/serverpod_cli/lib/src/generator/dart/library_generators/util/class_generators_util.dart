@@ -287,6 +287,37 @@ Expression _buildListOrSetTypeFromJson(
   bool isList,
   List<String> subDirParts,
 ) {
+  var elementType = type.generics.first;
+
+  // For lists/sets of non-custom class types, use Protocol().deserialize for the entire collection
+  if (elementType.valueType == ValueType.classType &&
+      !elementType.customClass) {
+    return CodeExpression(
+      Block.of([
+        if (type.nullable) ...[
+          valueExpression.code,
+          const Code(' == null ? null : '),
+        ],
+        refer('Protocol',
+                _getProtocolImportPath(serverCode, config, subDirParts))
+            .call([])
+            .property('deserialize')
+            .call(
+              [valueExpression],
+              {},
+              [
+                type.asNonNullable.reference(
+                  serverCode,
+                  subDirParts: subDirParts,
+                  config: config,
+                )
+              ],
+            )
+            .code,
+      ]),
+    );
+  }
+
   if (type.isSetType) {
     return CodeExpression(Block.of([
       if (type.nullable) ...[
@@ -344,6 +375,36 @@ Expression _buildMapTypeFromJson(
   GeneratorConfig config,
   List<String> subDirParts,
 ) {
+  var valueType = type.generics.last;
+
+  // For maps with non-custom class value types, use Protocol().deserialize for the entire map
+  if (valueType.valueType == ValueType.classType && !valueType.customClass) {
+    return CodeExpression(
+      Block.of([
+        if (type.nullable) ...[
+          valueExpression.code,
+          const Code(' == null ? null : '),
+        ],
+        refer('Protocol',
+                _getProtocolImportPath(serverCode, config, subDirParts))
+            .call([])
+            .property('deserialize')
+            .call(
+              [valueExpression],
+              {},
+              [
+                type.asNonNullable.reference(
+                  serverCode,
+                  subDirParts: subDirParts,
+                  config: config,
+                )
+              ],
+            )
+            .code,
+      ]),
+    );
+  }
+
   if (type.generics.first.valueType == ValueType.string) {
     return CodeExpression(
       Block.of([
@@ -426,6 +487,35 @@ Expression _buildClassTypeFromJson(
   GeneratorConfig config,
   List<String> subDirParts,
 ) {
+  // Use Protocol().deserialize for non-custom classes to support polymorphism
+  if (!type.customClass) {
+    return CodeExpression(
+      Block.of([
+        if (type.nullable) ...[
+          valueExpression.code,
+          const Code(' == null ? null : '),
+        ],
+        refer('Protocol',
+                _getProtocolImportPath(serverCode, config, subDirParts))
+            .call([])
+            .property('deserialize')
+            .call(
+              [valueExpression],
+              {},
+              [
+                type.asNonNullable.reference(
+                  serverCode,
+                  subDirParts: subDirParts,
+                  config: config,
+                )
+              ],
+            )
+            .code,
+      ]),
+    );
+  }
+
+  // For custom classes, use the original fromJson approach
   return CodeExpression(
     type.asNonNullable
         .reference(
@@ -494,4 +584,19 @@ extension ExpressionExtension on Expression {
       ),
     );
   }
+}
+
+/// Gets the import path for the Protocol class relative to the current file.
+String _getProtocolImportPath(
+  bool serverCode,
+  GeneratorConfig config,
+  List<String> subDirParts,
+) {
+  // Calculate the relative path from the current file to the protocol.dart
+  var depth = subDirParts.length;
+  var prefix = List.filled(depth, '..').join('/');
+  if (prefix.isNotEmpty) {
+    prefix = '$prefix/';
+  }
+  return '${prefix}protocol.dart';
 }

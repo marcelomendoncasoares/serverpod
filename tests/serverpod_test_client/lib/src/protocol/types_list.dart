@@ -15,7 +15,8 @@ import 'dart:typed_data' as _i2;
 import 'test_enum.dart' as _i3;
 import 'test_enum_stringified.dart' as _i4;
 import 'types.dart' as _i5;
-import 'package:serverpod_test_client/src/protocol/protocol.dart' as _i6;
+import 'protocol.dart' as _i6;
+import 'package:serverpod_test_client/src/protocol/protocol.dart' as _i7;
 
 abstract class TypesList implements _i1.SerializableModel {
   TypesList._({
@@ -98,36 +99,32 @@ abstract class TypesList implements _i1.SerializableModel {
       aStringifiedEnum: (jsonSerialization['aStringifiedEnum'] as List?)
           ?.map((e) => _i4.TestEnumStringified.fromJson((e as String)))
           .toList(),
-      anObject: (jsonSerialization['anObject'] as List?)
-          ?.map((e) => _i5.Types.fromJson((e as Map<String, dynamic>)))
-          .toList(),
+      anObject: jsonSerialization['anObject'] == null
+          ? null
+          : _i6.Protocol()
+              .deserialize<List<_i5.Types>>(jsonSerialization['anObject']),
       aMap: (jsonSerialization['aMap'] as List?)
-          ?.map((e) => (e as Map).map((k, v) => MapEntry(
-                k as String,
-                _i5.Types.fromJson((v as Map<String, dynamic>)),
-              )))
+          ?.map((e) => _i6.Protocol().deserialize<Map<String, _i5.Types>>(e))
           .toList(),
       aList: (jsonSerialization['aList'] as List?)
-          ?.map((e) => (e as List)
-              .map((e) => _i5.Types.fromJson((e as Map<String, dynamic>)))
-              .toList())
+          ?.map((e) => _i6.Protocol().deserialize<List<_i5.Types>>(e))
           .toList(),
       aRecord: (jsonSerialization['aRecord'] as List?)
           ?.map((e) =>
-              _i6.Protocol().deserialize<(int,)>((e as Map<String, dynamic>)))
+              _i7.Protocol().deserialize<(int,)>((e as Map<String, dynamic>)))
           .toList(),
       aNullableRecord: (jsonSerialization['aNullableRecord'] as List?)
           ?.map((e) => e == null
               ? null
-              : _i6.Protocol()
+              : _i7.Protocol()
                   .deserialize<(int,)?>((e as Map<String, dynamic>)))
           .toList(),
       anEnumRecord: (jsonSerialization['anEnumRecord'] as List?)
-          ?.map((e) => _i6.Protocol()
+          ?.map((e) => _i7.Protocol()
               .deserialize<(_i3.TestEnum,)>((e as Map<String, dynamic>)))
           .toList(),
       anEnum2Record: (jsonSerialization['anEnum2Record'] as List?)
-          ?.map((e) => _i6.Protocol().deserialize<(_i4.TestEnumStringified,)>(
+          ?.map((e) => _i7.Protocol().deserialize<(_i4.TestEnumStringified,)>(
               (e as Map<String, dynamic>)))
           .toList(),
     );
@@ -198,6 +195,7 @@ abstract class TypesList implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'TypesList',
       if (anInt != null) 'anInt': anInt?.toJson(),
       if (aBool != null) 'aBool': aBool?.toJson(),
       if (aDouble != null) 'aDouble': aDouble?.toJson(),
@@ -225,13 +223,13 @@ abstract class TypesList implements _i1.SerializableModel {
       if (aList != null)
         'aList': aList?.toJson(
             valueToJson: (v) => v.toJson(valueToJson: (v) => v.toJson())),
-      if (aRecord != null) 'aRecord': _i6.mapContainerToJson(aRecord!),
+      if (aRecord != null) 'aRecord': _i7.mapContainerToJson(aRecord!),
       if (aNullableRecord != null)
-        'aNullableRecord': _i6.mapContainerToJson(aNullableRecord!),
+        'aNullableRecord': _i7.mapContainerToJson(aNullableRecord!),
       if (anEnumRecord != null)
-        'anEnumRecord': _i6.mapContainerToJson(anEnumRecord!),
+        'anEnumRecord': _i7.mapContainerToJson(anEnumRecord!),
       if (anEnum2Record != null)
-        'anEnum2Record': _i6.mapContainerToJson(anEnum2Record!),
+        'anEnum2Record': _i7.mapContainerToJson(anEnum2Record!),
     };
   }
 

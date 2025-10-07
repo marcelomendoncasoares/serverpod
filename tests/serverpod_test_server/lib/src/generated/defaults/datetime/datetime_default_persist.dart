@@ -68,6 +68,7 @@ abstract class DateTimeDefaultPersist
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'DateTimeDefaultPersist',
       if (id != null) 'id': id,
       if (dateTimeDefaultPersistNow != null)
         'dateTimeDefaultPersistNow': dateTimeDefaultPersistNow?.toJson(),
@@ -79,6 +80,7 @@ abstract class DateTimeDefaultPersist
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'DateTimeDefaultPersist',
       if (id != null) 'id': id,
       if (dateTimeDefaultPersistNow != null)
         'dateTimeDefaultPersistNow': dateTimeDefaultPersistNow?.toJson(),

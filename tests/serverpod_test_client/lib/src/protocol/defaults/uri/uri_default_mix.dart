@@ -67,6 +67,7 @@ abstract class UriDefaultMix implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'UriDefaultMix',
       if (id != null) 'id': id,
       'uriDefaultAndDefaultModel': uriDefaultAndDefaultModel.toJson(),
       'uriDefaultAndDefaultPersist': uriDefaultAndDefaultPersist.toJson(),

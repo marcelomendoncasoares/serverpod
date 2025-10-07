@@ -36,14 +36,16 @@ abstract class Record
   @override
   Map<String, dynamic> toJson() {
     return {
-      if (aBoolRecord != null) 'aBoolRecord': _i2.mapRecordToJson(aBoolRecord)
+      '__className__': 'Record',
+      if (aBoolRecord != null) 'aBoolRecord': _i2.mapRecordToJson(aBoolRecord),
     };
   }
 
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
-      if (aBoolRecord != null) 'aBoolRecord': _i2.mapRecordToJson(aBoolRecord)
+      '__className__': 'Record',
+      if (aBoolRecord != null) 'aBoolRecord': _i2.mapRecordToJson(aBoolRecord),
     };
   }
 

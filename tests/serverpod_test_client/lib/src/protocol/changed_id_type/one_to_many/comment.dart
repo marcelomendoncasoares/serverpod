@@ -12,6 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../changed_id_type/one_to_many/order.dart' as _i2;
+import '../../protocol.dart' as _i3;
 
 abstract class CommentInt implements _i1.SerializableModel {
   CommentInt._({
@@ -36,8 +37,8 @@ abstract class CommentInt implements _i1.SerializableModel {
           _i1.UuidValueJsonExtension.fromJson(jsonSerialization['orderId']),
       order: jsonSerialization['order'] == null
           ? null
-          : _i2.OrderUuid.fromJson(
-              (jsonSerialization['order'] as Map<String, dynamic>)),
+          : _i3.Protocol()
+              .deserialize<_i2.OrderUuid>(jsonSerialization['order']),
     );
   }
 
@@ -64,6 +65,7 @@ abstract class CommentInt implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'CommentInt',
       if (id != null) 'id': id,
       'description': description,
       'orderId': orderId.toJson(),

@@ -15,6 +15,7 @@
 import 'package:serverpod/serverpod.dart' as _i1;
 import '../../models_with_relations/many_to_many/student.dart' as _i2;
 import '../../models_with_relations/many_to_many/course.dart' as _i3;
+import '../../protocol.dart' as _i4;
 
 abstract class Enrollment
     implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
@@ -40,13 +41,12 @@ abstract class Enrollment
       studentId: jsonSerialization['studentId'] as int,
       student: jsonSerialization['student'] == null
           ? null
-          : _i2.Student.fromJson(
-              (jsonSerialization['student'] as Map<String, dynamic>)),
+          : _i4.Protocol()
+              .deserialize<_i2.Student>(jsonSerialization['student']),
       courseId: jsonSerialization['courseId'] as int,
       course: jsonSerialization['course'] == null
           ? null
-          : _i3.Course.fromJson(
-              (jsonSerialization['course'] as Map<String, dynamic>)),
+          : _i4.Protocol().deserialize<_i3.Course>(jsonSerialization['course']),
     );
   }
 
@@ -81,6 +81,7 @@ abstract class Enrollment
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'Enrollment',
       if (id != null) 'id': id,
       'studentId': studentId,
       if (student != null) 'student': student?.toJson(),
@@ -92,6 +93,7 @@ abstract class Enrollment
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'Enrollment',
       if (id != null) 'id': id,
       'studentId': studentId,
       if (student != null) 'student': student?.toJsonForProtocol(),

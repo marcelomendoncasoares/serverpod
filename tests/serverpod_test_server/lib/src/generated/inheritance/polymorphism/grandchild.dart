@@ -52,6 +52,7 @@ abstract class PolymorphicGrandChild extends _i1.PolymorphicChild
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'PolymorphicGrandChild',
       'parent': parent,
       'child': child,
       'grandchild': grandchild,
@@ -61,6 +62,7 @@ abstract class PolymorphicGrandChild extends _i1.PolymorphicChild
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'PolymorphicGrandChild',
       'parent': parent,
       'child': child,
       'grandchild': grandchild,

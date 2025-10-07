@@ -13,7 +13,8 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'package:serverpod_test_module_client/serverpod_test_module_client.dart'
     as _i2;
-import 'package:serverpod_test_client/src/protocol/protocol.dart' as _i3;
+import 'protocol.dart' as _i3;
+import 'package:serverpod_test_client/src/protocol/protocol.dart' as _i4;
 
 abstract class ModuleDatatype implements _i1.SerializableModel {
   ModuleDatatype._({
@@ -32,18 +33,15 @@ abstract class ModuleDatatype implements _i1.SerializableModel {
 
   factory ModuleDatatype.fromJson(Map<String, dynamic> jsonSerialization) {
     return ModuleDatatype(
-      model: _i2.ModuleClass.fromJson(
-          (jsonSerialization['model'] as Map<String, dynamic>)),
-      list: (jsonSerialization['list'] as List)
-          .map((e) => _i2.ModuleClass.fromJson((e as Map<String, dynamic>)))
-          .toList(),
-      map: (jsonSerialization['map'] as Map).map((k, v) => MapEntry(
-            k as String,
-            _i2.ModuleClass.fromJson((v as Map<String, dynamic>)),
-          )),
+      model: _i3.Protocol()
+          .deserialize<_i2.ModuleClass>(jsonSerialization['model']),
+      list: _i3.Protocol()
+          .deserialize<List<_i2.ModuleClass>>(jsonSerialization['list']),
+      map: _i3.Protocol()
+          .deserialize<Map<String, _i2.ModuleClass>>(jsonSerialization['map']),
       record: jsonSerialization['record'] == null
           ? null
-          : _i3.Protocol().deserialize<(_i2.ModuleClass,)?>(
+          : _i4.Protocol().deserialize<(_i2.ModuleClass,)?>(
               (jsonSerialization['record'] as Map<String, dynamic>)),
     );
   }
@@ -68,10 +66,11 @@ abstract class ModuleDatatype implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'ModuleDatatype',
       'model': model.toJson(),
       'list': list.toJson(valueToJson: (v) => v.toJson()),
       'map': map.toJson(valueToJson: (v) => v.toJson()),
-      if (record != null) 'record': _i3.mapRecordToJson(record),
+      if (record != null) 'record': _i4.mapRecordToJson(record),
     };
   }
 

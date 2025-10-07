@@ -89,6 +89,7 @@ abstract class ObjectWithBit
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'ObjectWithBit',
       if (id != null) 'id': id,
       'bit': bit.toJson(),
       if (bitNullable != null) 'bitNullable': bitNullable?.toJson(),
@@ -102,6 +103,7 @@ abstract class ObjectWithBit
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'ObjectWithBit',
       if (id != null) 'id': id,
       'bit': bit.toJson(),
       if (bitNullable != null) 'bitNullable': bitNullable?.toJson(),

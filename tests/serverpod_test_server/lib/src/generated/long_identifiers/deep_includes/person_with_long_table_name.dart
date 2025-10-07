@@ -15,6 +15,7 @@
 import 'package:serverpod/serverpod.dart' as _i1;
 import '../../long_identifiers/deep_includes/organization_with_long_table_name.dart'
     as _i2;
+import '../../protocol.dart' as _i3;
 
 abstract class PersonWithLongTableName
     implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
@@ -40,8 +41,8 @@ abstract class PersonWithLongTableName
       organizationId: jsonSerialization['organizationId'] as int?,
       organization: jsonSerialization['organization'] == null
           ? null
-          : _i2.OrganizationWithLongTableName.fromJson(
-              (jsonSerialization['organization'] as Map<String, dynamic>)),
+          : _i3.Protocol().deserialize<_i2.OrganizationWithLongTableName>(
+              jsonSerialization['organization']),
       $_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id:
           jsonSerialization[
                   '_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id']
@@ -79,6 +80,7 @@ abstract class PersonWithLongTableName
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'PersonWithLongTableName',
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
@@ -93,6 +95,7 @@ abstract class PersonWithLongTableName
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'PersonWithLongTableName',
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,

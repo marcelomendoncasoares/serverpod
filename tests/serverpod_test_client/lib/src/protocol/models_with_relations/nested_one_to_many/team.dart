@@ -13,6 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../models_with_relations/nested_one_to_many/arena.dart' as _i2;
 import '../../models_with_relations/nested_one_to_many/player.dart' as _i3;
+import '../../protocol.dart' as _i4;
 
 abstract class Team implements _i1.SerializableModel {
   Team._({
@@ -38,11 +39,11 @@ abstract class Team implements _i1.SerializableModel {
       arenaId: jsonSerialization['arenaId'] as int?,
       arena: jsonSerialization['arena'] == null
           ? null
-          : _i2.Arena.fromJson(
-              (jsonSerialization['arena'] as Map<String, dynamic>)),
-      players: (jsonSerialization['players'] as List?)
-          ?.map((e) => _i3.Player.fromJson((e as Map<String, dynamic>)))
-          .toList(),
+          : _i4.Protocol().deserialize<_i2.Arena>(jsonSerialization['arena']),
+      players: jsonSerialization['players'] == null
+          ? null
+          : _i4.Protocol()
+              .deserialize<List<_i3.Player>>(jsonSerialization['players']),
     );
   }
 
@@ -72,6 +73,7 @@ abstract class Team implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'Team',
       if (id != null) 'id': id,
       'name': name,
       if (arenaId != null) 'arenaId': arenaId,

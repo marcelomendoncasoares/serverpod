@@ -12,6 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
 import '../../inheritance/polymorphism/child.dart' as _i2;
+import '../../protocol.dart' as _i3;
 
 /// A class that holds child objects.
 abstract class PolymorphicChildContainer
@@ -31,17 +32,13 @@ abstract class PolymorphicChildContainer
   factory PolymorphicChildContainer.fromJson(
       Map<String, dynamic> jsonSerialization) {
     return PolymorphicChildContainer(
-      child: _i2.PolymorphicChild.fromJson(
-          (jsonSerialization['child'] as Map<String, dynamic>)),
-      childrenList: (jsonSerialization['childrenList'] as List)
-          .map(
-              (e) => _i2.PolymorphicChild.fromJson((e as Map<String, dynamic>)))
-          .toList(),
-      childrenMap:
-          (jsonSerialization['childrenMap'] as Map).map((k, v) => MapEntry(
-                k as String,
-                _i2.PolymorphicChild.fromJson((v as Map<String, dynamic>)),
-              )),
+      child: _i3.Protocol()
+          .deserialize<_i2.PolymorphicChild>(jsonSerialization['child']),
+      childrenList: _i3.Protocol().deserialize<List<_i2.PolymorphicChild>>(
+          jsonSerialization['childrenList']),
+      childrenMap: _i3.Protocol()
+          .deserialize<Map<String, _i2.PolymorphicChild>>(
+              jsonSerialization['childrenMap']),
     );
   }
 
@@ -65,6 +62,7 @@ abstract class PolymorphicChildContainer
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'PolymorphicChildContainer',
       'child': child.toJson(),
       'childrenList': childrenList.toJson(valueToJson: (v) => v.toJson()),
       'childrenMap': childrenMap.toJson(valueToJson: (v) => v.toJson()),
@@ -74,6 +72,7 @@ abstract class PolymorphicChildContainer
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'PolymorphicChildContainer',
       'child': child.toJsonForProtocol(),
       'childrenList':
           childrenList.toJson(valueToJson: (v) => v.toJsonForProtocol()),

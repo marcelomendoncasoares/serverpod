@@ -76,6 +76,7 @@ abstract class UuidDefaultPersist
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'UuidDefaultPersist',
       if (id != null) 'id': id,
       if (uuidDefaultPersistRandom != null)
         'uuidDefaultPersistRandom': uuidDefaultPersistRandom?.toJson(),
@@ -89,6 +90,7 @@ abstract class UuidDefaultPersist
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'UuidDefaultPersist',
       if (id != null) 'id': id,
       if (uuidDefaultPersistRandom != null)
         'uuidDefaultPersistRandom': uuidDefaultPersistRandom?.toJson(),

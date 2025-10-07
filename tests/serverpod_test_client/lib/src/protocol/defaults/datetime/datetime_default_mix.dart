@@ -68,6 +68,7 @@ abstract class DateTimeDefaultMix implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'DateTimeDefaultMix',
       if (id != null) 'id': id,
       'dateTimeDefaultAndDefaultModel': dateTimeDefaultAndDefaultModel.toJson(),
       'dateTimeDefaultAndDefaultPersist':

@@ -43,7 +43,10 @@ abstract class ServerOnlyChangedIdFieldClass
   ServerOnlyChangedIdFieldClass copyWith({_i1.UuidValue? id});
   @override
   Map<String, dynamic> toJson() {
-    return {if (id != null) 'id': id?.toJson()};
+    return {
+      '__className__': 'ServerOnlyChangedIdFieldClass',
+      if (id != null) 'id': id?.toJson(),
+    };
   }
 
   @override

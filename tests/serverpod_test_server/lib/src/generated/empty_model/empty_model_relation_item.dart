@@ -59,6 +59,7 @@ abstract class EmptyModelRelationItem
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'EmptyModelRelationItem',
       if (id != null) 'id': id,
       'name': name,
       if (_relationEmptyModelItemsRelationEmptyModelId != null)
@@ -70,6 +71,7 @@ abstract class EmptyModelRelationItem
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'EmptyModelRelationItem',
       if (id != null) 'id': id,
       'name': name,
     };

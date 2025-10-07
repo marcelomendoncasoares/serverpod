@@ -123,6 +123,23 @@ class LibraryGenerator {
     ]);
     protocol.methods.addAll([
       Method((m) => m
+        ..static = true
+        ..name = 'getRuntimeTypeFromJson'
+        ..returns = refer('Type?')
+        ..requiredParameters.add(Parameter((p) => p
+          ..name = 'data'
+          ..type = refer('dynamic')))
+        ..body = Block.of([
+          const Code('if (data is Map) {'),
+          const Code('switch (data[\'__className__\']) {'),
+          for (var classInfo in unsealedModels)
+            Code.scope((a) =>
+                'case \'${classInfo.className}\': return ${a(refer(classInfo.className, TypeDefinition.getRef(classInfo)))};'),
+          const Code('}'),
+          const Code('}'),
+          const Code('return null;'),
+        ])),
+      Method((m) => m
         ..annotations.add(refer('override'))
         ..name = 'deserialize'
         ..returns = refer('T')
@@ -134,6 +151,13 @@ class LibraryGenerator {
           ..name = 't'
           ..type = refer('Type?')))
         ..body = Block.of([
+          const Code('final runtimeType = getRuntimeTypeFromJson(data);'),
+          if (serverCode)
+            const Code(
+                'if (runtimeType != null && t == null) { return deserialize<T>(data, runtimeType); }')
+          else
+            const Code(
+                'if (runtimeType != null && runtimeType != T && t == null) { return deserialize<T>(data, runtimeType); }'),
           const Code('t ??= T;'),
           ...(<Expression, Code>{
             for (var classInfo in unsealedModels)
@@ -216,7 +240,7 @@ class LibraryGenerator {
               Code.scope((a) =>
                   'case ${a(extraClass.reference(serverCode, config: config))}():'
                   '  return \'${extraClass.className}\';'),
-            for (var classInfo in unsealedModels)
+            for (var classInfo in _sortModelsByInheritanceDepth(unsealedModels))
               Code.scope((a) =>
                   'case ${a(refer(classInfo.className, TypeDefinition.getRef(classInfo)))}():'
                   '  return \'${classInfo.className}\';'),
@@ -247,7 +271,8 @@ class LibraryGenerator {
           ..name = 'data'
           ..type = refer('Map<String,dynamic>')))
         ..body = Block.of([
-          const Code('var dataClassName = data[\'className\'];'),
+          const Code(
+              'var dataClassName = data[\'className\'] ?? data[\'__className__\'];'),
           const Code('if (dataClassName is! String) {'
               'return super.deserializeByClassName(data);}'),
           for (var extraClass in config.extraClasses)
@@ -1773,4 +1798,29 @@ bool _isMethodInherited(EndpointDefinition? parent, MethodDefinition method) {
     }
   }
   return _isMethodInherited(parent.extendsClass, method);
+}
+
+/// Sorts models by inheritance depth (most derived first).
+/// This ensures that in switch statements, child classes are checked before parent classes.
+List<SerializableModelDefinition> _sortModelsByInheritanceDepth(
+    List<SerializableModelDefinition> models) {
+  int getInheritanceDepth(SerializableModelDefinition model) {
+    if (model is! ModelClassDefinition) return 0;
+    int depth = 0;
+    var current = model.parentClass;
+    while (current != null) {
+      depth++;
+      current = current.parentClass;
+    }
+    return depth;
+  }
+
+  var sorted = models.toList();
+  sorted.sort((a, b) {
+    var depthA = getInheritanceDepth(a);
+    var depthB = getInheritanceDepth(b);
+    // Sort in descending order (most derived first)
+    return depthB.compareTo(depthA);
+  });
+  return sorted;
 }

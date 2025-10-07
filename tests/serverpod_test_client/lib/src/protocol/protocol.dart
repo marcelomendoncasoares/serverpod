@@ -393,11 +393,379 @@ class Protocol extends _i1.SerializationManager {
 
   static final Protocol _instance = Protocol._();
 
+  static Type? getRuntimeTypeFromJson(dynamic data) {
+    if (data is Map) {
+      switch (data['__className__']) {
+        case 'ByIndexEnumWithNameValue':
+          return _i2.ByIndexEnumWithNameValue;
+        case 'ByNameEnumWithNameValue':
+          return _i3.ByNameEnumWithNameValue;
+        case 'CourseUuid':
+          return _i4.CourseUuid;
+        case 'EnrollmentInt':
+          return _i5.EnrollmentInt;
+        case 'StudentUuid':
+          return _i6.StudentUuid;
+        case 'ArenaUuid':
+          return _i7.ArenaUuid;
+        case 'PlayerUuid':
+          return _i8.PlayerUuid;
+        case 'TeamInt':
+          return _i9.TeamInt;
+        case 'CommentInt':
+          return _i10.CommentInt;
+        case 'CustomerInt':
+          return _i11.CustomerInt;
+        case 'OrderUuid':
+          return _i12.OrderUuid;
+        case 'AddressUuid':
+          return _i13.AddressUuid;
+        case 'CitizenInt':
+          return _i14.CitizenInt;
+        case 'CompanyUuid':
+          return _i15.CompanyUuid;
+        case 'TownInt':
+          return _i16.TownInt;
+        case 'ChangedIdTypeSelf':
+          return _i17.ChangedIdTypeSelf;
+        case 'BigIntDefault':
+          return _i18.BigIntDefault;
+        case 'BigIntDefaultMix':
+          return _i19.BigIntDefaultMix;
+        case 'BigIntDefaultModel':
+          return _i20.BigIntDefaultModel;
+        case 'BigIntDefaultPersist':
+          return _i21.BigIntDefaultPersist;
+        case 'BoolDefault':
+          return _i22.BoolDefault;
+        case 'BoolDefaultMix':
+          return _i23.BoolDefaultMix;
+        case 'BoolDefaultModel':
+          return _i24.BoolDefaultModel;
+        case 'BoolDefaultPersist':
+          return _i25.BoolDefaultPersist;
+        case 'DateTimeDefault':
+          return _i26.DateTimeDefault;
+        case 'DateTimeDefaultMix':
+          return _i27.DateTimeDefaultMix;
+        case 'DateTimeDefaultModel':
+          return _i28.DateTimeDefaultModel;
+        case 'DateTimeDefaultPersist':
+          return _i29.DateTimeDefaultPersist;
+        case 'DoubleDefault':
+          return _i30.DoubleDefault;
+        case 'DoubleDefaultMix':
+          return _i31.DoubleDefaultMix;
+        case 'DoubleDefaultModel':
+          return _i32.DoubleDefaultModel;
+        case 'DoubleDefaultPersist':
+          return _i33.DoubleDefaultPersist;
+        case 'DurationDefault':
+          return _i34.DurationDefault;
+        case 'DurationDefaultMix':
+          return _i35.DurationDefaultMix;
+        case 'DurationDefaultModel':
+          return _i36.DurationDefaultModel;
+        case 'DurationDefaultPersist':
+          return _i37.DurationDefaultPersist;
+        case 'EnumDefault':
+          return _i38.EnumDefault;
+        case 'EnumDefaultMix':
+          return _i39.EnumDefaultMix;
+        case 'EnumDefaultModel':
+          return _i40.EnumDefaultModel;
+        case 'EnumDefaultPersist':
+          return _i41.EnumDefaultPersist;
+        case 'ByIndexEnum':
+          return _i42.ByIndexEnum;
+        case 'ByNameEnum':
+          return _i43.ByNameEnum;
+        case 'DefaultValueEnum':
+          return _i44.DefaultValueEnum;
+        case 'DefaultException':
+          return _i45.DefaultException;
+        case 'IntDefault':
+          return _i46.IntDefault;
+        case 'IntDefaultMix':
+          return _i47.IntDefaultMix;
+        case 'IntDefaultModel':
+          return _i48.IntDefaultModel;
+        case 'IntDefaultPersist':
+          return _i49.IntDefaultPersist;
+        case 'StringDefault':
+          return _i50.StringDefault;
+        case 'StringDefaultMix':
+          return _i51.StringDefaultMix;
+        case 'StringDefaultModel':
+          return _i52.StringDefaultModel;
+        case 'StringDefaultPersist':
+          return _i53.StringDefaultPersist;
+        case 'UriDefault':
+          return _i54.UriDefault;
+        case 'UriDefaultMix':
+          return _i55.UriDefaultMix;
+        case 'UriDefaultModel':
+          return _i56.UriDefaultModel;
+        case 'UriDefaultPersist':
+          return _i57.UriDefaultPersist;
+        case 'UuidDefault':
+          return _i58.UuidDefault;
+        case 'UuidDefaultMix':
+          return _i59.UuidDefaultMix;
+        case 'UuidDefaultModel':
+          return _i60.UuidDefaultModel;
+        case 'UuidDefaultPersist':
+          return _i61.UuidDefaultPersist;
+        case 'EmptyModel':
+          return _i62.EmptyModel;
+        case 'EmptyModelRelationItem':
+          return _i63.EmptyModelRelationItem;
+        case 'EmptyModelWithTable':
+          return _i64.EmptyModelWithTable;
+        case 'RelationEmptyModel':
+          return _i65.RelationEmptyModel;
+        case 'ExceptionWithData':
+          return _i66.ExceptionWithData;
+        case 'ImmutableChildObject':
+          return _i67.ImmutableChildObject;
+        case 'ImmutableChildObjectWithNoAdditionalFields':
+          return _i68.ImmutableChildObjectWithNoAdditionalFields;
+        case 'ImmutableObject':
+          return _i69.ImmutableObject;
+        case 'ImmutableObjectWithImmutableObject':
+          return _i70.ImmutableObjectWithImmutableObject;
+        case 'ImmutableObjectWithList':
+          return _i71.ImmutableObjectWithList;
+        case 'ImmutableObjectWithMap':
+          return _i72.ImmutableObjectWithMap;
+        case 'ImmutableObjectWithMultipleFields':
+          return _i73.ImmutableObjectWithMultipleFields;
+        case 'ImmutableObjectWithNoFields':
+          return _i74.ImmutableObjectWithNoFields;
+        case 'ImmutableObjectWithRecord':
+          return _i75.ImmutableObjectWithRecord;
+        case 'ImmutableObjectWithTable':
+          return _i76.ImmutableObjectWithTable;
+        case 'ImmutableObjectWithTwentyFields':
+          return _i77.ImmutableObjectWithTwentyFields;
+        case 'ChildClass':
+          return _i78.ChildClass;
+        case 'ChildWithDefault':
+          return _i79.ChildWithDefault;
+        case 'ChildClassWithoutId':
+          return _i80.ChildClassWithoutId;
+        case 'ParentClass':
+          return _i81.ParentClass;
+        case 'GrandparentClass':
+          return _i82.GrandparentClass;
+        case 'ParentClassWithoutId':
+          return _i83.ParentClassWithoutId;
+        case 'GrandparentClassWithId':
+          return _i84.GrandparentClassWithId;
+        case 'NonServerOnlyParentClass':
+          return _i85.NonServerOnlyParentClass;
+        case 'ParentWithDefault':
+          return _i86.ParentWithDefault;
+        case 'PolymorphicGrandChild':
+          return _i87.PolymorphicGrandChild;
+        case 'PolymorphicChild':
+          return _i88.PolymorphicChild;
+        case 'PolymorphicChildContainer':
+          return _i89.PolymorphicChildContainer;
+        case 'SimilarButNotParent':
+          return _i90.SimilarButNotParent;
+        case 'PolymorphicParent':
+          return _i91.PolymorphicParent;
+        case 'UnrelatedToPolymorphism':
+          return _i92.UnrelatedToPolymorphism;
+        case 'SealedGrandChild':
+          return _i93.SealedGrandChild;
+        case 'SealedChild':
+          return _i93.SealedChild;
+        case 'SealedOtherChild':
+          return _i93.SealedOtherChild;
+        case 'CityWithLongTableName':
+          return _i94.CityWithLongTableName;
+        case 'OrganizationWithLongTableName':
+          return _i95.OrganizationWithLongTableName;
+        case 'PersonWithLongTableName':
+          return _i96.PersonWithLongTableName;
+        case 'MaxFieldName':
+          return _i97.MaxFieldName;
+        case 'LongImplicitIdField':
+          return _i98.LongImplicitIdField;
+        case 'LongImplicitIdFieldCollection':
+          return _i99.LongImplicitIdFieldCollection;
+        case 'RelationToMultipleMaxFieldName':
+          return _i100.RelationToMultipleMaxFieldName;
+        case 'UserNote':
+          return _i101.UserNote;
+        case 'UserNoteCollection':
+          return _i102.UserNoteCollection;
+        case 'UserNoteCollectionWithALongName':
+          return _i103.UserNoteCollectionWithALongName;
+        case 'UserNoteWithALongName':
+          return _i104.UserNoteWithALongName;
+        case 'MultipleMaxFieldName':
+          return _i105.MultipleMaxFieldName;
+        case 'City':
+          return _i106.City;
+        case 'Organization':
+          return _i107.Organization;
+        case 'Person':
+          return _i108.Person;
+        case 'Course':
+          return _i109.Course;
+        case 'Enrollment':
+          return _i110.Enrollment;
+        case 'Student':
+          return _i111.Student;
+        case 'ObjectUser':
+          return _i112.ObjectUser;
+        case 'ParentUser':
+          return _i113.ParentUser;
+        case 'Arena':
+          return _i114.Arena;
+        case 'Player':
+          return _i115.Player;
+        case 'Team':
+          return _i116.Team;
+        case 'Comment':
+          return _i117.Comment;
+        case 'Customer':
+          return _i118.Customer;
+        case 'Book':
+          return _i119.Book;
+        case 'Chapter':
+          return _i120.Chapter;
+        case 'Order':
+          return _i121.Order;
+        case 'Address':
+          return _i122.Address;
+        case 'Citizen':
+          return _i123.Citizen;
+        case 'Company':
+          return _i124.Company;
+        case 'Town':
+          return _i125.Town;
+        case 'Blocking':
+          return _i126.Blocking;
+        case 'Member':
+          return _i127.Member;
+        case 'Cat':
+          return _i128.Cat;
+        case 'Post':
+          return _i129.Post;
+        case 'ModuleDatatype':
+          return _i130.ModuleDatatype;
+        case 'MyFeatureModel':
+          return _i131.MyFeatureModel;
+        case 'Nullability':
+          return _i132.Nullability;
+        case 'ObjectFieldPersist':
+          return _i133.ObjectFieldPersist;
+        case 'ObjectFieldScopes':
+          return _i134.ObjectFieldScopes;
+        case 'ObjectWithBit':
+          return _i135.ObjectWithBit;
+        case 'ObjectWithByteData':
+          return _i136.ObjectWithByteData;
+        case 'ObjectWithCustomClass':
+          return _i137.ObjectWithCustomClass;
+        case 'ObjectWithDuration':
+          return _i138.ObjectWithDuration;
+        case 'ObjectWithEnum':
+          return _i139.ObjectWithEnum;
+        case 'ObjectWithHalfVector':
+          return _i140.ObjectWithHalfVector;
+        case 'ObjectWithIndex':
+          return _i141.ObjectWithIndex;
+        case 'ObjectWithMaps':
+          return _i142.ObjectWithMaps;
+        case 'ObjectWithNullableCustomClass':
+          return _i143.ObjectWithNullableCustomClass;
+        case 'ObjectWithObject':
+          return _i144.ObjectWithObject;
+        case 'ObjectWithParent':
+          return _i145.ObjectWithParent;
+        case 'ObjectWithSelfParent':
+          return _i146.ObjectWithSelfParent;
+        case 'ObjectWithSparseVector':
+          return _i147.ObjectWithSparseVector;
+        case 'ObjectWithUuid':
+          return _i148.ObjectWithUuid;
+        case 'ObjectWithVector':
+          return _i149.ObjectWithVector;
+        case 'Record':
+          return _i150.Record;
+        case 'RelatedUniqueData':
+          return _i151.RelatedUniqueData;
+        case 'ExceptionWithRequiredField':
+          return _i152.ExceptionWithRequiredField;
+        case 'ModelWithRequiredField':
+          return _i153.ModelWithRequiredField;
+        case 'ScopeNoneFields':
+          return _i154.ScopeNoneFields;
+        case 'ScopeServerOnlyFieldChild':
+          return _i155.ScopeServerOnlyFieldChild;
+        case 'ScopeServerOnlyField':
+          return _i156.ScopeServerOnlyField;
+        case 'DefaultServerOnlyClass':
+          return _i157.DefaultServerOnlyClass;
+        case 'DefaultServerOnlyEnum':
+          return _i158.DefaultServerOnlyEnum;
+        case 'NotServerOnlyClass':
+          return _i159.NotServerOnlyClass;
+        case 'NotServerOnlyEnum':
+          return _i160.NotServerOnlyEnum;
+        case 'ServerOnlyClassField':
+          return _i161.ServerOnlyClassField;
+        case 'ServerOnlyDefault':
+          return _i162.ServerOnlyDefault;
+        case 'SimpleData':
+          return _i163.SimpleData;
+        case 'SimpleDataList':
+          return _i164.SimpleDataList;
+        case 'SimpleDataMap':
+          return _i165.SimpleDataMap;
+        case 'SimpleDataObject':
+          return _i166.SimpleDataObject;
+        case 'SimpleDateTime':
+          return _i167.SimpleDateTime;
+        case 'ModelInSubfolder':
+          return _i168.ModelInSubfolder;
+        case 'TestEnum':
+          return _i169.TestEnum;
+        case 'TestEnumStringified':
+          return _i170.TestEnumStringified;
+        case 'Types':
+          return _i171.Types;
+        case 'TypesList':
+          return _i172.TypesList;
+        case 'TypesMap':
+          return _i173.TypesMap;
+        case 'TypesRecord':
+          return _i174.TypesRecord;
+        case 'TypesSet':
+          return _i175.TypesSet;
+        case 'TypesSetRequired':
+          return _i176.TypesSetRequired;
+        case 'UniqueData':
+          return _i177.UniqueData;
+      }
+    }
+    return null;
+  }
+
   @override
   T deserialize<T>(
     dynamic data, [
     Type? t,
   ]) {
+    final runtimeType = getRuntimeTypeFromJson(data);
+    if (runtimeType != null && runtimeType != T && t == null) {
+      return deserialize<T>(data, runtimeType);
+    }
     t ??= T;
     if (t == _i2.ByIndexEnumWithNameValue) {
       return _i2.ByIndexEnumWithNameValue.fromJson(data) as T;
@@ -4033,34 +4401,34 @@ class Protocol extends _i1.SerializationManager {
         return 'ExternalCustomClass';
       case _i180.FreezedCustomClass():
         return 'FreezedCustomClass';
-      case _i2.ByIndexEnumWithNameValue():
-        return 'ByIndexEnumWithNameValue';
-      case _i3.ByNameEnumWithNameValue():
-        return 'ByNameEnumWithNameValue';
-      case _i4.CourseUuid():
-        return 'CourseUuid';
-      case _i5.EnrollmentInt():
-        return 'EnrollmentInt';
-      case _i6.StudentUuid():
-        return 'StudentUuid';
-      case _i7.ArenaUuid():
-        return 'ArenaUuid';
-      case _i8.PlayerUuid():
-        return 'PlayerUuid';
-      case _i9.TeamInt():
-        return 'TeamInt';
-      case _i10.CommentInt():
-        return 'CommentInt';
-      case _i11.CustomerInt():
-        return 'CustomerInt';
-      case _i12.OrderUuid():
-        return 'OrderUuid';
-      case _i13.AddressUuid():
-        return 'AddressUuid';
-      case _i14.CitizenInt():
-        return 'CitizenInt';
-      case _i15.CompanyUuid():
-        return 'CompanyUuid';
+      case _i78.ChildClass():
+        return 'ChildClass';
+      case _i80.ChildClassWithoutId():
+        return 'ChildClassWithoutId';
+      case _i87.PolymorphicGrandChild():
+        return 'PolymorphicGrandChild';
+      case _i93.SealedGrandChild():
+        return 'SealedGrandChild';
+      case _i155.ScopeServerOnlyFieldChild():
+        return 'ScopeServerOnlyFieldChild';
+      case _i67.ImmutableChildObject():
+        return 'ImmutableChildObject';
+      case _i68.ImmutableChildObjectWithNoAdditionalFields():
+        return 'ImmutableChildObjectWithNoAdditionalFields';
+      case _i79.ChildWithDefault():
+        return 'ChildWithDefault';
+      case _i81.ParentClass():
+        return 'ParentClass';
+      case _i83.ParentClassWithoutId():
+        return 'ParentClassWithoutId';
+      case _i88.PolymorphicChild():
+        return 'PolymorphicChild';
+      case _i93.SealedChild():
+        return 'SealedChild';
+      case _i93.SealedOtherChild():
+        return 'SealedOtherChild';
+      case _i61.UuidDefaultPersist():
+        return 'UuidDefaultPersist';
       case _i16.TownInt():
         return 'TownInt';
       case _i17.ChangedIdTypeSelf():
@@ -4151,8 +4519,8 @@ class Protocol extends _i1.SerializationManager {
         return 'UuidDefaultMix';
       case _i60.UuidDefaultModel():
         return 'UuidDefaultModel';
-      case _i61.UuidDefaultPersist():
-        return 'UuidDefaultPersist';
+      case _i2.ByIndexEnumWithNameValue():
+        return 'ByIndexEnumWithNameValue';
       case _i62.EmptyModel():
         return 'EmptyModel';
       case _i63.EmptyModelRelationItem():
@@ -4163,10 +4531,10 @@ class Protocol extends _i1.SerializationManager {
         return 'RelationEmptyModel';
       case _i66.ExceptionWithData():
         return 'ExceptionWithData';
-      case _i67.ImmutableChildObject():
-        return 'ImmutableChildObject';
-      case _i68.ImmutableChildObjectWithNoAdditionalFields():
-        return 'ImmutableChildObjectWithNoAdditionalFields';
+      case _i3.ByNameEnumWithNameValue():
+        return 'ByNameEnumWithNameValue';
+      case _i4.CourseUuid():
+        return 'CourseUuid';
       case _i69.ImmutableObject():
         return 'ImmutableObject';
       case _i70.ImmutableObjectWithImmutableObject():
@@ -4185,28 +4553,28 @@ class Protocol extends _i1.SerializationManager {
         return 'ImmutableObjectWithTable';
       case _i77.ImmutableObjectWithTwentyFields():
         return 'ImmutableObjectWithTwentyFields';
-      case _i78.ChildClass():
-        return 'ChildClass';
-      case _i79.ChildWithDefault():
-        return 'ChildWithDefault';
-      case _i80.ChildClassWithoutId():
-        return 'ChildClassWithoutId';
-      case _i81.ParentClass():
-        return 'ParentClass';
+      case _i5.EnrollmentInt():
+        return 'EnrollmentInt';
+      case _i6.StudentUuid():
+        return 'StudentUuid';
+      case _i7.ArenaUuid():
+        return 'ArenaUuid';
+      case _i8.PlayerUuid():
+        return 'PlayerUuid';
       case _i82.GrandparentClass():
         return 'GrandparentClass';
-      case _i83.ParentClassWithoutId():
-        return 'ParentClassWithoutId';
+      case _i9.TeamInt():
+        return 'TeamInt';
       case _i84.GrandparentClassWithId():
         return 'GrandparentClassWithId';
       case _i85.NonServerOnlyParentClass():
         return 'NonServerOnlyParentClass';
       case _i86.ParentWithDefault():
         return 'ParentWithDefault';
-      case _i87.PolymorphicGrandChild():
-        return 'PolymorphicGrandChild';
-      case _i88.PolymorphicChild():
-        return 'PolymorphicChild';
+      case _i10.CommentInt():
+        return 'CommentInt';
+      case _i11.CustomerInt():
+        return 'CustomerInt';
       case _i89.PolymorphicChildContainer():
         return 'PolymorphicChildContainer';
       case _i90.SimilarButNotParent():
@@ -4215,12 +4583,12 @@ class Protocol extends _i1.SerializationManager {
         return 'PolymorphicParent';
       case _i92.UnrelatedToPolymorphism():
         return 'UnrelatedToPolymorphism';
-      case _i93.SealedGrandChild():
-        return 'SealedGrandChild';
-      case _i93.SealedChild():
-        return 'SealedChild';
-      case _i93.SealedOtherChild():
-        return 'SealedOtherChild';
+      case _i12.OrderUuid():
+        return 'OrderUuid';
+      case _i13.AddressUuid():
+        return 'AddressUuid';
+      case _i14.CitizenInt():
+        return 'CitizenInt';
       case _i94.CityWithLongTableName():
         return 'CityWithLongTableName';
       case _i95.OrganizationWithLongTableName():
@@ -4267,8 +4635,8 @@ class Protocol extends _i1.SerializationManager {
         return 'Player';
       case _i116.Team():
         return 'Team';
-      case _i117.Comment():
-        return 'Comment';
+      case _i177.UniqueData():
+        return 'UniqueData';
       case _i118.Customer():
         return 'Customer';
       case _i119.Book():
@@ -4343,8 +4711,8 @@ class Protocol extends _i1.SerializationManager {
         return 'ModelWithRequiredField';
       case _i154.ScopeNoneFields():
         return 'ScopeNoneFields';
-      case _i155.ScopeServerOnlyFieldChild():
-        return 'ScopeServerOnlyFieldChild';
+      case _i15.CompanyUuid():
+        return 'CompanyUuid';
       case _i156.ScopeServerOnlyField():
         return 'ScopeServerOnlyField';
       case _i157.DefaultServerOnlyClass():
@@ -4387,8 +4755,8 @@ class Protocol extends _i1.SerializationManager {
         return 'TypesSet';
       case _i176.TypesSetRequired():
         return 'TypesSetRequired';
-      case _i177.UniqueData():
-        return 'UniqueData';
+      case _i117.Comment():
+        return 'Comment';
     }
     className = _i183.Protocol().getClassNameForObject(data);
     if (className != null) {
@@ -4452,7 +4820,7 @@ class Protocol extends _i1.SerializationManager {
 
   @override
   dynamic deserializeByClassName(Map<String, dynamic> data) {
-    var dataClassName = data['className'];
+    var dataClassName = data['className'] ?? data['__className__'];
     if (dataClassName is! String) {
       return super.deserializeByClassName(data);
     }

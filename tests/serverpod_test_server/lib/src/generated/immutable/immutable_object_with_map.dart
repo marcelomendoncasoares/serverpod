@@ -60,12 +60,18 @@ abstract class ImmutableObjectWithMap
 
   @override
   Map<String, dynamic> toJson() {
-    return {'mapVariable': mapVariable.toJson()};
+    return {
+      '__className__': 'ImmutableObjectWithMap',
+      'mapVariable': mapVariable.toJson(),
+    };
   }
 
   @override
   Map<String, dynamic> toJsonForProtocol() {
-    return {'mapVariable': mapVariable.toJson()};
+    return {
+      '__className__': 'ImmutableObjectWithMap',
+      'mapVariable': mapVariable.toJson(),
+    };
   }
 
   @override

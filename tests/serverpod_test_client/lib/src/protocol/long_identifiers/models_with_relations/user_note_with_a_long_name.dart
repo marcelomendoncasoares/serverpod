@@ -48,6 +48,7 @@ abstract class UserNoteWithALongName implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'UserNoteWithALongName',
       if (id != null) 'id': id,
       'name': name,
     };

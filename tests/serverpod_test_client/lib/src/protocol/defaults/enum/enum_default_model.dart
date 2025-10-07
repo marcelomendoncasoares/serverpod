@@ -84,6 +84,7 @@ abstract class EnumDefaultModel implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'EnumDefaultModel',
       if (id != null) 'id': id,
       'byNameEnumDefaultModel': byNameEnumDefaultModel.toJson(),
       if (byNameEnumDefaultModelNull != null)

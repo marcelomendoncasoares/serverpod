@@ -13,6 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'simple_data.dart' as _i2;
 import 'dart:typed_data' as _i3;
+import 'protocol.dart' as _i4;
 
 abstract class ObjectWithMaps implements _i1.SerializableModel {
   ObjectWithMaps._({
@@ -53,10 +54,8 @@ abstract class ObjectWithMaps implements _i1.SerializableModel {
 
   factory ObjectWithMaps.fromJson(Map<String, dynamic> jsonSerialization) {
     return ObjectWithMaps(
-      dataMap: (jsonSerialization['dataMap'] as Map).map((k, v) => MapEntry(
-            k as String,
-            _i2.SimpleData.fromJson((v as Map<String, dynamic>)),
-          )),
+      dataMap: _i4.Protocol().deserialize<Map<String, _i2.SimpleData>>(
+          jsonSerialization['dataMap']),
       intMap: (jsonSerialization['intMap'] as Map).map((k, v) => MapEntry(
             k as String,
             v as int,
@@ -84,13 +83,8 @@ abstract class ObjectWithMaps implements _i1.SerializableModel {
             k as String,
             _i1.UuidValueJsonExtension.fromJson(v),
           )),
-      nullableDataMap:
-          (jsonSerialization['nullableDataMap'] as Map).map((k, v) => MapEntry(
-                k as String,
-                v == null
-                    ? null
-                    : _i2.SimpleData.fromJson((v as Map<String, dynamic>)),
-              )),
+      nullableDataMap: _i4.Protocol().deserialize<Map<String, _i2.SimpleData?>>(
+          jsonSerialization['nullableDataMap']),
       nullableIntMap:
           (jsonSerialization['nullableIntMap'] as Map).map((k, v) => MapEntry(
                 k as String,
@@ -179,6 +173,7 @@ abstract class ObjectWithMaps implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'ObjectWithMaps',
       'dataMap': dataMap.toJson(valueToJson: (v) => v.toJson()),
       'intMap': intMap.toJson(),
       'stringMap': stringMap.toJson(),

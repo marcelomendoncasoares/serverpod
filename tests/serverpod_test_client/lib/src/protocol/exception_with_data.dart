@@ -60,6 +60,7 @@ abstract class ExceptionWithData
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'ExceptionWithData',
       'message': message,
       'creationDate': creationDate.toJson(),
       'errorFields': errorFields.toJson(),

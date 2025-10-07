@@ -33,12 +33,18 @@ abstract class TypesSetRequired
   TypesSetRequired copyWith({Set<int>? anInt});
   @override
   Map<String, dynamic> toJson() {
-    return {'anInt': anInt.toJson()};
+    return {
+      '__className__': 'TypesSetRequired',
+      'anInt': anInt.toJson(),
+    };
   }
 
   @override
   Map<String, dynamic> toJsonForProtocol() {
-    return {'anInt': anInt.toJson()};
+    return {
+      '__className__': 'TypesSetRequired',
+      'anInt': anInt.toJson(),
+    };
   }
 
   @override

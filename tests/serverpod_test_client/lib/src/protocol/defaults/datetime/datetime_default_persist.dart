@@ -62,6 +62,7 @@ abstract class DateTimeDefaultPersist implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'DateTimeDefaultPersist',
       if (id != null) 'id': id,
       if (dateTimeDefaultPersistNow != null)
         'dateTimeDefaultPersistNow': dateTimeDefaultPersistNow?.toJson(),

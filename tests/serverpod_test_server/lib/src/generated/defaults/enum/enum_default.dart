@@ -86,6 +86,7 @@ abstract class EnumDefault
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'EnumDefault',
       if (id != null) 'id': id,
       'byNameEnumDefault': byNameEnumDefault.toJson(),
       if (byNameEnumDefaultNull != null)
@@ -99,6 +100,7 @@ abstract class EnumDefault
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'EnumDefault',
       if (id != null) 'id': id,
       'byNameEnumDefault': byNameEnumDefault.toJson(),
       if (byNameEnumDefaultNull != null)

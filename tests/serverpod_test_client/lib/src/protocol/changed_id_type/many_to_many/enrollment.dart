@@ -13,6 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../changed_id_type/many_to_many/student.dart' as _i2;
 import '../../changed_id_type/many_to_many/course.dart' as _i3;
+import '../../protocol.dart' as _i4;
 
 abstract class EnrollmentInt implements _i1.SerializableModel {
   EnrollmentInt._({
@@ -38,14 +39,14 @@ abstract class EnrollmentInt implements _i1.SerializableModel {
           _i1.UuidValueJsonExtension.fromJson(jsonSerialization['studentId']),
       student: jsonSerialization['student'] == null
           ? null
-          : _i2.StudentUuid.fromJson(
-              (jsonSerialization['student'] as Map<String, dynamic>)),
+          : _i4.Protocol()
+              .deserialize<_i2.StudentUuid>(jsonSerialization['student']),
       courseId:
           _i1.UuidValueJsonExtension.fromJson(jsonSerialization['courseId']),
       course: jsonSerialization['course'] == null
           ? null
-          : _i3.CourseUuid.fromJson(
-              (jsonSerialization['course'] as Map<String, dynamic>)),
+          : _i4.Protocol()
+              .deserialize<_i3.CourseUuid>(jsonSerialization['course']),
     );
   }
 
@@ -75,6 +76,7 @@ abstract class EnrollmentInt implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'EnrollmentInt',
       if (id != null) 'id': id,
       'studentId': studentId.toJson(),
       if (student != null) 'student': student?.toJson(),

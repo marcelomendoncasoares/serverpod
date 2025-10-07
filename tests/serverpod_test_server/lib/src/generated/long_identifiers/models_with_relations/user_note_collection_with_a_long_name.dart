@@ -15,6 +15,7 @@
 import 'package:serverpod/serverpod.dart' as _i1;
 import '../../long_identifiers/models_with_relations/user_note_with_a_long_name.dart'
     as _i2;
+import '../../protocol.dart' as _i3;
 
 abstract class UserNoteCollectionWithALongName
     implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
@@ -35,10 +36,10 @@ abstract class UserNoteCollectionWithALongName
     return UserNoteCollectionWithALongName(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
-      notes: (jsonSerialization['notes'] as List?)
-          ?.map((e) =>
-              _i2.UserNoteWithALongName.fromJson((e as Map<String, dynamic>)))
-          .toList(),
+      notes: jsonSerialization['notes'] == null
+          ? null
+          : _i3.Protocol().deserialize<List<_i2.UserNoteWithALongName>>(
+              jsonSerialization['notes']),
     );
   }
 
@@ -67,6 +68,7 @@ abstract class UserNoteCollectionWithALongName
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'UserNoteCollectionWithALongName',
       if (id != null) 'id': id,
       'name': name,
       if (notes != null) 'notes': notes?.toJson(valueToJson: (v) => v.toJson()),
@@ -76,6 +78,7 @@ abstract class UserNoteCollectionWithALongName
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'UserNoteCollectionWithALongName',
       if (id != null) 'id': id,
       'name': name,
       if (notes != null)

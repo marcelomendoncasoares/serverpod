@@ -74,6 +74,7 @@ abstract class BigIntDefaultMix
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'BigIntDefaultMix',
       if (id != null) 'id': id,
       'bigIntDefaultAndDefaultModel': bigIntDefaultAndDefaultModel.toJson(),
       'bigIntDefaultAndDefaultPersist': bigIntDefaultAndDefaultPersist.toJson(),
@@ -85,6 +86,7 @@ abstract class BigIntDefaultMix
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'BigIntDefaultMix',
       if (id != null) 'id': id,
       'bigIntDefaultAndDefaultModel': bigIntDefaultAndDefaultModel.toJson(),
       'bigIntDefaultAndDefaultPersist': bigIntDefaultAndDefaultPersist.toJson(),

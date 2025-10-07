@@ -62,6 +62,7 @@ abstract class ObjectWithUuid
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'ObjectWithUuid',
       if (id != null) 'id': id,
       'uuid': uuid.toJson(),
       if (uuidNullable != null) 'uuidNullable': uuidNullable?.toJson(),
@@ -71,6 +72,7 @@ abstract class ObjectWithUuid
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'ObjectWithUuid',
       if (id != null) 'id': id,
       'uuid': uuid.toJson(),
       if (uuidNullable != null) 'uuidNullable': uuidNullable?.toJson(),

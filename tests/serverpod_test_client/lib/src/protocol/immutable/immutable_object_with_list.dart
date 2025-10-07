@@ -57,7 +57,10 @@ abstract class ImmutableObjectWithList implements _i1.SerializableModel {
 
   @override
   Map<String, dynamic> toJson() {
-    return {'listVariable': listVariable.toJson()};
+    return {
+      '__className__': 'ImmutableObjectWithList',
+      'listVariable': listVariable.toJson(),
+    };
   }
 
   @override

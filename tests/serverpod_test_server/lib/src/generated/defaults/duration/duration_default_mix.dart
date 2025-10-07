@@ -92,6 +92,7 @@ abstract class DurationDefaultMix
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'DurationDefaultMix',
       if (id != null) 'id': id,
       'durationDefaultAndDefaultModel': durationDefaultAndDefaultModel.toJson(),
       'durationDefaultAndDefaultPersist':
@@ -104,6 +105,7 @@ abstract class DurationDefaultMix
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'DurationDefaultMix',
       if (id != null) 'id': id,
       'durationDefaultAndDefaultModel': durationDefaultAndDefaultModel.toJson(),
       'durationDefaultAndDefaultPersist':

@@ -73,6 +73,7 @@ abstract class UuidDefaultMix
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'UuidDefaultMix',
       if (id != null) 'id': id,
       'uuidDefaultAndDefaultModel': uuidDefaultAndDefaultModel.toJson(),
       'uuidDefaultAndDefaultPersist': uuidDefaultAndDefaultPersist.toJson(),
@@ -84,6 +85,7 @@ abstract class UuidDefaultMix
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
+      '__className__': 'UuidDefaultMix',
       if (id != null) 'id': id,
       'uuidDefaultAndDefaultModel': uuidDefaultAndDefaultModel.toJson(),
       'uuidDefaultAndDefaultPersist': uuidDefaultAndDefaultPersist.toJson(),
