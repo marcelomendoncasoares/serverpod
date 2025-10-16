@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 /// A widget to show when a request is in progress.
-class AuthLoadingIndicator extends StatelessWidget {
-  const AuthLoadingIndicator({super.key});
+class LoadingIndicator extends StatelessWidget {
+  const LoadingIndicator({super.key});
 
   @override
   Widget build(BuildContext context) {

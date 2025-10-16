@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 /// A widget to display an error message.
-class AuthErrorMessage extends StatelessWidget {
+class ErrorMessage extends StatelessWidget {
   final String errorMessage;
 
-  const AuthErrorMessage({
+  const ErrorMessage({
     required this.errorMessage,
     super.key,
   });

@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide TextButton;
+import 'package:flutter/material.dart' as material show TextButton;
 
 /// A standard text button widget for authentication forms.
-class AuthTextButton extends StatelessWidget {
+class TextButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String label;
   final bool isLoading;
 
-  const AuthTextButton({
+  const TextButton({
     required this.onPressed,
     required this.label,
     this.isLoading = false,
@@ -15,7 +16,7 @@ class AuthTextButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
+    return material.TextButton(
       onPressed: isLoading ? null : onPressed,
       child: Text(label),
     );

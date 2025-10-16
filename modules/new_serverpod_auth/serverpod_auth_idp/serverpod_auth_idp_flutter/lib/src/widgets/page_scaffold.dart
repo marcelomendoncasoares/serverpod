@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'auth_error_message.dart';
-import 'auth_gaps.dart';
+import 'error_message.dart';
+import 'gaps.dart';
 
 /// A standard page scaffold for authentication screens.
-class AuthPageScaffold extends StatelessWidget {
+class PageScaffold extends StatelessWidget {
   final String title;
   final List<Widget> pageWidgets;
   final VoidCallback onClose;
   final String? errorMessage;
 
-  const AuthPageScaffold({
+  const PageScaffold({
     required this.title,
     required this.pageWidgets,
     required this.onClose,
@@ -34,7 +34,7 @@ class AuthPageScaffold extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (errorMessage != null) ...[
-                AuthErrorMessage(errorMessage: errorMessage!),
+                ErrorMessage(errorMessage: errorMessage!),
                 smallGap,
               ],
               ...pageWidgets,

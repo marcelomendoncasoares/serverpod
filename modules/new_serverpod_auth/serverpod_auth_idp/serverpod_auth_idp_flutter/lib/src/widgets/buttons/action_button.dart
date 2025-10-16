@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'auth_loading_indicator.dart';
+import '../loading_indicator.dart';
 
 /// A standard action button widget for authentication forms.
-class AuthActionButton extends StatelessWidget {
+class ActionButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String label;
   final bool isLoading;
 
-  const AuthActionButton({
+  const ActionButton({
     required this.onPressed,
     required this.label,
     this.isLoading = false,
@@ -24,7 +24,7 @@ class AuthActionButton extends StatelessWidget {
         shape: StadiumBorder(),
       ),
       onPressed: isLoading ? null : onPressed,
-      child: isLoading ? const AuthLoadingIndicator() : Text(label),
+      child: isLoading ? const LoadingIndicator() : Text(label),
     );
   }
 }

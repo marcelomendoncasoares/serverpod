@@ -4,8 +4,13 @@ import 'package:pinput/pinput.dart';
 import 'package:serverpod_auth_idp_flutter/src/theme.dart';
 
 import 'controllers/email_auth_controller.dart';
-import 'widgets/base_screen.dart';
+import 'widgets/buttons/action_button.dart';
+import 'widgets/buttons/paste_from_clipboard_button.dart';
+import 'widgets/buttons/text_button.dart' as custom;
+import 'widgets/gaps.dart';
+import 'widgets/page_scaffold.dart';
 import 'widgets/password_field.dart';
+import 'widgets/text_field.dart';
 
 /// A minimal widget that provides email-based authentication functionality.
 ///
@@ -35,17 +40,14 @@ class SignInWithEmail extends StatefulWidget {
   State<SignInWithEmail> createState() => _SignInWithEmailState();
 }
 
-class _SignInWithEmailState extends State<SignInWithEmail>
-    with BaseAuthScreenWidgets {
+class _SignInWithEmailState extends State<SignInWithEmail> {
   EmailAuthController get _controller => widget.controller;
 
   final focusNode = FocusNode();
 
-  @override
-  bool get isLoading => _controller.isLoading;
+  bool get _isLoading => _controller.isLoading;
 
-  @override
-  String? get errorMessage => _controller.errorMessage;
+  String? get _errorMessage => _controller.errorMessage;
 
   @override
   void initState() {
@@ -76,9 +78,10 @@ class _SignInWithEmailState extends State<SignInWithEmail>
 
   /// The default back-to-sign-in button.
   Widget _createBackToSignInButton() {
-    return createTextButton(
+    return custom.TextButton(
       onPressed: () => _controller.navigateTo(EmailFlowScreen.login),
       label: 'Back to Sign In',
+      isLoading: _isLoading,
     );
   }
 
@@ -126,7 +129,7 @@ class _SignInWithEmailState extends State<SignInWithEmail>
                 showCursor: false,
                 keyboardType: TextInputType.text,
                 autofocus: true,
-                enabled: !isLoading,
+                enabled: !_isLoading,
                 focusNode: focusNode,
                 defaultPinTheme: defaultPinTheme,
                 onCompleted: onCompleted != null ? (_) => onCompleted() : null,
@@ -134,7 +137,7 @@ class _SignInWithEmailState extends State<SignInWithEmail>
                 errorPinTheme: errorPinTheme,
               ),
               const SizedBox(width: 16),
-              createPasteFromClipboardButton(onPaste: (text) {
+              PasteFromClipboardButton(onPaste: (text) {
                 setState(() {
                   _controller.verificationCodeController.text = text;
                 });
@@ -147,59 +150,67 @@ class _SignInWithEmailState extends State<SignInWithEmail>
   }
 
   Widget _buildLoginForm() {
-    return createPage(
+    return PageScaffold(
       title: 'Sign In',
       onClose: () => Navigator.of(context).pop(),
+      errorMessage: _errorMessage,
       pageWidgets: [
-        createTextField(
+        AuthTextField(
           controller: _controller.emailController,
           labelText: 'Email',
           keyboardType: TextInputType.emailAddress,
+          isLoading: _isLoading,
         ),
         smallGap,
         PasswordField(
           controller: _controller.passwordController,
-          isLoading: isLoading,
+          isLoading: _isLoading,
         ),
         largeGap,
-        createActionButton(
+        ActionButton(
           onPressed: _controller.login,
           label: 'Sign In',
+          isLoading: _isLoading,
         ),
         smallGap,
-        createTextButton(
+        custom.TextButton(
           onPressed: () => _controller.navigateTo(EmailFlowScreen.register),
           label: 'Create Account',
+          isLoading: _isLoading,
         ),
         smallGap,
-        createTextButton(
+        custom.TextButton(
           onPressed: () =>
               _controller.navigateTo(EmailFlowScreen.passwordReset),
           label: 'Forgot Password?',
+          isLoading: _isLoading,
         ),
       ],
     );
   }
 
   Widget _buildRegisterForm() {
-    return createPage(
+    return PageScaffold(
       title: 'Register',
       onClose: () => Navigator.of(context).pop(),
+      errorMessage: _errorMessage,
       pageWidgets: [
-        createTextField(
+        AuthTextField(
           controller: _controller.emailController,
           labelText: 'Email',
           keyboardType: TextInputType.emailAddress,
+          isLoading: _isLoading,
         ),
         smallGap,
         PasswordField(
           controller: _controller.passwordController,
-          isLoading: isLoading,
+          isLoading: _isLoading,
         ),
         largeGap,
-        createActionButton(
+        ActionButton(
           onPressed: _controller.startRegistration,
           label: 'Register',
+          isLoading: _isLoading,
         ),
         smallGap,
         _createBackToSignInButton(),
@@ -208,9 +219,10 @@ class _SignInWithEmailState extends State<SignInWithEmail>
   }
 
   Widget _buildVerificationForm() {
-    return createPage(
+    return PageScaffold(
       title: 'Verify Email',
       onClose: () => Navigator.of(context).pop(),
+      errorMessage: _errorMessage,
       pageWidgets: [
         Text(
           'A verification email has been sent. Please check your email and '
@@ -223,9 +235,10 @@ class _SignInWithEmailState extends State<SignInWithEmail>
           onCompleted: _controller.finishRegistration,
         ),
         largeGap,
-        createActionButton(
+        ActionButton(
           onPressed: _controller.finishRegistration,
           label: 'Verify',
+          isLoading: _isLoading,
         ),
         smallGap,
         _createBackToSignInButton(),
@@ -234,9 +247,10 @@ class _SignInWithEmailState extends State<SignInWithEmail>
   }
 
   Widget _buildPasswordResetRequestForm() {
-    return createPage(
+    return PageScaffold(
       title: 'Request Password Reset',
       onClose: () => Navigator.of(context).pop(),
+      errorMessage: _errorMessage,
       pageWidgets: [
         Text(
           'Enter the email address to request password reset.',
@@ -244,15 +258,17 @@ class _SignInWithEmailState extends State<SignInWithEmail>
           textAlign: TextAlign.center,
         ),
         smallGap,
-        createTextField(
+        AuthTextField(
           controller: _controller.emailController,
           labelText: 'Email',
           keyboardType: TextInputType.emailAddress,
+          isLoading: _isLoading,
         ),
         largeGap,
-        createActionButton(
+        ActionButton(
           onPressed: _controller.startPasswordReset,
           label: 'Request Password Reset',
+          isLoading: _isLoading,
         ),
         smallGap,
         _createBackToSignInButton(),
@@ -261,9 +277,10 @@ class _SignInWithEmailState extends State<SignInWithEmail>
   }
 
   Widget _buildPasswordResetForm() {
-    return createPage(
+    return PageScaffold(
       title: 'Reset Password',
       onClose: () => Navigator.of(context).pop(),
+      errorMessage: _errorMessage,
       pageWidgets: [
         Text(
           'A password reset email has been sent. Please check your email and '
@@ -277,12 +294,13 @@ class _SignInWithEmailState extends State<SignInWithEmail>
         PasswordField(
           labelText: 'New Password',
           controller: _controller.passwordController,
-          isLoading: isLoading,
+          isLoading: _isLoading,
         ),
         largeGap,
-        createActionButton(
+        ActionButton(
           onPressed: _controller.finishPasswordReset,
           label: 'Reset Password',
+          isLoading: _isLoading,
         ),
         smallGap,
         _createBackToSignInButton(),
