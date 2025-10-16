@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'auth_action_button.dart';
+import 'auth_error_message.dart';
+import 'auth_gaps.dart' as gaps;
+import 'auth_loading_indicator.dart';
+import 'auth_page_scaffold.dart';
+import 'auth_text_button.dart';
+import 'auth_text_field.dart';
+import 'paste_from_clipboard_button.dart';
 
 /// A helper class to declare the widgets used in the sign in with email flow.
 ///
@@ -13,17 +20,13 @@ mixin BaseAuthScreenWidgets {
   String? get errorMessage;
 
   /// A gap to use between related widgets.
-  Widget get smallGap => const SizedBox(height: 16);
+  Widget get smallGap => gaps.smallGap;
 
   /// A gap to use between unrelated widgets.
-  Widget get largeGap => const SizedBox(height: 24);
+  Widget get largeGap => gaps.largeGap;
 
   /// A widget to show when a request is in progress.
-  Widget get loadingWidget => const SizedBox(
-        height: 20,
-        width: 20,
-        child: CircularProgressIndicator(strokeWidth: 2),
-      );
+  Widget get loadingWidget => const AuthLoadingIndicator();
 
   /// Returns a list of widgets to display an error message.
   List<Widget> get errorWidgets {
@@ -31,39 +34,24 @@ mixin BaseAuthScreenWidgets {
     if (errorMessage == null) return [];
 
     return [
-      Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.red.shade50,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          errorMessage,
-          style: TextStyle(color: Colors.red.shade900),
-        ),
-      ),
+      AuthErrorMessage(errorMessage: errorMessage),
       smallGap,
     ];
   }
 
   /// Returns a standard text field widget.
-  TextField createTextField({
+  Widget createTextField({
     required TextEditingController controller,
     required String labelText,
     TextInputType keyboardType = TextInputType.text,
     String? hintText,
   }) {
-    return TextField(
+    return AuthTextField(
       controller: controller,
-      decoration: InputDecoration(
-        labelText: labelText,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        hintText: hintText,
-      ),
+      labelText: labelText,
       keyboardType: keyboardType,
-      enabled: !isLoading,
+      hintText: hintText,
+      isLoading: isLoading,
     );
   }
 
@@ -72,15 +60,10 @@ mixin BaseAuthScreenWidgets {
     required VoidCallback onPressed,
     required String label,
   }) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        foregroundColor: Colors.white,
-        backgroundColor: Colors.black,
-        shape: StadiumBorder(),
-      ),
-      onPressed: isLoading ? null : onPressed,
-      child: isLoading ? loadingWidget : Text(label),
+    return AuthActionButton(
+      onPressed: onPressed,
+      label: label,
+      isLoading: isLoading,
     );
   }
 
@@ -89,26 +72,19 @@ mixin BaseAuthScreenWidgets {
     required VoidCallback onPressed,
     required String label,
   }) {
-    return TextButton(
-      onPressed: isLoading ? null : onPressed,
-      child: Text(label),
+    return AuthTextButton(
+      onPressed: onPressed,
+      label: label,
+      isLoading: isLoading,
     );
   }
 
   /// Returns a standard paste-from-clipboard button.
   Widget createPasteFromClipboardButton({
     required Function(String text) onPaste,
-  }) =>
-      IconButton(
-        onPressed: () async {
-          final data = await Clipboard.getData('text/plain');
-          final text = data?.text;
-          if (text != null) onPaste(text);
-        },
-        icon: const Icon(Icons.paste),
-        color: Colors.grey[400],
-        tooltip: 'Paste from clipboard',
-      );
+  }) {
+    return PasteFromClipboardButton(onPaste: onPaste);
+  }
 
   /// Returns a standard page scaffold.
   Widget createPage({
@@ -116,26 +92,11 @@ mixin BaseAuthScreenWidgets {
     required List<Widget> pageWidgets,
     required VoidCallback onClose,
   }) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: onClose,
-        ),
-        title: Text(title),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ...errorWidgets,
-              ...pageWidgets,
-            ],
-          ),
-        ),
-      ),
+    return AuthPageScaffold(
+      title: title,
+      pageWidgets: pageWidgets,
+      onClose: onClose,
+      errorMessage: errorMessage,
     );
   }
 }
