@@ -1,0 +1,38 @@
+name: example
+display_name: Serverpod Auth IDP Example
+description: "Example app for Serverpod Auth IDP"
+publish_to: "none"
+version: 1.0.0
+
+environment:
+  sdk: ">=3.5.1 <4.0.0"
+  flutter: ">=3.8.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  serverpod_auth_idp_flutter: 3.0.0-alpha.1
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+
+dependency_overrides:
+  serverpod_auth_idp_client:
+    path: ../../serverpod_auth_idp_client
+  serverpod_auth_idp_flutter:
+    path: ../
+  serverpod_auth_core_client:
+    path: ../../../serverpod_auth_core/serverpod_auth_core_client
+  serverpod_auth_core_flutter:
+    path: ../../../serverpod_auth_core/serverpod_auth_core_flutter
+  serverpod_client:
+    path: ../../../../../packages/serverpod_client
+  serverpod_flutter:
+    path: ../../../../../packages/serverpod_flutter
+  serverpod_lints:
+    path: ../../../../../packages/serverpod_lints
+  serverpod_serialization:
+    path: ../../../../../packages/serverpod_serialization
+
+flutter:
+  uses-material-design: true
