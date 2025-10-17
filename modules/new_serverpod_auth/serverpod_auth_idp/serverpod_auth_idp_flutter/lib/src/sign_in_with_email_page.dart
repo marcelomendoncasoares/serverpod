@@ -3,6 +3,7 @@ import 'package:serverpod_auth_core_flutter/serverpod_auth_core_flutter.dart';
 
 import 'controllers/email_auth_controller.dart';
 import 'sign_in_with_email.dart';
+import 'widgets/default_scaffold.dart';
 
 class SignInWithEmailPage extends StatefulWidget {
   /// The Serverpod client instance.
@@ -46,19 +47,43 @@ class _SignInWithEmailPageState extends State<SignInWithEmailPage> {
       onAuthenticated: widget.onAuthenticated,
       onError: widget.onError,
     );
+    _controller.addListener(_onControllerStateChanged);
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_onControllerStateChanged);
     _controller.dispose();
     super.dispose();
   }
 
+  /// Rebuild when controller state changes
+  void _onControllerStateChanged() => setState(() {});
+
   @override
   Widget build(BuildContext context) {
-    return SignInWithEmail(
-      controller: _controller,
-      onBack: widget.onBack,
+    return DefaultScaffold(
+      title: _controller.currentScreen.pageName,
+      onBack: () {
+        if (!_controller.navigateBack()) {
+          widget.onBack?.call();
+        }
+      },
+      errorMessage: _controller.errorMessage,
+      child: SignInWithEmailWidget(
+        controller: _controller,
+        onBack: widget.onBack,
+      ),
     );
   }
+}
+
+extension on EmailFlowScreen {
+  String get pageName => switch (this) {
+        EmailFlowScreen.login => 'Login',
+        EmailFlowScreen.register => 'Register',
+        EmailFlowScreen.verification => 'Verification',
+        EmailFlowScreen.passwordReset => 'Request Password Reset',
+        EmailFlowScreen.passwordResetVerification => 'Reset Password',
+      };
 }

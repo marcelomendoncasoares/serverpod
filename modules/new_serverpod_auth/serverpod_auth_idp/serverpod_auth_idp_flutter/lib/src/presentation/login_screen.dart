@@ -4,7 +4,6 @@ import '../controllers/email_auth_controller.dart';
 import '../widgets/buttons/action_button.dart';
 import '../widgets/buttons/text_button.dart' as custom;
 import '../widgets/gaps.dart';
-import '../widgets/page_scaffold.dart';
 import '../widgets/password_field.dart';
 import '../widgets/text_field.dart';
 
@@ -25,13 +24,9 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PageScaffold(
-      title: 'Sign In',
-      onBack: controller.startScreen != EmailFlowScreen.login
-          ? () => controller.navigateTo(controller.startScreen)
-          : onBack,
-      errorMessage: controller.errorMessage,
-      pageWidgets: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
         AuthTextField(
           controller: controller.emailController,
           labelText: 'Email',

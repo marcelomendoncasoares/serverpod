@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../controllers/email_auth_controller.dart';
 import '../widgets/buttons/action_button.dart';
 import '../widgets/gaps.dart';
-import '../widgets/page_scaffold.dart';
 import '../widgets/text_field.dart';
 
 /// Password reset request screen widget.
@@ -18,11 +17,9 @@ class PasswordResetRequestScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PageScaffold(
-      title: 'Request Password Reset',
-      onBack: () => controller.navigateTo(EmailFlowScreen.login),
-      errorMessage: controller.errorMessage,
-      pageWidgets: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
         Text(
           'Enter the email address to request password reset.',
           style: Theme.of(context).textTheme.bodyMedium,

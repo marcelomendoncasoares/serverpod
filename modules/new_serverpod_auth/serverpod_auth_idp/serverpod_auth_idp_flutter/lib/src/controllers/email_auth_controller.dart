@@ -119,6 +119,25 @@ class EmailAuthController extends ChangeNotifier {
     });
   }
 
+  /// Navigates back to the previous screen in the authentication flow.
+  ///
+  /// Returns `true` if the navigation was successful, and `false` if already on
+  /// the start screen and there is no previous screen to navigate back to.
+  bool navigateBack() {
+    if (currentScreen == startScreen) return false;
+
+    navigateTo(switch (currentScreen) {
+      EmailFlowScreen.login => EmailFlowScreen.register,
+      EmailFlowScreen.register => EmailFlowScreen.login,
+      EmailFlowScreen.verification => EmailFlowScreen.register,
+      EmailFlowScreen.passwordReset => EmailFlowScreen.login,
+      EmailFlowScreen.passwordResetVerification =>
+        EmailFlowScreen.passwordReset,
+    });
+
+    return true;
+  }
+
   /// Clears the text controllers and previously set request ID, if not on
   /// a verification code screen. Pass [notify] as `false` if calling before
   /// [navigateTo] to avoid notifying listeners twice.

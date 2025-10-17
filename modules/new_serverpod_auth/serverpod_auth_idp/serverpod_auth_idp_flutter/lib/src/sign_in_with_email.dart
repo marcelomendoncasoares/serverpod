@@ -25,7 +25,7 @@ import 'presentation/verification_screen.dart';
 ///
 /// SignInWithEmail(controller: controller)
 /// ```
-class SignInWithEmail extends StatefulWidget {
+class SignInWithEmailWidget extends StatefulWidget {
   /// The controller that manages authentication state and logic.
   final EmailAuthController controller;
 
@@ -34,13 +34,14 @@ class SignInWithEmail extends StatefulWidget {
   final VoidCallback? onBack;
 
   /// Creates the sign-in with email screen widget.
-  const SignInWithEmail({super.key, required this.controller, this.onBack});
+  const SignInWithEmailWidget(
+      {super.key, required this.controller, this.onBack});
 
   @override
-  State<SignInWithEmail> createState() => _SignInWithEmailState();
+  State<SignInWithEmailWidget> createState() => _SignInWithEmailWidgetState();
 }
 
-class _SignInWithEmailState extends State<SignInWithEmail> {
+class _SignInWithEmailWidgetState extends State<SignInWithEmailWidget> {
   EmailAuthController get _controller => widget.controller;
 
   /// The first screen of the email flow.

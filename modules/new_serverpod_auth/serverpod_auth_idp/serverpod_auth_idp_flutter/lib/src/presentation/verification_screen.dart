@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../controllers/email_auth_controller.dart';
 import '../widgets/buttons/action_button.dart';
 import '../widgets/gaps.dart';
-import '../widgets/page_scaffold.dart';
 import '../widgets/verification_code.dart';
 
 /// Email verification screen widget.
@@ -21,11 +20,9 @@ class VerificationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PageScaffold(
-      title: 'Verify Email',
-      onBack: () => controller.navigateTo(EmailFlowScreen.register),
-      errorMessage: controller.errorMessage,
-      pageWidgets: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
         Text(
           'A verification email has been sent. Please check your email and '
           'enter the details below.',

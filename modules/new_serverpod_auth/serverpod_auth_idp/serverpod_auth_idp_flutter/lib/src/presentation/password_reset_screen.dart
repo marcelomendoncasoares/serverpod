@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../controllers/email_auth_controller.dart';
 import '../widgets/buttons/action_button.dart';
 import '../widgets/gaps.dart';
-import '../widgets/page_scaffold.dart';
 import '../widgets/password_field.dart';
 import '../widgets/verification_code.dart';
 
@@ -20,11 +19,9 @@ class PasswordResetScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PageScaffold(
-      title: 'Reset Password',
-      onBack: () => controller.navigateTo(EmailFlowScreen.passwordReset),
-      errorMessage: controller.errorMessage,
-      pageWidgets: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
         Text(
           'A password reset email has been sent. Please check your email and '
           'enter the details below.',

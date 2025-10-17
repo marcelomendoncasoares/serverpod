@@ -3,15 +3,15 @@ import 'error_message.dart';
 import 'gaps.dart';
 
 /// A standard page scaffold for authentication screens.
-class PageScaffold extends StatelessWidget {
+class DefaultScaffold extends StatelessWidget {
   final String title;
-  final List<Widget> pageWidgets;
+  final Widget child;
   final VoidCallback? onBack;
   final String? errorMessage;
 
-  const PageScaffold({
+  const DefaultScaffold({
     required this.title,
-    required this.pageWidgets,
+    required this.child,
     this.onBack,
     this.errorMessage,
     super.key,
@@ -39,7 +39,7 @@ class PageScaffold extends StatelessWidget {
                 ErrorMessage(errorMessage: errorMessage!),
                 smallGap,
               ],
-              ...pageWidgets,
+              child,
             ],
           ),
         ),
