@@ -63,19 +63,35 @@ class _ExampleAppState extends State<ExampleApp> {
   }
 
   Widget _signInScreen() {
-    return SignInWithEmailScreen(
-      client: client,
-      onBack: () => {
-        context.showSnackBar(
-          message: 'Back button pressed on first screen.',
+    return Scaffold(
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: AuthOnboardingWidget(
+              client: client,
+              onBack: () => {
+                context.showSnackBar(
+                  message: 'Back button pressed on first screen.',
+                ),
+              },
+              onAuthenticated: () => {
+                context.showSnackBar(
+                  message: 'User authenticated.',
+                  backgroundColor: Colors.green,
+                ),
+              },
+              onError: (error) => {
+                context.showSnackBar(
+                  message: 'Authentication failed: $error',
+                  backgroundColor: Colors.red,
+                ),
+              },
+            ),
+          ),
         ),
-      },
-      onAuthenticated: () => {
-        context.showSnackBar(
-          message: 'User authenticated.',
-          backgroundColor: Colors.green,
-        ),
-      },
+      ),
     );
   }
 }
