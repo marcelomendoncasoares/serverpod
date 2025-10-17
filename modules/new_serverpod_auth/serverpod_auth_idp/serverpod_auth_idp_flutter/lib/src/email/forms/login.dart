@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../email_auth_controller.dart';
 import '../../common/widgets/buttons/action_button.dart';
-import '../../common/widgets/buttons/text_button.dart' as custom;
+import '../../common/widgets/buttons/text_button.dart';
 import '../../common/widgets/gaps.dart';
 import '../../common/widgets/password_field.dart';
 import '../../common/widgets/text_field.dart';
@@ -38,23 +38,31 @@ class LoginForm extends StatelessWidget {
           controller: controller.passwordController,
           isLoading: controller.isLoading,
         ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            HyperlinkTextButton(
+              onPressed: () =>
+                  controller.navigateTo(EmailFlowScreen.passwordReset),
+              label: 'Forgot password?',
+            ),
+          ],
+        ),
         largeGap,
         ActionButton(
           onPressed: controller.login,
-          label: 'Sign In',
+          label: 'Log in',
           isLoading: controller.isLoading,
         ),
-        smallGap,
-        custom.TextButton(
-          onPressed: () => controller.navigateTo(EmailFlowScreen.register),
-          label: 'Create Account',
-          isLoading: controller.isLoading,
-        ),
-        smallGap,
-        custom.TextButton(
-          onPressed: () => controller.navigateTo(EmailFlowScreen.passwordReset),
-          label: 'Forgot Password?',
-          isLoading: controller.isLoading,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("Don't have an account?"),
+            HyperlinkTextButton(
+              onPressed: () => controller.navigateTo(EmailFlowScreen.register),
+              label: 'Sign up',
+            ),
+          ],
         ),
       ],
     );

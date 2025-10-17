@@ -21,6 +21,7 @@ class ActionButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16),
         foregroundColor: Colors.white,
         backgroundColor: Colors.black,
+        textStyle: Theme.of(context).textTheme.bodyLarge,
         shape: StadiumBorder(),
       ),
       onPressed: isLoading ? null : onPressed,

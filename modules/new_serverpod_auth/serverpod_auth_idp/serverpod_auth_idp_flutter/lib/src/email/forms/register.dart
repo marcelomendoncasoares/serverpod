@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../email_auth_controller.dart';
 import '../../common/widgets/buttons/action_button.dart';
+import '../../common/widgets/buttons/text_button.dart';
 import '../../common/widgets/gaps.dart';
 import '../../common/widgets/password_field.dart';
 import '../../common/widgets/text_field.dart';
@@ -39,13 +40,18 @@ class RegisterForm extends StatelessWidget {
         largeGap,
         ActionButton(
           onPressed: controller.startRegistration,
-          label: 'Register',
+          label: 'Create account',
           isLoading: controller.isLoading,
         ),
-        smallGap,
-        TextButton(
-          onPressed: () => controller.navigateTo(EmailFlowScreen.login),
-          child: Text('Already have an account? Login'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("Already have an account?"),
+            HyperlinkTextButton(
+              onPressed: () => controller.navigateTo(EmailFlowScreen.login),
+              label: 'Sign in',
+            ),
+          ],
         ),
       ],
     );
