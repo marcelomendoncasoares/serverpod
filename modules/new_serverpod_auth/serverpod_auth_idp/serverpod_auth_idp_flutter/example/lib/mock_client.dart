@@ -110,6 +110,17 @@ class Client extends ServerpodClientShared {
   @override
   Map<String, ModuleEndpointCaller> get moduleLookup =>
       {'serverpod_auth_core': modules.auth};
+
+  // TODO: Remove once https://github.com/serverpod/serverpod/pull/4072 is merged.
+  @override
+  Future<T> callServerEndpoint<T>(
+    String endpoint,
+    String method,
+    Map<String, dynamic> args, {
+    bool authenticated = true,
+  }) async {
+    throw ServerpodClientBadRequest();
+  }
 }
 
 class MockAuthData {
