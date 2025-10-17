@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../controllers/email_auth_controller.dart';
-import '../widgets/buttons/action_button.dart';
-import '../widgets/gaps.dart';
-import '../widgets/password_field.dart';
-import '../widgets/text_field.dart';
+import '../email_auth_controller.dart';
+import '../../common/widgets/buttons/action_button.dart';
+import '../../common/widgets/gaps.dart';
+import '../../common/widgets/password_field.dart';
+import '../../common/widgets/text_field.dart';
 
 /// Registration screen widget for email authentication.
 ///
 /// Displays email and password fields for creating a new account.
-class RegisterScreen extends StatelessWidget {
+class RegisterForm extends StatelessWidget {
   /// The controller that manages authentication state and logic.
   final EmailAuthController controller;
 
@@ -18,7 +18,7 @@ class RegisterScreen extends StatelessWidget {
   final VoidCallback? onBack;
 
   /// Creates a registration screen widget.
-  const RegisterScreen({super.key, required this.controller, this.onBack});
+  const RegisterForm({super.key, required this.controller, this.onBack});
 
   @override
   Widget build(BuildContext context) {

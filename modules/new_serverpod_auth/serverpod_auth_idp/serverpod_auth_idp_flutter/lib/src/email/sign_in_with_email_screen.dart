@@ -1,11 +1,11 @@
 import 'package:flutter/widgets.dart';
 import 'package:serverpod_auth_core_flutter/serverpod_auth_core_flutter.dart';
 
-import 'controllers/email_auth_controller.dart';
-import 'sign_in_with_email.dart';
-import 'widgets/default_scaffold.dart';
+import 'email_auth_controller.dart';
+import 'sign_in_with_email_widget.dart';
+import '../common/widgets/default_scaffold.dart';
 
-class SignInWithEmailPage extends StatefulWidget {
+class SignInWithEmailScreen extends StatefulWidget {
   /// The Serverpod client instance.
   final ServerpodClientShared client;
 
@@ -22,7 +22,7 @@ class SignInWithEmailPage extends StatefulWidget {
   /// Callback when an error occurs during authentication.
   final Function(Object error)? onError;
 
-  const SignInWithEmailPage({
+  const SignInWithEmailScreen({
     required this.client,
     this.startScreen = EmailFlowScreen.login,
     this.onBack,
@@ -32,10 +32,10 @@ class SignInWithEmailPage extends StatefulWidget {
   });
 
   @override
-  State<SignInWithEmailPage> createState() => _SignInWithEmailPageState();
+  State<SignInWithEmailScreen> createState() => _SignInWithEmailScreenState();
 }
 
-class _SignInWithEmailPageState extends State<SignInWithEmailPage> {
+class _SignInWithEmailScreenState extends State<SignInWithEmailScreen> {
   late final EmailAuthController _controller;
 
   @override

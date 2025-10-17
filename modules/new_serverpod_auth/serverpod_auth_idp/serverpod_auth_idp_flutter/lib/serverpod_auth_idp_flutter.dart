@@ -10,6 +10,6 @@ export 'package:serverpod_auth_core_flutter/serverpod_auth_core_flutter.dart';
 
 export 'src/config.dart';
 export 'src/theme.dart';
-export 'src/sign_in_with_email.dart';
-export 'src/controllers/email_auth_controller.dart';
-export 'src/sign_in_with_email_page.dart';
+export 'src/email/sign_in_with_email_widget.dart';
+export 'src/email/email_auth_controller.dart';
+export 'src/email/sign_in_with_email_screen.dart';

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-import '../controllers/email_auth_controller.dart';
-import '../widgets/buttons/action_button.dart';
-import '../widgets/buttons/text_button.dart' as custom;
-import '../widgets/gaps.dart';
-import '../widgets/password_field.dart';
-import '../widgets/text_field.dart';
+import '../email_auth_controller.dart';
+import '../../common/widgets/buttons/action_button.dart';
+import '../../common/widgets/buttons/text_button.dart' as custom;
+import '../../common/widgets/gaps.dart';
+import '../../common/widgets/password_field.dart';
+import '../../common/widgets/text_field.dart';
 
 /// Login screen widget for email authentication.
 ///
 /// Displays email and password fields with options to sign in,
 /// create an account, or reset password.
-class LoginScreen extends StatelessWidget {
+class LoginForm extends StatelessWidget {
   /// The controller that manages authentication state and logic.
   final EmailAuthController controller;
 
@@ -20,7 +20,7 @@ class LoginScreen extends StatelessWidget {
   final VoidCallback? onBack;
 
   /// Creates a login screen widget.
-  const LoginScreen({super.key, required this.controller, this.onBack});
+  const LoginForm({super.key, required this.controller, this.onBack});
 
   @override
   Widget build(BuildContext context) {

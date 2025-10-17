@@ -63,7 +63,7 @@ class _ExampleAppState extends State<ExampleApp> {
   }
 
   Widget _signInScreen() {
-    return SignInWithEmailPage(
+    return SignInWithEmailScreen(
       client: client,
       onBack: () => {
         context.showSnackBar(

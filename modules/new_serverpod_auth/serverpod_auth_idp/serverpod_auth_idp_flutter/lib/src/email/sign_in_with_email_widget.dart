@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import 'controllers/email_auth_controller.dart';
-import 'presentation/login_screen.dart';
-import 'presentation/password_reset_request_screen.dart';
-import 'presentation/password_reset_screen.dart';
-import 'presentation/register_screen.dart';
-import 'presentation/verification_screen.dart';
+import 'email_auth_controller.dart';
+import 'forms/login.dart';
+import 'forms/password_reset_complete.dart';
+import 'forms/password_reset.dart';
+import 'forms/register.dart';
+import 'forms/verification.dart';
 
 /// A minimal widget that provides email-based authentication functionality.
 ///
@@ -66,15 +66,14 @@ class _SignInWithEmailWidgetState extends State<SignInWithEmailWidget> {
   Widget build(BuildContext context) {
     return switch (_controller.currentScreen) {
       EmailFlowScreen.login =>
-        LoginScreen(controller: _controller, onBack: widget.onBack),
+        LoginForm(controller: _controller, onBack: widget.onBack),
       EmailFlowScreen.register =>
-        RegisterScreen(controller: _controller, onBack: widget.onBack),
-      EmailFlowScreen.verification =>
-        VerificationScreen(controller: _controller),
+        RegisterForm(controller: _controller, onBack: widget.onBack),
+      EmailFlowScreen.verification => VerificationForm(controller: _controller),
       EmailFlowScreen.passwordReset =>
-        PasswordResetRequestScreen(controller: _controller),
+        PasswordResetForm(controller: _controller),
       EmailFlowScreen.passwordResetVerification =>
-        PasswordResetScreen(controller: _controller),
+        PasswordResetCompleteForm(controller: _controller),
     };
   }
 }
