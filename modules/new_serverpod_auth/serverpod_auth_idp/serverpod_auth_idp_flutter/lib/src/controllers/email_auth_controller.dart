@@ -54,6 +54,9 @@ class EmailAuthController extends ChangeNotifier {
   /// The Serverpod client instance.
   final ServerpodClientShared client;
 
+  /// The screen to display when starting the flow.
+  final EmailFlowScreen startScreen;
+
   /// Callback when authentication is successful.
   final VoidCallback? onAuthenticated;
 
@@ -72,12 +75,14 @@ class EmailAuthController extends ChangeNotifier {
   /// Creates an email authentication controller.
   EmailAuthController({
     required this.client,
-    EmailFlowScreen startScreen = EmailFlowScreen.login,
+    this.startScreen = EmailFlowScreen.login,
     this.onAuthenticated,
     this.onError,
     // TODO: Add validation hooks.
-  }) : assert(startScreen != EmailFlowScreen.verification,
-            'Cannot start on verification screen') {
+  }) : assert(
+            startScreen == EmailFlowScreen.login ||
+                startScreen == EmailFlowScreen.register,
+            'Can only start on login or register screen') {
     _currentScreen = startScreen;
   }
 

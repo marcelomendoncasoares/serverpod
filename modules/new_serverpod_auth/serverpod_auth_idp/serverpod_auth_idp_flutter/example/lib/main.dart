@@ -7,7 +7,19 @@ final client = Client('http://localhost:8080/')
   ..authSessionManager = ClientAuthSessionManager();
 
 void main() {
-  runApp(const ExampleApp());
+  runApp(
+    MaterialApp(
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.white,
+        colorScheme: const ColorScheme.light(
+          surface: Colors.white,
+          primary: Colors.black,
+        ),
+      ),
+      debugShowCheckedModeBanner: false,
+      home: const ExampleApp(),
+    ),
+  );
 }
 
 class ExampleApp extends StatefulWidget {
@@ -24,6 +36,8 @@ class _ExampleAppState extends State<ExampleApp> {
   void initState() {
     super.initState();
 
+    // NOTE: This is the only required setState to ensure that the  UI gets
+    // updated when the auth state changes.
     client.auth.authInfo.addListener(() {
       setState(() {
         _isSignedIn = client.auth.isAuthenticated;
@@ -37,26 +51,13 @@ class _ExampleAppState extends State<ExampleApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white,
-        colorScheme: const ColorScheme.light(
-          surface: Colors.white,
-          primary: Colors.black,
-        ),
-      ),
-      debugShowCheckedModeBanner: false,
-      home: _isSignedIn ? _connectedScreen() : _signInScreen(),
-    );
+    return _isSignedIn ? _connectedScreen() : _signInScreen();
   }
 
   Widget _connectedScreen() {
     return ConnectedScreen(
       onSignOut: () async {
         await client.auth.signOutDevice();
-        setState(() {
-          _isSignedIn = false;
-        });
       },
     );
   }
@@ -64,10 +65,16 @@ class _ExampleAppState extends State<ExampleApp> {
   Widget _signInScreen() {
     return SignInWithEmailPage(
       client: client,
-      onAuthenticated: () {
-        setState(() {
-          _isSignedIn = true;
-        });
+      onBack: () => {
+        context.showSnackBar(
+          message: 'Back button pressed on first screen.',
+        ),
+      },
+      onAuthenticated: () => {
+        context.showSnackBar(
+          message: 'User authenticated.',
+          backgroundColor: Colors.green,
+        ),
       },
     );
   }
@@ -96,6 +103,21 @@ class ConnectedScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+extension on BuildContext {
+  void showSnackBar({
+    required String message,
+    Color? backgroundColor,
+  }) {
+    ScaffoldMessenger.of(this).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+        duration: const Duration(seconds: 2),
       ),
     );
   }

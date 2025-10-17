@@ -6,13 +6,13 @@ import 'gaps.dart';
 class PageScaffold extends StatelessWidget {
   final String title;
   final List<Widget> pageWidgets;
-  final VoidCallback onClose;
+  final VoidCallback? onBack;
   final String? errorMessage;
 
   const PageScaffold({
     required this.title,
     required this.pageWidgets,
-    required this.onClose,
+    this.onBack,
     this.errorMessage,
     super.key,
   });
@@ -21,10 +21,12 @@ class PageScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: onClose,
-        ),
+        leading: onBack != null
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: onBack,
+              )
+            : null,
         title: Text(title),
       ),
       body: SafeArea(

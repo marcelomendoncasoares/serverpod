@@ -11,6 +11,10 @@ class SignInWithEmailPage extends StatefulWidget {
   /// The initial screen to display.
   final EmailFlowScreen startScreen;
 
+  /// Callback when the user cancels the sign-in process.
+  /// If null, will not show the back button on the first screen.
+  final VoidCallback? onBack;
+
   /// Callback when authentication is successful.
   final VoidCallback? onAuthenticated;
 
@@ -20,6 +24,7 @@ class SignInWithEmailPage extends StatefulWidget {
   const SignInWithEmailPage({
     required this.client,
     this.startScreen = EmailFlowScreen.login,
+    this.onBack,
     this.onAuthenticated,
     this.onError,
     super.key,
@@ -51,6 +56,9 @@ class _SignInWithEmailPageState extends State<SignInWithEmailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SignInWithEmail(controller: _controller);
+    return SignInWithEmail(
+      controller: _controller,
+      onBack: widget.onBack,
+    );
   }
 }
