@@ -13,3 +13,4 @@ export 'src/theme.dart';
 export 'src/email/sign_in_with_email_widget.dart';
 export 'src/email/email_auth_controller.dart';
 export 'src/email/sign_in_with_email_screen.dart';
+export 'src/google/sign_in_with_google_widget.dart';

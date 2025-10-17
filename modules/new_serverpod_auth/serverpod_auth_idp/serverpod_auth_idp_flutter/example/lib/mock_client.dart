@@ -80,6 +80,24 @@ class EndpointAuthEmail extends EndpointAuthEmailBase {
   }
 }
 
+class GoogleIDPEndpoint extends EndpointGoogleIDPBase {
+  GoogleIDPEndpoint(super.caller);
+
+  final _mockData = MockAuthData();
+
+  @override
+  String get name => 'googleIDP';
+
+  @override
+  Future<AuthSuccess> login({required String idToken}) =>
+      // caller.callServerEndpoint<AuthSuccess>(
+      //   'googleIDP',
+      //   'login',
+      //   {'idToken': idToken},
+      // );
+      Future.value(_mockData.authSuccess);
+}
+
 class Modules {
   Modules(Client client) {
     auth = Caller(client);
@@ -97,15 +115,21 @@ class Client extends ServerpodClientShared {
           streamingConnectionTimeout: null,
         ) {
     authEmail = EndpointAuthEmail(this);
+    googleIDP = GoogleIDPEndpoint(this);
     modules = Modules(this);
   }
 
   late final EndpointAuthEmail authEmail;
 
+  late final GoogleIDPEndpoint googleIDP;
+
   late final Modules modules;
 
   @override
-  Map<String, EndpointRef> get endpointRefLookup => {'emailAuth': authEmail};
+  Map<String, EndpointRef> get endpointRefLookup => {
+        'emailAuth': authEmail,
+        'googleIDP': googleIDP,
+      };
 
   @override
   Map<String, ModuleEndpointCaller> get moduleLookup =>
