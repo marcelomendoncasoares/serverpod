@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 
 import 'email_auth_controller.dart';
@@ -44,9 +45,6 @@ class SignInWithEmailWidget extends StatefulWidget {
 class _SignInWithEmailWidgetState extends State<SignInWithEmailWidget> {
   EmailAuthController get _controller => widget.controller;
 
-  /// The first screen of the email flow.
-  late EmailFlowScreen firstScreen;
-
   @override
   void initState() {
     super.initState();
@@ -64,6 +62,20 @@ class _SignInWithEmailWidgetState extends State<SignInWithEmailWidget> {
 
   @override
   Widget build(BuildContext context) {
+    return PageTransitionSwitcher(
+      transitionBuilder: (child, primaryAnimation, secondaryAnimation) {
+        return SharedAxisTransition(
+          animation: primaryAnimation,
+          secondaryAnimation: secondaryAnimation,
+          transitionType: SharedAxisTransitionType.horizontal,
+          child: child,
+        );
+      },
+      child: _buildScreen(),
+    );
+  }
+
+  Widget _buildScreen() {
     return switch (_controller.currentScreen) {
       EmailFlowScreen.login =>
         LoginForm(controller: _controller, onBack: widget.onBack),
