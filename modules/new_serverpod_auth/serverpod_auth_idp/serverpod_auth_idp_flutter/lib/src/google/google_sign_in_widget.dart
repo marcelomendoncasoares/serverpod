@@ -16,7 +16,7 @@ import 'web/button.dart';
 ///
 /// Example usage:
 /// ```dart
-/// SignInWithGoogleWidget(
+/// GoogleSignInWidget(
 ///   client: client,
 ///   onAuthenticated: () {
 ///     // Navigate to home screen
@@ -26,7 +26,7 @@ import 'web/button.dart';
 ///   },
 /// )
 /// ```
-class SignInWithGoogleWidget extends StatefulWidget {
+class GoogleSignInWidget extends StatefulWidget {
   /// The Serverpod client instance.
   final ServerpodClientShared client;
 
@@ -35,6 +35,10 @@ class SignInWithGoogleWidget extends StatefulWidget {
 
   /// Callback when an error occurs during authentication.
   final Function(Object error)? onError;
+
+  /// Callback when the controller is created. Useful to register callbacks
+  /// to the controller to listen to state changes.
+  final Function(GoogleAuthController)? onControllerCreated;
 
   /// A styled button to use for the web platform.
   final GoogleSignInWebButton? webButton;
@@ -51,20 +55,21 @@ class SignInWithGoogleWidget extends StatefulWidget {
   final bool attemptLightweightSignIn;
 
   /// Creates a Google Sign-In widget.
-  const SignInWithGoogleWidget({
+  const GoogleSignInWidget({
     required this.client,
     this.onAuthenticated,
     this.onError,
+    this.onControllerCreated,
     this.webButton,
     this.attemptLightweightSignIn = true,
     super.key,
   });
 
   @override
-  State<SignInWithGoogleWidget> createState() => _SignInWithGoogleWidgetState();
+  State<GoogleSignInWidget> createState() => _GoogleSignInWidgetState();
 }
 
-class _SignInWithGoogleWidgetState extends State<SignInWithGoogleWidget> {
+class _GoogleSignInWidgetState extends State<GoogleSignInWidget> {
   late final GoogleAuthController _controller;
 
   @override
@@ -77,6 +82,8 @@ class _SignInWithGoogleWidgetState extends State<SignInWithGoogleWidget> {
       attemptLightweightSignIn: widget.attemptLightweightSignIn,
     );
     _controller.addListener(_onControllerStateChanged);
+
+    widget.onControllerCreated?.call(_controller);
   }
 
   @override

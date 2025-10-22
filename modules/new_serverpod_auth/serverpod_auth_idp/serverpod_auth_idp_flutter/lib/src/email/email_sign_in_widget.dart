@@ -2,10 +2,10 @@ import 'package:flutter/widgets.dart';
 import 'package:serverpod_auth_core_flutter/serverpod_auth_core_flutter.dart';
 
 import 'email_auth_controller.dart';
-import 'sign_in_with_email_widget.dart';
+import 'email_sign_in_view.dart';
 import '../common/widgets/default_scaffold.dart';
 
-class SignInWithEmailScreen extends StatefulWidget {
+class EmailSignInWidget extends StatefulWidget {
   /// The Serverpod client instance.
   final ServerpodClientShared client;
 
@@ -22,20 +22,25 @@ class SignInWithEmailScreen extends StatefulWidget {
   /// Callback when an error occurs during authentication.
   final Function(Object error)? onError;
 
-  const SignInWithEmailScreen({
+  /// Callback when the controller is created. Useful to register callbacks
+  /// to the controller to listen to state changes.
+  final Function(EmailAuthController)? onControllerCreated;
+
+  const EmailSignInWidget({
     required this.client,
     this.startScreen = EmailFlowScreen.login,
     this.onBack,
     this.onAuthenticated,
     this.onError,
+    this.onControllerCreated,
     super.key,
   });
 
   @override
-  State<SignInWithEmailScreen> createState() => _SignInWithEmailScreenState();
+  State<EmailSignInWidget> createState() => _EmailSignInWidgetState();
 }
 
-class _SignInWithEmailScreenState extends State<SignInWithEmailScreen> {
+class _EmailSignInWidgetState extends State<EmailSignInWidget> {
   late final EmailAuthController _controller;
 
   @override
@@ -48,6 +53,8 @@ class _SignInWithEmailScreenState extends State<SignInWithEmailScreen> {
       onError: widget.onError,
     );
     _controller.addListener(_onControllerStateChanged);
+
+    widget.onControllerCreated?.call(_controller);
   }
 
   @override
@@ -70,7 +77,7 @@ class _SignInWithEmailScreenState extends State<SignInWithEmailScreen> {
         }
       },
       errorMessage: _controller.errorMessage,
-      child: SignInWithEmailWidget(
+      child: EmailSignInView(
         controller: _controller,
         onBack: widget.onBack,
       ),

@@ -3,8 +3,8 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart';
 
 import '../common/widgets/gaps.dart';
 import '../email/email_auth_controller.dart';
-import '../email/sign_in_with_email_widget.dart';
-import '../google/sign_in_with_google_widget.dart';
+import '../email/email_sign_in_view.dart';
+import '../google/google_sign_in_widget.dart';
 
 /// A widget that provides a complete authentication onboarding experience.
 ///
@@ -142,7 +142,7 @@ class _AuthOnboardingWidgetState extends State<AuthOnboardingWidget> {
             ],
           ),
           largeGap,
-          SignInWithEmailWidget(
+          EmailSignInView(
             controller: _emailController,
             onBack: widget.onBack,
           ),
@@ -153,7 +153,7 @@ class _AuthOnboardingWidgetState extends State<AuthOnboardingWidget> {
           ],
         ],
         if (_hasGoogleAuth)
-          SignInWithGoogleWidget(
+          GoogleSignInWidget(
             client: widget.client,
             onAuthenticated: widget.onAuthenticated,
             onError: widget.onError,
