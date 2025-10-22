@@ -119,12 +119,17 @@ class EmailAuthController extends ChangeNotifier {
     });
   }
 
+  /// Whether it is possible to navigate back to the previous screen.
+  ///
+  /// Returns `true` if the current screen is not the start screen.
+  bool get canNavigateBack => currentScreen != startScreen;
+
   /// Navigates back to the previous screen in the authentication flow.
   ///
   /// Returns `true` if the navigation was successful, and `false` if already on
   /// the start screen and there is no previous screen to navigate back to.
   bool navigateBack() {
-    if (currentScreen == startScreen) return false;
+    if (!canNavigateBack) return false;
 
     navigateTo(switch (currentScreen) {
       EmailFlowScreen.login => EmailFlowScreen.register,

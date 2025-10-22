@@ -75,12 +75,18 @@ class _AuthOnboardingWidgetState extends State<AuthOnboardingWidget> {
       onAuthenticated: widget.onAuthenticated,
       onError: widget.onError,
     );
+    _emailController.addListener(_onControllerStateChanged);
   }
 
   @override
   void dispose() {
+    _emailController.removeListener(_onControllerStateChanged);
     _emailController.dispose();
     super.dispose();
+  }
+
+  void _onControllerStateChanged() {
+    setState(() {});
   }
 
   /// Checks which authentication providers are available on the server.
@@ -120,6 +126,22 @@ class _AuthOnboardingWidgetState extends State<AuthOnboardingWidget> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (_hasEmailAuth) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              if (_emailController.currentScreen != EmailFlowScreen.login &&
+                  _emailController.currentScreen != EmailFlowScreen.register)
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: _emailController.navigateBack,
+                ),
+              Text(
+                'Sign in with email',
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+            ],
+          ),
+          largeGap,
           SignInWithEmailWidget(
             controller: _emailController,
             onBack: widget.onBack,

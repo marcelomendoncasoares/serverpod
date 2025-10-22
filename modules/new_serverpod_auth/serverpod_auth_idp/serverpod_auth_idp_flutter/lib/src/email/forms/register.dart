@@ -37,6 +37,8 @@ class RegisterForm extends StatelessWidget {
           controller: controller.passwordController,
           isLoading: controller.isLoading,
         ),
+        // Represent the same height as the "Forgot password?" text.
+        SizedBox(height: 48),
         largeGap,
         ActionButton(
           onPressed: controller.startRegistration,

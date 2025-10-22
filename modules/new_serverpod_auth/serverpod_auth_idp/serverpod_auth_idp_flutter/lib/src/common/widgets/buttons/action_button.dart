@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../loading_indicator.dart';
 
 /// A standard action button widget for authentication forms.

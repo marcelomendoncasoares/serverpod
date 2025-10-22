@@ -63,6 +63,8 @@ class _SignInWithEmailWidgetState extends State<SignInWithEmailWidget> {
   @override
   Widget build(BuildContext context) {
     return PageTransitionSwitcher(
+      duration: const Duration(milliseconds: 600),
+      reverse: _controller.currentScreen != _controller.startScreen,
       transitionBuilder: (child, primaryAnimation, secondaryAnimation) {
         return SharedAxisTransition(
           animation: primaryAnimation,
