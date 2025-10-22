@@ -190,6 +190,7 @@ class EmailAuthController extends ChangeNotifier {
   ///
   /// On success, updates the session manager and calls [onAuthenticated].
   /// On failure, transitions to error state with the error message.
+  // TODO: Standardize with the same name as other auth providers.
   Future<void> login() async {
     await _guarded(EmailAuthState.authenticated, () async {
       final authSuccess = await _emailEndpoint.login(

@@ -1,20 +1,16 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:serverpod_auth_core_flutter/serverpod_auth_core_flutter.dart';
-import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart';
 
-import 'sign_in_service.dart';
+import 'google_auth_controller.dart';
 import 'web/button.dart';
 
 /// A widget that provides Google Sign-In functionality for all platforms.
 ///
-/// This widget handles the complete Google authentication flow:
-/// 1. Initiates Google Sign-In using the google_sign_in package
-/// 2. Obtains the ID token from Google
-/// 3. Sends the ID token to the Serverpod backend via [EndpointGoogleIDPBase]
-/// 4. Handles the authentication response
+/// This widget is a thin UI layer over [GoogleAuthController]. All business
+/// logic, state management, and callbacks are handled by the controller.
+///
+/// For custom UI implementations, use [GoogleAuthController] directly.
 ///
 /// The widget works across all platforms (Android, iOS, macOS, Web).
 ///
@@ -69,101 +65,29 @@ class SignInWithGoogleWidget extends StatefulWidget {
 }
 
 class _SignInWithGoogleWidgetState extends State<SignInWithGoogleWidget> {
-  bool _isLoading = false;
-  bool _isInitialized = false;
-  StreamSubscription<GoogleSignInAuthenticationEvent?>? _authSubscription;
+  late final GoogleAuthController _controller;
 
   @override
   void initState() {
     super.initState();
-
-    unawaited(
-      GoogleSignInService.instance
-          .ensureInitialized(auth: widget.client.auth)
-          .then((signIn) {
-        _authSubscription = signIn.authenticationEvents.listen(
-          _handleAuthenticationEvent,
-          onError: _handleAuthenticationError,
-        );
-
-        if (widget.attemptLightweightSignIn) {
-          unawaited(signIn.attemptLightweightAuthentication());
-        }
-
-        if (mounted) {
-          setState(() {
-            _isInitialized = true;
-          });
-        }
-      }),
+    _controller = GoogleAuthController(
+      client: widget.client,
+      onAuthenticated: widget.onAuthenticated,
+      onError: widget.onError,
+      attemptLightweightSignIn: widget.attemptLightweightSignIn,
     );
+    _controller.addListener(_onControllerStateChanged);
   }
 
   @override
   void dispose() {
-    unawaited(_authSubscription?.cancel());
+    _controller.removeListener(_onControllerStateChanged);
+    _controller.dispose();
     super.dispose();
   }
 
-  void _setLoading(bool value) {
-    if (!mounted) return;
-    setState(() {
-      _isLoading = value;
-    });
-  }
-
-  Future<void> _handleAuthenticationEvent(
-    GoogleSignInAuthenticationEvent googleAuthEvent,
-  ) async {
-    switch (googleAuthEvent) {
-      case GoogleSignInAuthenticationEventSignIn(user: final user):
-        await _handleServerSideSignIn(idToken: user.authentication.idToken);
-      case GoogleSignInAuthenticationEventSignOut():
-        await widget.client.auth.signOutDevice();
-    }
-  }
-
-  Future<void> _handleAuthenticationError(Object error) async {
-    widget.onError?.call(error);
-  }
-
-  Future<void> _initiateSignIn() async {
-    _setLoading(true);
-
-    if (!GoogleSignIn.instance.supportsAuthenticate()) {
-      throw StateError('This sign-in method is not supported on this platform');
-    }
-
-    try {
-      final account = await GoogleSignIn.instance.authenticate();
-      await _handleServerSideSignIn(idToken: account.authentication.idToken);
-    } catch (e) {
-      _setLoading(false);
-      widget.onError?.call(e);
-    }
-  }
-
-  Future<void> _handleServerSideSignIn({required String? idToken}) async {
-    try {
-      if (idToken == null) {
-        throw GoogleSignInException(
-          code: GoogleSignInExceptionCode.unknownError,
-          description: 'Failed to obtain ID token from Google',
-        );
-      }
-
-      final endpoint = widget.client.getEndpointOfType<EndpointGoogleIDPBase>();
-      final authSuccess = await endpoint.login(idToken: idToken);
-
-      await widget.client.auth.updateSignedInUser(authSuccess);
-
-      _setLoading(false);
-      widget.onAuthenticated?.call();
-    } catch (error) {
-      _setLoading(false);
-      widget.onError?.call(error);
-    }
-  }
+  /// Rebuild when controller state changes
+  void _onControllerStateChanged() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -173,8 +97,8 @@ class _SignInWithGoogleWidgetState extends State<SignInWithGoogleWidget> {
       children: [
         if (GoogleSignIn.instance.supportsAuthenticate())
           ElevatedButton.icon(
-            onPressed: _isLoading ? null : _initiateSignIn,
-            icon: _isLoading
+            onPressed: _controller.isLoading ? null : _controller.signIn,
+            icon: _controller.isLoading
                 ? const SizedBox(
                     width: 16,
                     height: 16,
@@ -187,7 +111,9 @@ class _SignInWithGoogleWidgetState extends State<SignInWithGoogleWidget> {
                     width: 24,
                   ),
             iconAlignment: IconAlignment.start,
-            label: Text(_isLoading ? 'Signing in...' : 'Continue with Google'),
+            label: Text(_controller.isLoading
+                ? 'Signing in...'
+                : 'Continue with Google'),
             // NOTE: Styled according to official guidelines.
             // https://developers.google.com/identity/branding-guidelines#padding
             style: ElevatedButton.styleFrom(
@@ -197,7 +123,7 @@ class _SignInWithGoogleWidgetState extends State<SignInWithGoogleWidget> {
               shape: StadiumBorder(),
             ),
           )
-        else if (_isInitialized)
+        else if (_controller.isInitialized)
           widget.webButton ?? GoogleSignInWebButton()
       ],
     );
