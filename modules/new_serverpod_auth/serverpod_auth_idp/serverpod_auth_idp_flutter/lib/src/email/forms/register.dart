@@ -14,12 +14,8 @@ class RegisterForm extends StatelessWidget {
   /// The controller that manages authentication state and logic.
   final EmailAuthController controller;
 
-  /// Callback function to be called when the screen is closed.
-  /// Only valid if this is the starting screen. Otherwise will be ignored.
-  final VoidCallback? onBack;
-
   /// Creates a registration screen widget.
-  const RegisterForm({super.key, required this.controller, this.onBack});
+  const RegisterForm({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {

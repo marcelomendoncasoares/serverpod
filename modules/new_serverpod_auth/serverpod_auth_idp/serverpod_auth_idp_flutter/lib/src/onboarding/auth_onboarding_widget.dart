@@ -3,7 +3,7 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart';
 
 import '../common/widgets/gaps.dart';
 import '../email/email_auth_controller.dart';
-import '../email/email_sign_in_view.dart';
+import '../email/email_sign_in_widget.dart';
 import '../google/google_sign_in_widget.dart';
 
 /// A widget that provides a complete authentication onboarding experience.
@@ -136,15 +136,14 @@ class _AuthOnboardingWidgetState extends State<AuthOnboardingWidget> {
                   onPressed: _emailController.navigateBack,
                 ),
               Text(
-                'Sign in with email',
+                _emailController.currentScreen.screenName,
                 style: Theme.of(context).textTheme.headlineLarge,
               ),
             ],
           ),
           largeGap,
-          EmailSignInView(
+          EmailSignInWidget(
             controller: _emailController,
-            onBack: widget.onBack,
           ),
           if (_hasGoogleAuth) ...[
             largeGap,
@@ -193,4 +192,14 @@ class _AuthOnboardingWidgetState extends State<AuthOnboardingWidget> {
       ],
     );
   }
+}
+
+extension on EmailFlowScreen {
+  String get screenName => switch (this) {
+        EmailFlowScreen.login => 'Sign In with email',
+        EmailFlowScreen.register => 'Register email',
+        EmailFlowScreen.verification => 'Verify email account',
+        EmailFlowScreen.passwordReset => 'Request password reset',
+        EmailFlowScreen.passwordResetVerification => 'Reset account password',
+      };
 }
