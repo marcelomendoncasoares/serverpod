@@ -7,38 +7,58 @@ import 'web/button.dart';
 
 /// A widget that provides Google Sign-In functionality for all platforms.
 ///
-/// This widget is a thin UI layer over [GoogleAuthController]. All business
-/// logic, state management, and callbacks are handled by the controller.
+/// The widget can manage its own authentication state, or you can provide an
+/// external [controller] for advanced use cases like sharing state across
+/// multiple widgets or integrating with state management solutions.
 ///
-/// For custom UI implementations, use [GoogleAuthController] directly.
+/// When [controller] is not provided, you must supply [client] and optionally
+/// [onAuthenticated] and [onError] callbacks. When [controller] is provided,
+/// those callbacks are handled by the controller itself.
 ///
-/// The widget works across all platforms (Android, iOS, macOS, Web).
-///
-/// Example usage:
-/// ```dart
+/// Example with managed state:
+/// ```
 /// GoogleSignInWidget(
 ///   client: client,
-///   onAuthenticated: () {
-///     // Navigate to home screen
-///   },
-///   onError: (error) {
-///     // Show error message
-///   },
+///   onAuthenticated: () => Navigator.push(...),
+///   onError: (error) => showSnackBar(...),
+/// )
+/// ```
+///
+/// Example with external controller:
+/// ```
+/// final controller = GoogleAuthController(
+///   client: client,
+///   onAuthenticated: ...,
+/// );
+///
+/// GoogleSignInWidget(
+///   controller: controller,
 /// )
 /// ```
 class GoogleSignInWidget extends StatefulWidget {
+  /// Controls the authentication state and behavior.
+  ///
+  /// If null, the widget creates and manages its own [GoogleAuthController].
+  /// In this case, [client] must be provided.
+  ///
+  /// If provided, the widget uses this controller instead of creating one,
+  /// and [client], [onAuthenticated], and [onError] are ignored.
+  final GoogleAuthController? controller;
+
   /// The Serverpod client instance.
-  final ServerpodClientShared client;
+  ///
+  /// Required when [controller] is null, ignored otherwise.
+  final ServerpodClientShared? client;
 
   /// Callback when authentication is successful.
+  ///
+  /// Ignored when [controller] is provided.
   final VoidCallback? onAuthenticated;
 
   /// Callback when an error occurs during authentication.
+  ///
+  /// Ignored when [controller] is provided.
   final Function(Object error)? onError;
-
-  /// Callback when the controller is created. Useful to register callbacks
-  /// to the controller to listen to state changes.
-  final Function(GoogleAuthController)? onControllerCreated;
 
   /// A styled button to use for the web platform.
   final GoogleSignInWebButton? webButton;
@@ -56,14 +76,18 @@ class GoogleSignInWidget extends StatefulWidget {
 
   /// Creates a Google Sign-In widget.
   const GoogleSignInWidget({
-    required this.client,
+    this.controller,
+    this.client,
     this.onAuthenticated,
     this.onError,
-    this.onControllerCreated,
     this.webButton,
     this.attemptLightweightSignIn = true,
     super.key,
-  });
+  }) : assert(
+          (controller == null || client == null),
+          'Either controller or client must be provided, but not both. When '
+          'passing a controller, only the `webButton` parameter is used. ',
+        );
 
   @override
   State<GoogleSignInWidget> createState() => _GoogleSignInWidgetState();
@@ -75,21 +99,22 @@ class _GoogleSignInWidgetState extends State<GoogleSignInWidget> {
   @override
   void initState() {
     super.initState();
-    _controller = GoogleAuthController(
-      client: widget.client,
-      onAuthenticated: widget.onAuthenticated,
-      onError: widget.onError,
-      attemptLightweightSignIn: widget.attemptLightweightSignIn,
-    );
+    _controller = widget.controller ??
+        GoogleAuthController(
+          client: widget.client!,
+          onAuthenticated: widget.onAuthenticated,
+          onError: widget.onError,
+          attemptLightweightSignIn: widget.attemptLightweightSignIn,
+        );
     _controller.addListener(_onControllerStateChanged);
-
-    widget.onControllerCreated?.call(_controller);
   }
 
   @override
   void dispose() {
     _controller.removeListener(_onControllerStateChanged);
-    _controller.dispose();
+    if (widget.controller == null) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 
