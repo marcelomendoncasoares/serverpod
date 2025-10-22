@@ -106,6 +106,7 @@ class _SignInWithGoogleWidgetState extends State<SignInWithGoogleWidget> {
   }
 
   void _setLoading(bool value) {
+    if (!mounted) return;
     setState(() {
       _isLoading = value;
     });
