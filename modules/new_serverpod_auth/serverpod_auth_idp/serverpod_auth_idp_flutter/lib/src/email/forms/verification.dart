@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../email_auth_controller.dart';
 import '../../common/widgets/buttons/action_button.dart';
 import '../../common/widgets/gaps.dart';
 import '../../common/widgets/verification_code.dart';
+import '../email_auth_controller.dart';
+import 'widgets/back_to_sign_in_button.dart';
 
 /// Email verification screen widget.
 ///
@@ -35,6 +36,7 @@ class VerificationForm extends StatelessWidget {
           onCompleted: controller.finishRegistration,
           isLoading: controller.isLoading,
         ),
+        BackToSignInButton(controller: controller),
         largeGap,
         ActionButton(
           onPressed: controller.finishRegistration,

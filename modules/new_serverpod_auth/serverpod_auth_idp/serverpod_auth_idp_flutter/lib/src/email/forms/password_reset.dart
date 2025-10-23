@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../email_auth_controller.dart';
 import '../../common/widgets/buttons/action_button.dart';
 import '../../common/widgets/gaps.dart';
 import '../../common/widgets/text_field.dart';
+import '../email_auth_controller.dart';
+import 'widgets/back_to_sign_in_button.dart';
 
 /// Password reset request screen widget.
 ///
@@ -32,6 +33,7 @@ class PasswordResetForm extends StatelessWidget {
           keyboardType: TextInputType.emailAddress,
           isLoading: controller.isLoading,
         ),
+        BackToSignInButton(controller: controller),
         largeGap,
         ActionButton(
           onPressed: controller.startPasswordReset,
