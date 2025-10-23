@@ -20,6 +20,16 @@ void run(List<String> args) async {
     authenticationHandler: AuthSessions.authenticationHandler,
   );
 
+  if (pod.config.runMode == 'development') {
+    await pod.updateRuntimeSettings(
+      pod.runtimeSettings.copyWith(
+        logSettings: pod.runtimeSettings.logSettings.copyWith(
+          logLevel: LogLevel.debug,
+        ),
+      ),
+    );
+  }
+
   AuthServices.initialize(
     googleIDPConfig: GoogleIDPConfig(
       clientSecret: GoogleClientSecret.fromJsonString(
