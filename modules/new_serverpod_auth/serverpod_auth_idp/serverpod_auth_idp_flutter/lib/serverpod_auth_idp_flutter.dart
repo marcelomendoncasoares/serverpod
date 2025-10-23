@@ -15,4 +15,4 @@ export 'src/email/email_sign_in_widget.dart';
 export 'src/google/google_auth_controller.dart';
 export 'src/google/google_sign_in_service.dart';
 export 'src/google/google_sign_in_widget.dart';
-export 'src/onboarding/auth_onboarding_widget.dart';
+export 'src/sign_in_widget.dart';

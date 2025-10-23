@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart';
 
-import '../common/widgets/gaps.dart';
-import '../email/email_sign_in_widget.dart';
-import '../google/google_sign_in_widget.dart';
+import 'common/widgets/gaps.dart';
+import 'email/email_sign_in_widget.dart';
+import 'google/google_sign_in_widget.dart';
 
 /// A widget that provides a complete authentication onboarding experience.
 ///
