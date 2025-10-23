@@ -84,29 +84,35 @@ class _SignInWidgetState extends State<SignInWidget> {
     }
 
     // TODO: Make this adaptative.
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (_availableProviders.contains(IdentityProviders.email))
-          EmailSignInWidget(
-            client: widget.client,
-            onAuthenticated: widget.onAuthenticated,
-            onError: widget.onError,
-          ),
-        if (_availableProviders.length > 1 &&
-            _availableProviders.contains(IdentityProviders.email))
-          const _SignInSeparator(),
-        if (_availableProviders.contains(IdentityProviders.google))
-          GoogleSignInWidget(
-            client: widget.client,
-            onAuthenticated: widget.onAuthenticated,
-            onError: widget.onError,
-          ),
-        if (_availableProviders.length > 1 &&
-            _availableProviders.contains(IdentityProviders.google))
-          smallGap,
-      ],
+    return Center(
+      child: Container(
+        constraints: BoxConstraints(maxWidth: 400),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_availableProviders.contains(IdentityProviders.email))
+              EmailSignInWidget(
+                client: widget.client,
+                onAuthenticated: widget.onAuthenticated,
+                onError: widget.onError,
+              ),
+            if (_availableProviders.length > 1 &&
+                _availableProviders.contains(IdentityProviders.email))
+              const _SignInSeparator(),
+            if (_availableProviders.contains(IdentityProviders.google))
+              GoogleSignInWidget(
+                client: widget.client,
+                onAuthenticated: widget.onAuthenticated,
+                onError: widget.onError,
+              ),
+            if (_availableProviders.length > 1 &&
+                _availableProviders.contains(IdentityProviders.google))
+              smallGap,
+          ],
+        ),
+      ),
     );
   }
 
@@ -136,23 +142,27 @@ class _SignInSeparator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
         largeGap,
-        const _SignInExpandedDivider(),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            'or continue with',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
-                ),
-          ),
+        Row(
+          children: [
+            const _SignInExpandedDivider(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'or continue with',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
+                    ),
+              ),
+            ),
+            const _SignInExpandedDivider(),
+          ],
         ),
-        const _SignInExpandedDivider(),
         largeGap,
       ],
     );

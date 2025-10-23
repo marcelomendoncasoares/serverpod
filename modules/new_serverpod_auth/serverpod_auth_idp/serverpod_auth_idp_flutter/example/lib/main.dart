@@ -7,6 +7,8 @@ final client = Client('http://localhost:8080/')
   ..authSessionManager = ClientAuthSessionManager();
 
 void main() {
+  client.auth.initialize();
+
   runApp(
     MaterialApp(
       theme: ThemeData(
@@ -43,10 +45,6 @@ class _ExampleAppState extends State<ExampleApp> {
         _isSignedIn = client.auth.isAuthenticated;
       });
     });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      client.auth.initialize();
-    });
   }
 
   @override
@@ -68,17 +66,17 @@ class _ExampleAppState extends State<ExampleApp> {
         client: client,
         // NOTE: No need to call navigation here if it gets done on the
         // client.auth.authInfo listener.
-        onAuthenticated: () => {
+        onAuthenticated: () {
           context.showSnackBar(
             message: 'User authenticated.',
             backgroundColor: Colors.green,
-          ),
+          );
         },
-        onError: (error) => {
+        onError: (error) {
           context.showSnackBar(
             message: 'Authentication failed: $error',
             backgroundColor: Colors.red,
-          ),
+          );
         },
       ),
     );
@@ -124,7 +122,7 @@ extension on BuildContext {
       SnackBar(
         content: Text(message),
         backgroundColor: backgroundColor,
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 5),
       ),
     );
   }
