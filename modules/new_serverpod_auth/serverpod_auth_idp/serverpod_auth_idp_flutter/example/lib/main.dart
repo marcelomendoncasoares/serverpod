@@ -64,33 +64,22 @@ class _ExampleAppState extends State<ExampleApp> {
 
   Widget _signInScreen() {
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: AuthOnboardingWidget(
-              client: client,
-              onBack: () => {
-                context.showSnackBar(
-                  message: 'Back button pressed on first screen.',
-                ),
-              },
-              onAuthenticated: () => {
-                context.showSnackBar(
-                  message: 'User authenticated.',
-                  backgroundColor: Colors.green,
-                ),
-              },
-              onError: (error) => {
-                context.showSnackBar(
-                  message: 'Authentication failed: $error',
-                  backgroundColor: Colors.red,
-                ),
-              },
-            ),
+      body: SignInWidget(
+        client: client,
+        // NOTE: No need to call navigation here if it gets done on the
+        // client.auth.authInfo listener.
+        onAuthenticated: () => {
+          context.showSnackBar(
+            message: 'User authenticated.',
+            backgroundColor: Colors.green,
           ),
-        ),
+        },
+        onError: (error) => {
+          context.showSnackBar(
+            message: 'Authentication failed: $error',
+            backgroundColor: Colors.red,
+          ),
+        },
       ),
     );
   }
@@ -117,6 +106,8 @@ class ConnectedScreen extends StatelessWidget {
               onPressed: onSignOut,
               child: const Text('Sign out'),
             ),
+            // if (client.auth.)
+            // const SizedBox(height: 24),
           ],
         ),
       ),

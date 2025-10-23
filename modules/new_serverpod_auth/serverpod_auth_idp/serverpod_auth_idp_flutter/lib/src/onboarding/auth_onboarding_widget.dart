@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart';
 
 import '../common/widgets/gaps.dart';
-import '../email/email_auth_controller.dart';
 import '../email/email_sign_in_widget.dart';
 import '../google/google_sign_in_widget.dart';
 
@@ -21,7 +20,7 @@ import '../google/google_sign_in_widget.dart';
 ///
 /// Example usage:
 /// ```dart
-/// AuthOnboardingWidget(
+/// SignInWidget(
 ///   client: client,
 ///   onAuthenticated: () {
 ///     Navigator.of(context).pushReplacement(
@@ -35,7 +34,7 @@ import '../google/google_sign_in_widget.dart';
 ///   },
 /// )
 /// ```
-class AuthOnboardingWidget extends StatefulWidget {
+class SignInWidget extends StatefulWidget {
   /// The Serverpod client instance.
   final ServerpodClientShared client;
 
@@ -45,72 +44,35 @@ class AuthOnboardingWidget extends StatefulWidget {
   /// Callback when an error occurs during authentication.
   final Function(Object error)? onError;
 
-  /// Callback when the user presses the back button from the first screen.
-  final VoidCallback? onBack;
-
   /// Creates an authentication onboarding widget.
-  const AuthOnboardingWidget({
+  const SignInWidget({
     required this.client,
     this.onAuthenticated,
     this.onError,
-    this.onBack,
     super.key,
   });
 
   @override
-  State<AuthOnboardingWidget> createState() => _AuthOnboardingWidgetState();
+  State<SignInWidget> createState() => _SignInWidgetState();
 }
 
-class _AuthOnboardingWidgetState extends State<AuthOnboardingWidget> {
-  bool _hasEmailAuth = false;
-  bool _hasGoogleAuth = false;
-  late EmailAuthController _emailController;
+class _SignInWidgetState extends State<SignInWidget> {
+  final Set<IdentityProviders> _availableProviders = {};
 
   @override
   void initState() {
     super.initState();
     _checkAvailableProviders();
-    _emailController = EmailAuthController(
-      client: widget.client,
-      onAuthenticated: widget.onAuthenticated,
-      onError: widget.onError,
-    );
-    _emailController.addListener(_onControllerStateChanged);
   }
 
-  @override
-  void dispose() {
-    _emailController.removeListener(_onControllerStateChanged);
-    _emailController.dispose();
-    super.dispose();
-  }
-
-  void _onControllerStateChanged() {
-    setState(() {});
-  }
-
-  /// Checks which authentication providers are available on the server.
   void _checkAvailableProviders() {
-    try {
-      widget.client.getEndpointOfType<EndpointAuthEmailBase>();
-      _hasEmailAuth = true;
-    } on ServerpodClientEndpointNotFound {
-      _hasEmailAuth = false;
-    }
-
-    try {
-      widget.client.getEndpointOfType<EndpointGoogleIDPBase>();
-      _hasGoogleAuth = true;
-    } on ServerpodClientEndpointNotFound {
-      _hasGoogleAuth = false;
-    }
+    _isProviderAvailable<EndpointAuthEmailBase>(IdentityProviders.email);
+    _isProviderAvailable<EndpointGoogleIDPBase>(IdentityProviders.google);
   }
 
   @override
   Widget build(BuildContext context) {
-    final hasAnyProvider = _hasEmailAuth || _hasGoogleAuth;
-
-    if (!hasAnyProvider) {
+    if (_availableProviders.isEmpty) {
       return Center(
         child: Text(
           'No authentication providers configured',
@@ -121,56 +83,63 @@ class _AuthOnboardingWidgetState extends State<AuthOnboardingWidget> {
       );
     }
 
+    // TODO: Make this adaptative.
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (_hasEmailAuth) ...[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              if (_emailController.currentScreen != EmailFlowScreen.login &&
-                  _emailController.currentScreen != EmailFlowScreen.register)
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: _emailController.navigateBack,
-                ),
-              Text(
-                _emailController.currentScreen.screenName,
-                style: Theme.of(context).textTheme.headlineLarge,
-              ),
-            ],
-          ),
-          largeGap,
+        if (_availableProviders.contains(IdentityProviders.email))
           EmailSignInWidget(
-            controller: _emailController,
+            client: widget.client,
+            onAuthenticated: widget.onAuthenticated,
+            onError: widget.onError,
           ),
-          if (_hasGoogleAuth) ...[
-            largeGap,
-            _buildDivider(context),
-            largeGap,
-          ],
-        ],
-        if (_hasGoogleAuth)
+        if (_availableProviders.length > 1 &&
+            _availableProviders.contains(IdentityProviders.email))
+          const _SignInSeparator(),
+        if (_availableProviders.contains(IdentityProviders.google))
           GoogleSignInWidget(
             client: widget.client,
             onAuthenticated: widget.onAuthenticated,
             onError: widget.onError,
           ),
+        if (_availableProviders.length > 1 &&
+            _availableProviders.contains(IdentityProviders.google))
+          smallGap,
       ],
     );
   }
 
-  /// Builds a divider with "Or continue with" text.
-  Widget _buildDivider(BuildContext context) {
+  void _isProviderAvailable<T extends EndpointRef>(
+    IdentityProviders provider,
+  ) {
+    try {
+      widget.client.getEndpointOfType<T>();
+      _availableProviders.add(provider);
+    } on ServerpodClientEndpointNotFound {
+      _availableProviders.remove(provider);
+    }
+  }
+}
+
+// TODO: Make an extension on the ClientAuthSessionManager to expose the check
+// of available providers.
+enum IdentityProviders {
+  email,
+  google,
+  // TODO: Add Apple IDP to the list of supported providers.
+  // apple,
+}
+
+class _SignInSeparator extends StatelessWidget {
+  const _SignInSeparator();
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(
-          child: Divider(
-            color:
-                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
-          ),
-        ),
+        largeGap,
+        const _SignInExpandedDivider(),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
@@ -183,23 +152,22 @@ class _AuthOnboardingWidgetState extends State<AuthOnboardingWidget> {
                 ),
           ),
         ),
-        Expanded(
-          child: Divider(
-            color:
-                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
-          ),
-        ),
+        const _SignInExpandedDivider(),
+        largeGap,
       ],
     );
   }
 }
 
-extension on EmailFlowScreen {
-  String get screenName => switch (this) {
-        EmailFlowScreen.login => 'Sign In with email',
-        EmailFlowScreen.register => 'Register email',
-        EmailFlowScreen.verification => 'Verify email account',
-        EmailFlowScreen.passwordReset => 'Request password reset',
-        EmailFlowScreen.passwordResetVerification => 'Reset account password',
-      };
+class _SignInExpandedDivider extends StatelessWidget {
+  const _SignInExpandedDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Divider(
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+      ),
+    );
+  }
 }

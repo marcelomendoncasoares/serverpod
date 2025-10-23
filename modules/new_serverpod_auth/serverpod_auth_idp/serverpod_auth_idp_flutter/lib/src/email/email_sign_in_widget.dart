@@ -129,7 +129,11 @@ class _EmailSignInWidgetState extends State<EmailSignInWidget> {
           child: child,
         );
       },
-      child: _buildScreen(),
+      child: Column(children: [
+        _buildTitle(),
+        const SizedBox(height: 48),
+        _buildScreen()
+      ]),
     );
   }
 
@@ -143,5 +147,19 @@ class _EmailSignInWidgetState extends State<EmailSignInWidget> {
       EmailFlowScreen.passwordResetVerification =>
         PasswordResetCompleteForm(controller: _controller),
     };
+  }
+
+  // TODO: Expose a way for users to override all texts and styles.
+  Widget _buildTitle() {
+    return Text(
+      switch (_controller.currentScreen) {
+        EmailFlowScreen.login => 'Sign In with email',
+        EmailFlowScreen.register => 'Register email',
+        EmailFlowScreen.verification => 'Verify email account',
+        EmailFlowScreen.passwordReset => 'Request password reset',
+        EmailFlowScreen.passwordResetVerification => 'Reset account password',
+      },
+      style: Theme.of(context).textTheme.headlineLarge,
+    );
   }
 }
