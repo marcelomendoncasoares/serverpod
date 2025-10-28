@@ -104,8 +104,15 @@ class ConnectedScreen extends StatelessWidget {
               onPressed: onSignOut,
               child: const Text('Sign out'),
             ),
-            // if (client.auth.)
-            // const SizedBox(height: 24),
+            if (client.auth.idp.hasGoogle) ...[
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () async {
+                  await client.auth.disconnectGoogleAccount();
+                },
+                child: const Text('Disconnect Google'),
+              ),
+            ],
           ],
         ),
       ),
