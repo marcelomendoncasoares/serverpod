@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:serverpod_auth_core_flutter/serverpod_auth_core_flutter.dart';
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart';
 
 import 'common/widgets/gaps.dart';
 import 'email/email_sign_in_widget.dart';
 import 'google/google_sign_in_widget.dart';
+import 'providers.dart';
 
 /// A widget that provides a complete authentication onboarding experience.
 ///
@@ -57,22 +59,11 @@ class SignInWidget extends StatefulWidget {
 }
 
 class _SignInWidgetState extends State<SignInWidget> {
-  final Set<IdentityProviders> _availableProviders = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAvailableProviders();
-  }
-
-  void _checkAvailableProviders() {
-    _isProviderAvailable<EndpointAuthEmailBase>(IdentityProviders.email);
-    _isProviderAvailable<EndpointGoogleIDPBase>(IdentityProviders.google);
-  }
+  ClientAuthSessionManager get auth => widget.client.auth;
 
   @override
   Widget build(BuildContext context) {
-    if (_availableProviders.isEmpty) {
+    if (!auth.idp.hasAny) {
       return Center(
         child: Text(
           'No authentication providers configured',
@@ -92,49 +83,34 @@ class _SignInWidgetState extends State<SignInWidget> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (_availableProviders.contains(IdentityProviders.email))
+            if (auth.idp.hasEmail)
               EmailSignInWidget(
                 client: widget.client,
                 onAuthenticated: widget.onAuthenticated,
                 onError: widget.onError,
               ),
-            if (_availableProviders.length > 1 &&
-                _availableProviders.contains(IdentityProviders.email))
+            if (auth.idp.count > 1 && auth.idp.hasEmail)
               const _SignInSeparator(),
-            if (_availableProviders.contains(IdentityProviders.google))
+            if (auth.idp.hasGoogle)
               GoogleSignInWidget(
                 client: widget.client,
                 onAuthenticated: widget.onAuthenticated,
                 onError: widget.onError,
               ),
-            if (_availableProviders.length > 1 &&
-                _availableProviders.contains(IdentityProviders.google))
-              smallGap,
+            // TODO: Add the Apple sign-in widget.
+            // if (auth.idp.hasGoogle && auth.idp.hasApple)
+            //   smallGap,
+            // if (auth.idp.hasApple)
+            //   AppleSignInWidget(
+            //     client: widget.client,
+            //     onAuthenticated: widget.onAuthenticated,
+            //     onError: widget.onError,
+            //   ),
           ],
         ),
       ),
     );
   }
-
-  void _isProviderAvailable<T extends EndpointRef>(
-    IdentityProviders provider,
-  ) {
-    try {
-      widget.client.getEndpointOfType<T>();
-      _availableProviders.add(provider);
-    } on ServerpodClientEndpointNotFound {
-      _availableProviders.remove(provider);
-    }
-  }
-}
-
-// TODO: Make an extension on the ClientAuthSessionManager to expose the check
-// of available providers.
-enum IdentityProviders {
-  email,
-  google,
-  // TODO: Add Apple IDP to the list of supported providers.
-  // apple,
 }
 
 class _SignInSeparator extends StatelessWidget {
