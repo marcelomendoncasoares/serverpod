@@ -1,5 +1,5 @@
 import 'package:serverpod/serverpod.dart';
-import 'package:serverpod_auth_idp_server/providers/apple.dart';
+// import 'package:serverpod_auth_idp_server/providers/apple.dart';
 
 import 'package:serverpod_auth_idp_server/providers/google.dart';
 import 'package:serverpod_auth_idp_server/core.dart';
@@ -36,20 +36,20 @@ void run(List<String> args) async {
         pod.getPassword('googleClientSecret')!,
       ),
     ),
-    appleIDPConfig: AppleIDPConfig(
-      serviceIdentifier: pod.getPassword('appleServiceIdentifier')!,
-      bundleIdentifier: pod.getPassword('appleBundleIdentifier')!,
-      redirectUri: pod.getPassword('appleRedirectUri')!,
-      teamId: pod.getPassword('appleTeamId')!,
-      keyId: pod.getPassword('appleKeyId')!,
-      key: pod.getPassword('appleKey')!,
-    ),
+    // appleIDPConfig: AppleIDPConfig(
+    //   serviceIdentifier: pod.getPassword('appleServiceIdentifier')!,
+    //   bundleIdentifier: pod.getPassword('appleBundleIdentifier')!,
+    //   redirectUri: pod.getPassword('appleRedirectUri')!,
+    //   teamId: pod.getPassword('appleTeamId')!,
+    //   keyId: pod.getPassword('appleKeyId')!,
+    //   key: pod.getPassword('appleKey')!,
+    // ),
   );
 
-  pod.webServer.addRoute(
-    AuthServices.instance.appleIDP.revokedNotificationRoute(),
-    '/hooks/apple-notification',
-  );
+  // pod.webServer.addRoute(
+  //   AuthServices.instance.appleIDP.revokedNotificationRoute(),
+  //   '/hooks/apple-notification',
+  // );
 
   // Start the server.
   await pod.start();

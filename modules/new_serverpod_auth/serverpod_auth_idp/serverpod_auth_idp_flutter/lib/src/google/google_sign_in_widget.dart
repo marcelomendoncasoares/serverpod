@@ -123,13 +123,15 @@ class _GoogleSignInWidgetState extends State<GoogleSignInWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDisabled = !_controller.isInitialized || _controller.isLoading;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (GoogleSignIn.instance.supportsAuthenticate())
           ElevatedButton.icon(
-            onPressed: _controller.isLoading ? null : _controller.signIn,
+            onPressed: isDisabled ? null : _controller.signIn,
             icon: _controller.isLoading
                 ? const SizedBox(
                     width: 16,
@@ -141,6 +143,7 @@ class _GoogleSignInWidgetState extends State<GoogleSignInWidget> {
                     package: 'serverpod_auth_idp_flutter',
                     height: 24,
                     width: 24,
+                    color: isDisabled ? const Color(0xff9c9c9c) : null,
                   ),
             iconAlignment: IconAlignment.start,
             label: Text(_controller.isLoading
@@ -150,8 +153,10 @@ class _GoogleSignInWidgetState extends State<GoogleSignInWidget> {
             // https://developers.google.com/identity/branding-guidelines#padding
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black87,
+              backgroundColor:
+                  isDisabled ? const Color(0xffe5e5e5) : Colors.white,
+              foregroundColor:
+                  isDisabled ? const Color(0xff9c9c9c) : Colors.black87,
               shape: StadiumBorder(),
             ),
           )

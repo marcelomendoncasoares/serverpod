@@ -130,14 +130,7 @@ class GoogleAuthController extends ChangeNotifier {
       throw StateError('This sign-in method is not supported on this platform');
     }
 
-    try {
-      final account = await GoogleSignIn.instance.authenticate();
-      await _handleServerSideSignIn(idToken: account.authentication.idToken);
-    } catch (e) {
-      _error = e;
-      _setState(GoogleAuthState.error);
-      onError?.call(e);
-    }
+    await _handleServerSideSignIn(null);
   }
 
   /// Handles authentication events from the Google Sign-In service.
@@ -146,7 +139,7 @@ class GoogleAuthController extends ChangeNotifier {
   ) async {
     switch (googleAuthEvent) {
       case GoogleSignInAuthenticationEventSignIn(user: final user):
-        await _handleServerSideSignIn(idToken: user.authentication.idToken);
+        await _handleServerSideSignIn(user);
       case GoogleSignInAuthenticationEventSignOut():
         await client.auth.signOutDevice();
     }
@@ -160,17 +153,29 @@ class GoogleAuthController extends ChangeNotifier {
   }
 
   /// Handles the server-side sign-in process with the Google ID token.
-  Future<void> _handleServerSideSignIn({required String? idToken}) async {
+  Future<void> _handleServerSideSignIn(GoogleSignInAccount? account) async {
+    const scopes = [
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+    ];
+
     try {
+      account = account ??
+          await GoogleSignIn.instance.authenticate(scopeHint: scopes);
+
+      final authorization =
+          await account.authorizationClient.ensureAuthorized(scopes);
+
+      final idToken = account.authentication.idToken;
       if (idToken == null) {
-        throw GoogleSignInException(
-          code: GoogleSignInExceptionCode.unknownError,
-          description: 'Failed to obtain ID token from Google',
-        );
+        throw GoogleIdTokenVerificationException();
       }
 
       final endpoint = client.getEndpointOfType<EndpointGoogleIDPBase>();
-      final authSuccess = await endpoint.login(idToken: idToken);
+      final authSuccess = await endpoint.login(
+        idToken: idToken,
+        accessToken: authorization.accessToken,
+      );
 
       await client.auth.updateSignedInUser(authSuccess);
 
@@ -207,4 +212,17 @@ enum GoogleAuthState {
 
   /// Authentication was successful.
   authenticated,
+}
+
+extension on GoogleSignInAuthorizationClient {
+  /// Ensure that the user is authorized for the given scopes. Users that have
+  /// already authorized the scopes will be handled by [authorizationForScopes]
+  /// and users that have not will be handled by [authorizeScopes].
+  Future<GoogleSignInClientAuthorization> ensureAuthorized(
+    List<String> scopes,
+  ) async {
+    final authorization = await authorizationForScopes(scopes);
+    if (authorization != null) return authorization;
+    return await authorizeScopes(scopes);
+  }
 }

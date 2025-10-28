@@ -209,7 +209,7 @@ abstract final class AuthBackwardsCompatibility {
     final accountDetails =
         await AuthServices.instance.googleIDP.admin.fetchAccountDetails(
       session,
-      idToken: idToken,
+      accessToken: idToken,
     );
 
     final legacyUserIdentifier =

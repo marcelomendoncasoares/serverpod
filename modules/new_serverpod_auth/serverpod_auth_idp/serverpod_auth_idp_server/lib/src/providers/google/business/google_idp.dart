@@ -40,11 +40,13 @@ final class GoogleIDP {
   Future<AuthSuccess> login(
     final Session session, {
     required final String idToken,
+    required final String accessToken,
   }) async {
     return session.db.transaction((final transaction) async {
       final account = await utils.authenticate(
         session,
         idToken: idToken,
+        accessToken: accessToken,
         transaction: transaction,
       );
 
