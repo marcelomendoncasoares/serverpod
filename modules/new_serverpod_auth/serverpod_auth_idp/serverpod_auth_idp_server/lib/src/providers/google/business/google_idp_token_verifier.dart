@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:clock/clock.dart';
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:http/http.dart' as http;
-import 'package:jose/jose.dart';
 
 /// Utility class for verifying Google ID tokens.
 ///
@@ -31,7 +31,7 @@ class GoogleIdTokenVerifier {
   static const _cacheUpdateMaxFailedAttempts = 5;
 
   /// Cached key set for Google ID tokens.
-  static _CachedKeySet _cachedKeySet = _CachedKeySet(null);
+  static _CachedKeySet _cachedKeySet = _CachedKeySet([]);
 
   /// Mutex lock to prevent concurrent cache updates.
   static Future<void>? _ongoingCacheUpdate;
@@ -71,18 +71,34 @@ class GoogleIdTokenVerifier {
     final String? audience,
     final int clockSkewInSeconds = 0,
   }) async {
-    final keyStore = await _getKeyStore();
-    final jwt = await JsonWebToken.decodeAndVerify(
-      idToken,
-      keyStore,
-    );
+    final keys = await _getKeys();
 
+    JWT? verifiedJwt;
+    JWTException? lastException;
+
+    for (final key in keys) {
+      try {
+        verifiedJwt = JWT.verify(idToken, key);
+        break;
+      } on JWTException catch (e) {
+        lastException = e;
+        continue;
+      }
+    }
+
+    if (verifiedJwt == null) {
+      throw GoogleIdTokenValidationServerException(
+        'Failed to verify token signature: ${lastException?.message ?? "No keys available"}',
+      );
+    }
+
+    final payload = verifiedJwt.payload as Map<String, dynamic>;
     _validateClaims(
-      jwt.claims,
+      payload,
       audience: audience,
       clockSkewInSeconds: clockSkewInSeconds,
     );
-    return jwt.claims.toJson();
+    return payload;
   }
 
   /// Fetches Google's public certificates for JWT verification.
@@ -90,21 +106,21 @@ class GoogleIdTokenVerifier {
   /// Certificates are cached for 1 hour to reduce network requests. If the
   /// request fails, the cache update is postponed for 10 minutes up to 5 times.
   /// If the request fails 5 times, throws [GoogleIdTokenValidationServerException].
-  static Future<JsonWebKeyStore> _getKeyStore() async {
+  static Future<List<JWTKey>> _getKeys() async {
     if (!_cachedKeySet.shouldUpdate) {
-      return _cachedKeySet.toKeyStore();
+      return _cachedKeySet.keys;
     }
 
     final ongoingCacheUpdate = _ongoingCacheUpdate;
     if (ongoingCacheUpdate != null) {
       await ongoingCacheUpdate;
-      return _cachedKeySet.toKeyStore();
+      return _cachedKeySet.keys;
     }
 
     _ongoingCacheUpdate = _updateCachedKeySet();
     await _ongoingCacheUpdate;
     _ongoingCacheUpdate = null;
-    return _cachedKeySet.toKeyStore();
+    return _cachedKeySet.keys;
   }
 
   static Future<void> _updateCachedKeySet() async {
@@ -115,32 +131,69 @@ class GoogleIdTokenVerifier {
           'Failed to fetch certificates');
     }
 
-    final newCachedKeySet = JsonWebKeySet.fromJson(jsonDecode(response.body));
-    _cachedKeySet = _CachedKeySet(newCachedKeySet);
+    final jwksJson = jsonDecode(response.body) as Map<String, dynamic>;
+    final jwksList =
+        (jwksJson['keys'] as List<dynamic>).cast<Map<String, dynamic>>();
+
+    final keys = <JWTKey>[];
+    for (final jwk in jwksList) {
+      try {
+        final key = JWTKey.fromJWK(jwk);
+        keys.add(key);
+      } catch (e) {
+        // Skip invalid keys
+        continue;
+      }
+    }
+
+    if (keys.isEmpty) {
+      throw GoogleIdTokenValidationServerException(
+        'No valid keys could be parsed from JWKs',
+      );
+    }
+
+    _cachedKeySet = _CachedKeySet(keys);
   }
 
   static void _validateClaims(
-    final JsonWebTokenClaims claims, {
+    final Map<String, dynamic> claims, {
     final String? audience,
     final int clockSkewInSeconds = 0,
   }) {
     final now = const Clock().now();
     final clockSkew = Duration(seconds: clockSkewInSeconds);
 
-    if (claims.expiry == null || claims.expiry!.add(clockSkew).isBefore(now)) {
+    final exp = claims['exp'] as int?;
+    if (exp == null) {
+      throw GoogleIdTokenValidationServerException('Missing expiry claim');
+    }
+    final expiry = DateTime.fromMillisecondsSinceEpoch(exp * 1000, isUtc: true);
+    if (expiry.add(clockSkew).isBefore(now)) {
       throw GoogleIdTokenValidationServerException('Token expired');
     }
 
-    if (claims.issuedAt == null ||
-        claims.issuedAt!.subtract(clockSkew).isAfter(now)) {
+    final iat = claims['iat'] as int?;
+    if (iat == null) {
+      throw GoogleIdTokenValidationServerException('Missing issued at claim');
+    }
+    final issuedAt =
+        DateTime.fromMillisecondsSinceEpoch(iat * 1000, isUtc: true);
+    if (issuedAt.subtract(clockSkew).isAfter(now)) {
       throw GoogleIdTokenValidationServerException('Invalid issued at time');
     }
 
-    if (audience != null && !(claims.audience?.contains(audience) ?? false)) {
-      throw GoogleIdTokenValidationServerException('Audience does not match');
+    if (audience != null) {
+      final aud = claims['aud'];
+      final audienceMatches = aud is String
+          ? aud == audience
+          : aud is List && aud.contains(audience);
+      if (!audienceMatches) {
+        throw GoogleIdTokenValidationServerException('Audience does not match');
+      }
     }
 
-    if (claims.subject == null || claims.subject!.isEmpty) {
+    final sub = claims['sub'] as String?;
+    if (sub == null || sub.isEmpty) {
       throw GoogleIdTokenValidationServerException('Missing subject');
     }
   }
@@ -149,13 +202,13 @@ class GoogleIdTokenVerifier {
 /// Cached key set for Google ID tokens.
 ///
 /// Controls the logic for updating the cache, checking if it should be updated,
-/// and providing a [JsonWebKeyStore] for verification.
+/// and providing a list of [JWTKey] for verification.
 class _CachedKeySet {
-  final JsonWebKeySet? _keySet;
+  final List<JWTKey> _keys;
   DateTime expiry;
   int failedAttempts = 0;
 
-  _CachedKeySet(this._keySet) : expiry = _newExpiry();
+  _CachedKeySet(this._keys) : expiry = _newExpiry();
 
   static DateTime _newExpiry({final bool postpone = false}) {
     final interval = postpone
@@ -164,10 +217,7 @@ class _CachedKeySet {
     return DateTime.now().add(interval);
   }
 
-  bool get shouldUpdate =>
-      _keySet == null ||
-      _keySet.keys.isEmpty ||
-      expiry.isBefore(DateTime.now());
+  bool get shouldUpdate => _keys.isEmpty || expiry.isBefore(DateTime.now());
 
   bool postponeExpiration() {
     if (failedAttempts >= GoogleIdTokenVerifier._cacheUpdateMaxFailedAttempts) {
@@ -178,17 +228,11 @@ class _CachedKeySet {
     return true;
   }
 
-  JsonWebKeyStore toKeyStore() {
-    final keys = _keySet?.keys;
-    if (keys == null) {
-      throw StateError('No JsonWebKeySet available');
+  List<JWTKey> get keys {
+    if (_keys.isEmpty) {
+      throw StateError('No keys available');
     }
-
-    final keyStore = JsonWebKeyStore();
-    for (final key in keys) {
-      keyStore.addKey(key);
-    }
-    return keyStore;
+    return _keys;
   }
 }
 
