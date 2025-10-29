@@ -7,27 +7,24 @@ class AvailableIDPs {
   final ServerpodClientShared client;
 
   /// Creates a new instance of [AvailableIDPs].
-  AvailableIDPs(this.client);
-
-  final _availableProviders = <Type, bool>{};
+  const AvailableIDPs(this.client);
 
   bool _isProviderAvailable<T extends EndpointRef>() {
-    final maybeAvailable = _availableProviders[T];
-    if (maybeAvailable != null) return maybeAvailable;
     try {
       client.getEndpointOfType<T>();
-      _availableProviders[T] = true;
+      return true;
     } on ServerpodClientEndpointNotFound {
-      _availableProviders[T] = false;
+      return false;
+    } on ServerpodClientMultipleEndpointsFound {
+      return true;
     }
-    return _availableProviders[T]!;
   }
 
   /// Whether any identity providers are available.
   bool get hasAny => count > 0;
 
   /// The number of available identity providers.
-  int get count => _availableProviders.values.where((e) => e).length;
+  int get count => [hasEmail, hasGoogle, hasApple].where((e) => e).length;
 
   /// Whether the email authentication provider is available.
   bool get hasEmail => _isProviderAvailable<EndpointAuthEmailBase>();
