@@ -66,6 +66,7 @@ class GoogleAuthController extends ChangeNotifier {
   GoogleAuthState _state = GoogleAuthState.initializing;
 
   bool _isInitialized = false;
+  bool _disposed = false;
 
   StreamSubscription<GoogleSignInAuthenticationEvent?>? _authSubscription;
 
@@ -114,6 +115,7 @@ class GoogleAuthController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     unawaited(_authSubscription?.cancel());
     super.dispose();
   }
@@ -190,6 +192,7 @@ class GoogleAuthController extends ChangeNotifier {
 
   /// Sets the current state of the authentication flow and notifies listeners.
   void _setState(GoogleAuthState newState) {
+    if (_disposed) return;
     if (newState != GoogleAuthState.error) _error = null;
     _state = newState;
     notifyListeners();
