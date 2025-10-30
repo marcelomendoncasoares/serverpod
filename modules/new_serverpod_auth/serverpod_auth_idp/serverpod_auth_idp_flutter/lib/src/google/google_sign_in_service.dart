@@ -147,6 +147,7 @@ extension DisconnectGoogleSignIn on ClientAuthSessionManager {
     final signIn =
         await GoogleSignInService.instance.ensureInitialized(auth: this);
     await signIn.disconnect();
+    await signOutDevice();
   }
 }
 
