@@ -13,6 +13,7 @@
 import 'package:serverpod/serverpod.dart' as _i1;
 import '../common/endpoints/status_endpoint.dart' as _i2;
 import '../jwt/endpoints/jwt_tokens_endpoint.dart' as _i3;
+import '../profile/endpoints/user_profile_base_endpoint.dart' as _i4;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -28,6 +29,12 @@ class Endpoints extends _i1.EndpointDispatch {
         ..initialize(
           server,
           'refreshJwtTokens',
+          'serverpod_auth_core',
+        ),
+      'userProfileInfo': _i4.UserProfileInfoEndpoint()
+        ..initialize(
+          server,
+          'userProfileInfo',
           'serverpod_auth_core',
         ),
     };
@@ -88,6 +95,22 @@ class Endpoints extends _i1.EndpointDispatch {
             session,
             refreshToken: params['refreshToken'],
           ),
+        )
+      },
+    );
+    connectors['userProfileInfo'] = _i1.EndpointConnector(
+      name: 'userProfileInfo',
+      endpoint: endpoints['userProfileInfo']!,
+      methodConnectors: {
+        'get': _i1.MethodConnector(
+          name: 'get',
+          params: {},
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['userProfileInfo'] as _i4.UserProfileInfoEndpoint)
+                  .get(session),
         )
       },
     );

@@ -4,3 +4,5 @@ status:
   - signOutAllDevices:
 refreshJwtTokens:
   - refreshAccessToken:
+userProfileInfo:
+  - get:

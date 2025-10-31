@@ -84,17 +84,30 @@ class EndpointRefreshJwtTokens extends _i1.EndpointRef {
       );
 }
 
+/// Endpoint for read-only access to user profile information.
+/// {@category Endpoint}
+class EndpointUserProfileInfo extends _i1.EndpointRef {
+  EndpointUserProfileInfo(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'serverpod_auth_core.userProfileInfo';
+
+  /// Returns the user profile of the current user.
+  _i2.Future<_i4.UserProfileModel> get() =>
+      caller.callServerEndpoint<_i4.UserProfileModel>(
+        'serverpod_auth_core.userProfileInfo',
+        'get',
+        {},
+      );
+}
+
 /// Base endpoint for user profile management.
 ///
 /// To expose these endpoint methods on your server, extend this class in a
-/// concrete class.
-/// For further details see https://docs.serverpod.dev/concepts/working-with-endpoints#inheriting-from-an-endpoint-class-marked-abstract
+/// concrete class on your server.
 /// {@category Endpoint}
-abstract class EndpointUserProfileBase extends _i1.EndpointRef {
-  EndpointUserProfileBase(_i1.EndpointCaller caller) : super(caller);
-
-  /// Returns the user profile of the current user.
-  _i2.Future<_i4.UserProfileModel> get();
+abstract class EndpointUserProfileEditBase extends _i1.EndpointRef {
+  EndpointUserProfileEditBase(_i1.EndpointCaller caller) : super(caller);
 
   /// Removes the users uploaded image, replacing it with the default user
   /// image.
@@ -136,15 +149,19 @@ class Caller extends _i1.ModuleEndpointCaller {
   Caller(_i1.ServerpodClientShared client) : super(client) {
     status = EndpointStatus(this);
     refreshJwtTokens = EndpointRefreshJwtTokens(this);
+    userProfileInfo = EndpointUserProfileInfo(this);
   }
 
   late final EndpointStatus status;
 
   late final EndpointRefreshJwtTokens refreshJwtTokens;
 
+  late final EndpointUserProfileInfo userProfileInfo;
+
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
         'serverpod_auth_core.status': status,
         'serverpod_auth_core.refreshJwtTokens': refreshJwtTokens,
+        'serverpod_auth_core.userProfileInfo': userProfileInfo,
       };
 }
