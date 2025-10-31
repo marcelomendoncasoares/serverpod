@@ -17,7 +17,7 @@ export '../web/button.dart'
 /// A styled button for Google Sign-In on native platforms.
 class GoogleSignInNativeButton extends StatelessWidget {
   /// Callback when the button is pressed.
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   /// Whether the button is currently loading.
   final bool isLoading;
@@ -64,6 +64,23 @@ class GoogleSignInNativeButton extends StatelessWidget {
   /// with different sizes.
   final String? locale;
 
+  /// A wrapper function to the rendered button to ensure style consistency.
+  ///
+  /// This wrapper ensures the consistency of the rendered button with the rest
+  /// of the application. Since the render configuration is done through enum
+  /// values, the wrapper will be called with a [GoogleSignInStyle] object that
+  /// translates the enum values to actual style properties. The [Widget] is the
+  /// rendered Google button that should be wrapped.
+  ///
+  /// Be mindful that creating the button with no wrapper will also result in a
+  /// dangling "Getting ready..." text that is returned while the iFrame is
+  /// being built.
+  final Widget Function(
+    GoogleSignInStyle style,
+    VoidCallback? onPressed,
+    Widget child,
+  )? buttonWrapper;
+
   /// Creates a Google Sign-In button for native platforms.
   const GoogleSignInNativeButton({
     required this.onPressed,
@@ -77,6 +94,7 @@ class GoogleSignInNativeButton extends StatelessWidget {
     this.logoAlignment = GSIButtonLogoAlignment.left,
     this.minimumWidth = 240,
     this.locale,
+    this.buttonWrapper = wrapAsOutline,
     super.key,
   })  : assert(
           minimumWidth > 0 && minimumWidth <= 400,
@@ -91,7 +109,7 @@ class GoogleSignInNativeButton extends StatelessWidget {
 
   /// Builds Google Sign-In button with the icon type.
   factory GoogleSignInNativeButton.icon({
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
     required bool isLoading,
     required bool isDisabled,
   }) =>
@@ -124,6 +142,7 @@ class GoogleSignInNativeButton extends StatelessWidget {
         shape: shape,
         logoAlignment: logoAlignment,
         minimumWidth: minimumWidth,
+        buttonWrapper: wrapAsFilled,
       );
 
   /// Builds Google Sign-In button compatible with Material's outline button.
@@ -147,6 +166,7 @@ class GoogleSignInNativeButton extends StatelessWidget {
         shape: shape,
         logoAlignment: logoAlignment,
         minimumWidth: minimumWidth,
+        buttonWrapper: wrapAsOutline,
       );
 
   /// Builds Google Sign-In button compatible with Material's elevated button.
@@ -171,7 +191,154 @@ class GoogleSignInNativeButton extends StatelessWidget {
         shape: shape,
         logoAlignment: logoAlignment,
         minimumWidth: minimumWidth,
+        buttonWrapper: wrapAsElevated,
       );
+
+  /// Wraps the button to match Material's outlined button style.
+  static Widget wrapAsOutline(
+    GoogleSignInStyle style,
+    VoidCallback? onPressed,
+    Widget child,
+  ) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        backgroundColor: style.backgroundColor,
+        foregroundColor: style.foregroundColor,
+        side: BorderSide(color: Colors.grey[300]!, width: 1),
+        shape: RoundedRectangleBorder(borderRadius: style.borderRadius),
+        padding: EdgeInsets.zero,
+      ),
+      child: child,
+    );
+  }
+
+  /// Wraps the button to match Material's filled button style.
+  static Widget wrapAsFilled(
+    GoogleSignInStyle style,
+    VoidCallback? onPressed,
+    Widget child,
+  ) {
+    return FilledButton(
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        backgroundColor: style.backgroundColor,
+        foregroundColor: style.foregroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: style.borderRadius,
+          side: BorderSide(color: Colors.grey[300]!, width: 1),
+        ),
+        padding: EdgeInsets.zero,
+      ),
+      child: child,
+    );
+  }
+
+  /// Wraps the button to match Material's elevated button style.
+  static Widget wrapAsElevated(
+    GoogleSignInStyle style,
+    VoidCallback? onPressed,
+    Widget child,
+  ) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: style.backgroundColor,
+        foregroundColor: style.foregroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: style.borderRadius,
+          side: BorderSide(color: Colors.grey[300]!, width: 1),
+        ),
+        padding: EdgeInsets.zero,
+      ),
+      child: child,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final buttonStyle = GoogleSignInStyle.fromConfiguration(
+      theme: theme,
+      shape: shape,
+      size: size,
+      width: minimumWidth,
+    );
+
+    if (type == GSIButtonType.icon) {
+      return SizedBox(
+        width: buttonStyle.size.height,
+        height: buttonStyle.size.height,
+        child: OutlinedButton(
+          onPressed: isDisabled ? null : onPressed,
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: Colors.grey[300]!, width: 1),
+            shape: CircleBorder(),
+            padding: EdgeInsets.zero,
+          ),
+          child: GoogleSignInIcon(
+            isLoading: isLoading,
+            isDisabled: isDisabled,
+          ),
+        ),
+      );
+    }
+
+    // NOTE: Styled according to official guidelines.
+    // https://developers.google.com/identity/branding-guidelines#padding
+    final buttonContents = Stack(
+      children: [
+        if (logoAlignment == GSIButtonLogoAlignment.center)
+          Center(
+            child: Padding(
+              padding: _getPadding(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GoogleSignInIcon(
+                    isLoading: isLoading,
+                    isDisabled: isDisabled,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(_getButtonText()),
+                ],
+              ),
+            ),
+          )
+        else ...[
+          Center(
+            child: Padding(
+              padding: _getPadding(),
+              child: Text(_getButtonText()),
+            ),
+          ),
+          Positioned(
+            left: 12,
+            top: 0,
+            bottom: 0,
+            child: GoogleSignInIcon(
+              isLoading: isLoading,
+              isDisabled: isDisabled,
+            ),
+          ),
+        ],
+      ],
+    );
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: minimumWidth,
+        maxWidth: 400,
+        minHeight: buttonStyle.size.height,
+        maxHeight: buttonStyle.size.height,
+      ),
+      child: buttonWrapper?.call(
+            buttonStyle,
+            isDisabled ? null : onPressed,
+            buttonContents,
+          ) ??
+          buttonContents,
+    );
+  }
 
   String _getButtonText() {
     if (isLoading) return 'Signing in...';
@@ -187,121 +354,11 @@ class GoogleSignInNativeButton extends StatelessWidget {
     };
   }
 
-  Color _getForegroundColor() {
-    return switch (theme) {
-      GSIButtonTheme.outline => Colors.black87,
-      GSIButtonTheme.filledBlue => Colors.white,
-      GSIButtonTheme.filledBlack => Colors.white,
-    };
-  }
-
-  OutlinedBorder _getShape(BorderRadius borderRadius) {
-    if (theme == GSIButtonTheme.outline) {
-      return RoundedRectangleBorder(
-        borderRadius: borderRadius,
-        side: BorderSide(color: Colors.grey[300]!, width: 1),
-      );
-    }
-
-    return RoundedRectangleBorder(borderRadius: borderRadius);
-  }
-
   EdgeInsets _getPadding() {
     return switch (size) {
       GSIButtonSize.large => const EdgeInsets.symmetric(vertical: 10),
       GSIButtonSize.medium => const EdgeInsets.symmetric(vertical: 6),
       GSIButtonSize.small => const EdgeInsets.symmetric(vertical: 4),
     };
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Use GoogleSignInStyle to get consistent styling with web button
-    final buttonStyle = GoogleSignInStyle.fromConfiguration(
-      theme: theme,
-      shape: shape,
-      size: size,
-      width: minimumWidth,
-    );
-
-    if (type == GSIButtonType.icon) {
-      // Icon-only button
-      return SizedBox(
-        width: buttonStyle.size.height,
-        height: buttonStyle.size.height,
-        child: ElevatedButton(
-          onPressed: isDisabled ? null : onPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: buttonStyle.backgroundColor,
-            foregroundColor: _getForegroundColor(),
-            shape: _getShape(buttonStyle.borderRadius),
-            padding: EdgeInsets.zero,
-          ),
-          child: GoogleSignInIcon(
-            isLoading: isLoading,
-            isDisabled: isDisabled,
-          ),
-        ),
-      );
-    }
-
-    // Standard button with text
-    // NOTE: Styled according to official guidelines.
-    // https://developers.google.com/identity/branding-guidelines#padding
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        minWidth: minimumWidth,
-        maxWidth: 400,
-        minHeight: buttonStyle.size.height,
-        maxHeight: buttonStyle.size.height,
-      ),
-      child: ElevatedButton(
-        onPressed: isDisabled ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: buttonStyle.backgroundColor,
-          foregroundColor: _getForegroundColor(),
-          shape: _getShape(buttonStyle.borderRadius),
-          padding: EdgeInsets.zero,
-        ),
-        child: Stack(
-          children: [
-            if (logoAlignment == GSIButtonLogoAlignment.center)
-              Center(
-                child: Padding(
-                  padding: _getPadding(),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      GoogleSignInIcon(
-                        isLoading: isLoading,
-                        isDisabled: isDisabled,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(_getButtonText()),
-                    ],
-                  ),
-                ),
-              )
-            else ...[
-              Center(
-                child: Padding(
-                  padding: _getPadding(),
-                  child: Text(_getButtonText()),
-                ),
-              ),
-              Positioned(
-                left: 12,
-                top: 0,
-                bottom: 0,
-                child: GoogleSignInIcon(
-                  isLoading: isLoading,
-                  isDisabled: isDisabled,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
   }
 }

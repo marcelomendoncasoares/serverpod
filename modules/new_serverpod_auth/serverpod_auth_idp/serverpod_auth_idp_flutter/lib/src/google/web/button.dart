@@ -77,7 +77,7 @@ class GoogleSignInWebButton extends StatelessWidget {
     this.logoAlignment = GSIButtonLogoAlignment.left,
     this.minimumWidth = 240,
     this.locale,
-    this.buttonWrapper = wrapAsMaterial,
+    this.buttonWrapper = wrapAsOutline,
     super.key,
   })  : assert(
           minimumWidth > 0 && minimumWidth <= 400,
@@ -128,7 +128,7 @@ class GoogleSignInWebButton extends StatelessWidget {
         shape: shape,
         logoAlignment: logoAlignment,
         minimumWidth: minimumWidth,
-        buttonWrapper: wrapAsMaterial,
+        buttonWrapper: wrapAsOutline,
       );
 
   /// Builds Google Sign-In button compatible with Material's elevated button.
@@ -150,8 +150,8 @@ class GoogleSignInWebButton extends StatelessWidget {
         buttonWrapper: wrapAsElevatedButton,
       );
 
-  /// Wraps the button to match Material's default button style.
-  static Widget wrapAsMaterial(GoogleSignInStyle style, Widget child) {
+  /// Wraps the button to match Material's outlined button style.
+  static Widget wrapAsOutline(GoogleSignInStyle style, Widget child) {
     return Material(
       borderRadius: style.borderRadius,
       clipBehavior: Clip.antiAlias,
@@ -235,12 +235,14 @@ class GoogleSignInWebButton extends StatelessWidget {
 /// The style of the rendered Google button.
 class GoogleSignInStyle {
   final Size size;
+  final Color foregroundColor;
   final Color backgroundColor;
   final BorderRadius borderRadius;
 
   /// Creates a [GoogleSignInStyle] with the given properties.
   const GoogleSignInStyle({
     required this.size,
+    required this.foregroundColor,
     required this.backgroundColor,
     required this.borderRadius,
   });
@@ -263,9 +265,14 @@ class GoogleSignInStyle {
 
     return GoogleSignInStyle(
       size: Size(width, height),
+      foregroundColor: switch (theme) {
+        GSIButtonTheme.outline => Colors.black,
+        GSIButtonTheme.filledBlue => Colors.white,
+        GSIButtonTheme.filledBlack => Colors.white,
+      },
       backgroundColor: switch (theme) {
         GSIButtonTheme.outline => Colors.white,
-        GSIButtonTheme.filledBlue => Colors.blue,
+        GSIButtonTheme.filledBlue => Color.fromARGB(255, 30, 105, 191),
         GSIButtonTheme.filledBlack => Colors.black,
       },
       borderRadius: switch (shape) {

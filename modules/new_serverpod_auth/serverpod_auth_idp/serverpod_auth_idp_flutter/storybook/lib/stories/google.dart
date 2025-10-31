@@ -41,7 +41,7 @@ final googleStories = [
       );
 
       return buildIsolatedElementsForStory(context, {
-        'Material': [
+        'Default': [
           GoogleSignInNativeButton(
             onPressed: _nullCallback,
             isLoading: false,
