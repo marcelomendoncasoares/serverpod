@@ -205,7 +205,7 @@ class GoogleSignInNativeButton extends StatelessWidget {
       style: OutlinedButton.styleFrom(
         backgroundColor: style.backgroundColor,
         foregroundColor: style.foregroundColor,
-        side: BorderSide(color: Colors.grey[300]!, width: 1),
+        side: style.borderSide,
         shape: RoundedRectangleBorder(borderRadius: style.borderRadius),
         padding: EdgeInsets.zero,
       ),
@@ -226,7 +226,7 @@ class GoogleSignInNativeButton extends StatelessWidget {
         foregroundColor: style.foregroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: style.borderRadius,
-          side: BorderSide(color: Colors.grey[300]!, width: 1),
+          side: style.borderSide,
         ),
         padding: EdgeInsets.zero,
       ),
@@ -247,7 +247,7 @@ class GoogleSignInNativeButton extends StatelessWidget {
         foregroundColor: style.foregroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: style.borderRadius,
-          side: BorderSide(color: Colors.grey[300]!, width: 1),
+          side: style.borderSide,
         ),
         padding: EdgeInsets.zero,
       ),
@@ -271,7 +271,7 @@ class GoogleSignInNativeButton extends StatelessWidget {
         child: OutlinedButton(
           onPressed: isDisabled ? null : onPressed,
           style: OutlinedButton.styleFrom(
-            side: BorderSide(color: Colors.grey[300]!, width: 1),
+            side: buttonStyle.borderSide,
             shape: CircleBorder(),
             padding: EdgeInsets.zero,
           ),
@@ -283,25 +283,30 @@ class GoogleSignInNativeButton extends StatelessWidget {
       );
     }
 
+    final logo = GoogleSignInIcon(
+      isLoading: isLoading,
+      isDisabled: isDisabled,
+      borderRadius:
+          theme == GSIButtonTheme.outline ? null : buttonStyle.borderRadius,
+      backgroundColor: theme == GSIButtonTheme.outline ? null : Colors.white,
+    );
+
     // NOTE: Styled according to official guidelines.
     // https://developers.google.com/identity/branding-guidelines#padding
     final buttonContents = Stack(
       children: [
         if (logoAlignment == GSIButtonLogoAlignment.center)
           Center(
-            child: Padding(
-              padding: _getPadding(),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GoogleSignInIcon(
-                    isLoading: isLoading,
-                    isDisabled: isDisabled,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(_getButtonText()),
-                ],
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                logo,
+                const SizedBox(width: 16),
+                Padding(
+                  padding: _getPadding(),
+                  child: Text(_getButtonText()),
+                ),
+              ],
             ),
           )
         else ...[
@@ -312,13 +317,10 @@ class GoogleSignInNativeButton extends StatelessWidget {
             ),
           ),
           Positioned(
-            left: 12,
+            left: 2,
             top: 0,
             bottom: 0,
-            child: GoogleSignInIcon(
-              isLoading: isLoading,
-              isDisabled: isDisabled,
-            ),
+            child: logo,
           ),
         ],
       ],
@@ -360,5 +362,15 @@ class GoogleSignInNativeButton extends StatelessWidget {
       GSIButtonSize.medium => const EdgeInsets.symmetric(vertical: 6),
       GSIButtonSize.small => const EdgeInsets.symmetric(vertical: 4),
     };
+  }
+}
+
+extension on GoogleSignInStyle {
+  BorderSide get borderSide {
+    return BorderSide(
+      color:
+          backgroundColor == Colors.white ? Colors.grey[300]! : backgroundColor,
+      width: 1,
+    );
   }
 }
