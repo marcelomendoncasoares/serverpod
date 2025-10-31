@@ -3,6 +3,8 @@ import 'package:serverpod_auth_core_flutter/serverpod_auth_core_flutter.dart';
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart';
 
 import 'common/widgets/gaps.dart';
+import 'common/widgets/column.dart';
+import 'common/widgets/divider.dart';
 import 'email/email_sign_in_widget.dart';
 import 'google/google_sign_in_widget.dart';
 import 'providers.dart';
@@ -75,40 +77,35 @@ class _SignInWidgetState extends State<SignInWidget> {
     }
 
     // TODO: Make this adaptative.
-    return Center(
-      child: Container(
-        constraints: BoxConstraints(maxWidth: 400),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (auth.idp.hasEmail)
-              EmailSignInWidget(
-                client: widget.client,
-                onAuthenticated: widget.onAuthenticated,
-                onError: widget.onError,
-              ),
-            if (auth.idp.count > 1 && auth.idp.hasEmail)
-              const _SignInSeparator(),
-            if (auth.idp.hasGoogle)
-              GoogleSignInWidget(
-                client: widget.client,
-                onAuthenticated: widget.onAuthenticated,
-                onError: widget.onError,
-              ),
-            // TODO: Add the Apple sign-in widget.
-            // if (auth.idp.hasGoogle && auth.idp.hasApple)
-            //   smallGap,
-            // if (auth.idp.hasApple)
-            //   AppleSignInWidget(
-            //     client: widget.client,
-            //     onAuthenticated: widget.onAuthenticated,
-            //     onError: widget.onError,
-            //   ),
-          ],
-        ),
-      ),
+    return SignInWidgetsColumn(
+      children: [
+        if (auth.idp.hasEmail)
+          EmailSignInWidget(
+            client: widget.client,
+            onAuthenticated: widget.onAuthenticated,
+            onError: widget.onError,
+          ),
+        if (auth.idp.count > 1 && auth.idp.hasEmail) const _SignInSeparator(),
+        if (auth.idp.hasGoogle)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: GoogleSignInWidget(
+              client: widget.client,
+              onAuthenticated: widget.onAuthenticated,
+              onError: widget.onError,
+            ),
+          ),
+        // TODO: Add the Apple sign-in widget.
+        // if (auth.idp.hasApple)
+        //   Padding(
+        //     padding: const EdgeInsets.only(top: 8),
+        //     child: AppleSignInWidget(
+        //       client: widget.client,
+        //       onAuthenticated: widget.onAuthenticated,
+        //       onError: widget.onError,
+        //     ),
+        //   ),
+      ],
     );
   }
 }
@@ -123,7 +120,7 @@ class _SignInSeparator extends StatelessWidget {
         largeGap,
         Row(
           children: [
-            const _SignInExpandedDivider(),
+            const ExpandedDivider(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -136,24 +133,13 @@ class _SignInSeparator extends StatelessWidget {
                     ),
               ),
             ),
-            const _SignInExpandedDivider(),
+            const ExpandedDivider(),
           ],
         ),
-        largeGap,
+        // Each social sign-in widget has its top padding, so we only need a
+        // small gap that will be extended and symmetrical with the top gap.
+        smallGap,
       ],
-    );
-  }
-}
-
-class _SignInExpandedDivider extends StatelessWidget {
-  const _SignInExpandedDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Divider(
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
-      ),
     );
   }
 }
