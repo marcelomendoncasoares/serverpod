@@ -42,10 +42,15 @@ final googleStories = [
 
       return buildIsolatedElementsForStory(context, {
         'Material': [
-          const GoogleSignInNativeButton(
+          GoogleSignInNativeButton(
             onPressed: _nullCallback,
             isLoading: false,
             isDisabled: false,
+            theme: fillStyle,
+            size: size,
+            text: text,
+            shape: shape,
+            logoAlignment: logoAlignment,
           ),
           GoogleSignInWebButton(
             theme: fillStyle,
@@ -56,10 +61,15 @@ final googleStories = [
           ),
         ],
         'Elevated': [
-          const GoogleSignInNativeButton(
+          GoogleSignInNativeButton.elevated(
             onPressed: _nullCallback,
             isLoading: false,
             isDisabled: false,
+            theme: fillStyle,
+            size: size,
+            text: text,
+            shape: shape,
+            logoAlignment: logoAlignment,
           ),
           GoogleSignInWebButton.elevated(
             theme: fillStyle,
@@ -70,10 +80,15 @@ final googleStories = [
           ),
         ],
         'Filled': [
-          const GoogleSignInNativeButton(
+          GoogleSignInNativeButton.filled(
             onPressed: _nullCallback,
             isLoading: false,
             isDisabled: false,
+            theme: fillStyle,
+            size: size,
+            text: text,
+            shape: shape,
+            logoAlignment: logoAlignment,
           ),
           GoogleSignInWebButton.filled(
             theme: fillStyle,
@@ -84,10 +99,14 @@ final googleStories = [
           ),
         ],
         'Outlined': [
-          const GoogleSignInNativeButton(
+          GoogleSignInNativeButton.outlined(
             onPressed: _nullCallback,
             isLoading: false,
             isDisabled: false,
+            size: size,
+            text: text,
+            shape: shape,
+            logoAlignment: logoAlignment,
           ),
           GoogleSignInWebButton.outlined(
             size: size,
@@ -97,7 +116,7 @@ final googleStories = [
           ),
         ],
         'Icon': [
-          const GoogleSignInNativeButton(
+          GoogleSignInNativeButton.icon(
             onPressed: _nullCallback,
             isLoading: false,
             isDisabled: false,

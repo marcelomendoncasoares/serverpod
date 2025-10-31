@@ -79,9 +79,15 @@ class GoogleSignInWebButton extends StatelessWidget {
     this.locale,
     this.buttonWrapper = wrapAsMaterial,
     super.key,
-  }) : assert(
+  })  : assert(
           minimumWidth > 0 && minimumWidth <= 400,
           'Invalid minimumWidth. Must be between 0 and 400.',
+        ),
+        assert(
+          size != GSIButtonSize.small,
+          'Small size is disabled due to Android Material and iOS Human '
+          'Interface design guidelines regarding minimum target size. Use '
+          'medium or large instead.',
         );
 
   /// Builds Google Sign-In button with the icon type.
@@ -252,7 +258,7 @@ class GoogleSignInStyle {
     final height = switch (size) {
       GSIButtonSize.large => 40.0,
       GSIButtonSize.medium => 32.0,
-      // GSIButtonSize.small => 20.0,
+      GSIButtonSize.small => 20.0,
     };
 
     return GoogleSignInStyle(
