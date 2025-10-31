@@ -3,7 +3,11 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:serverpod_auth_core_flutter/serverpod_auth_core_flutter.dart';
 
 import 'google_auth_controller.dart';
+import 'native/button.dart';
 import 'web/button.dart';
+
+export 'native/button.dart';
+export 'web/button.dart';
 
 /// A widget that provides Google Sign-In functionality for all platforms.
 ///
@@ -123,42 +127,15 @@ class _GoogleSignInWidgetState extends State<GoogleSignInWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final isDisabled = !_controller.isInitialized || _controller.isLoading;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (GoogleSignIn.instance.supportsAuthenticate())
-          ElevatedButton.icon(
-            onPressed: isDisabled ? null : _controller.signIn,
-            icon: _controller.isLoading
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Image.asset(
-                    'assets/images/google.png',
-                    package: 'serverpod_auth_idp_flutter',
-                    height: 24,
-                    width: 24,
-                    color: isDisabled ? const Color(0xff9c9c9c) : null,
-                  ),
-            iconAlignment: IconAlignment.start,
-            label: Text(_controller.isLoading
-                ? 'Signing in...'
-                : 'Continue with Google'),
-            // NOTE: Styled according to official guidelines.
-            // https://developers.google.com/identity/branding-guidelines#padding
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-              backgroundColor:
-                  isDisabled ? const Color(0xffe5e5e5) : Colors.white,
-              foregroundColor:
-                  isDisabled ? const Color(0xff9c9c9c) : Colors.black87,
-              shape: StadiumBorder(),
-            ),
+          GoogleSignInNativeButton(
+            onPressed: _controller.signIn,
+            isLoading: _controller.isLoading,
+            isDisabled: !_controller.isInitialized || _controller.isLoading,
           )
         else if (_controller.isInitialized)
           widget.webButton ?? GoogleSignInWebButton()

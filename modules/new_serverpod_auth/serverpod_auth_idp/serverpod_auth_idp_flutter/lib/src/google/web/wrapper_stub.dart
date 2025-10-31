@@ -140,7 +140,9 @@ enum GSIButtonSize {
   medium,
 
   /// A small button (about 20px tall).
-  small,
+  /// NOTE: Small is disabled since it goes against Android Material and iOS
+  /// Human Interface design guidelines regarding minimum target size.
+  // small,
 }
 
 /// The button text.

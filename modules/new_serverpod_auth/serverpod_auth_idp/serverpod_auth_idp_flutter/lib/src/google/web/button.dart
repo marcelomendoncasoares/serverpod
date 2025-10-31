@@ -122,7 +122,7 @@ class GoogleSignInWebButton extends StatelessWidget {
         shape: shape,
         logoAlignment: logoAlignment,
         minimumWidth: minimumWidth,
-        buttonWrapper: wrapAsOutline,
+        buttonWrapper: wrapAsMaterial,
       );
 
   /// Builds Google Sign-In button compatible with Material's elevated button.
@@ -174,21 +174,6 @@ class GoogleSignInWebButton extends StatelessWidget {
     );
   }
 
-  /// Wraps the button to match Material's outline button style.
-  static Widget wrapAsOutline(GoogleSignInStyle style, Widget child) {
-    return OutlinedButton(
-      onPressed: () {},
-      style: OutlinedButton.styleFrom(
-        padding: EdgeInsets.zero,
-        fixedSize: style.size,
-        backgroundColor: style.backgroundColor,
-        shape: RoundedRectangleBorder(borderRadius: style.borderRadius),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: child,
-    );
-  }
-
   /// Wraps the button to match Material's elevated button style.
   static Widget wrapAsElevatedButton(GoogleSignInStyle style, Widget child) {
     return ElevatedButton(
@@ -198,6 +183,7 @@ class GoogleSignInWebButton extends StatelessWidget {
         fixedSize: style.size,
         backgroundColor: style.backgroundColor,
         shape: RoundedRectangleBorder(borderRadius: style.borderRadius),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       clipBehavior: Clip.antiAlias,
       child: child,
@@ -266,7 +252,7 @@ class GoogleSignInStyle {
     final height = switch (size) {
       GSIButtonSize.large => 40.0,
       GSIButtonSize.medium => 32.0,
-      GSIButtonSize.small => 20.0,
+      // GSIButtonSize.small => 20.0,
     };
 
     return GoogleSignInStyle(
