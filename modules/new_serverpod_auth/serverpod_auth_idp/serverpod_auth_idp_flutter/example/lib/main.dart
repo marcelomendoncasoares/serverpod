@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
+import 'package:serverpod_auth_idp_flutter/widgets.dart';
 
 import 'mock_client.dart';
 
@@ -53,11 +54,7 @@ class _ExampleAppState extends State<ExampleApp> {
   }
 
   Widget _connectedScreen() {
-    return ConnectedScreen(
-      onSignOut: () async {
-        await client.auth.signOutDevice();
-      },
-    );
+    return const ConnectedScreen();
   }
 
   Widget _signInScreen() {
@@ -84,38 +81,84 @@ class _ExampleAppState extends State<ExampleApp> {
 }
 
 class ConnectedScreen extends StatelessWidget {
-  const ConnectedScreen({
-    required this.onSignOut,
-    super.key,
-  });
-
-  final VoidCallback onSignOut;
+  const ConnectedScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
         child: Column(
-          spacing: 20,
+          spacing: 16,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const ProfileWidget(),
             const Text('You are connected'),
             FilledButton(
-              onPressed: onSignOut,
+              onPressed: client.auth.signOutDevice,
               child: const Text('Sign out'),
             ),
-            if (client.auth.idp.hasGoogle) ...[
-              const SizedBox(height: 16),
+            if (client.auth.idp.hasGoogle)
               FilledButton(
-                onPressed: () async {
-                  await client.auth.disconnectGoogleAccount();
-                },
+                onPressed: client.auth.disconnectGoogleAccount,
                 child: const Text('Disconnect Google'),
               ),
-            ],
           ],
         ),
       ),
+    );
+  }
+}
+
+class ProfileWidget extends StatefulWidget {
+  const ProfileWidget({super.key});
+
+  @override
+  State<ProfileWidget> createState() => _ProfileWidgetState();
+}
+
+class _ProfileWidgetState extends State<ProfileWidget> {
+  UserProfileModel? _userProfile;
+
+  @override
+  void initState() {
+    super.initState();
+
+    client.modules.auth.userProfileInfo.get().then((profile) {
+      if (!mounted) return;
+      setState(() {
+        _userProfile = profile;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        ProfilePictureWidget(
+          userProfile: _userProfile,
+          size: 100,
+          elevation: 4,
+          borderWidth: 2,
+          borderColor: Colors.white,
+        ),
+        if (_userProfile == null) ...[
+          const Opacity(
+            opacity: 0.8,
+            child: SizedBox(
+              width: 100,
+              height: 100,
+              child: Material(
+                shape: CircleBorder(),
+                color: Colors.white,
+                clipBehavior: Clip.antiAlias,
+              ),
+            ),
+          ),
+          const CircularProgressIndicator(),
+        ],
+      ],
     );
   }
 }
