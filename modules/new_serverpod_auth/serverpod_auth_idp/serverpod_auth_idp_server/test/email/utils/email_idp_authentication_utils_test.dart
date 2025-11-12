@@ -538,4 +538,247 @@ void main() {
       );
     });
   });
+
+  withServerpod(
+    'Given email account with password expiration configured',
+    (final sessionBuilder, final endpoints) {
+      late UuidValue authUserId;
+      late Session session;
+      const email = 'test@serverpod.dev';
+      const password = 'Foobar123!';
+      const passwordExpirationDuration = Duration(days: 90);
+      late EmailIDPAuthenticationUtil authenticationUtil;
+      late EmailIDPTestFixture fixture;
+
+      setUp(() async {
+        session = sessionBuilder.build();
+        fixture = EmailIDPTestFixture(
+          config: const EmailIDPConfig(
+            secretHashPepper: 'test-pepper',
+            passwordExpirationDuration: passwordExpirationDuration,
+          ),
+        );
+        final authUser = await fixture.authUsers.create(session);
+        authUserId = authUser.id;
+        await fixture.createEmailAccount(
+          session,
+          authUserId: authUserId,
+          email: email,
+          password: EmailAccountPassword.fromString(password),
+        );
+
+        authenticationUtil = fixture.authenticationUtil;
+      });
+
+      test(
+          'when authenticating with expired password then it throws EmailPasswordExpiredException',
+          () async {
+        // Set passwordSetAt to a time before the expiration duration
+        final account = await EmailAccount.db.findFirstRow(
+          session,
+          where: (final t) => t.email.equals(email),
+        );
+        expect(account, isNotNull);
+
+        final expiredPasswordSetAt = clock.now().subtract(
+              passwordExpirationDuration + const Duration(days: 1),
+            );
+
+        await EmailAccount.db.updateRow(
+          session,
+          account!.copyWith(passwordSetAt: expiredPasswordSetAt),
+        );
+
+        final result = session.db.transaction(
+          (final transaction) => authenticationUtil.authenticate(
+            session,
+            email: email,
+            password: password,
+            transaction: transaction,
+          ),
+        );
+
+        await expectLater(
+          result,
+          throwsA(isA<EmailPasswordExpiredException>()),
+        );
+      });
+
+      test(
+          'when authenticating with non-expired password then it succeeds with the auth user id',
+          () async {
+        // Set passwordSetAt to a recent time within the expiration duration
+        final account = await EmailAccount.db.findFirstRow(
+          session,
+          where: (final t) => t.email.equals(email),
+        );
+        expect(account, isNotNull);
+
+        final recentPasswordSetAt = clock.now().subtract(
+              const Duration(days: 30),
+            );
+
+        await EmailAccount.db.updateRow(
+          session,
+          account!.copyWith(passwordSetAt: recentPasswordSetAt),
+        );
+
+        final result = session.db.transaction(
+          (final transaction) => authenticationUtil.authenticate(
+            session,
+            email: email,
+            password: password,
+            transaction: transaction,
+          ),
+        );
+
+        await expectLater(result, completion(authUserId));
+      });
+
+      test(
+          'when authenticating with password set exactly at expiration time then it throws EmailPasswordExpiredException',
+          () async {
+        // Set passwordSetAt to exactly the expiration duration ago
+        final account = await EmailAccount.db.findFirstRow(
+          session,
+          where: (final t) => t.email.equals(email),
+        );
+        expect(account, isNotNull);
+
+        final exactlyExpiredPasswordSetAt = clock.now().subtract(
+              passwordExpirationDuration,
+            );
+
+        await EmailAccount.db.updateRow(
+          session,
+          account!.copyWith(passwordSetAt: exactlyExpiredPasswordSetAt),
+        );
+
+        // Advance time by 1 second to make it expired
+        await withClock(
+          Clock.fixed(clock.now().add(const Duration(seconds: 1))),
+          () async {
+            final result = session.db.transaction(
+              (final transaction) => authenticationUtil.authenticate(
+                session,
+                email: email,
+                password: password,
+                transaction: transaction,
+              ),
+            );
+
+            await expectLater(
+              result,
+              throwsA(isA<EmailPasswordExpiredException>()),
+            );
+          },
+        );
+      });
+    },
+  );
+
+  withServerpod(
+    'Given email account with password expiration disabled',
+    (final sessionBuilder, final endpoints) {
+      late UuidValue authUserId;
+      late Session session;
+      const email = 'test@serverpod.dev';
+      const password = 'Foobar123!';
+      late EmailIDPAuthenticationUtil authenticationUtil;
+      late EmailIDPTestFixture fixture;
+
+      setUp(() async {
+        session = sessionBuilder.build();
+        fixture = EmailIDPTestFixture(
+          config: const EmailIDPConfig(
+            secretHashPepper: 'test-pepper',
+            passwordExpirationDuration: null,
+          ),
+        );
+        final authUser = await fixture.authUsers.create(session);
+        authUserId = authUser.id;
+
+        // Set passwordSetAt to a very old date
+        await withClock(
+            Clock.fixed(clock.now().subtract(const Duration(days: 365))),
+            () async {
+          await fixture.createEmailAccount(
+            session,
+            authUserId: authUserId,
+            email: email,
+            password: EmailAccountPassword.fromString(password),
+          );
+        });
+
+        authenticationUtil = fixture.authenticationUtil;
+      });
+
+      test(
+          'when authenticating with old password then it succeeds with the auth user id',
+          () async {
+        final result = session.db.transaction(
+          (final transaction) => authenticationUtil.authenticate(
+            session,
+            email: email,
+            password: password,
+            transaction: transaction,
+          ),
+        );
+
+        await expectLater(result, completion(authUserId));
+      });
+    },
+  );
+
+  withServerpod(
+    'Given email account with passwordSetAt set to null',
+    (final sessionBuilder, final endpoints) {
+      late UuidValue authUserId;
+      late Session session;
+      const email = 'test@serverpod.dev';
+      const password = 'Foobar123!';
+      const passwordExpirationDuration = Duration(days: 90);
+      late EmailIDPAuthenticationUtil authenticationUtil;
+      late EmailIDPTestFixture fixture;
+
+      setUp(() async {
+        session = sessionBuilder.build();
+        fixture = EmailIDPTestFixture(
+          config: const EmailIDPConfig(
+            secretHashPepper: 'test-pepper',
+            passwordExpirationDuration: passwordExpirationDuration,
+          ),
+        );
+        final authUser = await fixture.authUsers.create(session);
+        authUserId = authUser.id;
+
+        await withClock(
+            Clock.fixed(clock.now().subtract(const Duration(days: 365))),
+            () async {
+          await fixture.createEmailAccount(
+            session,
+            authUserId: authUserId,
+            email: email,
+            password: EmailAccountPassword.fromString(password),
+          );
+        });
+
+        authenticationUtil = fixture.authenticationUtil;
+      });
+
+      test('when authenticating then it succeeds with the auth user id',
+          () async {
+        final result = session.db.transaction(
+          (final transaction) => authenticationUtil.authenticate(
+            session,
+            email: email,
+            password: password,
+            transaction: transaction,
+          ),
+        );
+
+        await expectLater(result, completion(authUserId));
+      });
+    },
+  );
 }

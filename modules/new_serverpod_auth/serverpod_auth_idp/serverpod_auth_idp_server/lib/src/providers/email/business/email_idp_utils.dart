@@ -59,6 +59,7 @@ class EmailIDPUtils {
     authentication = EmailIDPAuthenticationUtil(
       hashUtil: hashUtil,
       failedLoginRateLimit: config.failedLoginRateLimit,
+      passwordExpirationDuration: config.passwordExpirationDuration,
     );
   }
 
@@ -89,6 +90,8 @@ extension on EmailLoginServerException {
         return EmailAccountLoginExceptionReason.invalidCredentials;
       case EmailAuthenticationTooManyAttemptsException():
         return EmailAccountLoginExceptionReason.tooManyAttempts;
+      case EmailPasswordExpiredException():
+        return EmailAccountLoginExceptionReason.passwordExpired;
     }
   }
 }

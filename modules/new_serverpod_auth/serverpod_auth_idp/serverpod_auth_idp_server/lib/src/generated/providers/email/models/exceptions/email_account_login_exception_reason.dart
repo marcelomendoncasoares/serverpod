@@ -20,6 +20,9 @@ enum EmailAccountLoginExceptionReason implements _i1.SerializableModel {
   /// Too many attempts made to login with the same email address.
   tooManyAttempts,
 
+  /// The password has expired and must be reset.
+  passwordExpired,
+
   /// Unknown error occurred.
   unknown;
 
@@ -29,6 +32,8 @@ enum EmailAccountLoginExceptionReason implements _i1.SerializableModel {
         return EmailAccountLoginExceptionReason.invalidCredentials;
       case 'tooManyAttempts':
         return EmailAccountLoginExceptionReason.tooManyAttempts;
+      case 'passwordExpired':
+        return EmailAccountLoginExceptionReason.passwordExpired;
       case 'unknown':
         return EmailAccountLoginExceptionReason.unknown;
       default:

@@ -24,6 +24,12 @@ fields:
   ### The salt used for creating the [passwordHash].
   passwordSalt: ByteData
 
+  ### The time when the password was last set.
+  ###
+  ### Used to determine if the password has expired based on
+  ### [EmailIDPConfig.passwordExpirationDuration].
+  passwordSetAt: DateTime?
+
 indexes:
   serverpod_auth_idp_email_account_email:
     fields: email

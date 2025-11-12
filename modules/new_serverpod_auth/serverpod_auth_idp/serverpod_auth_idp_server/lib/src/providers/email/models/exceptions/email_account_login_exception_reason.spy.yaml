@@ -7,5 +7,7 @@ values:
   - invalidCredentials
   ### Too many attempts made to login with the same email address.
   - tooManyAttempts
+  ### The password has expired and must be reset.
+  - passwordExpired
   ### Unknown error occurred.
   - unknown

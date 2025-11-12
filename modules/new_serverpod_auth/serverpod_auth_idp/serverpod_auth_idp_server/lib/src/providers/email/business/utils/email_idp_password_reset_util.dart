@@ -555,6 +555,7 @@ class EmailIDPPasswordResetUtil {
       emailAccount.copyWith(
         passwordHash: passwordHash.hash.asByteData,
         passwordSalt: passwordHash.salt.asByteData,
+        passwordSetAt: password != null ? clock.now() : null,
       ),
       transaction: transaction,
     );

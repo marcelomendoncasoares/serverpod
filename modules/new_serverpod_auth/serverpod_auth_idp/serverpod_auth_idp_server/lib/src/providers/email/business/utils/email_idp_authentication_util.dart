@@ -19,13 +19,16 @@ import '../email_idp_server_exceptions.dart';
 class EmailIDPAuthenticationUtil {
   final SecretHashUtil _hashUtil;
   final RateLimit _failedLoginRateLimit;
+  final Duration? _passwordExpirationDuration;
 
   /// Creates a new instance of [EmailIDPAuthenticationUtil].
   EmailIDPAuthenticationUtil({
     required final SecretHashUtil hashUtil,
     required final RateLimit failedLoginRateLimit,
+    final Duration? passwordExpirationDuration,
   })  : _hashUtil = hashUtil,
-        _failedLoginRateLimit = failedLoginRateLimit;
+        _failedLoginRateLimit = failedLoginRateLimit,
+        _passwordExpirationDuration = passwordExpirationDuration;
 
   /// Returns the [AuthUser]'s ID upon successful email/password verification.
   ///
@@ -36,6 +39,7 @@ class EmailIDPAuthenticationUtil {
   ///   valid for an existing account.
   /// - [EmailAuthenticationTooManyAttemptsException] if the user has made
   ///   too many failed attempts.
+  /// - [EmailPasswordExpiredException] if the password has expired and must be reset.
   ///
   /// In case of invalid credentials, the failed attempt will be logged to
   /// the database outside of the [transaction] and can not be rolled back.
@@ -73,6 +77,14 @@ class EmailIDPAuthenticationUtil {
     )) {
       await _logFailedSignIn(session, email);
       throw EmailAuthenticationInvalidCredentialsException();
+    }
+
+    final passwordSetAt = account.passwordSetAt;
+    if (_passwordExpirationDuration != null && passwordSetAt != null) {
+      final expirationTime = passwordSetAt.add(_passwordExpirationDuration);
+      if (clock.now().isAfter(expirationTime)) {
+        throw EmailPasswordExpiredException();
+      }
     }
 
     return account.authUserId;

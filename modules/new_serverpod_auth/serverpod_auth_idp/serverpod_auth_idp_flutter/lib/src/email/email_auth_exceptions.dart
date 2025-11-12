@@ -24,6 +24,10 @@ Exception? convertToUserFacingException(Object error) {
           'Too many failed login attempts. Please try again later.',
           originalException: error,
         ),
+      EmailAccountLoginExceptionReason.passwordExpired => UserFacingException(
+          'Your password has expired. Please reset your password to continue.',
+          originalException: error,
+        ),
       EmailAccountLoginExceptionReason.unknown => UserFacingException(
           'An error occurred during login. Please try again.',
           originalException: error,

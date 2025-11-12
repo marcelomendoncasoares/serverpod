@@ -309,6 +309,7 @@ class EmailIDPAccountCreationUtil {
         email: request.email,
         passwordHash: passwordHash.hash.asByteData,
         passwordSalt: passwordHash.salt.asByteData,
+        passwordSetAt: clock.now(),
       ),
       transaction: transaction,
     );
@@ -390,6 +391,7 @@ class EmailIDPAccountCreationUtil {
         email: email.normalizedEmail,
         passwordHash: passwordHash.hash.asByteData,
         passwordSalt: passwordHash.salt.asByteData,
+        passwordSetAt: password != null ? clock.now() : null,
       ),
       transaction: transaction,
     );

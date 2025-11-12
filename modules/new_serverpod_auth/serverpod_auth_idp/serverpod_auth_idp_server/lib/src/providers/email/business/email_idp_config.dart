@@ -114,6 +114,15 @@ class EmailIDPConfig {
   /// Defaults to 16.
   final int secretHashSaltLength;
 
+  /// The duration after which users must reset their password on the next login.
+  ///
+  /// If set, users will be forced to reset their password on the next login if
+  /// the duration has passed since the last password configuration. If null,
+  /// password expiration is disabled.
+  ///
+  /// Defaults to null.
+  final Duration? passwordExpirationDuration;
+
   /// Configuration for password history checking and retention.
   ///
   /// If null, password history checking is disabled.
@@ -147,6 +156,7 @@ class EmailIDPConfig {
       maxAttempts: 3,
     ),
     this.secretHashSaltLength = 16,
+    this.passwordExpirationDuration,
     this.passwordHistory = const PasswordHistory(
       count: 15,
       retentionPeriod: Duration(days: 365),

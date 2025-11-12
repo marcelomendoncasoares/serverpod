@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_core_server/auth_user.dart';
 import 'package:serverpod_auth_idp_server/providers/email.dart';
@@ -331,6 +332,252 @@ void main() {
             ),
           ),
         );
+      });
+    },
+  );
+
+  withServerpod(
+    'Given email account with password expiration configured',
+    rollbackDatabase: RollbackDatabase.disabled,
+    testGroupTagsOverride: TestTags.concurrencyOneTestTags,
+    (final sessionBuilder, final endpoints) {
+      late Session session;
+      late EmailIDPTestFixture fixture;
+      const email = 'test@serverpod.dev';
+      const password = 'Password123!';
+      const passwordExpirationDuration = Duration(days: 90);
+
+      setUp(() async {
+        session = sessionBuilder.build();
+        fixture = EmailIDPTestFixture(
+          config: const EmailIDPConfig(
+            secretHashPepper: 'pepper',
+            passwordExpirationDuration: passwordExpirationDuration,
+          ),
+        );
+
+        final authUser = await fixture.authUsers.create(session);
+
+        await fixture.createEmailAccount(
+          session,
+          authUserId: authUser.id,
+          email: email,
+          password: EmailAccountPassword.fromString(password),
+        );
+      });
+
+      tearDown(() async {
+        await fixture.tearDown(session);
+      });
+
+      test(
+          'when login is called with expired password then it throws EmailAccountLoginException with passwordExpired',
+          () async {
+        // Set passwordSetAt to a time before the expiration duration
+        final account = await EmailAccount.db.findFirstRow(
+          session,
+          where: (final t) => t.email.equals(email),
+        );
+        expect(account, isNotNull);
+
+        final expiredPasswordSetAt = clock.now().subtract(
+              passwordExpirationDuration + const Duration(days: 1),
+            );
+
+        await EmailAccount.db.updateRow(
+          session,
+          account!.copyWith(passwordSetAt: expiredPasswordSetAt),
+        );
+
+        final result = fixture.emailIDP.login(
+          session,
+          email: email,
+          password: password,
+        );
+
+        await expectLater(
+          result,
+          throwsA(
+            isA<EmailAccountLoginException>().having(
+              (final e) => e.reason,
+              'reason',
+              EmailAccountLoginExceptionReason.passwordExpired,
+            ),
+          ),
+        );
+      });
+
+      test(
+          'when login is called with non-expired password then it returns auth session token',
+          () async {
+        // Set passwordSetAt to a recent time within the expiration duration
+        final account = await EmailAccount.db.findFirstRow(
+          session,
+          where: (final t) => t.email.equals(email),
+        );
+        expect(account, isNotNull);
+
+        final recentPasswordSetAt = clock.now().subtract(
+              const Duration(days: 30),
+            );
+
+        await EmailAccount.db.updateRow(
+          session,
+          account!.copyWith(passwordSetAt: recentPasswordSetAt),
+        );
+
+        final result = fixture.emailIDP.login(
+          session,
+          email: email,
+          password: password,
+        );
+
+        await expectLater(result, completion(isA<AuthSuccess>()));
+      });
+
+      test(
+          'when login is called with password set exactly at expiration time then it throws EmailAccountLoginException with passwordExpired',
+          () async {
+        // Set passwordSetAt to exactly the expiration duration ago
+        final account = await EmailAccount.db.findFirstRow(
+          session,
+          where: (final t) => t.email.equals(email),
+        );
+        expect(account, isNotNull);
+
+        final exactlyExpiredPasswordSetAt = clock.now().subtract(
+              passwordExpirationDuration,
+            );
+
+        await EmailAccount.db.updateRow(
+          session,
+          account!.copyWith(passwordSetAt: exactlyExpiredPasswordSetAt),
+        );
+
+        // Advance time by 1 second to make it expired
+        await withClock(
+          Clock.fixed(clock.now().add(const Duration(seconds: 1))),
+          () async {
+            final result = fixture.emailIDP.login(
+              session,
+              email: email,
+              password: password,
+            );
+
+            await expectLater(
+              result,
+              throwsA(
+                isA<EmailAccountLoginException>().having(
+                  (final e) => e.reason,
+                  'reason',
+                  EmailAccountLoginExceptionReason.passwordExpired,
+                ),
+              ),
+            );
+          },
+        );
+      });
+    },
+  );
+
+  withServerpod(
+    'Given email account with password expiration disabled',
+    rollbackDatabase: RollbackDatabase.disabled,
+    testGroupTagsOverride: TestTags.concurrencyOneTestTags,
+    (final sessionBuilder, final endpoints) {
+      late Session session;
+      late EmailIDPTestFixture fixture;
+      const email = 'test@serverpod.dev';
+      const password = 'Password123!';
+
+      setUp(() async {
+        session = sessionBuilder.build();
+        fixture = EmailIDPTestFixture(
+          config: const EmailIDPConfig(
+            secretHashPepper: 'pepper',
+            passwordExpirationDuration: null,
+          ),
+        );
+
+        final authUser = await fixture.authUsers.create(session);
+
+        // Set passwordSetAt to a very old date
+        final oldPasswordSetAt = DateTime(2020, 1, 1);
+
+        await withClock(Clock.fixed(oldPasswordSetAt), () async {
+          await fixture.createEmailAccount(
+            session,
+            authUserId: authUser.id,
+            email: email,
+            password: EmailAccountPassword.fromString(password),
+          );
+        });
+      });
+
+      tearDown(() async {
+        await fixture.tearDown(session);
+      });
+
+      test(
+          'when login is called with old password then it returns auth session token',
+          () async {
+        final result = fixture.emailIDP.login(
+          session,
+          email: email,
+          password: password,
+        );
+
+        await expectLater(result, completion(isA<AuthSuccess>()));
+      });
+    },
+  );
+
+  withServerpod(
+    'Given email account with passwordSetAt set to null',
+    rollbackDatabase: RollbackDatabase.disabled,
+    testGroupTagsOverride: TestTags.concurrencyOneTestTags,
+    (final sessionBuilder, final endpoints) {
+      late Session session;
+      late EmailIDPTestFixture fixture;
+      const email = 'test@serverpod.dev';
+      const password = 'Password123!';
+      const passwordExpirationDuration = Duration(days: 90);
+
+      setUp(() async {
+        session = sessionBuilder.build();
+        fixture = EmailIDPTestFixture(
+          config: const EmailIDPConfig(
+            secretHashPepper: 'pepper',
+            passwordExpirationDuration: passwordExpirationDuration,
+          ),
+        );
+
+        final authUser = await fixture.authUsers.create(session);
+
+        await withClock(
+            Clock.fixed(clock.now().subtract(const Duration(days: 365))),
+            () async {
+          await fixture.createEmailAccount(
+            session,
+            authUserId: authUser.id,
+            email: email,
+            password: EmailAccountPassword.fromString(password),
+          );
+        });
+      });
+
+      tearDown(() async {
+        await fixture.tearDown(session);
+      });
+
+      test('when login is called then it returns auth session token', () async {
+        final result = fixture.emailIDP.login(
+          session,
+          email: email,
+          password: password,
+        );
+
+        await expectLater(result, completion(isA<AuthSuccess>()));
       });
     },
   );
