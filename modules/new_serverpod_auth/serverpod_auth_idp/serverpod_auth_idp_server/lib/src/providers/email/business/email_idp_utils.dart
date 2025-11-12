@@ -131,6 +131,8 @@ extension on EmailPasswordResetServerException {
         return EmailAccountPasswordResetExceptionReason.tooManyAttempts;
       case EmailPasswordResetPasswordPolicyViolationException():
         return EmailAccountPasswordResetExceptionReason.policyViolation;
+      case EmailPasswordResetPasswordReuseException():
+        return EmailAccountPasswordResetExceptionReason.passwordReuse;
       case EmailPasswordResetRequestExpiredException():
         return EmailAccountPasswordResetExceptionReason.expired;
     }

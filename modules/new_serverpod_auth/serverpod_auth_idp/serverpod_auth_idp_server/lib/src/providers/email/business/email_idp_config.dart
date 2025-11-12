@@ -114,6 +114,12 @@ class EmailIDPConfig {
   /// Defaults to 16.
   final int secretHashSaltLength;
 
+  /// Configuration for password history checking and retention.
+  ///
+  /// If null, password history checking is disabled.
+  /// Defaults to enabled with 15 password count and 365 days retention.
+  final PasswordHistory? passwordHistory;
+
   /// Create a new email account configuration.
   ///
   /// Set [current] to apply this configuration.
@@ -141,6 +147,10 @@ class EmailIDPConfig {
       maxAttempts: 3,
     ),
     this.secretHashSaltLength = 16,
+    this.passwordHistory = const PasswordHistory(
+      count: 15,
+      retentionPeriod: Duration(days: 365),
+    ),
   });
 }
 
@@ -154,4 +164,35 @@ class RateLimit {
 
   /// Creates a new [RateLimit] instance.
   const RateLimit({required this.maxAttempts, required this.timeframe});
+}
+
+/// Configuration for password history checking and retention.
+///
+/// Both [count] and [retentionPeriod] are nullable and can be used to configure
+/// the password history checking independently. If using both, only the most
+/// recent [count] passwords within the [retentionPeriod] will be kept and
+/// checked for reuse.
+///
+/// If both are null, password history is enabled with no limits, keeping all
+/// history forever. Care is advised when using this configuration, since it can
+/// lead to unbounded storage usage and performance degradation over time.
+class PasswordHistory {
+  /// The number of previous passwords to keep in history and prevent reuse.
+  ///
+  /// If null, no count limit is applied and any number of passwords within the
+  /// configured [retentionPeriod] are kept.
+  final int? count;
+
+  /// The duration to keep password history entries.
+  ///
+  /// Passwords older than this duration will be removed from history. If null,
+  /// no time limit is applied and all passwords within the configured [count]
+  /// are kept.
+  final Duration? retentionPeriod;
+
+  /// Creates a new [PasswordHistory] instance.
+  const PasswordHistory({
+    this.count,
+    this.retentionPeriod,
+  });
 }

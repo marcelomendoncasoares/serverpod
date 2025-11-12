@@ -74,6 +74,10 @@ final class EmailPasswordResetInvalidVerificationCodeException
 final class EmailPasswordResetPasswordPolicyViolationException
     extends EmailPasswordResetServerException {}
 
+/// Exception thrown when trying to reset password to a previously used password.
+final class EmailPasswordResetPasswordReuseException
+    extends EmailPasswordResetServerException {}
+
 /// Exception thrown when trying to complete an expired password reset request.
 final class EmailPasswordResetRequestExpiredException
     extends EmailPasswordResetServerException {}

@@ -79,6 +79,11 @@ Exception? convertToUserFacingException(Object error) {
           'different password.',
           originalException: error,
         ),
+      EmailAccountPasswordResetExceptionReason.passwordReuse =>
+        UserFacingException(
+          'This password was recently used. Please choose a different password.',
+          originalException: error,
+        ),
       EmailAccountPasswordResetExceptionReason.unknown => UserFacingException(
           'An error occurred during password reset. Please try again later. '
           'If the problem persists, please contact support.',

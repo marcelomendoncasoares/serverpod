@@ -26,6 +26,9 @@ enum EmailAccountPasswordResetExceptionReason implements _i1.SerializableModel {
   /// match the configured policy.
   policyViolation,
 
+  /// Exception to be thrown when attempting to set a password that was previously used.
+  passwordReuse,
+
   /// Exception to be thrown when attempting to verify a password reset
   /// request too many times.
   tooManyAttempts,
@@ -41,6 +44,8 @@ enum EmailAccountPasswordResetExceptionReason implements _i1.SerializableModel {
         return EmailAccountPasswordResetExceptionReason.invalid;
       case 'policyViolation':
         return EmailAccountPasswordResetExceptionReason.policyViolation;
+      case 'passwordReuse':
+        return EmailAccountPasswordResetExceptionReason.passwordReuse;
       case 'tooManyAttempts':
         return EmailAccountPasswordResetExceptionReason.tooManyAttempts;
       case 'unknown':
