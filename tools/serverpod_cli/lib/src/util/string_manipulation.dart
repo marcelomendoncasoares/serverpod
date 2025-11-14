@@ -29,11 +29,11 @@ List<String> splitIgnoringBracketsAndBracesAndQuotes(
         var isEscaped = index > 0 && input[index - 1] == '\\';
 
         if (insideDoubleQuote && char == '"' && !isEscaped) {
-          /// If inside "" and non escaped " is found, only descrease depth and switch bool value
+          /// If inside "" and non escaped " is found, only decrease depth and switch bool value
           depth--;
           insideDoubleQuote = false;
         } else if (insideSingleQuote && char == '\'' && !isEscaped) {
-          /// If inside ' and non escaped ' is found, only descrease depth and switch bool value
+          /// If inside ' and non escaped ' is found, only decrease depth and switch bool value
           depth--;
           insideSingleQuote = false;
         }

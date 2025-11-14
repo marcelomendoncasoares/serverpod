@@ -284,7 +284,7 @@ void main() {
   );
 
   group(
-    'Given an endpoint that has a UuidValue parameter imported from unkown source when generating endpoints',
+    'Given an endpoint that has a UuidValue parameter imported from unknown source when generating endpoints',
     () {
       var endpoint = EndpointDefinitionBuilder()
           .withClassName('ExampleEndpoint')

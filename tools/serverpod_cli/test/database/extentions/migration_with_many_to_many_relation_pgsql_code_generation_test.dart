@@ -66,18 +66,18 @@ fields:
       var dropTableTargetIndex = psql.indexOf('DROP TABLE "target"');
       var createTableSourceIndex = psql.indexOf('CREATE TABLE "source"');
       var createTableTargetIndex = psql.indexOf('CREATE TABLE "target_new"');
-      var addForegeinKeyIndex = psql.indexOf('ADD CONSTRAINT "source_fk_0"');
+      var addForeignKeyIndex = psql.indexOf('ADD CONSTRAINT "source_fk_0"');
 
       expect(dropTableSourceIndex, greaterThanOrEqualTo(0));
       expect(dropTableTargetIndex, greaterThanOrEqualTo(0));
       expect(createTableSourceIndex, greaterThanOrEqualTo(0));
       expect(createTableTargetIndex, greaterThanOrEqualTo(0));
-      expect(addForegeinKeyIndex, greaterThanOrEqualTo(0));
+      expect(addForeignKeyIndex, greaterThanOrEqualTo(0));
 
       expect(dropTableSourceIndex, lessThan(dropTableTargetIndex));
       expect(dropTableTargetIndex, lessThan(createTableSourceIndex));
       expect(createTableSourceIndex, lessThan(createTableTargetIndex));
-      expect(createTableTargetIndex, lessThan(addForegeinKeyIndex));
+      expect(createTableTargetIndex, lessThan(addForeignKeyIndex));
     },
   );
 
@@ -142,18 +142,18 @@ fields:
       var dropTableTargetIndex = psql.indexOf('DROP TABLE "target"');
       var createTableSourceIndex = psql.indexOf('CREATE TABLE "source"');
       var createTableTargetIndex = psql.indexOf('CREATE TABLE "target_new"');
-      var addForegeinKeyIndex = psql.indexOf('ADD CONSTRAINT "source_fk_0"');
+      var addForeignKeyIndex = psql.indexOf('ADD CONSTRAINT "source_fk_0"');
 
       expect(dropTableSourceIndex, greaterThanOrEqualTo(0));
       expect(dropTableTargetIndex, greaterThanOrEqualTo(0));
       expect(createTableSourceIndex, greaterThanOrEqualTo(0));
       expect(createTableTargetIndex, greaterThanOrEqualTo(0));
-      expect(addForegeinKeyIndex, greaterThanOrEqualTo(0));
+      expect(addForeignKeyIndex, greaterThanOrEqualTo(0));
 
       expect(dropTableSourceIndex, lessThan(dropTableTargetIndex));
       expect(dropTableTargetIndex, lessThan(createTableSourceIndex));
       expect(createTableSourceIndex, lessThan(createTableTargetIndex));
-      expect(createTableTargetIndex, lessThan(addForegeinKeyIndex));
+      expect(createTableTargetIndex, lessThan(addForeignKeyIndex));
     },
   );
 
@@ -218,21 +218,21 @@ fields:
       var dropTableTargetIndex = psql.indexOf('DROP TABLE "a"');
       var createTableTargetIndex = psql.indexOf('CREATE TABLE "a_new"');
       var createTableSourceIndex = psql.indexOf('CREATE TABLE "b"');
-      var addForegeinKeyAIndex = psql.indexOf('ADD CONSTRAINT "a_new_fk_0"');
-      var addForegeinKeyBIndex = psql.indexOf('ADD CONSTRAINT "b_fk_0"');
+      var addForeignKeyAIndex = psql.indexOf('ADD CONSTRAINT "a_new_fk_0"');
+      var addForeignKeyBIndex = psql.indexOf('ADD CONSTRAINT "b_fk_0"');
 
       expect(dropTableSourceIndex, greaterThanOrEqualTo(0));
       expect(dropTableTargetIndex, greaterThanOrEqualTo(0));
       expect(createTableSourceIndex, greaterThanOrEqualTo(0));
       expect(createTableTargetIndex, greaterThanOrEqualTo(0));
-      expect(addForegeinKeyAIndex, greaterThanOrEqualTo(0));
-      expect(addForegeinKeyBIndex, greaterThanOrEqualTo(0));
+      expect(addForeignKeyAIndex, greaterThanOrEqualTo(0));
+      expect(addForeignKeyBIndex, greaterThanOrEqualTo(0));
 
       expect(dropTableSourceIndex, lessThan(dropTableTargetIndex));
       expect(dropTableTargetIndex, lessThan(createTableSourceIndex));
       expect(createTableTargetIndex, lessThan(createTableSourceIndex));
-      expect(createTableSourceIndex, lessThan(addForegeinKeyAIndex));
-      expect(addForegeinKeyAIndex, lessThan(addForegeinKeyBIndex));
+      expect(createTableSourceIndex, lessThan(addForeignKeyAIndex));
+      expect(addForeignKeyAIndex, lessThan(addForeignKeyBIndex));
     },
   );
 
@@ -378,7 +378,7 @@ fields:
       var dropSourceConstraint = psql.indexOf(
         'ALTER TABLE "source" DROP CONSTRAINT "source_fk_0"',
       );
-      var dropSourceColumnPointingTotarget = psql.indexOf(
+      var dropSourceColumnPointingToTarget = psql.indexOf(
         'ALTER TABLE "source" DROP COLUMN "targetId"',
       );
       var createNewTargetTable = psql.indexOf('CREATE TABLE "target_new"');
@@ -386,13 +386,13 @@ fields:
       expect(dropTableSourceIndex, -1);
       expect(dropTableTargetIndex, greaterThanOrEqualTo(0));
       expect(dropSourceConstraint, greaterThanOrEqualTo(0));
-      expect(dropSourceColumnPointingTotarget, greaterThanOrEqualTo(0));
+      expect(dropSourceColumnPointingToTarget, greaterThanOrEqualTo(0));
       expect(createNewTargetTable, greaterThanOrEqualTo(0));
 
       expect(dropTableSourceIndex, lessThan(dropTableTargetIndex));
       expect(dropTableTargetIndex, lessThan(dropSourceConstraint));
-      expect(dropSourceConstraint, lessThan(dropSourceColumnPointingTotarget));
-      expect(dropSourceColumnPointingTotarget, lessThan(createNewTargetTable));
+      expect(dropSourceConstraint, lessThan(dropSourceColumnPointingToTarget));
+      expect(dropSourceColumnPointingToTarget, lessThan(createNewTargetTable));
     },
   );
 }

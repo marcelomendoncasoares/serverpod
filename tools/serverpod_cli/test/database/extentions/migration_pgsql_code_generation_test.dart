@@ -468,7 +468,7 @@ END
 
   /// Issue: https://github.com/serverpod/serverpod/issues/3503
   test(
-    'Given an existing table that that references a new table with a name lexically sorted before the existing one, when creating migraion sql then the migration code should create the table before defining the foreign key',
+    'Given an existing table that that references a new table with a name lexically sorted before the existing one, when creating migration sql then the migration code should create the table before defining the foreign key',
     () {
       var sourceModels = [
         ModelSourceBuilder().withFileName('existing_table').withYaml(
