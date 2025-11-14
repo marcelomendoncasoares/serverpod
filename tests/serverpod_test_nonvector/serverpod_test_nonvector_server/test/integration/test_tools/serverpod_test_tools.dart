@@ -64,6 +64,8 @@ export 'package:serverpod_test/serverpod_test_public_exports.dart';
 /// [serverpodStartTimeout] The timeout to use when starting Serverpod, which connects to the database among other things. Defaults to `Duration(seconds: 30)`.
 ///
 /// [testServerOutputMode] Options for controlling test server output during test execution. Defaults to `TestServerOutputMode.normal`.
+/// Can also be set via the `SERVERPOD_TEST_SERVER_OUTPUT_MODE` environment variable (valid values: `normal`, `verbose`, `silent`).
+/// If both the parameter and environment variable are provided, the environment variable takes precedence.
 /// ```dart
 /// /// Options for controlling test server output during test execution.
 /// enum TestServerOutputMode {
