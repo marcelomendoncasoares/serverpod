@@ -30,6 +30,8 @@ enum RollbackDatabase {
       'The timeout to use when starting Serverpod, which connects to the database among other things. Defaults to `Duration(seconds: 30)`.',
   'testServerOutputMode': '''
 Options for controlling test server output during test execution. Defaults to `TestServerOutputMode.normal`.
+Can also be set via the `SERVERPOD_TEST_SERVER_OUTPUT_MODE` environment variable (valid values: `normal`, `verbose`, `silent`).
+If both the parameter and environment variable are provided, the environment variable takes precedence.
 ```dart
 /// Options for controlling test server output during test execution.
 enum TestServerOutputMode {
@@ -47,15 +49,15 @@ enum TestServerOutputMode {
 }
 ```''',
   'testGroupTagsOverride': '''
-By default Serverpod test tools tags the `withServerpod` test group with `"integration"`. 
-This is to provide a simple way to only run unit or integration tests. 
+By default Serverpod test tools tags the `withServerpod` test group with `"integration"`.
+This is to provide a simple way to only run unit or integration tests.
 This property allows this tag to be overridden to something else. Defaults to `['integration']`.''',
   'experimentalFeatures':
       'Optionally specify experimental features. See [Serverpod] for more information.',
 };
 
 var _methodDescription = '''
-Creates a new test group that takes a callback that can be used to write tests. 
+Creates a new test group that takes a callback that can be used to write tests.
 The callback has two parameters: `sessionBuilder` and `endpoints`.
 `sessionBuilder` is used to build a `Session` object that represents the server state during an endpoint call and is used to set up scenarios.
 `endpoints` contains all your Serverpod endpoints and lets you call them:

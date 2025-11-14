@@ -123,7 +123,9 @@ class TestServerpod<T extends InternalTestEndpoints> {
     ExperimentalFeatures? experimentalFeatures,
     RuntimeParametersListBuilder? runtimeParametersBuilder,
   }) : testServerOutputMode =
-           testServerOutputMode ?? TestServerOutputMode.normal {
+           _getTestServerOutputModeFromEnvironment() ??
+           testServerOutputMode ??
+           TestServerOutputMode.normal {
     // Ignore output from the Serverpod constructor to avoid spamming the console.
     // Should be changed when a proper logger is implemented.
     // Tracked in issue: https://github.com/serverpod/serverpod/issues/2847
@@ -215,5 +217,22 @@ class TestServerpod<T extends InternalTestEndpoints> {
       isDatabaseEnabled: isDatabaseEnabled,
       runtimeParametersBuilder: _serverpod.runtimeParametersBuilder,
     );
+  }
+}
+
+/// Reads the test server output mode from environment variable.
+/// Checks for `SERVERPOD_TEST_SERVER_OUTPUT_MODE` environment variable.
+/// Valid values are: `normal`, `verbose`, `silent` (case-insensitive).
+/// Returns `null` if the environment variable is not set or value is invalid.
+TestServerOutputMode? _getTestServerOutputModeFromEnvironment() {
+  const envVarName = 'SERVERPOD_TEST_SERVER_OUTPUT_MODE';
+  final envValue = Platform.environment[envVarName];
+  if (envValue == null) return null;
+  try {
+    return TestServerOutputMode.values.firstWhere(
+      (mode) => mode.name.toLowerCase() == envValue.toLowerCase(),
+    );
+  } catch (_) {
+    return null;
   }
 }
