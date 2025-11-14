@@ -110,7 +110,7 @@ List<String> _getDirectoriesRequiringCleaning({
   required GeneratorConfig config,
 }) {
   return [
-    p.joinAll(config.generatedServeModelPathParts),
+    p.joinAll(config.generatedServerModelPathParts),
     p.joinAll(config.generatedDartClientModelPathParts),
   ];
 }

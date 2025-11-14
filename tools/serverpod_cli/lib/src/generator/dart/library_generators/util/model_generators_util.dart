@@ -126,7 +126,7 @@ extension SerializableModelPath on SerializableModelDefinition {
   String getFullFilePath(GeneratorConfig config, {required bool serverCode}) {
     return p.joinAll([
       ...serverCode
-          ? config.generatedServeModelPathParts
+          ? config.generatedServerModelPathParts
           : config.generatedDartClientModelPathParts,
       filePath,
     ]);

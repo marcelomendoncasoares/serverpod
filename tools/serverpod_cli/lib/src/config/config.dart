@@ -154,25 +154,25 @@ class GeneratorConfig implements ModelLoadConfig {
 
   /// The path parts of the generated endpoint file.
   List<String> get generatedServerEndpointFilePathParts => [
-    ...generatedServeModelPathParts,
+    ...generatedServerModelPathParts,
     'endpoints.dart',
   ];
 
   /// The path parts of the generated protocol file.
   List<String> get generatedServerProtocolFilePathParts => [
-    ...generatedServeModelPathParts,
+    ...generatedServerModelPathParts,
     'protocol.dart',
   ];
 
   /// The path parts of the generated protocol file.
   List<String> get generatedServerEndpointDescriptionFilePathParts => [
-    ...generatedServeModelPathParts,
+    ...generatedServerModelPathParts,
     'protocol.yaml',
   ];
 
   /// The path parts of the directory, where the generated code is stored in the
   /// server package.
-  List<String> get generatedServeModelPathParts => [
+  List<String> get generatedServerModelPathParts => [
     ...serverPackageDirectoryPathParts,
     'lib',
     ...generatedServeModelPackagePathParts,
@@ -473,7 +473,7 @@ class GeneratorConfig implements ModelLoadConfig {
 sourceProtocol: ${p.joinAll(protocolSourcePathParts)}
 sourceModel: ${p.joinAll(modelSourcePathParts)}
 generatedClientDart: ${p.joinAll(generatedDartClientModelPathParts)}
-generatedServerModel: ${p.joinAll(generatedServeModelPathParts)}
+generatedServerModel: ${p.joinAll(generatedServerModelPathParts)}
 ''';
     if (modules.isNotEmpty) {
       str += '\nmodules:\n\n';
@@ -561,7 +561,7 @@ name: $name
 nickname: $nickname
 clientPackage: $dartClientPackage
 serverPackage: $serverPackage
-migrationVersions: $migrationVersions 
+migrationVersions: $migrationVersions
 ''';
   }
 }

@@ -1120,7 +1120,7 @@ class LibraryGenerator {
 
   String? _generatedDirectoryPathCache;
   String _buildGeneratedDirectoryPath() => _generatedDirectoryPathCache ??= p
-      .joinAll([...config.generatedServeModelPathParts]);
+      .joinAll([...config.generatedServerModelPathParts]);
 
   String _endpointPath(EndpointDefinition endpoint) {
     // For endpoints defined in other packages, the filePath is the library uri.
