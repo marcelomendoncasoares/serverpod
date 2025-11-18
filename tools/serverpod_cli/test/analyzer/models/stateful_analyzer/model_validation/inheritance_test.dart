@@ -97,7 +97,54 @@ void main() {
     );
 
     test(
-      'Given a child-class that extends an external class, then an error is collected that only classes from within the project can be extended',
+      'Given a child-class that extends an external class with a table, then an error is collected',
+      () {
+        var modelSources = [
+          ModelSourceBuilder()
+              .withYaml(
+                '''
+          class: ExampleForeignClass
+          table: example_foreign_class
+          fields:
+            name: String
+          ''',
+              )
+              .withModuleAlias('module_source_builder')
+              .build(),
+          ModelSourceBuilder().withFileName('example2').withYaml(
+            '''
+          class: ExampleChildClass
+          extends: ExampleForeignClass
+          fields:
+            age: int
+          ''',
+          ).build(),
+        ];
+
+        var collector = CodeGenerationCollector();
+        StatefulAnalyzer(
+          config,
+          modelSources,
+          onErrorsCollector(collector),
+        ).validateAll();
+
+        expect(
+          collector.errors,
+          isNotEmpty,
+          reason: 'Expected an error but none was generated.',
+        );
+
+        var error = collector.errors.first;
+        expect(
+          error.message,
+          'You can only extend classes from your own project or from an'
+          'external module if its hierarchy has no table definition.',
+        );
+      },
+    );
+
+    test(
+      'Given a child-class that extends an external class without a table, then no error is collected',
       () {
         var modelSources = [
           ModelSourceBuilder()
@@ -129,6 +176,58 @@ void main() {
 
         expect(
           collector.errors,
+          isEmpty,
+          reason: 'Expected no errors but some were generated.',
+        );
+      },
+    );
+
+    test(
+      'Given a child-class that extends an external class where an ancestor has a table, then an error is collected',
+      () {
+        var modelSources = [
+          ModelSourceBuilder()
+              .withYaml(
+                '''
+          class: ExampleGrandParentClass
+          table: example_grandparent_class
+          fields:
+            grandParentField: String
+          ''',
+              )
+              .withModuleAlias('ModelSourceBuilder')
+              .build(),
+          ModelSourceBuilder()
+              .withFileName('example_parent')
+              .withYaml(
+                '''
+          class: ExampleParentClass
+          extends: ExampleGrandParentClass
+          fields:
+            parentField: String
+          ''',
+              )
+              .withModuleAlias('ModelSourceBuilder')
+              .build(),
+          ModelSourceBuilder().withFileName('example2').withYaml(
+            '''
+          class: ExampleChildClass
+          extends: ExampleParentClass
+          fields:
+            age: int
+          ''',
+          ).build(),
+        ];
+
+        var collector = CodeGenerationCollector();
+        StatefulAnalyzer(
+          config,
+          modelSources,
+          onErrorsCollector(collector),
+        ).validateAll();
+
+        expect(
+          collector.errors,
           isNotEmpty,
           reason: 'Expected an error but none was generated.',
         );
@@ -136,7 +235,8 @@ void main() {
         var error = collector.errors.first;
         expect(
           error.message,
-          'You can only extend classes from your own project.',
+          'You can only extend classes from your own project or from an'
+          'external module if its hierarchy has no table definition.',
         );
       },
     );

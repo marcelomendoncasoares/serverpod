@@ -332,12 +332,18 @@ class Restrictions {
     }
 
     if (parentClass.type.moduleAlias != defaultModuleAlias) {
-      return [
-        SourceSpanSeverityException(
-          'You can only extend classes from your own project.',
-          span,
-        ),
-      ];
+      if (parentClass is ModelClassDefinition) {
+        if (parentClass.tableName != null ||
+            _findTableClassInParentClasses(parentClass) != null) {
+          return [
+            SourceSpanSeverityException(
+              'You can only extend classes from your own project or from an'
+              'external module if its hierarchy has no table definition.',
+              span,
+            ),
+          ];
+        }
+      }
     }
 
     var currentModel = parsedModels.findByClassName(
