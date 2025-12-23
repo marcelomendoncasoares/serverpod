@@ -102,18 +102,20 @@ void withServerpod(
 }) {
   _i1.buildWithServerpod<_InternalTestEndpoints>(
     testGroupName,
-    _i1.TestServerpod(
-      testEndpoints: _InternalTestEndpoints(),
-      endpoints: Endpoints(),
-      serializationManager: Protocol(),
-      runMode: runMode,
-      applyMigrations: applyMigrations,
-      isDatabaseEnabled: true,
-      serverpodLoggingMode: serverpodLoggingMode,
-      testServerOutputMode: testServerOutputMode,
-      experimentalFeatures: experimentalFeatures,
-      runtimeParametersBuilder: runtimeParametersBuilder,
-    ),
+    () {
+      return _i1.TestServerpod(
+        testEndpoints: _InternalTestEndpoints(),
+        endpoints: Endpoints(),
+        serializationManager: Protocol(),
+        runMode: runMode,
+        applyMigrations: applyMigrations,
+        isDatabaseEnabled: true,
+        serverpodLoggingMode: serverpodLoggingMode,
+        testServerOutputMode: testServerOutputMode,
+        experimentalFeatures: experimentalFeatures,
+        runtimeParametersBuilder: runtimeParametersBuilder,
+      );
+    },
     maybeRollbackDatabase: rollbackDatabase,
     maybeEnableSessionLogging: enableSessionLogging,
     maybeTestGroupTagsOverride: testGroupTagsOverride,

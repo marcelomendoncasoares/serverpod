@@ -570,33 +570,55 @@ class ServerTestToolsGenerator {
                 .call(
                   [
                     refer('testGroupName'),
-                    refer('TestServerpod', serverpodTestUrl).newInstance(
-                      [],
-                      {
-                        'testEndpoints': refer(
-                          '_InternalTestEndpoints',
-                        ).newInstance([]),
-                        'endpoints': refer('Endpoints').newInstance([]),
-                        'serializationManager': refer(
-                          'Protocol',
-                        ).newInstance([]),
-                        'runMode': refer('runMode'),
-                        'applyMigrations':
-                            config.isFeatureEnabled(ServerpodFeature.database)
-                            ? refer('applyMigrations')
-                            : literalBool(false),
-                        'isDatabaseEnabled': literalBool(
-                          config.isFeatureEnabled(ServerpodFeature.database),
-                        ),
-                        'serverpodLoggingMode': refer('serverpodLoggingMode'),
-                        'testServerOutputMode': refer('testServerOutputMode'),
-                        'experimentalFeatures': refer('experimentalFeatures'),
-                        if (config.isFeatureEnabled(ServerpodFeature.database))
-                          'runtimeParametersBuilder': refer(
-                            'runtimeParametersBuilder',
-                          ),
-                      },
-                    ),
+                    Method(
+                      (methodBuilder) => methodBuilder
+                        ..returns = refer(
+                          'TestServerpod<_InternalTestEndpoints>',
+                          serverpodTestUrl,
+                        )
+                        ..body = refer('TestServerpod', serverpodTestUrl)
+                            .newInstance(
+                              [],
+                              {
+                                'testEndpoints': refer(
+                                  '_InternalTestEndpoints',
+                                ).newInstance([]),
+                                'endpoints': refer('Endpoints').newInstance([]),
+                                'serializationManager': refer(
+                                  'Protocol',
+                                ).newInstance([]),
+                                'runMode': refer('runMode'),
+                                'applyMigrations':
+                                    config.isFeatureEnabled(
+                                      ServerpodFeature.database,
+                                    )
+                                    ? refer('applyMigrations')
+                                    : literalBool(false),
+                                'isDatabaseEnabled': literalBool(
+                                  config.isFeatureEnabled(
+                                    ServerpodFeature.database,
+                                  ),
+                                ),
+                                'serverpodLoggingMode': refer(
+                                  'serverpodLoggingMode',
+                                ),
+                                'testServerOutputMode': refer(
+                                  'testServerOutputMode',
+                                ),
+                                'experimentalFeatures': refer(
+                                  'experimentalFeatures',
+                                ),
+                                if (config.isFeatureEnabled(
+                                  ServerpodFeature.database,
+                                ))
+                                  'runtimeParametersBuilder': refer(
+                                    'runtimeParametersBuilder',
+                                  ),
+                              },
+                            )
+                            .returned
+                            .statement,
+                    ).closure,
                   ],
                   {
                     'maybeRollbackDatabase':

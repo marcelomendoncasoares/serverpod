@@ -78,7 +78,7 @@ const String defaultIntegrationTestTag = 'integration';
 void Function(TestClosure<T>)
 buildWithServerpod<T extends InternalTestEndpoints>(
   String testGroupName,
-  TestServerpod<T> testServerpod, {
+  TestServerpod<T> Function() testServerpodBuilder, {
   required RollbackDatabase? maybeRollbackDatabase,
   required bool? maybeEnableSessionLogging,
   required List<String>? maybeTestGroupTagsOverride,
@@ -87,28 +87,50 @@ buildWithServerpod<T extends InternalTestEndpoints>(
 }) {
   var rollbackDatabase = maybeRollbackDatabase ?? RollbackDatabase.afterEach;
 
-  var rollbacksEnabled = rollbackDatabase != RollbackDatabase.disabled;
-  if (rollbacksEnabled && !testServerpod.isDatabaseEnabled) {
-    throw InitializationException(
-      'Rollbacks where enabled but the database is not enabled in for this project configuration.',
+  TestServerpod<T>? testServerpod;
+  TransactionManager? transactionManager;
+  InternalTestSessionBuilder? mainTestSessionBuilder;
+  InternalServerpodSession? mainServerpodSession;
+  List<InternalServerpodSession> allTestSessions = [];
+  bool startServerpodFailed = false;
+
+  try {
+    testServerpod = testServerpodBuilder();
+
+    var rollbacksEnabled = rollbackDatabase != RollbackDatabase.disabled;
+    if (rollbacksEnabled && !testServerpod.isDatabaseEnabled) {
+      throw InitializationException(
+        'Rollbacks where enabled but the database is not enabled in for this project configuration.',
+      );
+    }
+
+    mainServerpodSession = testServerpod.createSession(
+      rollbackDatabase: rollbackDatabase,
     );
+
+    if (testServerpod.isDatabaseEnabled) {
+      transactionManager = mainServerpodSession.transactionManager;
+      if (transactionManager == null) {
+        throw InitializationException(
+          'The transaction manager is null but database is enabled.',
+        );
+      }
+    }
+
+    mainTestSessionBuilder = InternalTestSessionBuilder(
+      testServerpod,
+      allTestSessions: allTestSessions,
+      enableLogging: maybeEnableSessionLogging ?? false,
+      mainServerpodSession: mainServerpodSession,
+    );
+  } on InitializationException {
+    rethrow;
+  } catch (_) {
+    // Ignore the error, it will be handled by the test group.
+    startServerpodFailed = true;
   }
 
   var startTimeout = maybeServerpodStartTimeout ?? const Duration(seconds: 30);
-
-  var mainServerpodSession = testServerpod.createSession(
-    rollbackDatabase: rollbackDatabase,
-  );
-
-  TransactionManager? transactionManager;
-  if (testServerpod.isDatabaseEnabled) {
-    transactionManager = mainServerpodSession.transactionManager;
-    if (transactionManager == null) {
-      throw InitializationException(
-        'The transaction manager is null but database is enabled.',
-      );
-    }
-  }
 
   TransactionManager getTransactionManager() {
     var localTransactionManager = transactionManager;
@@ -121,18 +143,6 @@ buildWithServerpod<T extends InternalTestEndpoints>(
     return localTransactionManager;
   }
 
-  List<InternalServerpodSession> allTestSessions = [];
-
-  InternalTestSessionBuilder mainTestSessionBuilder =
-      InternalTestSessionBuilder(
-        testServerpod,
-        allTestSessions: allTestSessions,
-        enableLogging: maybeEnableSessionLogging ?? false,
-        mainServerpodSession: mainServerpodSession,
-      );
-
-  bool startServerpodFailed = false;
-
   return (
     TestClosure<T> testClosure,
   ) {
@@ -140,6 +150,13 @@ buildWithServerpod<T extends InternalTestEndpoints>(
       testGroupName,
       () {
         setUpAll(() async {
+          if (testServerpod == null) {
+            throw InitializationException(
+              'Failed to build the test serverpod. This might indicate that '
+              'the test serverpod builder returned null.',
+            );
+          }
+
           try {
             await testServerpod.start().timeout(
               startTimeout,
@@ -177,7 +194,7 @@ buildWithServerpod<T extends InternalTestEndpoints>(
             await localTransactionManager.addSavepoint();
           }
 
-          await mainServerpodSession.caches.clear();
+          await mainServerpodSession!.caches.clear();
 
           await GlobalStreamManager.closeAllStreams();
         });
@@ -199,10 +216,12 @@ buildWithServerpod<T extends InternalTestEndpoints>(
           }
           allTestSessions.clear();
 
-          await testServerpod.shutdown();
+          await testServerpod!.shutdown();
         });
 
-        testClosure(mainTestSessionBuilder, testServerpod.testEndpoints);
+        if (mainTestSessionBuilder != null && testServerpod != null) {
+          testClosure(mainTestSessionBuilder, testServerpod.testEndpoints);
+        }
       },
       tags: maybeTestGroupTagsOverride ?? [defaultIntegrationTestTag],
     );
