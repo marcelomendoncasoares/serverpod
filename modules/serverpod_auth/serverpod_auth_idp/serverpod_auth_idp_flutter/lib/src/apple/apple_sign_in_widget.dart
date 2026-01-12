@@ -93,6 +93,11 @@ class AppleSignInWidget extends StatefulWidget {
   /// The maximum width is 400 pixels.
   final double minimumWidth;
 
+  /// Optional shared [ValueNotifier] to disable all IDP buttons when any IDP is
+  /// processing. When provided, the button will be disabled when this notifier
+  /// is true or when the controller is loading.
+  final ValueNotifier<bool>? sharedLoadingNotifier;
+
   /// Creates an Apple Sign-In widget.
   const AppleSignInWidget({
     this.controller,
@@ -106,6 +111,7 @@ class AppleSignInWidget extends StatefulWidget {
     this.shape = AppleButtonShape.pill,
     this.logoAlignment = AppleButtonLogoAlignment.center,
     this.minimumWidth = 240,
+    this.sharedLoadingNotifier,
     super.key,
   }) : assert(
          (controller == null || client == null),
@@ -136,11 +142,13 @@ class _AppleSignInWidgetState extends State<AppleSignInWidget> {
           scopes: widget.scopes,
         );
     _controller.addListener(_onControllerStateChanged);
+    widget.sharedLoadingNotifier?.addListener(_onSharedLoadingChanged);
   }
 
   @override
   void dispose() {
     _controller.removeListener(_onControllerStateChanged);
+    widget.sharedLoadingNotifier?.removeListener(_onSharedLoadingChanged);
     if (widget.controller == null) {
       _controller.dispose();
     }
@@ -148,14 +156,24 @@ class _AppleSignInWidgetState extends State<AppleSignInWidget> {
   }
 
   /// Rebuild when controller state changes
-  void _onControllerStateChanged() => setState(() {});
+  void _onControllerStateChanged() {
+    if (widget.sharedLoadingNotifier != null) {
+      widget.sharedLoadingNotifier!.value = _controller.isLoading;
+    }
+    setState(() {});
+  }
+
+  /// Rebuild when shared loading state changes
+  void _onSharedLoadingChanged() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
+    final isSharedLoading = widget.sharedLoadingNotifier?.value ?? false;
+
     return AppleSignInButton(
       onPressed: _controller.signIn,
       isLoading: _controller.isLoading,
-      isDisabled: _controller.isLoading,
+      isDisabled: _controller.isLoading || isSharedLoading,
       type: widget.type,
       style: widget.style,
       size: widget.size,

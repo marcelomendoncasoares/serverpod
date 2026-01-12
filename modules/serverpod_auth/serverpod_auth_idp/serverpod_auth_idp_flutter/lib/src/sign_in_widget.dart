@@ -70,6 +70,13 @@ class SignInWidget extends StatefulWidget {
   /// Customized widget to use for Apple sign-in.
   final AppleSignInWidget? appleSignInWidget;
 
+  /// Optional shared [ValueNotifier] to disable all IDP buttons when any IDP is
+  /// processing. If not provided, a new one will be created internally.
+  ///
+  /// This allows multiple [SignInWidget] instances to share the same loading
+  /// state, or for external control of the loading state.
+  final ValueNotifier<bool>? sharedLoadingNotifier;
+
   /// Creates an authentication onboarding widget.
   const SignInWidget({
     required this.client,
@@ -81,6 +88,7 @@ class SignInWidget extends StatefulWidget {
     this.emailSignInWidget,
     this.googleSignInWidget,
     this.appleSignInWidget,
+    this.sharedLoadingNotifier,
     super.key,
   });
 
@@ -91,9 +99,26 @@ class SignInWidget extends StatefulWidget {
 class _SignInWidgetState extends State<SignInWidget> {
   FlutterAuthSessionManager get auth => widget.client.auth;
 
+  late final ValueNotifier<bool> _sharedLoadingNotifier;
+
   bool get hasEmail => auth.idp.hasEmail && !widget.disableEmailSignInWidget;
   bool get hasGoogle => auth.idp.hasGoogle && !widget.disableGoogleSignInWidget;
   bool get hasApple => auth.idp.hasApple && !widget.disableAppleSignInWidget;
+
+  @override
+  void initState() {
+    super.initState();
+    _sharedLoadingNotifier =
+        widget.sharedLoadingNotifier ?? ValueNotifier<bool>(false);
+  }
+
+  @override
+  void dispose() {
+    if (widget.sharedLoadingNotifier == null) {
+      _sharedLoadingNotifier.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +140,7 @@ class _SignInWidgetState extends State<SignInWidget> {
               client: widget.client,
               onAuthenticated: widget.onAuthenticated,
               onError: widget.onError,
+              sharedLoadingNotifier: _sharedLoadingNotifier,
             ),
     ];
 
@@ -125,6 +151,7 @@ class _SignInWidgetState extends State<SignInWidget> {
             client: widget.client,
             onAuthenticated: widget.onAuthenticated,
             onError: widget.onError,
+            sharedLoadingNotifier: _sharedLoadingNotifier,
           );
 
       // On Apple platforms, display the Apple sign-in widget first.
@@ -145,6 +172,7 @@ class _SignInWidgetState extends State<SignInWidget> {
                 client: widget.client,
                 onAuthenticated: widget.onAuthenticated,
                 onError: widget.onError,
+                sharedLoadingNotifier: _sharedLoadingNotifier,
               ),
         if (socialProviders.isNotEmpty && hasEmail) const _SignInSeparator(),
         ...socialProviders,

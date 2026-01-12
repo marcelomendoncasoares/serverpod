@@ -98,6 +98,11 @@ class EmailSignInWidget extends StatefulWidget {
   /// If not provided, defaults to null.
   final VoidCallback? onPrivacyPolicyPressed;
 
+  /// Optional shared [ValueNotifier] to disable all IDP buttons when any IDP is
+  /// processing. When provided, buttons and fields will be disabled when this
+  /// notifier is true or when the controller is loading.
+  final ValueNotifier<bool>? sharedLoadingNotifier;
+
   /// Creates an email sign-in widget.
   const EmailSignInWidget({
     this.controller,
@@ -110,6 +115,7 @@ class EmailSignInWidget extends StatefulWidget {
     this.onError,
     this.onTermsAndConditionsPressed,
     this.onPrivacyPolicyPressed,
+    this.sharedLoadingNotifier,
     super.key,
   }) : assert(
          (controller == null || client == null),
@@ -144,11 +150,13 @@ class _EmailSignInWidgetState extends State<EmailSignInWidget> {
           passwordRequirements: widget.passwordRequirements,
         );
     _controller.addListener(_onControllerStateChanged);
+    widget.sharedLoadingNotifier?.addListener(_onSharedLoadingChanged);
   }
 
   @override
   void dispose() {
     _controller.removeListener(_onControllerStateChanged);
+    widget.sharedLoadingNotifier?.removeListener(_onSharedLoadingChanged);
     if (widget.controller == null) {
       _controller.dispose();
     }
@@ -156,7 +164,16 @@ class _EmailSignInWidgetState extends State<EmailSignInWidget> {
   }
 
   /// Rebuild when controller state changes
-  void _onControllerStateChanged() => setState(() {});
+  void _onControllerStateChanged() {
+    // Update shared loading notifier when controller loading state changes
+    if (widget.sharedLoadingNotifier != null) {
+      widget.sharedLoadingNotifier!.value = _controller.isLoading;
+    }
+    setState(() {});
+  }
+
+  /// Rebuild when shared loading state changes
+  void _onSharedLoadingChanged() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -179,32 +196,39 @@ class _EmailSignInWidgetState extends State<EmailSignInWidget> {
     return switch (_controller.currentScreen) {
       EmailFlowScreen.login => LoginForm(
         controller: _controller,
+        sharedLoadingNotifier: widget.sharedLoadingNotifier,
       ),
       EmailFlowScreen.startRegistration => StartRegistrationForm(
         controller: _controller,
         onTermsAndConditionsPressed: widget.onTermsAndConditionsPressed,
         onPrivacyPolicyPressed: widget.onPrivacyPolicyPressed,
+        sharedLoadingNotifier: widget.sharedLoadingNotifier,
       ),
       EmailFlowScreen.verifyRegistration => VerificationForm(
         title: 'Verify account',
         controller: _controller,
         onCompleted: _controller.verifyRegistrationCode,
         verificationCodeConfig: widget.verificationCodeConfig,
+        sharedLoadingNotifier: widget.sharedLoadingNotifier,
       ),
       EmailFlowScreen.completeRegistration => CompleteRegistrationForm(
         controller: _controller,
+        sharedLoadingNotifier: widget.sharedLoadingNotifier,
       ),
       EmailFlowScreen.requestPasswordReset => RequestPasswordResetForm(
         controller: _controller,
+        sharedLoadingNotifier: widget.sharedLoadingNotifier,
       ),
       EmailFlowScreen.verifyPasswordReset => VerificationForm(
         title: 'Verify reset code',
         controller: _controller,
         onCompleted: _controller.verifyPasswordResetCode,
         verificationCodeConfig: widget.verificationCodeConfig,
+        sharedLoadingNotifier: widget.sharedLoadingNotifier,
       ),
       EmailFlowScreen.completePasswordReset => CompletePasswordResetForm(
         controller: _controller,
+        sharedLoadingNotifier: widget.sharedLoadingNotifier,
       ),
     };
   }

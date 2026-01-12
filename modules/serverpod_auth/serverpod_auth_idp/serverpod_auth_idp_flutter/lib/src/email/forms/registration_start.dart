@@ -28,11 +28,15 @@ class StartRegistrationForm extends StatelessWidget {
   /// If not provided, defaults to null.
   final VoidCallback? onPrivacyPolicyPressed;
 
+  /// Optional shared [ValueNotifier] to disable buttons when any IDP is processing.
+  final ValueNotifier<bool>? sharedLoadingNotifier;
+
   /// Creates a [StartRegistrationForm] widget.
   const StartRegistrationForm({
     required this.controller,
     this.onTermsAndConditionsPressed,
     this.onPrivacyPolicyPressed,
+    this.sharedLoadingNotifier,
     super.key,
   });
 
@@ -43,13 +47,18 @@ class StartRegistrationForm extends StatelessWidget {
 
     final hasTermsAndConditions =
         onTermsAndConditionsPressed != null || onPrivacyPolicyPressed != null;
+    final isLoading = controller.isLoading ||
+        (sharedLoadingNotifier?.value ?? false);
 
     return FormStandardLayout(
       title: 'Sign Up with email',
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          EmailTextField(controller: controller),
+          EmailTextField(
+            controller: controller,
+            sharedLoadingNotifier: sharedLoadingNotifier,
+          ),
           if (hasTermsAndConditions) ...[
             const Expanded(child: SizedBox.shrink()),
             SizedBox(
@@ -72,11 +81,12 @@ class StartRegistrationForm extends StatelessWidget {
             controller.emailController.text.isNotEmpty &&
                 controller.state == EmailAuthState.idle &&
                 (!hasTermsAndConditions ||
-                    controller.legalNoticeAcceptedNotifier.value)
+                    controller.legalNoticeAcceptedNotifier.value) &&
+                !isLoading
             ? () => unawaited(controller.startRegistration())
             : null,
         label: 'Continue',
-        isLoading: controller.isLoading,
+        isLoading: isLoading,
       ),
       bottomText: Row(
         mainAxisAlignment: MainAxisAlignment.center,

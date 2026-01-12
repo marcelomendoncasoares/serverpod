@@ -16,21 +16,33 @@ class LoginForm extends StatelessWidget {
   /// The controller that manages authentication state and logic.
   final EmailAuthController controller;
 
+  /// Optional shared [ValueNotifier] to disable buttons when any IDP is processing.
+  final ValueNotifier<bool>? sharedLoadingNotifier;
+
   /// Creates a [LoginForm] widget.
-  const LoginForm({super.key, required this.controller});
+  const LoginForm({
+    super.key,
+    required this.controller,
+    this.sharedLoadingNotifier,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = controller.isLoading ||
+        (sharedLoadingNotifier?.value ?? false);
     return FormStandardLayout(
       title: 'Sign In with email',
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          EmailTextField(controller: controller),
+          EmailTextField(
+            controller: controller,
+            sharedLoadingNotifier: sharedLoadingNotifier,
+          ),
           smallGap,
           PasswordField(
             controller: controller.passwordController,
-            isLoading: controller.isLoading,
+            isLoading: isLoading,
           ),
           tinyGap,
           Align(
@@ -47,11 +59,12 @@ class LoginForm extends StatelessWidget {
         onPressed:
             controller.emailController.text.isNotEmpty &&
                 controller.passwordController.text.isNotEmpty &&
-                controller.state == EmailAuthState.idle
+                controller.state == EmailAuthState.idle &&
+                !isLoading
             ? controller.login
             : null,
         label: 'Sign in',
-        isLoading: controller.isLoading,
+        isLoading: isLoading,
       ),
       bottomText: Row(
         mainAxisAlignment: MainAxisAlignment.center,

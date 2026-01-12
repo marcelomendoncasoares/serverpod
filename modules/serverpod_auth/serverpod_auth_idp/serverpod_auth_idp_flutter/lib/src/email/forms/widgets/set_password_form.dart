@@ -30,6 +30,9 @@ class SetPasswordForm extends StatefulWidget {
   /// Widget to display at the bottom of the form.
   final Widget bottomText;
 
+  /// Optional shared [ValueNotifier] to disable buttons when any IDP is processing.
+  final ValueNotifier<bool>? sharedLoadingNotifier;
+
   /// Creates a [SetPasswordForm] widget.
   const SetPasswordForm({
     super.key,
@@ -39,6 +42,7 @@ class SetPasswordForm extends StatefulWidget {
     required this.actionButtonLabel,
     required this.onActionPressed,
     required this.bottomText,
+    this.sharedLoadingNotifier,
   });
 
   @override
@@ -67,6 +71,8 @@ class _SetPasswordFormState extends State<SetPasswordForm> {
     final passwordRequirements = widget.controller.passwordRequirements;
     final password = widget.controller.passwordController.text;
     final isValidPassword = passwordRequirements.isValid(password);
+    final isLoading = widget.controller.isLoading ||
+        (widget.sharedLoadingNotifier?.value ?? false);
 
     return FormStandardLayout(
       title: widget.title,
@@ -76,7 +82,7 @@ class _SetPasswordFormState extends State<SetPasswordForm> {
           PasswordField(
             labelText: widget.passwordLabelText,
             controller: widget.controller.passwordController,
-            isLoading: widget.controller.isLoading,
+            isLoading: isLoading,
           ),
           if (passwordRequirements.isNotEmpty) ...[
             tinyGap,
@@ -88,9 +94,11 @@ class _SetPasswordFormState extends State<SetPasswordForm> {
         ],
       ),
       actionButton: ActionButton(
-        onPressed: isValidPassword ? widget.onActionPressed : null,
+        onPressed: isValidPassword && !isLoading
+            ? widget.onActionPressed
+            : null,
         label: widget.actionButtonLabel,
-        isLoading: widget.controller.isLoading,
+        isLoading: isLoading,
       ),
       bottomText: widget.bottomText,
     );

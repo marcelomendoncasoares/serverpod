@@ -12,9 +12,13 @@ class CompleteRegistrationForm extends StatelessWidget {
   /// The controller that manages authentication state and logic.
   final EmailAuthController controller;
 
+  /// Optional shared [ValueNotifier] to disable buttons when any IDP is processing.
+  final ValueNotifier<bool>? sharedLoadingNotifier;
+
   /// Creates a [CompleteRegistrationForm] widget.
   const CompleteRegistrationForm({
     required this.controller,
+    this.sharedLoadingNotifier,
     super.key,
   });
 
@@ -26,6 +30,7 @@ class CompleteRegistrationForm extends StatelessWidget {
       passwordLabelText: 'Password',
       actionButtonLabel: 'Sign up',
       onActionPressed: controller.finishRegistration,
+      sharedLoadingNotifier: sharedLoadingNotifier,
       bottomText: Center(
         child: HyperlinkTextButton(
           onPressed: () =>

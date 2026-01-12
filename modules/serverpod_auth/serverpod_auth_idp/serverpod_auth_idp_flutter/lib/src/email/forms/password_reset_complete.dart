@@ -12,9 +12,13 @@ class CompletePasswordResetForm extends StatelessWidget {
   /// The controller that manages authentication state and logic.
   final EmailAuthController controller;
 
+  /// Optional shared [ValueNotifier] to disable buttons when any IDP is processing.
+  final ValueNotifier<bool>? sharedLoadingNotifier;
+
   /// Creates a [CompletePasswordResetForm] widget.
   const CompletePasswordResetForm({
     required this.controller,
+    this.sharedLoadingNotifier,
     super.key,
   });
 
@@ -26,6 +30,7 @@ class CompletePasswordResetForm extends StatelessWidget {
       passwordLabelText: 'New Password',
       actionButtonLabel: 'Reset password',
       onActionPressed: controller.finishPasswordReset,
+      sharedLoadingNotifier: sharedLoadingNotifier,
       bottomText: BackToSignInButton(controller: controller),
     );
   }

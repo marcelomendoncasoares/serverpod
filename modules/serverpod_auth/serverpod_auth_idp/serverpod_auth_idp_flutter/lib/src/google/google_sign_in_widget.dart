@@ -148,6 +148,11 @@ class GoogleSignInWidget extends StatefulWidget {
   })?
   buttonWrapper;
 
+  /// Optional shared [ValueNotifier] to disable all IDP buttons when any IDP is
+  /// processing. When provided, the button will be disabled when this notifier
+  /// is true or when the controller is loading.
+  final ValueNotifier<bool>? sharedLoadingNotifier;
+
   /// Creates a Google Sign-In widget.
   const GoogleSignInWidget({
     this.controller,
@@ -166,6 +171,7 @@ class GoogleSignInWidget extends StatefulWidget {
     this.getButtonText,
     this.locale,
     this.buttonWrapper = GoogleSignInBaseButton.wrapAsOutline,
+    this.sharedLoadingNotifier,
     super.key,
   }) : assert(
          (controller == null || client == null),
@@ -193,11 +199,13 @@ class _GoogleSignInWidgetState extends State<GoogleSignInWidget> {
           scopes: widget.scopes,
         );
     _controller.addListener(_onControllerStateChanged);
+    widget.sharedLoadingNotifier?.addListener(_onSharedLoadingChanged);
   }
 
   @override
   void dispose() {
     _controller.removeListener(_onControllerStateChanged);
+    widget.sharedLoadingNotifier?.removeListener(_onSharedLoadingChanged);
     if (widget.controller == null) {
       _controller.dispose();
     }
@@ -205,10 +213,23 @@ class _GoogleSignInWidgetState extends State<GoogleSignInWidget> {
   }
 
   /// Rebuild when controller state changes
-  void _onControllerStateChanged() => setState(() {});
+  void _onControllerStateChanged() {
+    // Update shared loading notifier when controller loading state changes
+    if (widget.sharedLoadingNotifier != null) {
+      widget.sharedLoadingNotifier!.value = _controller.isLoading;
+    }
+    setState(() {});
+  }
+
+  /// Rebuild when shared loading state changes
+  void _onSharedLoadingChanged() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
+    final isSharedLoading = widget.sharedLoadingNotifier?.value ?? false;
+    final isDisabled = !_controller.isInitialized ||
+        _controller.isLoading ||
+        isSharedLoading;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -217,7 +238,7 @@ class _GoogleSignInWidgetState extends State<GoogleSignInWidget> {
           GoogleSignInNativeButton(
             onPressed: _controller.signIn,
             isLoading: _controller.isLoading,
-            isDisabled: !_controller.isInitialized || _controller.isLoading,
+            isDisabled: isDisabled,
             type: widget.type,
             theme: widget.theme,
             size: widget.size,

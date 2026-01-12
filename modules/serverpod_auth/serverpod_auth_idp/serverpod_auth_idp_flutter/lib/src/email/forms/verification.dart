@@ -46,6 +46,9 @@ class VerificationForm extends StatefulWidget {
   /// Configuration for the verification code input.
   final VerificationCodeConfig verificationCodeConfig;
 
+  /// Optional shared [ValueNotifier] to disable buttons when any IDP is processing.
+  final ValueNotifier<bool>? sharedLoadingNotifier;
+
   /// Creates a [VerificationForm] widget.
   const VerificationForm({
     required this.title,
@@ -54,6 +57,7 @@ class VerificationForm extends StatefulWidget {
     required this.verificationCodeConfig,
     this.messageText,
     this.verifyButtonLabel,
+    this.sharedLoadingNotifier,
     super.key,
   });
 
@@ -93,6 +97,8 @@ class _VerificationFormState extends State<VerificationForm> {
   @override
   Widget build(BuildContext context) {
     final config = widget.verificationCodeConfig;
+    final isLoading = controller.isLoading ||
+        (widget.sharedLoadingNotifier?.value ?? false);
 
     return FormStandardLayout(
       title: widget.title,
@@ -111,7 +117,7 @@ class _VerificationFormState extends State<VerificationForm> {
             focusNode: focusNode,
             verificationCodeController: controller.verificationCodeController,
             onCompleted: widget.onCompleted,
-            isLoading: controller.isLoading,
+            isLoading: isLoading,
             length: config.length,
             keyboardType: config.keyboardType,
             allowedLetterCase: config.allowedLetterCase,
@@ -125,9 +131,9 @@ class _VerificationFormState extends State<VerificationForm> {
         ],
       ),
       actionButton: ActionButton(
-        onPressed: widget.onCompleted,
+        onPressed: isLoading ? null : widget.onCompleted,
         label: widget.verifyButtonLabel ?? 'Verify',
-        isLoading: controller.isLoading,
+        isLoading: isLoading,
       ),
       bottomText: BackToSignInButton(controller: controller),
     );

@@ -15,11 +15,20 @@ class RequestPasswordResetForm extends StatelessWidget {
   /// The controller that manages authentication state and logic.
   final EmailAuthController controller;
 
+  /// Optional shared [ValueNotifier] to disable buttons when any IDP is processing.
+  final ValueNotifier<bool>? sharedLoadingNotifier;
+
   /// Creates a [RequestPasswordResetForm] widget.
-  const RequestPasswordResetForm({super.key, required this.controller});
+  const RequestPasswordResetForm({
+    super.key,
+    required this.controller,
+    this.sharedLoadingNotifier,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = controller.isLoading ||
+        (sharedLoadingNotifier?.value ?? false);
     return FormStandardLayout(
       title: 'Reset password',
       content: Column(
@@ -31,7 +40,10 @@ class RequestPasswordResetForm extends StatelessWidget {
             textAlign: TextAlign.left,
           ),
           smallGap,
-          EmailTextField(controller: controller),
+          EmailTextField(
+            controller: controller,
+            sharedLoadingNotifier: sharedLoadingNotifier,
+          ),
           tinyGap,
           BackToSignInButton(controller: controller),
         ],
@@ -39,11 +51,12 @@ class RequestPasswordResetForm extends StatelessWidget {
       actionButton: ActionButton(
         onPressed:
             controller.emailController.text.isNotEmpty &&
-                controller.state == EmailAuthState.idle
+                controller.state == EmailAuthState.idle &&
+                !isLoading
             ? controller.startPasswordReset
             : null,
         label: 'Request password reset',
-        isLoading: controller.isLoading,
+        isLoading: isLoading,
       ),
       bottomText: Row(
         mainAxisAlignment: MainAxisAlignment.center,
