@@ -24,9 +24,30 @@ abstract class LogSettings implements _i1.SerializableModel {
     required this.logSlowQueries,
     required this.logFailedSessions,
     required this.logFailedQueries,
+    Duration? logCleanupInterval,
+    Duration? logRetentionPeriod,
+    int? logRetentionCount,
     required this.slowSessionDuration,
     required this.slowQueryDuration,
-  });
+  }) : logCleanupInterval =
+           logCleanupInterval ??
+           Duration(
+             days: 1,
+             hours: 0,
+             minutes: 0,
+             seconds: 0,
+             milliseconds: 0,
+           ),
+       logRetentionPeriod =
+           logRetentionPeriod ??
+           Duration(
+             days: 90,
+             hours: 0,
+             minutes: 0,
+             seconds: 0,
+             milliseconds: 0,
+           ),
+       logRetentionCount = logRetentionCount ?? 100000;
 
   factory LogSettings({
     required _i2.LogLevel logLevel,
@@ -37,6 +58,9 @@ abstract class LogSettings implements _i1.SerializableModel {
     required bool logSlowQueries,
     required bool logFailedSessions,
     required bool logFailedQueries,
+    Duration? logCleanupInterval,
+    Duration? logRetentionPeriod,
+    int? logRetentionCount,
     required double slowSessionDuration,
     required double slowQueryDuration,
   }) = _LogSettingsImpl;
@@ -52,6 +76,17 @@ abstract class LogSettings implements _i1.SerializableModel {
       logSlowQueries: jsonSerialization['logSlowQueries'] as bool,
       logFailedSessions: jsonSerialization['logFailedSessions'] as bool,
       logFailedQueries: jsonSerialization['logFailedQueries'] as bool,
+      logCleanupInterval: jsonSerialization['logCleanupInterval'] == null
+          ? null
+          : _i1.DurationJsonExtension.fromJson(
+              jsonSerialization['logCleanupInterval'],
+            ),
+      logRetentionPeriod: jsonSerialization['logRetentionPeriod'] == null
+          ? null
+          : _i1.DurationJsonExtension.fromJson(
+              jsonSerialization['logRetentionPeriod'],
+            ),
+      logRetentionCount: jsonSerialization['logRetentionCount'] as int?,
       slowSessionDuration: (jsonSerialization['slowSessionDuration'] as num)
           .toDouble(),
       slowQueryDuration: (jsonSerialization['slowQueryDuration'] as num)
@@ -84,6 +119,19 @@ abstract class LogSettings implements _i1.SerializableModel {
   /// True if all failed queries should be logged.
   bool logFailedQueries;
 
+  /// The interval between log cleanup operations. If null, automatic cleanup
+  /// is disabled.
+  Duration? logCleanupInterval;
+
+  /// The retention period for log data. Logs older than this will be
+  /// automatically deleted. If null, time-based cleanup is disabled.
+  Duration? logRetentionPeriod;
+
+  /// The maximum number of log entries to keep. If the number of entries exceeds
+  /// this count, the oldest entries will be deleted. The threshold is per log
+  /// table. If null, count-based cleanup is disabled.
+  int? logRetentionCount;
+
   /// The duration in seconds for a session to be considered slow.
   double slowSessionDuration;
 
@@ -102,6 +150,9 @@ abstract class LogSettings implements _i1.SerializableModel {
     bool? logSlowQueries,
     bool? logFailedSessions,
     bool? logFailedQueries,
+    Duration? logCleanupInterval,
+    Duration? logRetentionPeriod,
+    int? logRetentionCount,
     double? slowSessionDuration,
     double? slowQueryDuration,
   });
@@ -117,6 +168,11 @@ abstract class LogSettings implements _i1.SerializableModel {
       'logSlowQueries': logSlowQueries,
       'logFailedSessions': logFailedSessions,
       'logFailedQueries': logFailedQueries,
+      if (logCleanupInterval != null)
+        'logCleanupInterval': logCleanupInterval?.toJson(),
+      if (logRetentionPeriod != null)
+        'logRetentionPeriod': logRetentionPeriod?.toJson(),
+      if (logRetentionCount != null) 'logRetentionCount': logRetentionCount,
       'slowSessionDuration': slowSessionDuration,
       'slowQueryDuration': slowQueryDuration,
     };
@@ -128,6 +184,8 @@ abstract class LogSettings implements _i1.SerializableModel {
   }
 }
 
+class _Undefined {}
+
 class _LogSettingsImpl extends LogSettings {
   _LogSettingsImpl({
     required _i2.LogLevel logLevel,
@@ -138,6 +196,9 @@ class _LogSettingsImpl extends LogSettings {
     required bool logSlowQueries,
     required bool logFailedSessions,
     required bool logFailedQueries,
+    Duration? logCleanupInterval,
+    Duration? logRetentionPeriod,
+    int? logRetentionCount,
     required double slowSessionDuration,
     required double slowQueryDuration,
   }) : super._(
@@ -149,6 +210,9 @@ class _LogSettingsImpl extends LogSettings {
          logSlowQueries: logSlowQueries,
          logFailedSessions: logFailedSessions,
          logFailedQueries: logFailedQueries,
+         logCleanupInterval: logCleanupInterval,
+         logRetentionPeriod: logRetentionPeriod,
+         logRetentionCount: logRetentionCount,
          slowSessionDuration: slowSessionDuration,
          slowQueryDuration: slowQueryDuration,
        );
@@ -166,6 +230,9 @@ class _LogSettingsImpl extends LogSettings {
     bool? logSlowQueries,
     bool? logFailedSessions,
     bool? logFailedQueries,
+    Object? logCleanupInterval = _Undefined,
+    Object? logRetentionPeriod = _Undefined,
+    Object? logRetentionCount = _Undefined,
     double? slowSessionDuration,
     double? slowQueryDuration,
   }) {
@@ -180,6 +247,15 @@ class _LogSettingsImpl extends LogSettings {
       logSlowQueries: logSlowQueries ?? this.logSlowQueries,
       logFailedSessions: logFailedSessions ?? this.logFailedSessions,
       logFailedQueries: logFailedQueries ?? this.logFailedQueries,
+      logCleanupInterval: logCleanupInterval is Duration?
+          ? logCleanupInterval
+          : this.logCleanupInterval,
+      logRetentionPeriod: logRetentionPeriod is Duration?
+          ? logRetentionPeriod
+          : this.logRetentionPeriod,
+      logRetentionCount: logRetentionCount is int?
+          ? logRetentionCount
+          : this.logRetentionCount,
       slowSessionDuration: slowSessionDuration ?? this.slowSessionDuration,
       slowQueryDuration: slowQueryDuration ?? this.slowQueryDuration,
     );

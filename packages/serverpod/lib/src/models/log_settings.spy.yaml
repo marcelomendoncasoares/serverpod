@@ -26,6 +26,19 @@ fields:
   ### True if all failed queries should be logged.
   logFailedQueries: bool
 
+  ### The interval between log cleanup operations. If null, automatic cleanup
+  ### is disabled.
+  logCleanupInterval: Duration?, default=24h
+
+  ### The retention period for log data. Logs older than this will be
+  ### automatically deleted. If null, time-based cleanup is disabled.
+  logRetentionPeriod: Duration?, default=90d
+
+  ### The maximum number of log entries to keep. If the number of entries exceeds
+  ### this count, the oldest entries will be deleted. The threshold is per log
+  ### table. If null, count-based cleanup is disabled.
+  logRetentionCount: int?, default=100000
+
   ### The duration in seconds for a session to be considered slow.
   slowSessionDuration: double
 

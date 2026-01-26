@@ -9,6 +9,9 @@ class LogSettingsBuilder {
   bool _logSlowQueries = true;
   bool _logFailedSessions = true;
   bool _logFailedQueries = true;
+  Duration _logCleanupInterval = const Duration(days: 1);
+  Duration _logRetentionPeriod = const Duration(days: 90);
+  int _logRetentionCount = 100_000;
   double _slowSessionDuration = 1.0;
   double _slowQueryDuration = 1.0;
 
@@ -66,6 +69,21 @@ class LogSettingsBuilder {
     return this;
   }
 
+  LogSettingsBuilder withLogCleanupInterval(Duration logCleanupInterval) {
+    _logCleanupInterval = logCleanupInterval;
+    return this;
+  }
+
+  LogSettingsBuilder withLogRetentionPeriod(Duration logRetentionPeriod) {
+    _logRetentionPeriod = logRetentionPeriod;
+    return this;
+  }
+
+  LogSettingsBuilder withLogRetentionCount(int logRetentionCount) {
+    _logRetentionCount = logRetentionCount;
+    return this;
+  }
+
   LogSettingsBuilder withSlowSessionDuration(double slowSessionDuration) {
     _slowSessionDuration = slowSessionDuration;
     return this;
@@ -86,6 +104,9 @@ class LogSettingsBuilder {
       logSlowQueries: _logSlowQueries,
       logFailedSessions: _logFailedSessions,
       logFailedQueries: _logFailedQueries,
+      logCleanupInterval: _logCleanupInterval,
+      logRetentionPeriod: _logRetentionPeriod,
+      logRetentionCount: _logRetentionCount,
       slowSessionDuration: _slowSessionDuration,
       slowQueryDuration: _slowQueryDuration,
     );

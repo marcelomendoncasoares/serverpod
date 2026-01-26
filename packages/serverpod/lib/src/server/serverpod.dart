@@ -179,6 +179,9 @@ class Serverpod {
         logLevel: runMode == ServerpodRunMode.development
             ? internal.LogLevel.debug
             : internal.LogLevel.info,
+        logCleanupInterval: const Duration(days: 1),
+        logRetentionPeriod: const Duration(days: 90),
+        logRetentionCount: 10000,
         slowSessionDuration: 1.0,
         slowQueryDuration: 1.0,
       ),

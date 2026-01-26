@@ -703,6 +703,15 @@ class SessionLogConfig {
   /// True if persistent logging (e.g., to Redis) should be enabled.
   final bool persistentEnabled;
 
+  /// The interval between log cleanup operations. If null, automatic cleanup is disabled.
+  final Duration? cleanupInterval;
+
+  /// The retention period for log data. If null, time-based cleanup is disabled.
+  final Duration? retentionPeriod;
+
+  /// The maximum number of log entries to keep. If null, count-based cleanup is disabled.
+  final int? retentionCount;
+
   /// True if console logging should be enabled.
   final bool consoleEnabled;
 
@@ -713,6 +722,9 @@ class SessionLogConfig {
   SessionLogConfig({
     required this.persistentEnabled,
     required this.consoleEnabled,
+    this.cleanupInterval,
+    this.retentionPeriod,
+    this.retentionCount,
     ConsoleLogFormat? consoleLogFormat,
   }) : consoleLogFormat = consoleLogFormat ?? ConsoleLogFormat.defaultFormat;
 
@@ -724,6 +736,9 @@ class SessionLogConfig {
   }) {
     return SessionLogConfig(
       persistentEnabled: databaseEnabled,
+      cleanupInterval: const Duration(hours: 24),
+      retentionPeriod: const Duration(days: 90),
+      retentionCount: 100_000,
       consoleEnabled: !databaseEnabled || runMode == _developmentRunMode,
       consoleLogFormat: runMode == _developmentRunMode
           ? ConsoleLogFormat.text
@@ -750,6 +765,16 @@ class SessionLogConfig {
               .sessionPersistentLogEnabled
               .configKey] ??
           false,
+      cleanupInterval:
+          sessionLogConfigJson[ServerpodEnv
+              .sessionLogCleanupInterval
+              .configKey],
+      retentionPeriod:
+          sessionLogConfigJson[ServerpodEnv
+              .sessionLogRetentionPeriod
+              .configKey],
+      retentionCount:
+          sessionLogConfigJson[ServerpodEnv.sessionLogRetentionCount.configKey],
       consoleEnabled:
           sessionLogConfigJson[ServerpodEnv
               .sessionConsoleLogEnabled
@@ -851,6 +876,9 @@ Map? _buildSessionLogsConfigMap(
 
   return _buildConfigMap(logsConfig, environment, [
     (ServerpodEnv.sessionPersistentLogEnabled, bool.parse),
+    (ServerpodEnv.sessionLogCleanupInterval, int.parse),
+    (ServerpodEnv.sessionLogRetentionPeriod, int.parse),
+    (ServerpodEnv.sessionLogRetentionCount, int.parse),
     (ServerpodEnv.sessionConsoleLogEnabled, bool.parse),
     (ServerpodEnv.sessionConsoleLogFormat, null),
   ]);
