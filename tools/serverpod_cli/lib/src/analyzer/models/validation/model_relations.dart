@@ -176,7 +176,15 @@ class ParsedModelsCollection {
     String className, {
     SerializableModelDefinition? ignore,
   }) {
-    return _filterIgnored(classNames[className], ignore);
+    var (moduleAlias, clsName) = className.splitModuleAliasAndClassName();
+    for (var entry in classNames.entries) {
+      if (entry.key == clsName &&
+          (moduleAlias == null ||
+              entry.value.any((e) => e.type.moduleAlias == moduleAlias))) {
+        return _filterIgnored(entry.value, ignore);
+      }
+    }
+    return [];
   }
 
   SerializableModelDefinition? findByClassName(

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:serverpod_cli/src/analyzer/models/checker/analyze_checker.dart';
 import 'package:serverpod_cli/src/analyzer/models/definitions.dart';
 import 'package:serverpod_cli/src/generator/types.dart';
+import 'package:serverpod_cli/src/util/model_helper.dart';
 import 'package:serverpod_shared/serverpod_shared.dart';
 import 'package:super_string/super_string.dart';
 
@@ -61,11 +62,31 @@ class ModelDependencyResolver {
       return;
     }
     var parentClassName = extendedClass.className;
+    var parentModuleAlias = extendedClass.moduleAlias;
 
     var parentClass = modelDefinitions
         .whereType<ModelClassDefinition>()
-        .where((element) => element.className == parentClassName)
+        .where(
+          (element) =>
+              element.className == parentClassName &&
+              (parentModuleAlias == null ||
+                  element.type.moduleAlias == parentModuleAlias),
+        )
         .firstOrNull;
+
+    // If no module alias was specified and we found multiple candidates,
+    // prefer the one from the current project
+    if (parentModuleAlias == null && parentClass != null) {
+      var projectParent = modelDefinitions
+          .whereType<ModelClassDefinition>()
+          .where((element) => element.className == parentClassName)
+          .where((element) => element.type.moduleAlias == defaultModuleAlias)
+          .firstOrNull;
+
+      if (projectParent != null) {
+        parentClass = projectParent;
+      }
+    }
 
     if (parentClass == null) {
       return;

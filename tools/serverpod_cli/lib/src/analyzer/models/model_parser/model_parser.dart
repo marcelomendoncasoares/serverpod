@@ -222,13 +222,26 @@ class ModelParser {
     return isImmutable;
   }
 
+  /// Parses the `extends` property from a model YAML file.
+  ///
+  /// Supports multiple formats:
+  /// - Simple class name: `extends: ParentClass`
+  ///   Extends a class from the same project
+  /// - Module reference: `extends: module:auth:UserInfo`
+  ///   Extends a class from a module (e.g., auth module's UserInfo class)
+  /// - Protocol prefix: `extends: protocol:ParentClass`
+  ///   Explicitly extends a class from the same project
+  ///
+  /// Returns an [UnresolvedInheritanceDefinition] containing the className
+  /// and optional moduleAlias, or null if no extends property is found.
   static UnresolvedInheritanceDefinition? _parseExtendsClass(
     YamlMap documentContents,
   ) {
     var extendsClass = documentContents.nodes[Keyword.extendsClass]?.value;
     if (extendsClass is! String) return null;
 
-    return UnresolvedInheritanceDefinition(extendsClass);
+    var (moduleAlias, className) = extendsClass.splitModuleAliasAndClassName();
+    return UnresolvedInheritanceDefinition(className, moduleAlias: moduleAlias);
   }
 
   static bool _parseServerOnly(YamlMap documentContents) {

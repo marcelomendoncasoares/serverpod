@@ -498,8 +498,9 @@ abstract class InheritanceDefinition {}
 
 class UnresolvedInheritanceDefinition extends InheritanceDefinition {
   final String className;
+  final String? moduleAlias;
 
-  UnresolvedInheritanceDefinition(this.className);
+  UnresolvedInheritanceDefinition(this.className, {required this.moduleAlias});
 }
 
 class ResolvedInheritanceDefinition extends InheritanceDefinition {

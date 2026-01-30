@@ -191,3 +191,39 @@ class ModelHelper {
     return split(relativePath);
   }
 }
+
+extension SplitModuleAlias on String {
+  /// Splits the string into a module alias and a class name.
+  ///
+  /// Supports multiple formats:
+  /// - Simple class name: `ParentClass`
+  /// - Module reference: `module:auth:UserInfo`
+  /// - Protocol prefix: `protocol:ParentClass`
+  ///
+  /// Returns a tuple containing the module alias and the class name.
+  (String? moduleAlias, String className) splitModuleAliasAndClassName() {
+    // Parse the extends value to support module references like "module:auth:UserInfo"
+    // Split on ':' to extract module prefix and class name
+    var parts = this.split(':');
+    var className = parts.last;
+    String? moduleAlias;
+
+    if (parts.length > 3) {
+      throw FormatException('Invalid module reference: $this');
+    }
+    if (parts.length == 3) {
+      if (parts.first != 'module') {
+        throw FormatException('Invalid module reference: $this');
+      }
+      moduleAlias = parts[1];
+    } else if (parts.length == 2) {
+      if (parts.first == 'protocol') {
+        moduleAlias = defaultModuleAlias;
+      } else {
+        moduleAlias = parts.first;
+      }
+    }
+
+    return (moduleAlias, className);
+  }
+}

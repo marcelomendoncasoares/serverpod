@@ -97,7 +97,7 @@ void main() {
     );
 
     test(
-      'Given a child-class that extends an external class, then an error is collected that only classes from within the project can be extended',
+      'Given a child-class that extends a module class without module prefix, then it successfully resolves to the module parent',
       () {
         var modelSources = [
           ModelSourceBuilder()
@@ -108,7 +108,7 @@ void main() {
             name: String
           ''',
               )
-              .withModuleAlias('ModelSourceBuilder')
+              .withModuleAlias('test_module')
               .build(),
           ModelSourceBuilder().withFileName('example2').withYaml(
             '''
@@ -121,23 +121,60 @@ void main() {
         ];
 
         var collector = CodeGenerationCollector();
-        StatefulAnalyzer(
+        var models = StatefulAnalyzer(
           config,
           modelSources,
           onErrorsCollector(collector),
         ).validateAll();
 
-        expect(
-          collector.errors,
-          isNotEmpty,
-          reason: 'Expected an error but none was generated.',
-        );
+        expect(collector.errors, isEmpty);
 
-        var error = collector.errors.first;
-        expect(
-          error.message,
-          'You can only extend classes from your own project.',
-        );
+        var child = models.last as ModelClassDefinition;
+        expect(child.extendsClass, isA<ResolvedInheritanceDefinition>());
+      },
+    );
+
+    test(
+      'Given a child-class that extends a module class with module: prefix, then it successfully resolves to the module parent',
+      () {
+        var modelSources = [
+          ModelSourceBuilder()
+              .withYaml(
+                '''
+          class: ExampleModuleClass
+          fields:
+            name: String
+          ''',
+              )
+              .withModuleAlias('test_module')
+              .build(),
+          ModelSourceBuilder().withFileName('example2').withYaml(
+            '''
+          class: ExampleChildClass
+          extends: module:test_module:ExampleModuleClass
+          fields:
+            age: int
+          ''',
+          ).build(),
+        ];
+
+        var collector = CodeGenerationCollector();
+        var models = StatefulAnalyzer(
+          config,
+          modelSources,
+          onErrorsCollector(collector),
+        ).validateAll();
+
+        expect(collector.errors, isEmpty);
+
+        var child = models.last as ModelClassDefinition;
+        var extendsClass = child.extendsClass;
+        expect(extendsClass, isA<ResolvedInheritanceDefinition>());
+
+        var parent =
+            (extendsClass as ResolvedInheritanceDefinition).classDefinition;
+        expect(parent.className, 'ExampleModuleClass');
+        expect(parent.type.moduleAlias, 'test_module');
       },
     );
 
@@ -515,6 +552,141 @@ void main() {
         error.message,
         'The "sealed" property is mutually exclusive with the "table" property.',
       );
+    },
+  );
+
+  test(
+    'Given a child-class that extends a sealed module class, then an error is collected that sealed classes cannot be extended',
+    () {
+      var modelSources = [
+        ModelSourceBuilder()
+            .withYaml(
+              '''
+          class: SealedModuleClass
+          sealed: true
+          fields:
+            name: String
+          ''',
+            )
+            .withModuleAlias('test_module')
+            .build(),
+        ModelSourceBuilder().withFileName('example2').withYaml(
+          '''
+          class: ExampleChildClass
+          extends: module:test_module:SealedModuleClass
+          fields:
+            age: int
+          ''',
+        ).build(),
+      ];
+
+      var collector = CodeGenerationCollector();
+      StatefulAnalyzer(
+        config,
+        modelSources,
+        onErrorsCollector(collector),
+      ).validateAll();
+
+      expect(
+        collector.errors,
+        isNotEmpty,
+        reason: 'Expected an error for extending a sealed class.',
+      );
+
+      var error = collector.errors.first;
+      expect(
+        error.message,
+        contains('Cannot extend sealed class'),
+      );
+    },
+  );
+
+  test(
+    'Given a child-class that extends a sealed local class, then an error is collected that sealed classes cannot be extended',
+    () {
+      var modelSources = [
+        ModelSourceBuilder().withFileName('example1').withYaml(
+          '''
+          class: SealedParent
+          sealed: true
+          fields:
+            name: String
+          ''',
+        ).build(),
+        ModelSourceBuilder().withFileName('example2').withYaml(
+          '''
+          class: ExampleChildClass
+          extends: SealedParent
+          fields:
+            age: int
+          ''',
+        ).build(),
+      ];
+
+      var collector = CodeGenerationCollector();
+      StatefulAnalyzer(
+        config,
+        modelSources,
+        onErrorsCollector(collector),
+      ).validateAll();
+
+      expect(
+        collector.errors,
+        isNotEmpty,
+        reason: 'Expected an error for extending a sealed class.',
+      );
+
+      var error = collector.errors.first;
+      expect(
+        error.message,
+        contains('Cannot extend sealed class'),
+      );
+    },
+  );
+
+  test(
+    'Given a child-class extending a non-sealed module class, then inherited fields are accessible',
+    () {
+      var modelSources = [
+        ModelSourceBuilder()
+            .withYaml(
+              '''
+          class: ModuleParent
+          fields:
+            parentField: String
+          ''',
+            )
+            .withModuleAlias('test_module')
+            .build(),
+        ModelSourceBuilder().withFileName('child').withYaml(
+          '''
+          class: ChildClass
+          extends: module:test_module:ModuleParent
+          fields:
+            childField: int
+          ''',
+        ).build(),
+      ];
+
+      var collector = CodeGenerationCollector();
+      var models = StatefulAnalyzer(
+        config,
+        modelSources,
+        onErrorsCollector(collector),
+      ).validateAll();
+
+      expect(
+        collector.errors,
+        isEmpty,
+        reason: 'No errors should be generated.',
+      );
+
+      var child = models.last as ModelClassDefinition;
+      var inheritedFieldNames = child.inheritedFields
+          .map((f) => f.name)
+          .toList();
+      expect(inheritedFieldNames, contains('parentField'));
+      expect(child.fields.map((f) => f.name), contains('childField'));
     },
   );
 }

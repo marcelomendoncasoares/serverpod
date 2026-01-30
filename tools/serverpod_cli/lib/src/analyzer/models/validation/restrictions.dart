@@ -307,6 +307,16 @@ class Restrictions {
     return [];
   }
 
+  /// Validates the `extends` property of a model class.
+  ///
+  /// This validation ensures:
+  /// 1. The parent class exists in the parsed models (from project or modules)
+  /// 2. The parent class is not sealed (sealed classes have closed hierarchies)
+  /// 3. No ancestor in the hierarchy is sealed
+  /// 4. serverOnly restrictions are respected (client classes cannot extend serverOnly classes)
+  ///
+  /// Note: Module inheritance is fully supported. Classes can extend from modules
+  /// using the syntax: `extends: module:nickname:ClassName`
   List<SourceSpanSeverityException> validateExtendingClassName(
     String parentNodeName,
     dynamic parentClassName,
@@ -332,10 +342,13 @@ class Restrictions {
       ];
     }
 
-    if (parentClass.type.moduleAlias != defaultModuleAlias) {
+    if (parentClass.type.moduleAlias != defaultModuleAlias &&
+        parentClass is ModelClassDefinition &&
+        parentClass.isSealed) {
       return [
         SourceSpanSeverityException(
-          'You can only extend classes from your own project.',
+          'Cannot extend sealed class "$parentClassName" from module '
+          '"${parentClass.type.moduleAlias}".',
           span,
         ),
       ];
@@ -346,6 +359,18 @@ class Restrictions {
     );
 
     if (currentModel is ModelClassDefinition) {
+      var ancestorSealedClass = _findSealedClassInParentClasses(currentModel);
+      if (ancestorSealedClass != null) {
+        return [
+          SourceSpanSeverityException(
+            'Cannot extend class "$parentClassName" from module '
+            '"${documentDefinition!.type.moduleAlias}" because it has the '
+            'sealed ancestor "${ancestorSealedClass.className}" in its hierarchy.',
+            span,
+          ),
+        ];
+      }
+
       var ancestorServerOnlyClass = _findServerOnlyClassInParentClasses(
         currentModel,
       );
@@ -2415,6 +2440,15 @@ class Restrictions {
     return _findInParentHierarchy(
       currentModel,
       (ModelClassDefinition ancestor) => ancestor.serverOnly ? ancestor : null,
+    );
+  }
+
+  ModelClassDefinition? _findSealedClassInParentClasses(
+    ModelClassDefinition currentModel,
+  ) {
+    return _findInParentHierarchy(
+      currentModel,
+      (ModelClassDefinition ancestor) => ancestor.isSealed ? ancestor : null,
     );
   }
 

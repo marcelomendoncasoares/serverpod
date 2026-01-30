@@ -1,3 +1,10 @@
+## Unreleased
+
+### Core
+
+- feat: Adds support for model inheritance from module-defined classes. Project classes can now extend classes from modules using the `extends: module:nickname:ClassName` syntax.
+- feat: Adds validation to prevent extending sealed classes, including those defined in modules.
+
 ## 3.2.3
 
 - fix: Fixes `flutter_build` script on the template project for Windows.
