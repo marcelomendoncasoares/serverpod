@@ -23,6 +23,13 @@ Future<ServerHealthResult> performHealthChecks(
     result.metrics.addAll(await pod.healthCheckHandler!(pod, now));
   }
 
+  final readinessResults = await pod.healthCheckService.getReadinessResults();
+  result.metrics.addAll(
+    readinessResults.whereType<HealthCheckResult<double>>().map(
+      (indicator) => indicator.toMetric(pod, now),
+    ),
+  );
+
   return result;
 }
 
@@ -107,4 +114,16 @@ Future<ServerHealthResult> defaultHealthCheckMetrics(
       ),
     ],
   );
+}
+
+extension on HealthCheckResult<double> {
+  ServerHealthMetric toMetric(Serverpod pod, DateTime timestamp) =>
+      ServerHealthMetric(
+        serverId: pod.serverId,
+        name: name,
+        timestamp: timestamp,
+        value: observedValue ?? 0.0,
+        isHealthy: isHealthy,
+        granularity: 1,
+      );
 }
