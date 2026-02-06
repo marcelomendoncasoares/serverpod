@@ -91,13 +91,13 @@ abstract class HealthIndicator<T extends Object> {
   /// Implementations should catch exceptions and return a failed result
   /// rather than throwing. Use the [pass] and [fail] helper methods to
   /// create results with consistent metadata.
-  Future<HealthCheckResult> check();
+  Future<HealthCheckResult<T>> check();
 
   /// Creates a passing health check result for this indicator.
   ///
   /// This method automatically populates [name], [componentId],
   /// [componentType], and [observedUnit] from this indicator's properties.
-  HealthCheckResult pass({
+  HealthCheckResult<T> pass({
     T? observedValue,
     String? output,
     DateTime? time,
@@ -118,7 +118,7 @@ abstract class HealthIndicator<T extends Object> {
   ///
   /// This method automatically populates [name], [componentId],
   /// [componentType], and [observedUnit] from this indicator's properties.
-  HealthCheckResult fail({
+  HealthCheckResult<T> fail({
     T? observedValue,
     String? output,
     DateTime? time,
@@ -149,7 +149,7 @@ enum HealthStatus {
 ///
 /// Follows the draft RFC for Health Check Response Format:
 /// https://datatracker.ietf.org/doc/html/draft-inadarei-api-health-check-06
-class HealthCheckResult {
+class HealthCheckResult<T extends Object> {
   /// The name of the indicator that produced this result.
   final String name;
 
@@ -171,7 +171,7 @@ class HealthCheckResult {
   /// - Response time in milliseconds (double)
   /// - ISO 8601 datetime for timestamps (DateTime, serialized automatically)
   /// - Categorical values like 'connected', 'degraded' (String)
-  final Object? observedValue;
+  final T? observedValue;
 
   /// Unit of the observed value, e.g., `ms`, `percent`, `bytes`.
   final String? observedUnit;

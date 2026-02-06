@@ -24,7 +24,7 @@ class DatabaseHealthIndicator extends HealthIndicator<double> {
   Duration get timeout => const Duration(seconds: 2);
 
   @override
-  Future<HealthCheckResult> check() async {
+  Future<HealthCheckResult<double>> check() async {
     final stopwatch = Stopwatch()..start();
     try {
       final healthy = await _pod.internalSession.db.testConnection();

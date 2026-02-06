@@ -13,7 +13,7 @@ class _TestIndicator extends HealthIndicator<double> {
   String get observedUnit => 'ms';
 
   @override
-  Future<HealthCheckResult> check() async => pass();
+  Future<HealthCheckResult<double>> check() async => pass();
 }
 
 void main() {

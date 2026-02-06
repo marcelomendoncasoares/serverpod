@@ -24,7 +24,7 @@ class RedisHealthIndicator extends HealthIndicator<double> {
   Duration get timeout => const Duration(seconds: 2);
 
   @override
-  Future<HealthCheckResult> check() async {
+  Future<HealthCheckResult<double>> check() async {
     final controller = _pod.redisController;
     if (controller == null) {
       return fail(

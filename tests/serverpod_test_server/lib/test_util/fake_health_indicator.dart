@@ -64,7 +64,7 @@ class FakeHealthIndicator extends HealthIndicator<double> {
   Duration get timeout => _timeout;
 
   @override
-  Future<HealthCheckResult> check() async {
+  Future<HealthCheckResult<double>> check() async {
     checkCount++;
     if (delay > Duration.zero) {
       await Future.delayed(delay);

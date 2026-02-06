@@ -26,7 +26,7 @@ class ServerpodStartupIndicator extends HealthIndicator<DateTime> {
   Duration get timeout => const Duration(seconds: 1);
 
   @override
-  Future<HealthCheckResult> check() async {
+  Future<HealthCheckResult<DateTime>> check() async {
     if (_pod.isStartupComplete) {
       return pass(
         observedValue: _pod.startedTime,

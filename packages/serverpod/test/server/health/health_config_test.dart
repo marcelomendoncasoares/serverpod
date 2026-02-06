@@ -12,7 +12,7 @@ class _TestIndicator extends HealthIndicator<double> {
   String get name => _name;
 
   @override
-  Future<HealthCheckResult> check() async {
+  Future<HealthCheckResult<double>> check() async {
     return pass();
   }
 }
