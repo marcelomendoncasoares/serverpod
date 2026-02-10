@@ -1,5 +1,11 @@
+import 'package:intl/intl.dart';
 import 'package:serverpod_cli/src/analyzer/models/definitions.dart';
+import 'package:serverpod_serialization/serverpod_serialization.dart';
 import 'package:serverpod_service_client/serverpod_service_client.dart';
+import 'package:serverpod_shared/serverpod_shared.dart';
+
+import '../../analyzer/models/utils/quote_utils.dart';
+import '../../generator/types.dart';
 
 //
 // SQL generation
@@ -620,5 +626,65 @@ extension PostgresVectorIndexDistanceFunction on VectorDistanceFunction {
   String asDistanceFunction([String vectorType = 'vector']) {
     var funcCode = (this == VectorDistanceFunction.innerProduct) ? 'ip' : name;
     return '${vectorType}_${funcCode}_ops';
+  }
+}
+
+extension PostgresTypeDefinition on TypeDefinition {
+  String? getPgColumnDefault(
+    dynamic defaultValue,
+    String tableName,
+  ) {
+    var defaultValueType = this.defaultValueType;
+    if ((defaultValue == null) || (defaultValueType == null)) return null;
+
+    switch (defaultValueType) {
+      case DefaultValueAllowedType.dateTime:
+        if (defaultValue is! String) {
+          throw StateError('Invalid DateTime default value: $defaultValue');
+        }
+
+        if (defaultValue == defaultDateTimeValueNow) {
+          return 'CURRENT_TIMESTAMP';
+        }
+
+        DateTime? dateTime = DateTime.parse(defaultValue);
+        return '\'${DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime)}\'::timestamp without time zone';
+      case DefaultValueAllowedType.bool:
+        return defaultValue;
+      case DefaultValueAllowedType.int:
+        if (defaultValue == defaultIntSerial) {
+          return "nextval('${tableName}_id_seq'::regclass)";
+        }
+        return '$defaultValue';
+      case DefaultValueAllowedType.double:
+        return '$defaultValue';
+      case DefaultValueAllowedType.string:
+        return '${escapeSqlString(defaultValue)}::text';
+      case DefaultValueAllowedType.uuidValue:
+        if (defaultUuidValueRandom == defaultValue) {
+          return 'gen_random_uuid()';
+        }
+        if (defaultUuidValueRandomV7 == defaultValue) {
+          return 'gen_random_uuid_v7()';
+        }
+        return '${escapeSqlString(defaultValue)}::uuid';
+      case DefaultValueAllowedType.uri:
+        return '${escapeSqlString(defaultValue)}::text';
+      case DefaultValueAllowedType.bigInt:
+        var parsedBigInt = BigInt.parse(defaultValue);
+        return "'${parsedBigInt.toString()}'::text";
+      case DefaultValueAllowedType.duration:
+        Duration parsedDuration = parseDuration(defaultValue);
+        return '${parsedDuration.toJson()}';
+      case DefaultValueAllowedType.isEnum:
+        var enumDefinition = this.enumDefinition;
+        if (enumDefinition == null) return null;
+        var values = enumDefinition.values;
+        return switch (enumDefinition.serialized) {
+          EnumSerialization.byIndex =>
+            '${values.indexWhere((e) => e.name == defaultValue)}',
+          EnumSerialization.byName => '\'$defaultValue\'::text',
+        };
+    }
   }
 }
