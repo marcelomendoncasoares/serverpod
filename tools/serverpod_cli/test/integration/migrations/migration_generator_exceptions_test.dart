@@ -68,9 +68,10 @@ void main() {
       () async {
         expect(
           generator.repairMigration(
+            force: false,
             runMode:
                 CreateRepairMigrationOption.runModes.first /* development */,
-            force: false,
+            dialect: DatabaseDialect.postgres,
           ),
           throwsA(
             isA<MigrationVersionLoadException>()

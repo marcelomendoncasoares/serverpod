@@ -3,6 +3,7 @@ import 'package:serverpod_shared/serverpod_shared.dart';
 
 import '../generator/types.dart';
 import 'dialects/postgres.dart';
+import 'dialects/sqlite.dart';
 
 class SqlGenerator {
   static String generateDatabaseDefinitionSql(
@@ -14,7 +15,9 @@ class SqlGenerator {
       DatabaseDialect.postgres => databaseDefinition.toPgSql(
         installedModules: installedModules,
       ),
-      _ => throw UnimplementedError('Dialect $dialect not implemented'),
+      DatabaseDialect.sqlite => databaseDefinition.toSqliteSql(
+        installedModules: installedModules,
+      ),
     };
   }
 
@@ -29,7 +32,10 @@ class SqlGenerator {
         installedModules: installedModules,
         removedModules: removedModules,
       ),
-      _ => throw UnimplementedError('Dialect $dialect not implemented'),
+      DatabaseDialect.sqlite => databaseMigration.toSql(
+        installedModules: installedModules,
+        removedModules: removedModules,
+      ),
     };
   }
 
@@ -40,11 +46,14 @@ class SqlGenerator {
     String tableName,
   ) {
     return switch (dialect) {
-      DatabaseDialect.postgres => columnType.getColumnDefault(
+      DatabaseDialect.postgres => columnType.getPgColumnDefault(
         defaultValue,
         tableName,
       ),
-      _ => throw UnimplementedError('Dialect $dialect not implemented'),
+      DatabaseDialect.sqlite => columnType.getSqliteColumnDefault(
+        defaultValue,
+        tableName,
+      ),
     };
   }
 }
