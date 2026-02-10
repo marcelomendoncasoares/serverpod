@@ -12,6 +12,10 @@ import 'adapters/postgres/value_encoder.dart';
 /// Configuration for connecting to the Postgresql database.
 @internal
 class PostgresPoolManager implements DatabasePoolManager {
+  /// The dialect of the database pool manager.
+  @override
+  DatabaseDialect get dialect => DatabaseDialect.postgres;
+
   /// Database configuration.
   final DatabaseConfig config;
 

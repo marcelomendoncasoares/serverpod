@@ -9,6 +9,7 @@ import 'package:serverpod/src/database/concepts/order.dart';
 import 'package:serverpod/src/database/concepts/transaction.dart';
 import 'package:serverpod/src/database/concepts/database_pool_manager.dart';
 import 'package:serverpod/src/database/query_parameters.dart';
+import 'package:serverpod_shared/serverpod_shared.dart';
 
 import '../server/session.dart';
 import 'adapters/postgres/database_connection.dart';
@@ -46,6 +47,9 @@ class Database {
          //  SqlitePoolManager() => SqliteDatabaseConnection(poolManager),
          _ => throw UnsupportedError('Unsupported pool manager: $poolManager'),
        };
+
+  /// The dialect of the database.
+  DatabaseDialect get dialect => _databaseConnection.poolManager.dialect;
 
   /// Returns a list of [TableRow]s matching the given query parameters.
   ///

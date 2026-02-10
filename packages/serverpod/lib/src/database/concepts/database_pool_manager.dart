@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:serverpod_shared/serverpod_shared.dart';
 
 import '../../serialization/serialization_manager.dart';
 import 'value_encoder.dart';
@@ -6,7 +7,10 @@ import 'value_encoder.dart';
 /// Abstract interface for database pool managers.
 /// Provides a unified interface for both PostgreSQL and SQLite implementations.
 @internal
-abstract class DatabasePoolManager {
+abstract interface class DatabasePoolManager {
+  /// The dialect of the database pool manager.
+  DatabaseDialect get dialect;
+
   /// Access to the serialization manager.
   SerializationManagerServer get serializationManager;
 
