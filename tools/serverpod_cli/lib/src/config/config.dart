@@ -12,6 +12,7 @@ import 'package:serverpod_cli/src/util/pubspec_helpers.dart';
 import 'package:serverpod_cli/src/util/server_directory_finder.dart';
 import 'package:serverpod_cli/src/util/serverpod_cli_logger.dart';
 import 'package:serverpod_cli/src/util/yaml_util.dart';
+import 'package:serverpod_shared/serverpod_shared.dart';
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
@@ -74,6 +75,7 @@ class GeneratorConfig implements ModelLoadConfig {
   const GeneratorConfig({
     required this.name,
     required this.type,
+    this.dialect = DatabaseDialect.postgres,
     required this.serverPackage,
     required this.dartClientPackage,
     required this.dartClientDependsOnServiceClient,
@@ -97,6 +99,9 @@ class GeneratorConfig implements ModelLoadConfig {
 
   /// The [PackageType] of the package this [GeneratorConfig] describes.
   final PackageType type;
+
+  /// The [DatabaseDialect] of the database.
+  final DatabaseDialect dialect;
 
   /// The name of the server package.
   ///
@@ -430,9 +435,22 @@ class GeneratorConfig implements ModelLoadConfig {
       ...CommandLineExperimentalFeatures.instance.features,
     ];
 
+    var dialect = DatabaseDialect.postgres;
+    final maybeDialect = generatorConfig['dialect'];
+    if (maybeDialect != null) {
+      if (maybeDialect is! String) {
+        throw SourceSpanFormatException(
+          'Invalid dialect: $maybeDialect',
+          maybeDialect is YamlNode ? maybeDialect.span : null,
+        );
+      }
+      dialect = DatabaseDialect.values.byName(maybeDialect);
+    }
+
     return GeneratorConfig(
       name: name,
       type: type,
+      dialect: dialect,
       serverPackage: serverPackage,
       dartClientPackage: dartClientPackage,
       dartClientDependsOnServiceClient: dartClientDependsOnServiceClient,
@@ -614,7 +632,7 @@ name: $name
 nickname: $nickname
 clientPackage: $dartClientPackage
 serverPackage: $serverPackage
-migrationVersions: $migrationVersions 
+migrationVersions: $migrationVersions
 ''';
   }
 }
