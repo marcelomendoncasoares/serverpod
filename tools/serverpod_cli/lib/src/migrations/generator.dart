@@ -395,7 +395,8 @@ class MigrationGenerator {
     List<DatabaseMigrationVersion> installedModules,
     List<DatabaseMigrationVersion> removedModules,
   ) {
-    var repairMigrationSql = migration.toPgSql(
+    var repairMigrationSql = migration.toSql(
+      dialect: DatabaseDialect.postgres,
       installedModules: installedModules,
       removedModules: removedModules,
     );
@@ -532,11 +533,13 @@ class MigrationVersion {
     await migrationDirectory.create(recursive: true);
 
     // Create sql for definition and migration
-    var definitionSql = databaseDefinitionFull.toPgSql(
+    var definitionSql = databaseDefinitionFull.toSql(
+      dialect: DatabaseDialect.postgres,
       installedModules: installedModules,
     );
 
-    var migrationSql = migration.toPgSql(
+    var migrationSql = migration.toSql(
+      dialect: DatabaseDialect.postgres,
       installedModules: installedModules,
       removedModules: removedModules,
     );
