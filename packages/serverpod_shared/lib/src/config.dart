@@ -432,10 +432,22 @@ class ServerConfig {
   }
 }
 
-/// Configuration for a Postgres database,
+/// Database dialect type.
+enum DatabaseDialect {
+  /// PostgreSQL database.
+  postgres,
+
+  /// SQLite database.
+  sqlite,
+}
+
+/// Configuration for a database.
 class DatabaseConfig {
   /// The default maximum number of connections in the database pool.
   static const int defaultMaxConnectionCount = 10;
+
+  /// Database dialect (PostgreSQL or SQLite).
+  final DatabaseDialect dialect;
 
   /// Database host.
   final String host;
@@ -468,6 +480,7 @@ class DatabaseConfig {
 
   /// Creates a new [DatabaseConfig].
   DatabaseConfig({
+    this.dialect = DatabaseDialect.postgres,
     required this.host,
     required this.port,
     required this.user,

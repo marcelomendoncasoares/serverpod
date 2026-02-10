@@ -7,13 +7,15 @@ import 'package:serverpod/src/database/concepts/database_result.dart';
 import 'package:serverpod/src/database/concepts/includes.dart';
 import 'package:serverpod/src/database/concepts/order.dart';
 import 'package:serverpod/src/database/concepts/transaction.dart';
-import 'package:serverpod/src/database/database_pool_manager.dart';
+import 'package:serverpod/src/database/concepts/database_pool_manager.dart';
 import 'package:serverpod/src/database/query_parameters.dart';
 
 import '../server/session.dart';
 import 'adapters/postgres/database_connection.dart';
+import 'concepts/database_connection.dart';
 import 'concepts/expressions.dart';
 import 'concepts/table.dart';
+import 'database_pool_manager.dart';
 
 /// Extension to only expose the [Database] constructor
 /// internally within the Serverpod package.
@@ -39,7 +41,11 @@ class Database {
     required Session session,
     required DatabasePoolManager poolManager,
   }) : _session = session,
-       _databaseConnection = DatabaseConnection(poolManager);
+       _databaseConnection = switch (poolManager) {
+         PostgresPoolManager() => PostgresDatabaseConnection(poolManager),
+         //  SqlitePoolManager() => SqliteDatabaseConnection(poolManager),
+         _ => throw UnsupportedError('Unsupported pool manager: $poolManager'),
+       };
 
   /// Returns a list of [TableRow]s matching the given query parameters.
   ///

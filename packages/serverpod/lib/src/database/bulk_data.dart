@@ -5,8 +5,8 @@ import 'package:collection/collection.dart';
 import 'package:serverpod/protocol.dart';
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod/src/database/analyze.dart';
-import 'package:serverpod/src/database/database_pool_manager.dart';
 import 'package:serverpod/src/database/extensions.dart';
+import 'package:serverpod/src/server/serverpod.dart';
 
 /// Provides a way to export raw data from the database. The data is serialized
 /// using JSON. Primarily used for Serverpod Insights.
@@ -67,7 +67,7 @@ class DatabaseBulkData {
       );
     }
 
-    String strLastId = DatabasePoolManager.encoder.convert(lastId);
+    String strLastId = Serverpod.instance.encoder.convert(lastId);
 
     List<List<dynamic>> data;
     var query =

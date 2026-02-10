@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod/src/cloud_storage/public_endpoint.dart';
 import 'package:serverpod/src/config/version.dart';
+import 'package:serverpod/src/database/concepts/database_pool_manager.dart';
+import 'package:serverpod/src/database/concepts/value_encoder.dart';
 import 'package:serverpod/src/database/database_pool_manager.dart';
 import 'package:serverpod/src/database/migrations/migration_manager.dart';
 import 'package:serverpod/src/redis/controller.dart';
@@ -516,11 +518,20 @@ class Serverpod {
     // Setup database
     var databaseConfiguration = config.database;
     if (Features.enableDatabase && databaseConfiguration != null) {
-      _databasePoolManager = DatabasePoolManager(
-        serializationManager,
-        runtimeParametersBuilder,
-        databaseConfiguration,
-      );
+      _databasePoolManager = switch (databaseConfiguration.dialect) {
+        DatabaseDialect.postgres => PostgresPoolManager(
+          serializationManager,
+          runtimeParametersBuilder,
+          databaseConfiguration,
+        ),
+        // DatabaseDialect.sqlite => SqlitePoolManager(
+        //   serializationManager,
+        //   databaseConfiguration,
+        // ),
+        _ => throw UnsupportedError(
+          'Unsupported database dialect: ${databaseConfiguration.dialect}',
+        ),
+      };
 
       // ISSUE(https://github.com/serverpod/serverpod/issues/2421):
       // Remove this when we have a better way to handle this.
@@ -1386,6 +1397,10 @@ class ExperimentalApi {
 /// Internal methods used by the Serverpod. These methods are not intended to
 /// be exposed to end users.
 extension ServerpodInternalMethods on Serverpod {
+  /// Retrieve the database pool manager. Should only be used internally by
+  /// the framework and where the database is sure to be available.
+  ValueEncoder get encoder => _databasePoolManager!.encoder;
+
   /// Retrieve the log settings manager
   LogSettingsManager get logSettingsManager => _logSettingsManager!;
 
