@@ -21,8 +21,8 @@ import 'package:uuid/uuid.dart';
 import '../../../server/session.dart';
 import '../../concepts/expressions.dart';
 import '../../concepts/table.dart';
-import '../../database_pool_manager.dart';
 import '../../query_parameters.dart';
+import 'postgres_pool_manager.dart';
 
 part 'postgres_exceptions.dart';
 

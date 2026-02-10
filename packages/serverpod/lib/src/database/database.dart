@@ -13,10 +13,10 @@ import 'package:serverpod_shared/serverpod_shared.dart';
 
 import '../server/session.dart';
 import 'adapters/postgres/database_connection.dart';
+import 'adapters/postgres/postgres_pool_manager.dart';
 import 'concepts/database_connection.dart';
 import 'concepts/expressions.dart';
 import 'concepts/table.dart';
-import 'database_pool_manager.dart';
 
 /// Extension to only expose the [Database] constructor
 /// internally within the Serverpod package.

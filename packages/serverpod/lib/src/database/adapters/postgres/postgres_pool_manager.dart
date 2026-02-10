@@ -6,8 +6,8 @@ import 'package:serverpod/src/database/concepts/database_pool_manager.dart';
 import 'package:serverpod/src/serialization/serialization_manager.dart';
 import 'package:serverpod_shared/serverpod_shared.dart';
 
-import 'adapters/postgres/pgvector_encoder.dart';
-import 'adapters/postgres/value_encoder.dart';
+import 'pgvector_encoder.dart';
+import 'value_encoder.dart';
 
 /// Configuration for connecting to the Postgresql database.
 @internal
