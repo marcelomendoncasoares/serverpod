@@ -2,13 +2,19 @@ import 'package:serverpod/protocol.dart';
 import 'package:serverpod/src/database/concepts/database_result.dart';
 import 'package:serverpod/src/database/database.dart';
 
-import '../../../util/column_type_extension.dart';
+import '../../../server/serverpod.dart';
 import '../../concepts/analyzer.dart';
 
 /// Analyzes the structure of SQLite [Database]s.
 class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
   /// Creates a new [SqliteDatabaseAnalyzer] for the given [database].
   SqliteDatabaseAnalyzer({required super.database});
+
+  /// Since the types are so simple in SQLite, we need to previously check the
+  /// target to adapt the types and ensure no real changes would be needed on
+  /// the underlying database columns.
+  static final _targetCache = Serverpod.instance.serializationManager
+      .getTargetTableDefinitions();
 
   /// SQLite uses a single default schema.
   static const String _defaultSchema = 'main';
@@ -63,15 +69,56 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
       'PRAGMA table_info($quotedTable)',
     );
 
+    final targetTable = _targetCache
+        .where((t) => t.name.toLowerCase() == tableName.toLowerCase())
+        .firstOrNull;
+
     return queryResult.map((row) {
+      var columnName = row[1] as String;
       var rawType = row[2] as String? ?? '';
-      var columnType = _sqliteTypeToColumnType(rawType);
+
+      var targetColumn = targetTable?.columns
+          .where((c) => c.name.toLowerCase() == columnName.toLowerCase())
+          .firstOrNull;
+
+      var columnType = targetColumn == null
+          ? ColumnType.unknown
+          : _sqliteTypeToColumnType(rawType, targetColumn);
+
+      var isNullable = (row[3] as int?) != 1;
+      var defaultValue = row[4] as String?;
+      var targetDefaultValue = targetColumn?.columnDefault;
+      if (targetDefaultValue != null && targetDefaultValue != defaultValue) {
+        switch (columnType) {
+          case ColumnType.bigint:
+          case ColumnType.integer:
+            if (columnName == 'id' &&
+                defaultValue == null &&
+                targetDefaultValue.startsWith('nextval(')) {
+              isNullable = false;
+              defaultValue = targetDefaultValue;
+            }
+          case ColumnType.boolean:
+            defaultValue = defaultValue == '1' ? 'true' : 'false';
+          case ColumnType.uuid:
+            defaultValue =
+                {
+                  _generateRandomUuid: 'gen_random_uuid()',
+                  _generateRandomUuidV7: 'gen_random_uuid_v7()',
+                }[defaultValue] ??
+                defaultValue;
+          default:
+        }
+      }
+
       return ColumnDefinition(
-        name: row[1] as String,
-        columnDefault: row[4] as String?,
+        name: columnName,
+        columnDefault: defaultValue,
         columnType: columnType,
-        isNullable: (row[3] as int?) != 1,
-        vectorDimension: null,
+        isNullable: isNullable,
+        // Vector is not supported and stored as plain text in SQLite, so we
+        // just return the target to avoid migration issues.
+        vectorDimension: targetColumn?.vectorDimension,
       );
     }).toList();
   }
@@ -173,15 +220,17 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
     }).toList();
   }
 
-  ColumnType _sqliteTypeToColumnType(String rawType) {
-    switch (rawType.toUpperCase().split('(').first.trim()) {
-      case 'REAL':
-        return ColumnType.doublePrecision;
-      case 'BLOB':
-        return ColumnType.bytea;
-      default:
-        return ExtendedColumnType.fromSqlType(rawType);
+  ColumnType _sqliteTypeToColumnType(String rawType, ColumnDefinition target) {
+    final convertedTarget = target.toSqliteSqlType().toLowerCase();
+    if (rawType.toLowerCase() == convertedTarget) {
+      return target.columnType;
     }
+    for (var entry in ColumnType.values) {
+      if (rawType.toLowerCase() == entry.name.toLowerCase()) {
+        return entry;
+      }
+    }
+    return ColumnType.unknown;
   }
 
   ForeignKeyAction? _parseForeignKeyAction(String? value) {
@@ -220,3 +269,57 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
     return '"${identifier.replaceAll('"', '""')}"';
   }
 }
+
+/// Extensions on the [ColumnDefinition] class.
+extension SQLiteColumnDefinitionSqlGeneration on ColumnDefinition {
+  /// Returns the SQL type for the column definition.
+  String toSqliteSqlType() {
+    String type;
+    switch (columnType) {
+      case ColumnType.bigint:
+      case ColumnType.integer:
+      case ColumnType.timestampWithoutTimeZone:
+      case ColumnType.boolean: // SQLite uses INTEGER (0/1) for booleans
+        type = 'INTEGER';
+        break;
+      case ColumnType.doublePrecision:
+        type = 'REAL';
+        break;
+      case ColumnType.bytea:
+        type = 'BLOB';
+        break;
+      case ColumnType.text:
+      case ColumnType.json:
+      case ColumnType.uuid: // SQLite usually stores UUIDs as TEXT
+      case ColumnType.vector:
+      case ColumnType.halfvec:
+      case ColumnType.sparsevec:
+      case ColumnType.bit:
+        type = 'TEXT';
+        break;
+      case ColumnType.unknown:
+        throw (const FormatException('Unknown column type'));
+    }
+
+    return type;
+  }
+}
+
+const _generateRandomUuid =
+    'lower('
+    "hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || "
+    "'4' || substr(hex(randomblob(2)), 2) || '-' || "
+    "substr('89ab', 1 + (abs(random()) % 4), 1) || "
+    "substr(hex(randomblob(2)), 2) || '-' || "
+    'hex(randomblob(6))'
+    ')';
+
+const _generateRandomUuidV7 =
+    'lower('
+    "substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 1, 8) || '-' || "
+    "substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 9, 4) || '-' || "
+    "'7' || substr(hex(randomblob(2)), 2, 3) || '-' || "
+    "substr('89ab', 1 + (abs(random()) % 4), 1) || "
+    "substr(hex(randomblob(2)), 2, 3) || '-' || "
+    'hex(randomblob(6))'
+    ')';

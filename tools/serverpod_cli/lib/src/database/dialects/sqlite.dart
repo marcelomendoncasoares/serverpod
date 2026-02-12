@@ -133,27 +133,20 @@ extension SQLiteColumnDefinitionSqlGeneration on ColumnDefinition {
       case ColumnType.timestampWithoutTimeZone:
       case ColumnType.boolean: // SQLite uses INTEGER (0/1) for booleans
         type = 'INTEGER';
-        break;
       case ColumnType.doublePrecision:
         type = 'REAL';
-        break;
       case ColumnType.bytea:
         type = 'BLOB';
-        break;
       case ColumnType.text:
       case ColumnType.json:
       case ColumnType.uuid: // SQLite usually stores UUIDs as TEXT
-        type = 'TEXT';
-        break;
       case ColumnType.vector:
       case ColumnType.halfvec:
       case ColumnType.sparsevec:
       case ColumnType.bit:
-        throw const FormatException(
-          'Vector/Bit types are not supported in SQLite.',
-        );
+        type = 'TEXT';
       case ColumnType.unknown:
-        throw (const FormatException('Unknown column type'));
+        throw const FormatException('Unknown column type');
     }
 
     var nullable = isNullable ? '' : ' NOT NULL';
@@ -166,23 +159,29 @@ extension SQLiteColumnDefinitionSqlGeneration on ColumnDefinition {
         '',
       );
 
-      // Handle boolean literals
-      if (cleanDefault.toLowerCase() == 'true') cleanDefault = '1';
-      if (cleanDefault.toLowerCase() == 'false') cleanDefault = '0';
-
-      // Convert UUID default generators
-      if (cleanDefault == 'gen_random_uuid()') {
-        cleanDefault = _generateRandomUuid;
-      }
-      if (cleanDefault == 'gen_random_uuid_v7()') {
-        cleanDefault = _generateRandomUuidV7;
+      switch (columnType) {
+        case ColumnType.bigint:
+        case ColumnType.integer:
+          if (cleanDefault.startsWith('nextval(')) {
+            cleanDefault = 'AUTOINCREMENT';
+          }
+        case ColumnType.boolean:
+          cleanDefault = cleanDefault == 'true' ? '1' : '0';
+        case ColumnType.uuid:
+          cleanDefault =
+              {
+                'gen_random_uuid()': _generateRandomUuid,
+                'gen_random_uuid_v7()': _generateRandomUuidV7,
+              }[cleanDefault] ??
+              cleanDefault;
+        default:
       }
 
       defaultValue = ' DEFAULT $cleanDefault';
     }
 
     // The id column is special.
-    if (isIdColumn) {
+    if (isIdColumn && type == 'INTEGER') {
       if (isNullable) {
         throw const FormatException('The id column must be non-nullable');
       }
@@ -202,6 +201,7 @@ extension SQLiteIndexDefinitionSqlGeneration on IndexDefinition {
     bool ifNotExists = false,
   }) {
     if (type == 'hnsw' || type == 'ivfflat') {
+      // TODO: Ignore instead of throwing an error.
       throw const FormatException(
         'Vector indexes (HNSW/IVFFlat) are not supported in SQLite.',
       );
@@ -500,20 +500,20 @@ extension SQLiteTypeDefinition on TypeDefinition {
 }
 
 const _generateRandomUuid =
-    'lower('
+    '(lower('
     "hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || "
     "'4' || substr(hex(randomblob(2)), 2) || '-' || "
     "substr('89ab', 1 + (abs(random()) % 4), 1) || "
     "substr(hex(randomblob(2)), 2) || '-' || "
     'hex(randomblob(6))'
-    ')';
+    '))';
 
 const _generateRandomUuidV7 =
-    'lower('
+    '(lower('
     "substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 1, 8) || '-' || "
     "substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 9, 4) || '-' || "
     "'7' || substr(hex(randomblob(2)), 2, 3) || '-' || "
     "substr('89ab', 1 + (abs(random()) % 4), 1) || "
     "substr(hex(randomblob(2)), 2, 3) || '-' || "
     'hex(randomblob(6))'
-    ')';
+    '))';

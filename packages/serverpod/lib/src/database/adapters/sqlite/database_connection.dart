@@ -520,39 +520,58 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
     List<Object?>? parameters,
     Transaction? transaction,
   }) async {
+    parameters ??= const [];
+
+    var sqliteTx = _castToSqliteTransaction(transaction);
+    ResultSet? result;
+
+    for (var statement in query.trim().split(';')) {
+      statement = statement.trim();
+      // Ignore transaction statements to avoid recursive locks.
+      if (statement.isEmpty ||
+          statement.startsWith('BEGIN') ||
+          statement.startsWith('COMMIT')) {
+        continue;
+      }
+      result = await _runSingleStatementQuery(
+        session,
+        statement,
+        parameters: parameters,
+        sqliteTx: sqliteTx,
+      );
+    }
+
+    return result ?? ResultSet([], null, []);
+  }
+
+  Future<ResultSet> _runSingleStatementQuery(
+    Session session,
+    String statement, {
+    List<Object?>? parameters,
+    _SqliteTransaction? sqliteTx,
+  }) async {
     var startTime = DateTime.now();
     parameters ??= const [];
 
     try {
       ResultSet? result;
-      var sqliteTx = _castToSqliteTransaction(transaction);
-
-      for (var statement in query.trim().split(';')) {
-        statement = statement.trim();
-        // Ignore transaction statements to avoid recursive locks.
-        if (statement.isEmpty ||
-            statement.startsWith('BEGIN') ||
-            statement.startsWith('COMMIT')) {
-          continue;
-        }
-        if (sqliteTx != null) {
-          result = await sqliteTx.execute(statement, parameters);
-        } else {
-          final isSelect = _isSelectStatement(query);
-          if (isSelect) {
-            result = await _db.getAll(query, parameters);
-          } else {
-            result = await _db.execute(query, parameters);
-          }
-        }
-      }
-
-      if (result == null) {
+      statement = statement.trim();
+      if (statement.isEmpty) {
         return ResultSet([], null, []);
       }
 
+      if (sqliteTx != null) {
+        result = await sqliteTx.execute(statement, parameters);
+      } else {
+        if (_isSelectStatement(statement)) {
+          result = await _db.getAll(statement, parameters);
+        } else {
+          result = await _db.execute(statement, parameters);
+        }
+      }
+
       session.serverpod.lastDatabaseOperationTime = startTime;
-      _logQuery(session, query, startTime, numRowsAffected: result.length);
+      _logQuery(session, statement, startTime, numRowsAffected: result.length);
       return result;
     } catch (exception, trace) {
       final serverpodException = exception is SqliteException
@@ -560,7 +579,7 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
           : _SqliteDatabaseQueryException(exception.toString());
       _logQuery(
         session,
-        query,
+        statement,
         startTime,
         exception: serverpodException,
         trace: trace,
