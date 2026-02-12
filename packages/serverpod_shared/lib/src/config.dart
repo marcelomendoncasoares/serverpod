@@ -480,7 +480,6 @@ class DatabaseConfig {
 
   /// Creates a new [DatabaseConfig].
   DatabaseConfig({
-    this.dialect = DatabaseDialect.postgres,
     required this.host,
     required this.port,
     required this.user,
@@ -490,9 +489,15 @@ class DatabaseConfig {
     this.isUnixSocket = false,
     this.searchPaths,
     this.maxConnectionCount = defaultMaxConnectionCount,
+    this.dialect = DatabaseDialect.postgres,
   });
 
   factory DatabaseConfig._fromJson(Map dbSetup, Map passwords, String name) {
+    final path = dbSetup[ServerpodEnv.databasePath.configKey];
+    if (path is String && path.trim().isNotEmpty) {
+      return DatabaseConfig.sqlite(name, path);
+    }
+
     _validateJsonConfig(
       {
         ServerpodEnv.databaseHost.configKey: String,
@@ -534,6 +539,18 @@ class DatabaseConfig {
         dbSetup[ServerpodEnv.databaseSearchPaths.configKey],
       ),
       maxConnectionCount: maxConnectionCount,
+    );
+  }
+
+  /// Creates a new [DatabaseConfig] for a SQLite database.
+  factory DatabaseConfig.sqlite(String name, String path) {
+    return DatabaseConfig(
+      host: path,
+      port: 0,
+      name: name,
+      user: '',
+      password: '',
+      dialect: DatabaseDialect.sqlite,
     );
   }
 
