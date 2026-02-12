@@ -1,7 +1,8 @@
-import 'package:serverpod/src/database/adapters/postgres/postgres_analyzer.dart';
-import 'package:serverpod_shared/serverpod_shared.dart';
 import 'package:serverpod/protocol.dart';
+import 'package:serverpod/src/database/adapters/postgres/postgres_analyzer.dart';
+import 'package:serverpod/src/database/adapters/sqlite/sqlite_analyzer.dart';
 import 'package:serverpod/src/database/database.dart';
+import 'package:serverpod_shared/serverpod_shared.dart';
 
 /// Analyzes the structure of [Database]s.
 class DatabaseAnalyzer {
@@ -11,8 +12,8 @@ class DatabaseAnalyzer {
       DatabaseDialect.postgres => PostgresDatabaseAnalyzer(
         database: database,
       ),
-      _ => throw UnimplementedError(
-        'Unsupported database adapter with dialect: ${database.dialect}',
+      DatabaseDialect.sqlite => SqliteDatabaseAnalyzer(
+        database: database,
       ),
     };
 

@@ -876,14 +876,20 @@ class _ILikeExpression<T> extends _TwoPartColumnExpression<T> {
   _ILikeExpression(super.column, super.other);
 
   @override
-  String get operator => 'ILIKE';
+  String get operator => switch (Serverpod.instance.config.database?.dialect) {
+    DatabaseDialect.sqlite => 'LIKE',
+    _ => 'ILIKE',
+  };
 }
 
 class _NotILikeExpression<T> extends _TwoPartColumnExpression<T> {
   _NotILikeExpression(super.column, super.other);
 
   @override
-  String get operator => 'NOT ILIKE';
+  String get operator => switch (Serverpod.instance.config.database?.dialect) {
+    DatabaseDialect.sqlite => 'NOT LIKE',
+    _ => 'NOT ILIKE',
+  };
 }
 
 class _IsDistinctFromExpression<T> extends _TwoPartColumnExpression<T> {

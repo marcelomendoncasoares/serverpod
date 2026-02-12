@@ -5,6 +5,7 @@ import 'package:serverpod/serverpod.dart';
 import 'package:serverpod/src/cloud_storage/public_endpoint.dart';
 import 'package:serverpod/src/config/version.dart';
 import 'package:serverpod/src/database/adapters/postgres/postgres_pool_manager.dart';
+import 'package:serverpod/src/database/adapters/sqlite/sqlite_pool_manager.dart';
 import 'package:serverpod/src/database/concepts/database_pool_manager.dart';
 import 'package:serverpod/src/database/concepts/value_encoder.dart';
 import 'package:serverpod/src/database/migrations/migration_manager.dart';
@@ -524,12 +525,9 @@ class Serverpod {
           runtimeParametersBuilder,
           databaseConfiguration,
         ),
-        // DatabaseDialect.sqlite => SqlitePoolManager(
-        //   serializationManager,
-        //   databaseConfiguration,
-        // ),
-        _ => throw UnsupportedError(
-          'Unsupported database dialect: ${databaseConfiguration.dialect}',
+        DatabaseDialect.sqlite => SqlitePoolManager(
+          serializationManager,
+          databaseConfiguration,
         ),
       };
 

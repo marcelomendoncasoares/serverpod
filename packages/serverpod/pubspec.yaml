@@ -33,6 +33,9 @@ dependencies:
   retry: ^3.1.1
   serverpod_serialization: 3.3.0
   serverpod_shared: 3.3.0
+  sqlparser: ^0.43.1
+  sqlite3: ^2.9.4
+  sqlite_async: ^0.13.1
   synchronized: ^3.1.0
   system_resources_2: ^2.2.2
   uuid: ^4.1.0

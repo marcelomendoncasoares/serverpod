@@ -14,6 +14,8 @@ import 'package:serverpod_shared/serverpod_shared.dart';
 import '../server/session.dart';
 import 'adapters/postgres/database_connection.dart';
 import 'adapters/postgres/postgres_pool_manager.dart';
+import 'adapters/sqlite/database_connection.dart';
+import 'adapters/sqlite/sqlite_pool_manager.dart';
 import 'concepts/database_connection.dart';
 import 'concepts/expressions.dart';
 import 'concepts/table.dart';
@@ -44,7 +46,7 @@ class Database {
   }) : _session = session,
        _databaseConnection = switch (poolManager) {
          PostgresPoolManager() => PostgresDatabaseConnection(poolManager),
-         //  SqlitePoolManager() => SqliteDatabaseConnection(poolManager),
+         SqlitePoolManager() => SqliteDatabaseConnection(poolManager),
          _ => throw UnsupportedError('Unsupported pool manager: $poolManager'),
        };
 
