@@ -93,8 +93,9 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
           case ColumnType.bigint:
           case ColumnType.integer:
             if (columnName == 'id' &&
-                defaultValue == null &&
-                targetDefaultValue.startsWith('nextval(')) {
+                    defaultValue == null &&
+                    (targetDefaultValue.startsWith('nextval(')) ||
+                targetDefaultValue == 'AUTOINCREMENT') {
               isNullable = false;
               defaultValue = targetDefaultValue;
             }

@@ -1,4 +1,3 @@
-import 'package:intl/intl.dart';
 import 'package:serverpod_cli/src/analyzer/models/definitions.dart';
 import 'package:serverpod_cli/src/generator/types.dart';
 import 'package:serverpod_serialization/serverpod_serialization.dart';
@@ -130,7 +129,7 @@ extension SQLiteColumnDefinitionSqlGeneration on ColumnDefinition {
     switch (columnType) {
       case ColumnType.bigint:
       case ColumnType.integer:
-      case ColumnType.timestampWithoutTimeZone:
+      case ColumnType.timestampWithoutTimeZone: // Stored as epoch milliseconds
       case ColumnType.boolean: // SQLite uses INTEGER (0/1) for booleans
         type = 'INTEGER';
       case ColumnType.doublePrecision:
@@ -457,8 +456,8 @@ extension SQLiteTypeDefinition on TypeDefinition {
           return 'CURRENT_TIMESTAMP';
         }
 
-        DateTime? dateTime = DateTime.parse(defaultValue);
-        return '\'${DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime)}\'';
+        DateTime? dateTime = DateTime.parse(defaultValue).toUtc();
+        return '${dateTime.millisecondsSinceEpoch}';
       case DefaultValueAllowedType.bool:
         return defaultValue;
       case DefaultValueAllowedType.int:

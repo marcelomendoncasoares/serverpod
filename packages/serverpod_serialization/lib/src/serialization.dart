@@ -72,6 +72,10 @@ abstract class SerializationManager {
     } else if (_isNullableType<String>(t)) {
       return data;
     } else if (_isNullableType<bool>(t)) {
+      if (data is int) {
+        if (data == 1) return true as T;
+        if (data == 0) return false as T;
+      }
       return data;
     } else if (_isNullableType<DateTime>(t)) {
       if (data == null) return null as T;

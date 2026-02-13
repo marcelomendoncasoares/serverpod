@@ -413,15 +413,19 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
     var selectIds = SelectQueryBuilder(
       table: table,
     ).withSelectFields([table.id]).withWhere(where).build();
-    var deleteQuery =
-        'DELETE FROM "${table.tableName}" WHERE "${table.id.columnName}" IN ($selectIds) RETURNING *';
 
-    return await _deserializedMappedQuery(
+    var deleteQuery =
+        'DELETE FROM "${table.tableName}" '
+        'WHERE "${table.id.columnName}" IN ($selectIds) '
+        'RETURNING *';
+
+    var result = await _mappedResultsQuery(
       session,
       deleteQuery,
-      table: table,
       transaction: transaction,
     );
+
+    return result.map(poolManager.serializationManager.deserialize<T>).toList();
   }
 
   @override

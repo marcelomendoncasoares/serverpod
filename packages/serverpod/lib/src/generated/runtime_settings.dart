@@ -44,8 +44,13 @@ abstract class RuntimeSettings
           .deserialize<List<_i3.LogSettingsOverride>>(
             jsonSerialization['logSettingsOverrides'],
           ),
-      logServiceCalls: jsonSerialization['logServiceCalls'] as bool,
-      logMalformedCalls: jsonSerialization['logMalformedCalls'] as bool,
+      // TODO: Manual fix that represent a required change to the generated code.
+      logServiceCalls: _i4.Protocol().deserialize<bool>(
+        jsonSerialization['logServiceCalls'],
+      ),
+      logMalformedCalls: _i4.Protocol().deserialize<bool>(
+        jsonSerialization['logMalformedCalls'],
+      ),
     );
   }
 

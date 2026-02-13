@@ -133,7 +133,7 @@ class SelectQueryBuilder {
     String query = 'WITH $wrappedBaseQueryAlias AS ($baseQuery)';
 
     query +=
-        ', $partitionedQueryAlias AS (SELECT *, row_number() OVER ( PARTITION BY $wrappedBaseQueryAlias."$relationalFieldName") FROM $wrappedBaseQueryAlias)';
+        ', $partitionedQueryAlias AS (SELECT *, row_number() OVER ( PARTITION BY $wrappedBaseQueryAlias."$relationalFieldName") AS row_number FROM $wrappedBaseQueryAlias)';
 
     var rowLimitClause = _buildMultiRowLimitClause(limit, offset);
 
@@ -1060,7 +1060,12 @@ String? _buildOrderByQuery({List<Order>? orderBy, _SubQueries? subQueries}) {
           str = _formatOrderByCount(index, subQueries, orderDescending);
         } else {
           str = '$column';
-          if (orderDescending) str += ' DESC';
+          if (orderDescending) {
+            str += ' DESC';
+            if (column.table.tableRelation != null) str += ' NULLS FIRST';
+          } else {
+            if (column.table.tableRelation != null) str += ' NULLS LAST';
+          }
         }
 
         return str;

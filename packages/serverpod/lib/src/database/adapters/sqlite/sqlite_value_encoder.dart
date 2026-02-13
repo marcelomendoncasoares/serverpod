@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:serverpod/serverpod.dart';
@@ -16,63 +15,46 @@ class SqliteValueEncoder implements ValueEncoder {
   }) {
     if (input == null) {
       return hasDefaults ? 'DEFAULT' : 'NULL';
-    }
-    if (input is bool) {
+    } else if (input is bool) {
       return input ? '1' : '0';
-    }
-    if (input is int) {
+    } else if (input is int) {
       return input.toString();
-    }
-    if (input is double) {
+    } else if (input is double) {
       if (input.isNaN) return 'NULL';
       if (input.isInfinite) return input.isNegative ? '-1e999' : '1e999';
       return input.toString();
-    }
-    if (input is String) {
+    } else if (input is String) {
       if (!escapeStrings) return input;
       return "'${_escapeString(input)}'";
-    }
-    if (input is ByteData) {
-      final bytes = input.buffer.asUint8List(input.offsetInBytes, input.lengthInBytes);
-      return "'${_escapeString(base64Encode(bytes))}'";
-    }
-    if (input is DateTime) {
-      return "'${_escapeString(SerializationManager.encode(input))}'";
-    }
-    if (input is Duration) {
+    } else if (input is ByteData) {
+      return input.base64encodedString();
+    } else if (input is DateTime) {
+      return input.millisecondsSinceEpoch.toString();
+    } else if (input is Duration) {
       return SerializationManager.encode(input).toString();
-    }
-    if (input is UuidValue) {
+    } else if (input is UuidValue) {
       return "'${input.uuid}'";
-    }
-    if (input is Uri) {
+    } else if (input is Uri) {
       return "'${_escapeString(input.toString())}'";
-    }
-    if (input is BigInt) {
+    } else if (input is BigInt) {
       return "'${input.toString()}'";
-    }
-    if (input is String &&
+    } else if (input is String &&
         input.startsWith('decode(\'') &&
         input.endsWith('\', \'base64\')')) {
       return input;
     }
     // pgvector types: store as text for SQLite (no native vector support)
-    if (input is Vector) {
+    else if (input is Vector) {
       return '\'${_escapeString(input.toString().replaceAll(' ', ''))}\'';
-    }
-    if (input is HalfVector) {
+    } else if (input is HalfVector) {
       return '\'${_escapeString(input.toString().replaceAll(' ', ''))}\'';
-    }
-    if (input is SparseVector) {
+    } else if (input is SparseVector) {
       return '\'${_escapeString(input.toString())}\'';
-    }
-    if (input is Bit) {
+    } else if (input is Bit) {
       return '\'${_escapeString(input.toString())}\'';
-    }
-    if (input is SerializableModel && input is Enum) {
+    } else if (input is SerializableModel && input is Enum) {
       return "'${_escapeString(SerializationManager.encode(input.toJson()))}'";
-    }
-    if (input is List || input is Map || input is Set) {
+    } else if (input is List || input is Map || input is Set) {
       return "'${_escapeString(SerializationManager.encode(input))}'";
     }
 

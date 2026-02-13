@@ -37,6 +37,14 @@ class SqliteSerializationManager extends SerializationManagerServer {
       return data == 1;
     }
 
+    if (_isDateTimeType(t) && data is int) {
+      return DateTime.fromMillisecondsSinceEpoch(data, isUtc: true);
+    }
+
+    // Recursively revert row maps/lists so nested JSON strings become Map/List.
+    // SQLite returns JSON columns as text; protocol expects nested Map/list.
+    data = _revertSqliteValueInRow(data);
+
     // We store ByteData as raw base64; protocol expects "decode('...','base64')".
     // ByteDataJsonExtension.fromJson(string) uses base64DecodedNullSafeByteData()
     // which expects that wrapper. So convert raw base64 to ByteData here.
@@ -47,12 +55,46 @@ class SqliteSerializationManager extends SerializationManagerServer {
     return data;
   }
 
+  /// Recursively parses JSON strings in row data (Map/List) so that nested
+  /// object and list columns from SQLite (stored as text) become Map/List
+  /// as expected by Protocol deserialization. Returns [Map<String, dynamic>]
+  /// and [List] so protocol deserialization gets the expected types (jsonDecode
+  /// returns [Map<dynamic, dynamic>]).
+  static dynamic _revertSqliteValueInRow(dynamic data) {
+    if (data == null) return null;
+    if (data is String) {
+      final trimmed = data.trim();
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        return _revertSqliteValueInRow(jsonDecode(data));
+      }
+      return data;
+    }
+    if (data is Map) {
+      return Map<String, dynamic>.from(
+        data.map(
+          (k, v) => MapEntry(
+            k is String ? k : k.toString(),
+            _revertSqliteValueInRow(v),
+          ),
+        ),
+      );
+    }
+    if (data is List) {
+      return data.map(_revertSqliteValueInRow).toList();
+    }
+    return data;
+  }
+
   static bool _isBoolType(Type t) => t == bool || t == _typeOfNullableBool;
+
+  static bool _isDateTimeType(Type t) =>
+      t == DateTime || t == _typeOfNullableDateTime;
 
   static bool _isByteDataType(Type t) =>
       t == ByteData || t == _typeOfNullableByteData;
 
   static Type get _typeOfNullableBool => _typeOf<bool?>();
+  static Type get _typeOfNullableDateTime => _typeOf<DateTime?>();
   static Type get _typeOfNullableByteData => _typeOf<ByteData?>();
   static Type _typeOf<T>() => T;
 
