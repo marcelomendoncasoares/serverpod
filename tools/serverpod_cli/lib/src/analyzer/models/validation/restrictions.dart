@@ -2138,11 +2138,50 @@ class Restrictions {
   ) {
     // Support legacy string format: partitionBy: field1, field2
     if (content is String) {
-      return _validatePartitionByFields(content, span);
+      return _validatePartitionByFields(content, span, null);
     }
 
-    // Support new nested format - validation is handled by nested validators
+    // Support new nested format - validate combination of method and fields
     if (content is YamlMap) {
+      var fieldsNode = content[Keyword.fields];
+      var methodNode = content[Keyword.method];
+      var numPartitionsNode = content['numPartitions'];
+
+      if (fieldsNode is String) {
+        var method = methodNode is String ? methodNode : 'list';
+        var errors = _validatePartitionByFields(fieldsNode, span, method);
+
+        // Validate numPartitions is required for HASH partitioning
+        if (method == 'hash') {
+          if (numPartitionsNode == null) {
+            errors.add(
+              SourceSpanSeverityException(
+                'The "numPartitions" property is required for HASH partitioning.',
+                span,
+              ),
+            );
+          } else {
+            int? numPartitions;
+            if (numPartitionsNode is int) {
+              numPartitions = numPartitionsNode;
+            } else if (numPartitionsNode is String) {
+              numPartitions = int.tryParse(numPartitionsNode);
+            }
+
+            if (numPartitions == null || numPartitions < 1) {
+              errors.add(
+                SourceSpanSeverityException(
+                  'The "numPartitions" property must be a positive integer for HASH partitioning.',
+                  span,
+                ),
+              );
+            }
+          }
+        }
+
+        return errors;
+      }
+
       return [];
     }
 
@@ -2198,12 +2237,20 @@ class Restrictions {
       ];
     }
 
-    return _validatePartitionByFields(content, span);
+    // Get the method from the parent node if available
+    var definition = documentDefinition;
+    String? method;
+    if (definition is ModelClassDefinition && definition.partitioning != null) {
+      method = definition.partitioning!.method.name;
+    }
+
+    return _validatePartitionByFields(content, span, method);
   }
 
   List<SourceSpanSeverityException> _validatePartitionByFields(
     String content,
     SourceSpan? span,
+    String? method,
   ) {
     var definition = documentDefinition;
     if (definition is! ModelClassDefinition) return [];
@@ -2246,6 +2293,27 @@ class Restrictions {
       }
     }
 
+    // Validate partition method compatibility with number of columns
+    // PostgreSQL LIST and HASH partitioning only support single column
+    // RANGE partitioning supports multiple columns
+    if (method != null && partitionFields.length > 1) {
+      if (method == 'list') {
+        errors.add(
+          SourceSpanSeverityException(
+            'LIST partitioning only supports a single column. Use RANGE partitioning for multiple columns.',
+            span,
+          ),
+        );
+      } else if (method == 'hash') {
+        errors.add(
+          SourceSpanSeverityException(
+            'HASH partitioning only supports a single column. Use RANGE partitioning for multiple columns.',
+            span,
+          ),
+        );
+      }
+    }
+
     // Check if unique index constraint is violated
     errors.addAll(
       _validateUniqueIndexOnPartitionedTable(
@@ -2256,6 +2324,64 @@ class Restrictions {
     );
 
     return errors;
+  }
+
+  List<SourceSpanSeverityException> validateNumPartitionsValue(
+    String parentNodeName,
+    dynamic content,
+    SourceSpan? span,
+  ) {
+    if (content == null) return [];
+
+    if (content is! int && content is! String) {
+      return [
+        SourceSpanSeverityException(
+          'The "numPartitions" property must be an integer.',
+          span,
+        ),
+      ];
+    }
+
+    int? numPartitions;
+    if (content is int) {
+      numPartitions = content;
+    } else if (content is String) {
+      numPartitions = int.tryParse(content);
+    }
+
+    if (numPartitions == null) {
+      return [
+        SourceSpanSeverityException(
+          'The "numPartitions" property must be a valid integer.',
+          span,
+        ),
+      ];
+    }
+
+    if (numPartitions < 1) {
+      return [
+        SourceSpanSeverityException(
+          'The "numPartitions" property must be at least 1.',
+          span,
+        ),
+      ];
+    }
+
+    // Check if numPartitions is required for HASH partitioning
+    var definition = documentDefinition;
+    if (definition is ModelClassDefinition && definition.partitioning != null) {
+      if (definition.partitioning!.method == PartitionMethod.hash &&
+          numPartitions == null) {
+        return [
+          SourceSpanSeverityException(
+            'The "numPartitions" property is required for HASH partitioning.',
+            span,
+          ),
+        ];
+      }
+    }
+
+    return [];
   }
 
   List<SourceSpanSeverityException> _validateUniqueIndexOnPartitionedTable(

@@ -109,11 +109,36 @@ void main() {
               .withName('example')
               .withPartitionBy(['userId'])
               .withPartitionMethod(PartitionMethod.hash)
+              .withNumPartitions(4)
               .build();
 
           var sql = table.tableCreationToPgsql();
 
           expect(sql, contains('PARTITION BY HASH ("userId")'));
+        },
+      );
+
+      test(
+        'when generating SQL with numPartitions then partition tables are created.',
+        () {
+          var table = TableDefinitionBuilder()
+              .withName('users')
+              .withPartitionBy(['userId'])
+              .withPartitionMethod(PartitionMethod.hash)
+              .withNumPartitions(4)
+              .build();
+
+          var sql = table.tableCreationToPgsql();
+
+          expect(sql, contains('PARTITION BY HASH ("userId")'));
+          expect(sql, contains('CREATE TABLE "users_p0" PARTITION OF "users"'));
+          expect(sql, contains('FOR VALUES WITH (MODULUS 4, REMAINDER 0)'));
+          expect(sql, contains('CREATE TABLE "users_p1" PARTITION OF "users"'));
+          expect(sql, contains('FOR VALUES WITH (MODULUS 4, REMAINDER 1)'));
+          expect(sql, contains('CREATE TABLE "users_p2" PARTITION OF "users"'));
+          expect(sql, contains('FOR VALUES WITH (MODULUS 4, REMAINDER 2)'));
+          expect(sql, contains('CREATE TABLE "users_p3" PARTITION OF "users"'));
+          expect(sql, contains('FOR VALUES WITH (MODULUS 4, REMAINDER 3)'));
         },
       );
     },

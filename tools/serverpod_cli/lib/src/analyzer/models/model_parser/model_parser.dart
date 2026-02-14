@@ -277,6 +277,7 @@ class ModelParser {
     // partitionBy:
     //   method: list
     //   fields: field1, field2
+    //   numPartitions: 4  (for HASH partitioning)
     if (partitionByValue is! YamlMap) return null;
 
     var fieldsNode = partitionByValue[Keyword.fields];
@@ -293,9 +294,20 @@ class ModelParser {
       enumValues: PartitionMethod.values,
     );
 
+    int? numPartitions;
+    var numPartitionsNode = partitionByValue['numPartitions'];
+    if (numPartitionsNode != null) {
+      if (numPartitionsNode is int) {
+        numPartitions = numPartitionsNode;
+      } else if (numPartitionsNode is String) {
+        numPartitions = int.tryParse(numPartitionsNode);
+      }
+    }
+
     return TablePartitioningDefinition(
       columns: columns,
       method: method,
+      numPartitions: numPartitions,
     );
   }
 

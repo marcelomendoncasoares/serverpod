@@ -67,9 +67,14 @@ class TablePartitioningDefinition {
   /// The partition method to use (list, range, or hash).
   final PartitionMethod method;
 
+  /// The number of partitions to create for HASH partitioning.
+  /// Required for HASH partitioning, ignored for other methods.
+  final int? numPartitions;
+
   const TablePartitioningDefinition({
     required this.columns,
     required this.method,
+    this.numPartitions,
   });
 }
 

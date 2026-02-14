@@ -252,6 +252,10 @@ class ClassYamlDefinition {
             Keyword.fields,
             valueRestriction: restrictions.validatePartitionByFieldsValue,
           ),
+          ValidateNode(
+            'numPartitions',
+            valueRestriction: restrictions.validateNumPartitionsValue,
+          ),
         },
       ),
     };

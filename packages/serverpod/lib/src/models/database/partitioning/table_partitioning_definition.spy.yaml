@@ -1,0 +1,6 @@
+### The definition of a table partitioning.
+class: TablePartitioningDefinition
+sealed: true
+fields:
+  ### The fields to partition the table by.
+  columns: List<String>

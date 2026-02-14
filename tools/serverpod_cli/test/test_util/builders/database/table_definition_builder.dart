@@ -46,6 +46,7 @@ class TableDefinitionBuilder {
       managed: _managed,
       partitionBy: _partitionBy,
       partitionMethod: _partitionMethod,
+      // numPartitions: _numPartitions,
     );
   }
 
@@ -131,6 +132,13 @@ class TableDefinitionBuilder {
 
   TableDefinitionBuilder withPartitionMethod(PartitionMethod? partitionMethod) {
     _partitionMethod = partitionMethod;
+    return this;
+  }
+
+  // int? _numPartitions;
+
+  TableDefinitionBuilder withNumPartitions(int? numPartitions) {
+    // _numPartitions = numPartitions;
     return this;
   }
 }

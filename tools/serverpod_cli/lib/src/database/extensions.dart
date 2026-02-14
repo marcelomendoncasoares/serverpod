@@ -315,6 +315,20 @@ extension TableDefinitionPgSqlGeneration on TableDefinition {
 
     out += ';\n';
 
+    // Create partition tables for HASH partitioning
+    if (isPartitioned && partitionMethod == PartitionMethod.hash) {
+      // Access numPartitions using dynamic property access since it may not be in generated code yet
+      var numPartitionsValue = (this as dynamic).numPartitions as int?;
+      if (numPartitionsValue != null && numPartitionsValue > 0) {
+        out += '\n';
+        out += '-- Partition tables for HASH partitioning\n';
+        for (var i = 0; i < numPartitionsValue; i++) {
+          out +=
+              'CREATE TABLE "${name}_p$i" PARTITION OF "$name" FOR VALUES WITH (MODULUS $numPartitionsValue, REMAINDER $i);\n';
+        }
+      }
+    }
+
     // Indexes
     var indexesExceptId = <IndexDefinition>[];
     for (var index in indexes) {

@@ -2095,6 +2095,15 @@ extension on DatabaseDefinition {
               }),
           ]),
           'managed': literalBool(table.isManaged),
+          if (table.partitionBy != null)
+            'partitionBy': literalList([
+              for (var column in table.partitionBy!) literalString(column),
+            ]),
+          if (table.partitionMethod != null)
+            'partitionMethod': refer(
+              'PartitionMethod.${table.partitionMethod!.name}',
+              serverpodProtocolUrl(serverCode),
+            ),
         }),
       ...additionalTables,
     ]).code;

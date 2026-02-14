@@ -1,0 +1,3 @@
+### The definition of a table partitioning using LIST method.
+class: ListPartitioningDefinition
+extends: TablePartitioningDefinition

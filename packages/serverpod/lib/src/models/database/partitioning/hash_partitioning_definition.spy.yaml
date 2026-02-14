@@ -1,0 +1,6 @@
+### The definition of a table partitioning using HASH method.
+class: HashPartitioningDefinition
+extends: TablePartitioningDefinition
+fields:
+  ### The number of partitions to create for HASH partitioning.
+  numPartitions: int

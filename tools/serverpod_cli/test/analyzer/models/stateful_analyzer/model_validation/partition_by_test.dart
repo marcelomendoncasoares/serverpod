@@ -2,8 +2,8 @@ import 'package:serverpod_cli/src/analyzer/models/stateful_analyzer.dart';
 import 'package:serverpod_cli/src/generator/code_generation_collector.dart';
 import 'package:test/test.dart';
 
-import '../../../../../test_util/builders/generator_config_builder.dart';
-import '../../../../../test_util/builders/model_source_builder.dart';
+import '../../../../test_util/builders/generator_config_builder.dart';
+import '../../../../test_util/builders/model_source_builder.dart';
 
 void main() {
   var config = GeneratorConfigBuilder().build();
@@ -437,7 +437,7 @@ void main() {
     );
 
     test(
-      'with multiple fields then no error is generated.',
+      'with multiple fields and list method then error is generated.',
       () {
         var models = [
           ModelSourceBuilder().withYaml(
@@ -450,6 +450,88 @@ void main() {
               category: String
             partitionBy:
               method: list
+              fields: source, category
+            ''',
+          ).build(),
+        ];
+
+        var collector = CodeGenerationCollector();
+        var analyzer = StatefulAnalyzer(
+          config,
+          models,
+          onErrorsCollector(collector),
+        );
+        analyzer.validateAll();
+
+        expect(
+          collector.errors,
+          isNotEmpty,
+          reason: 'Expected an error but none was generated.',
+        );
+
+        var error = collector.errors.first;
+        expect(
+          error.message,
+          'LIST partitioning only supports a single column. Use RANGE partitioning for multiple columns.',
+        );
+      },
+    );
+
+    test(
+      'with multiple fields and hash method then error is generated.',
+      () {
+        var models = [
+          ModelSourceBuilder().withYaml(
+            '''
+            class: Example
+            table: example
+            fields:
+              name: String
+              source: String
+              category: String
+            partitionBy:
+              method: hash
+              fields: source, category
+            ''',
+          ).build(),
+        ];
+
+        var collector = CodeGenerationCollector();
+        var analyzer = StatefulAnalyzer(
+          config,
+          models,
+          onErrorsCollector(collector),
+        );
+        analyzer.validateAll();
+
+        expect(
+          collector.errors,
+          isNotEmpty,
+          reason: 'Expected an error but none was generated.',
+        );
+
+        var error = collector.errors.first;
+        expect(
+          error.message,
+          'HASH partitioning only supports a single column. Use RANGE partitioning for multiple columns.',
+        );
+      },
+    );
+
+    test(
+      'with multiple fields and range method then no error is generated.',
+      () {
+        var models = [
+          ModelSourceBuilder().withYaml(
+            '''
+            class: Example
+            table: example
+            fields:
+              name: String
+              source: String
+              category: String
+            partitionBy:
+              method: range
               fields: source, category
             ''',
           ).build(),

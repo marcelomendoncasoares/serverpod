@@ -7,3 +7,4 @@ fields:
 partitionBy:
   method: hash
   fields: userId
+  numPartitions: 4
