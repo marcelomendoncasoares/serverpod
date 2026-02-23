@@ -229,17 +229,10 @@ class EmailIdpAccountCreationUtil {
       transaction: transaction,
     );
 
-    await _config.onAfterAccountCreated?.call(
-      session,
-      email: emailAccount.email,
-      authUserId: emailAccount.authUserId,
-      emailAccountId: emailAccount.id!,
-      transaction: transaction,
-    );
-
     return EmailIdpCompleteAccountCreationResult._(
       authUserId: newUser.id,
       accountRequestId: request.id!,
+      emailAccountId: emailAccount.id!,
       email: request.email,
       scopes: newUser.scopes,
     );
@@ -523,12 +516,16 @@ class EmailIdpCompleteAccountCreationResult {
   /// The scopes of the new authentication user.
   final Set<Scope> scopes;
 
+  /// The ID of the email account.
+  final UuidValue emailAccountId;
+
   /// The email address used during registration.
   final String email;
 
   EmailIdpCompleteAccountCreationResult._({
     required this.authUserId,
     required this.accountRequestId,
+    required this.emailAccountId,
     required this.email,
     required this.scopes,
   });

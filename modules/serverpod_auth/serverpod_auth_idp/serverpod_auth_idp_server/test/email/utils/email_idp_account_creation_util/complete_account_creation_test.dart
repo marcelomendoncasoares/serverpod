@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:clock/clock.dart';
 import 'package:serverpod/serverpod.dart';
+import 'package:serverpod_auth_idp_server/core.dart';
 import 'package:serverpod_auth_idp_server/providers/email.dart';
 import 'package:test/test.dart';
 
@@ -25,6 +26,7 @@ void main() {
       late String verificationCode;
       late Completer<CapturedAccountCreatedData>
       capturedAccountCreatedDataCompleter;
+      UserProfileModel? userProfile;
 
       setUp(() async {
         capturedAccountCreatedDataCompleter =
@@ -46,6 +48,12 @@ void main() {
                   required final UuidValue emailAccountId,
                   required final Transaction? transaction,
                 }) async {
+                  userProfile = await fixture.userProfiles
+                      .maybeFindUserProfileByUserId(
+                        session,
+                        authUserId,
+                        transaction: transaction,
+                      );
                   capturedAccountCreatedDataCompleter.complete(
                     CapturedAccountCreatedData(
                       email: email,
@@ -136,6 +144,16 @@ void main() {
                 capturedData.emailAccountId,
                 equals(isA<UuidValue>()),
               );
+            },
+          );
+
+          test(
+            'then the onAfterAccountCreated is invoked after the user profile exists',
+            () async {
+              await completeAccountCreationFuture;
+
+              expect(userProfile, isNotNull);
+              expect(userProfile?.email, equals(email));
             },
           );
 

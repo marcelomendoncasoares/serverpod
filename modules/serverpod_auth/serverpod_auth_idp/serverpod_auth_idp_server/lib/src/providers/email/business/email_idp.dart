@@ -122,6 +122,14 @@ class EmailIdp {
               transaction: transaction,
             );
 
+            await config.onAfterAccountCreated?.call(
+              session,
+              email: result.email,
+              authUserId: result.authUserId,
+              emailAccountId: result.emailAccountId,
+              transaction: transaction,
+            );
+
             return _tokenManager.issueToken(
               session,
               authUserId: result.authUserId,
