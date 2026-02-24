@@ -67,6 +67,26 @@ class EndpointInsights extends _i1.EndpointRef {
     {},
   );
 
+  /// Stream the session logs in batches of [numEntries].
+  _i2.Stream<_i4.SessionLogResult> streamSessionLog(
+    int? numEntries,
+    _i5.SessionLogFilter? filter, {
+    Duration? interval,
+  }) =>
+      caller.callStreamingServerEndpoint<
+        _i2.Stream<_i4.SessionLogResult>,
+        _i4.SessionLogResult
+      >(
+        'insights',
+        'streamSessionLog',
+        {
+          'numEntries': numEntries,
+          'filter': filter,
+          'interval': interval,
+        },
+        {},
+      );
+
   /// Get the latest [numEntries] from the session log.
   _i2.Future<_i4.SessionLogResult> getSessionLog(
     int? numEntries,

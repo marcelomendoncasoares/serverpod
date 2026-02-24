@@ -2,6 +2,7 @@ insights:
   - getRuntimeSettings:
   - setRuntimeSettings:
   - clearAllLogs:
+  - streamSessionLog:
   - getSessionLog:
   - getOpenSessionLog:
   - getCachesInfo:

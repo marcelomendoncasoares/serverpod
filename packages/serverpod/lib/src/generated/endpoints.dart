@@ -337,6 +337,40 @@ class Endpoints extends _i1.EndpointDispatch {
                     params['path'],
                   ),
         ),
+        'streamSessionLog': _i1.MethodStreamConnector(
+          name: 'streamSessionLog',
+          params: {
+            'numEntries': _i1.ParameterDescription(
+              name: 'numEntries',
+              type: _i1.getType<int?>(),
+              nullable: true,
+            ),
+            'filter': _i1.ParameterDescription(
+              name: 'filter',
+              type: _i1.getType<_i4.SessionLogFilter?>(),
+              nullable: true,
+            ),
+            'interval': _i1.ParameterDescription(
+              name: 'interval',
+              type: _i1.getType<Duration?>(),
+              nullable: true,
+            ),
+          },
+          streamParams: {},
+          returnType: _i1.MethodStreamReturnType.streamType,
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+                Map<String, Stream> streamParams,
+              ) => (endpoints['insights'] as _i2.InsightsEndpoint)
+                  .streamSessionLog(
+                    session,
+                    params['numEntries'],
+                    params['filter'],
+                    interval: params['interval'],
+                  ),
+        ),
       },
     );
   }

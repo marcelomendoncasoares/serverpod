@@ -41,6 +41,20 @@ class InsightsEndpoint extends Endpoint {
     );
   }
 
+  /// Stream the session logs in batches of [numEntries].
+  Stream<SessionLogResult> streamSessionLog(
+    Session session,
+    int? numEntries,
+    SessionLogFilter? filter, {
+    Duration? interval,
+  }) async* {
+    interval ??= const Duration(seconds: 1);
+    while (true) {
+      yield await getSessionLog(session, numEntries, filter);
+      await Future.delayed(interval);
+    }
+  }
+
   /// Get the latest [numEntries] from the session log.
   Future<SessionLogResult> getSessionLog(
     Session session,
