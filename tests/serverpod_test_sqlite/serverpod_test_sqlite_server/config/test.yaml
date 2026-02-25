@@ -17,15 +17,7 @@ webServer:
   publicScheme: http
 
 database:
-  host: postgres
-  port: 5432
-  name: serverpod_test
-  user: postgres
-
-redis:
-  enabled: true
-  host: localhost
-  port: 6379
+  filePath: serverpod_test_test.db
 
 sessionLogs:
   persistentEnabled: true
