@@ -17,10 +17,7 @@ webServer:
   publicScheme: http
 
 database:
-  host: postgres
-  port: 5432
-  name: serverpod_test
-  user: postgres
+  filePath: serverpod_test_test.db
 
 redis:
   enabled: true
