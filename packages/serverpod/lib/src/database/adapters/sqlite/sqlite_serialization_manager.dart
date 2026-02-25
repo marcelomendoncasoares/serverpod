@@ -60,12 +60,21 @@ class SqliteSerializationManager extends SerializationManagerServer {
   /// as expected by Protocol deserialization. Returns [Map<String, dynamic>]
   /// and [List] so protocol deserialization gets the expected types (jsonDecode
   /// returns [Map<dynamic, dynamic>]).
+  ///
+  /// Strings that look like JSON but fail to parse (e.g. SparseVector/Vector
+  /// text format like "{1:1.0}/3") are left unchanged so protocol
+  /// deserialization can handle them (e.g. SparseVectorJsonExtension.fromJson).
   static dynamic _revertSqliteValueInRow(dynamic data) {
     if (data == null) return null;
     if (data is String) {
       final trimmed = data.trim();
       if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-        return _revertSqliteValueInRow(jsonDecode(data));
+        try {
+          return _revertSqliteValueInRow(jsonDecode(data));
+        } on FormatException {
+          // Not valid JSON; leave as string (e.g. SparseVector/Vector text format).
+          return data;
+        }
       }
       return data;
     }

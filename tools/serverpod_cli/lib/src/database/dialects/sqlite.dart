@@ -116,7 +116,7 @@ extension SqliteTableDefinitionSqlGeneration on TableDefinition {
     }
 
     out += definitions.join(',\n');
-    out += '\n);\n';
+    out += '\n) STRICT;\n';
 
     // Indexes
     var indexesExceptId = <IndexDefinition>[];
@@ -205,7 +205,7 @@ extension SqliteColumnDefinitionSqlGeneration on ColumnDefinition {
         default:
       }
 
-      defaultValue = ' DEFAULT $cleanDefault';
+      defaultValue = ' DEFAULT ($cleanDefault)';
     }
 
     // The id column is special.
@@ -228,11 +228,9 @@ extension SqliteIndexDefinitionSqlGeneration on IndexDefinition {
     required String tableName,
     bool ifNotExists = false,
   }) {
+    // Vector indexes are not supported in SQLite and are ignored.
     if (type == 'hnsw' || type == 'ivfflat') {
-      // TODO: Ignore instead of throwing an error.
-      throw const FormatException(
-        'Vector indexes (HNSW/IVFFlat) are not supported in SQLite.',
-      );
+      return '';
     }
 
     var uniqueStr = isUnique ? ' UNIQUE' : '';
@@ -294,17 +292,6 @@ extension SqliteDatabaseMigrationSqlGeneration on DatabaseMigration {
 
     out += 'BEGIN;\n';
     out += '\n';
-
-    // Verify vector support
-    if (actions.any(
-      (e) =>
-          (e.createTable != null &&
-              e.createTable!.columns.any((c) => c.isVectorColumn)) ||
-          (e.alterTable != null &&
-              e.alterTable!.addColumns.any((c) => c.isVectorColumn)),
-    )) {
-      throw const FormatException('Vector types are not supported in SQLite.');
-    }
 
     for (var action in actions) {
       out += action.toSqliteSql();
@@ -399,9 +386,6 @@ extension SqliteTableMigrationSqlGeneration on TableMigration {
 
     // 4. Add columns (Supported, but with limitations on constraints)
     for (var addColumn in addColumns) {
-      if (addColumn.isVectorColumn) {
-        throw const FormatException('Vector columns not supported.');
-      }
       // Note: SQLite ADD COLUMN cannot support PRIMARY KEY or UNIQUE constraints (usually).
       // It allows REFERENCES if not strict, but best to be careful.
       out += 'ALTER TABLE "$name" ADD COLUMN ${addColumn.toSqlFragment()};\n';
@@ -446,13 +430,13 @@ String _sqlStoreMigrationVersion({
   out += '--\n';
   out += '-- MIGRATION VERSION FOR $module\n';
   out += '--\n';
-  // Standard SQL INSERT OR REPLACE ...
   out +=
-      'INSERT OR REPLACE INTO "serverpod_migrations" ("module", "version", "timestamp")\n';
-  out += '    VALUES (\'$module\', \'$version\', datetime(\'now\'))\n';
+      'INSERT INTO "serverpod_migrations" ("module", "version", "timestamp")\n';
+  out +=
+      '    VALUES (\'$module\', \'$version\', (unixepoch(\'now\', \'subsecond\') * 1000))\n';
   out += '    ON CONFLICT ("module")\n';
   out +=
-      '    DO UPDATE SET "version" = \'$version\', "timestamp" = datetime(\'now\');\n';
+      '    DO UPDATE SET "version" = \'$version\', "timestamp" = (unixepoch(\'now\', \'subsecond\') * 1000);\n';
   out += '\n';
 
   return out;
@@ -560,20 +544,20 @@ extension SqliteTypeDefinition on TypeDefinition {
 }
 
 const _generateRandomUuid =
-    '(lower('
+    'lower('
     "hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || "
     "'4' || substr(hex(randomblob(2)), 2) || '-' || "
     "substr('89ab', 1 + (abs(random()) % 4), 1) || "
     "substr(hex(randomblob(2)), 2) || '-' || "
     'hex(randomblob(6))'
-    '))';
+    ')';
 
 const _generateRandomUuidV7 =
-    '(lower('
+    'lower('
     "substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 1, 8) || '-' || "
     "substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 9, 4) || '-' || "
     "'7' || substr(hex(randomblob(2)), 2, 3) || '-' || "
     "substr('89ab', 1 + (abs(random()) % 4), 1) || "
     "substr(hex(randomblob(2)), 2, 3) || '-' || "
     'hex(randomblob(6))'
-    '))';
+    ')';

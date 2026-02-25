@@ -13,10 +13,10 @@ import 'package:serverpod/src/database/concepts/runtime_parameters.dart';
 import 'package:serverpod/src/database/concepts/table_relation.dart';
 import 'package:serverpod/src/database/concepts/transaction.dart';
 import 'package:serverpod/src/database/adapters/postgres/sql_query_builder.dart';
+import 'package:serverpod_serialization/serverpod_serialization.dart';
 import 'package:sqlite3/sqlite3.dart' hide Session;
 import 'package:sqlparser/sqlparser.dart' show BaseSelectStatement, SqlEngine;
 import 'package:sqlite_async/sqlite_async.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../concepts/expressions.dart';
 import '../../concepts/table.dart';
@@ -164,6 +164,14 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
         var values = columns
             .map((c) {
               var v = rowJson[c.columnName];
+              // toJsonForDatabase() serializes DateTime as ISO string; SQLite
+              // expects INTEGER (milliseconds). Convert so encoder outputs int.
+              if (c is ColumnDateTime && v != null && v is! DateTime) {
+                v = DateTimeJsonExtension.fromJson(v);
+              }
+              if (c is ColumnDuration && v != null && v is! Duration) {
+                v = DurationJsonExtension.fromJson(v);
+              }
               return encoder.convert(v, hasDefaults: c.hasDefault);
             })
             .join(', ');

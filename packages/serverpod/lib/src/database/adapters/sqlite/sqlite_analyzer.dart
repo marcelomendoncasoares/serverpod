@@ -154,12 +154,18 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
         );
       }).toList();
 
+      final targetIndex = _targetCache
+          .map((t) => t.indexes)
+          .expand((i) => i)
+          .where((i) => i.indexName.toLowerCase() == indexName.toLowerCase())
+          .firstOrNull;
+
       indexes.add(
         IndexDefinition(
           indexName: indexName,
           tableSpace: null,
           elements: elements,
-          type: 'btree',
+          type: targetIndex?.type ?? 'btree',
           isUnique: isUnique,
           isPrimary: isPrimary,
           predicate: null,
