@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    ports:
+      - '8090:5432'
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: serverpod_test
+      POSTGRES_PASSWORD: password
+  redis:
+    image: redis:6.2.6
+    ports:
+      - '8091:6379'
+      - '6379:6379'
+    command: redis-server --requirepass password
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+volumes:
+  serverpod_test_sqlite_data:
+  serverpod_test_sqlite_test_data:
