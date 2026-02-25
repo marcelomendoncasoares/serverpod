@@ -17,15 +17,7 @@ webServer:
   publicScheme: http
 
 database:
-  host: localhost
-  port: 8090
-  name: serverpod_test
-  user: postgres
-
-redis:
-  enabled: true
-  host: localhost
-  port: 8091
+  filePath: serverpod_test_dev.db
 
 sessionLogs:
   persistentEnabled: true
