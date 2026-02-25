@@ -12,25 +12,50 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'dart:async' as _i2;
-import 'package:serverpod_test_sqlite_client/src/protocol/greetings/greeting.dart'
+import 'package:serverpod_test_sqlite_client/src/protocol/simple_data.dart'
     as _i3;
 import 'protocol.dart' as _i4;
 
-/// This is an example endpoint that returns a greeting message through
-/// its [hello] method.
 /// {@category Endpoint}
-class EndpointGreeting extends _i1.EndpointRef {
-  EndpointGreeting(_i1.EndpointCaller caller) : super(caller);
+class EndpointTestTools extends _i1.EndpointRef {
+  EndpointTestTools(_i1.EndpointCaller caller) : super(caller);
 
   @override
-  String get name => 'greeting';
+  String get name => 'testTools';
 
-  /// Returns a personalized greeting message: "Hello {name}".
-  _i2.Future<_i3.Greeting> hello(String name) =>
-      caller.callServerEndpoint<_i3.Greeting>(
-        'greeting',
-        'hello',
-        {'name': name},
+  _i2.Future<void> createSimpleData(int data) =>
+      caller.callServerEndpoint<void>(
+        'testTools',
+        'createSimpleData',
+        {'data': data},
+      );
+
+  _i2.Future<List<_i3.SimpleData>> getAllSimpleData() =>
+      caller.callServerEndpoint<List<_i3.SimpleData>>(
+        'testTools',
+        'getAllSimpleData',
+        {},
+      );
+
+  _i2.Future<void> createSimpleDatasInsideTransactions(int data) =>
+      caller.callServerEndpoint<void>(
+        'testTools',
+        'createSimpleDatasInsideTransactions',
+        {'data': data},
+      );
+
+  _i2.Future<void> createSimpleDataAndThrowInsideTransaction(int data) =>
+      caller.callServerEndpoint<void>(
+        'testTools',
+        'createSimpleDataAndThrowInsideTransaction',
+        {'data': data},
+      );
+
+  _i2.Future<void> createSimpleDatasInParallelTransactionCalls() =>
+      caller.callServerEndpoint<void>(
+        'testTools',
+        'createSimpleDatasInParallelTransactionCalls',
+        {},
       );
 }
 
@@ -63,13 +88,15 @@ class Client extends _i1.ServerpodClientShared {
          disconnectStreamsOnLostInternetConnection:
              disconnectStreamsOnLostInternetConnection,
        ) {
-    greeting = EndpointGreeting(this);
+    testTools = EndpointTestTools(this);
   }
 
-  late final EndpointGreeting greeting;
+  late final EndpointTestTools testTools;
 
   @override
-  Map<String, _i1.EndpointRef> get endpointRefLookup => {'greeting': greeting};
+  Map<String, _i1.EndpointRef> get endpointRefLookup => {
+    'testTools': testTools,
+  };
 
   @override
   Map<String, _i1.ModuleEndpointCaller> get moduleLookup => {};

@@ -11,29 +11,29 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
-import '../greetings/greeting_endpoint.dart' as _i2;
+import '../endpoints/test_tools.dart' as _i2;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
   void initializeEndpoints(_i1.Server server) {
     var endpoints = <String, _i1.Endpoint>{
-      'greeting': _i2.GreetingEndpoint()
+      'testTools': _i2.TestToolsEndpoint()
         ..initialize(
           server,
-          'greeting',
+          'testTools',
           null,
         ),
     };
-    connectors['greeting'] = _i1.EndpointConnector(
-      name: 'greeting',
-      endpoint: endpoints['greeting']!,
+    connectors['testTools'] = _i1.EndpointConnector(
+      name: 'testTools',
+      endpoint: endpoints['testTools']!,
       methodConnectors: {
-        'hello': _i1.MethodConnector(
-          name: 'hello',
+        'createSimpleData': _i1.MethodConnector(
+          name: 'createSimpleData',
           params: {
-            'name': _i1.ParameterDescription(
-              name: 'name',
-              type: _i1.getType<String>(),
+            'data': _i1.ParameterDescription(
+              name: 'data',
+              type: _i1.getType<int>(),
               nullable: false,
             ),
           },
@@ -41,10 +41,69 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['greeting'] as _i2.GreetingEndpoint).hello(
-                session,
-                params['name'],
-              ),
+              ) async => (endpoints['testTools'] as _i2.TestToolsEndpoint)
+                  .createSimpleData(
+                    session,
+                    params['data'],
+                  ),
+        ),
+        'getAllSimpleData': _i1.MethodConnector(
+          name: 'getAllSimpleData',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['testTools'] as _i2.TestToolsEndpoint)
+                  .getAllSimpleData(session),
+        ),
+        'createSimpleDatasInsideTransactions': _i1.MethodConnector(
+          name: 'createSimpleDatasInsideTransactions',
+          params: {
+            'data': _i1.ParameterDescription(
+              name: 'data',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['testTools'] as _i2.TestToolsEndpoint)
+                  .createSimpleDatasInsideTransactions(
+                    session,
+                    params['data'],
+                  ),
+        ),
+        'createSimpleDataAndThrowInsideTransaction': _i1.MethodConnector(
+          name: 'createSimpleDataAndThrowInsideTransaction',
+          params: {
+            'data': _i1.ParameterDescription(
+              name: 'data',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['testTools'] as _i2.TestToolsEndpoint)
+                  .createSimpleDataAndThrowInsideTransaction(
+                    session,
+                    params['data'],
+                  ),
+        ),
+        'createSimpleDatasInParallelTransactionCalls': _i1.MethodConnector(
+          name: 'createSimpleDatasInParallelTransactionCalls',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['testTools'] as _i2.TestToolsEndpoint)
+                  .createSimpleDatasInParallelTransactionCalls(session),
         ),
       },
     );

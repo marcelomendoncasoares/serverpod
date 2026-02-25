@@ -18,6 +18,10 @@ dev_dependencies:
   serverpod_cli: SERVERPOD_VERSION
   serverpod_lints: SERVERPOD_VERSION
   serverpod_test: SERVERPOD_VERSION
+  serverpod_test_client:
+    path: ../../serverpod_test_client
+  serverpod_test_server:
+    path: ../../serverpod_test_server
   serverpod_test_sqlite_client: SERVERPOD_VERSION
   test: ^1.25.5
   test_descriptor: ^2.0.2
