@@ -1,44 +1,40 @@
 import 'dart:async';
 
 import 'package:meta/meta.dart';
-import 'package:postgres/postgres.dart' as pg;
-import 'package:serverpod/src/database/adapters/postgres/postgres_database_result.dart';
-import 'package:serverpod/src/database/adapters/postgres/postgres_error_codes.dart';
-import 'package:serverpod/src/database/adapters/postgres/postgres_pool_manager.dart';
 import 'package:serverpod/src/database/adapters/postgres/postgres_result_parser.dart';
-import 'package:serverpod/src/database/adapters/postgres/sql_query_builder.dart';
+import 'package:serverpod/src/database/adapters/sqlite/sqlite_database_result.dart';
 import 'package:serverpod/src/database/concepts/column_value.dart';
 import 'package:serverpod/src/database/concepts/columns.dart';
 import 'package:serverpod/src/database/interface/database_connection.dart';
 import 'package:serverpod/src/database/concepts/exceptions.dart';
 import 'package:serverpod/src/database/concepts/includes.dart';
 import 'package:serverpod/src/database/concepts/order.dart';
-import 'package:serverpod/src/database/concepts/row_lock.dart';
 import 'package:serverpod/src/database/concepts/runtime_parameters.dart';
 import 'package:serverpod/src/database/concepts/table_relation.dart';
 import 'package:serverpod/src/database/concepts/transaction.dart';
-import 'package:serverpod/src/generated/database/enum_serialization.dart';
+import 'package:serverpod/src/database/adapters/postgres/sql_query_builder.dart';
+import 'package:sqlite3/sqlite3.dart' hide Session;
+import 'package:sqlparser/sqlparser.dart' show BaseSelectStatement, SqlEngine;
+import 'package:sqlite_async/sqlite_async.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../interface/database_session.dart';
 import '../../concepts/expressions.dart';
 import '../../concepts/table.dart';
+import '../../concepts/row_lock.dart';
+import '../../interface/database_session.dart';
 import '../../query_parameters.dart';
+import 'sqlite_pool_manager.dart';
 
-part 'postgres_exceptions.dart';
+part 'sqlite_exceptions.dart';
 
-/// A connection to the database. In most cases the [Database] db object in
-/// the [DatabaseSession] object should be used when connecting with the database.
+/// A connection to the SQLite database.
 @internal
-class PostgresDatabaseConnection
-    extends DatabaseConnection<PostgresPoolManager> {
-  /// Access to the raw Postgresql connection pool.
-  pg.Pool get _postgresConnection => poolManager.pool;
+class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
+  SqliteDatabaseConnection(super.poolManager);
 
-  /// Creates a new database connection from the configuration. For most cases
-  /// this shouldn't be called directly, use the db object in the [DatabaseSession]
-  /// to access the database.
-  PostgresDatabaseConnection(super.poolManager);
+  static final _sqlEngine = SqlEngine();
+
+  SqliteDatabase get _db => poolManager.database;
 
   @override
   Future<bool> testConnection() async {
@@ -69,7 +65,6 @@ class PostgresDatabaseConnection
         .withLimit(limit)
         .withOffset(offset)
         .withInclude(include)
-        .withLockMode(lockMode, lockBehavior)
         .build();
 
     return _deserializedMappedQuery<T>(
@@ -106,12 +101,9 @@ class PostgresDatabaseConnection
       limit: 1,
       transaction: transaction,
       include: include,
-      lockMode: lockMode,
-      lockBehavior: lockBehavior,
     );
 
     if (rows.isEmpty) return null;
-
     return rows.first;
   }
 
@@ -121,8 +113,8 @@ class PostgresDatabaseConnection
     Object id, {
     Transaction? transaction,
     Include? include,
-    LockMode? lockMode,
     LockBehavior? lockBehavior,
+    LockMode? lockMode,
   }) async {
     var table = _getTableOrAssert<T>(session, operation: 'findById');
     return await findFirstRow<T>(
@@ -130,8 +122,6 @@ class PostgresDatabaseConnection
       where: table.id.equals(id),
       transaction: transaction,
       include: include,
-      lockMode: lockMode,
-      lockBehavior: lockBehavior,
     );
   }
 
@@ -143,20 +133,7 @@ class PostgresDatabaseConnection
     required Transaction transaction,
     LockBehavior lockBehavior = LockBehavior.wait,
   }) async {
-    var table = _getTableOrAssert<T>(session, operation: 'lockRows');
-
-    var query = SelectQueryBuilder(table: table)
-        .withSelectFields([table.id])
-        .withWhere(where)
-        .withLockMode(lockMode, lockBehavior)
-        .build();
-
-    await _query(
-      session,
-      query,
-      ignoreRows: true,
-      context: _resolveQueryContext(transaction),
-    );
+    throw UnimplementedError('Simply using a transaction is enough for SQLite');
   }
 
   @override
@@ -168,19 +145,54 @@ class PostgresDatabaseConnection
     if (rows.isEmpty) return [];
 
     var table = rows.first.table;
+    var encoder = poolManager.encoder;
 
-    var query = InsertQueryBuilder(
-      table: table,
-      rows: rows,
-    ).build();
+    Future<ResultSet> runInsert(
+      List<T> filteredRows,
+      bool withIdNull,
+    ) async {
+      var columns = withIdNull
+          ? table.columns.where((c) => c.columnName != 'id').toList()
+          : table.columns;
+      if (columns.isEmpty && withIdNull) {
+        return ResultSet([], null, []);
+      }
+      var columnNames = columns.map((e) => '"${e.columnName}"').join(', ');
+      var valueClauses = <String>[];
+      for (var row in filteredRows) {
+        var rowJson = row.toJsonForDatabase() as Map<String, dynamic>;
+        var values = columns
+            .map((c) {
+              var v = rowJson[c.columnName];
+              return encoder.convert(v, hasDefaults: c.hasDefault);
+            })
+            .join(', ');
+        valueClauses.add('($values)');
+      }
+      var sql =
+          'INSERT INTO "${table.tableName}" ($columnNames) VALUES ${valueClauses.join(', ')} RETURNING *';
+      return _runQuery(session, sql, transaction: transaction);
+    }
 
-    return (await _mappedResultsQuery(
-          session,
-          query,
-          transaction: transaction,
-        ).then((_mergeResultsWithNonPersistedFields(rows))))
-        .map(poolManager.serializationManager.deserialize<T>)
-        .toList();
+    var withIdNull = rows.where((r) => r.id == null).toList();
+    var withIdNotNull = rows.where((r) => r.id != null).toList();
+
+    List<Map<String, dynamic>> allMaps = [];
+    if (withIdNull.isNotEmpty) {
+      var rs = await runInsert(withIdNull, true);
+      for (var row in rs) {
+        allMaps.add(Map<String, dynamic>.from(row));
+      }
+    }
+    if (withIdNotNull.isNotEmpty) {
+      var rs = await runInsert(withIdNotNull, false);
+      for (var row in rs) {
+        allMaps.add(Map<String, dynamic>.from(row));
+      }
+    }
+
+    var merged = _mergeResultsWithNonPersistedFields(rows)(allMaps);
+    return merged.map(poolManager.serializationManager.deserialize<T>).toList();
   }
 
   @override
@@ -189,14 +201,10 @@ class PostgresDatabaseConnection
     T row, {
     Transaction? transaction,
   }) async {
-    var result = await insert<T>(
-      session,
-      [row],
-      transaction: transaction,
-    );
+    var result = await insert<T>(session, [row], transaction: transaction);
 
     if (result.length != 1) {
-      throw _PgDatabaseInsertRowException(
+      throw _SqliteDatabaseInsertRowException(
         'Failed to insert row, updated number of rows is ${result.length} != 1',
       );
     }
@@ -212,44 +220,41 @@ class PostgresDatabaseConnection
     Transaction? transaction,
   }) async {
     if (rows.isEmpty) return [];
-    if (rows.any((column) => column.id == null)) {
+    if (rows.any((r) => r.id == null)) {
       throw ArgumentError.notNull('row.id');
     }
 
     var table = rows.first.table;
-
     var selectedColumns = (columns ?? table.managedColumns).toSet();
-
     if (columns != null) {
       _validateColumnsExists(selectedColumns, table.columns.toSet());
       selectedColumns.add(table.id);
     }
 
-    var selectedColumnNames = selectedColumns.map((e) => e.columnName);
+    var encoder = poolManager.encoder;
+    var results = <Map<String, dynamic>>[];
 
-    var columnNames = selectedColumnNames
-        .map((columnName) => '"$columnName"')
-        .join(', ');
+    for (var row in rows) {
+      var rowJson = row.toJsonForDatabase() as Map<String, dynamic>;
+      var setParts = <String>[];
+      var idValue = encoder.convert(row.id);
 
-    var values = _createQueryValueList(rows, selectedColumns);
+      for (var col in selectedColumns) {
+        if (col.columnName == 'id') continue;
+        var v = rowJson[col.columnName];
+        setParts.add('"${col.columnName}" = ${encoder.convert(v)}');
+      }
 
-    var setColumns = selectedColumnNames
-        .map((columnName) => '"$columnName" = data."$columnName"')
-        .join(', ');
+      var sql =
+          'UPDATE "${table.tableName}" SET ${setParts.join(', ')} WHERE "${table.id.columnName}" = $idValue RETURNING *';
+      var rs = await _runQuery(session, sql, transaction: transaction);
+      if (rs.isNotEmpty) {
+        results.add(Map<String, dynamic>.from(rs.first));
+      }
+    }
 
-    const tableAlias = 't';
-    var returning = buildReturningClause(table, tableAlias: tableAlias);
-
-    var query =
-        'UPDATE "${table.tableName}" AS $tableAlias SET $setColumns FROM (VALUES $values) AS data($columnNames) WHERE data.id = $tableAlias.id RETURNING $returning';
-
-    return (await _mappedResultsQuery(
-          session,
-          query,
-          transaction: transaction,
-        ).then((_mergeResultsWithNonPersistedFields(rows))))
-        .map(poolManager.serializationManager.deserialize<T>)
-        .toList();
+    var merged = _mergeResultsWithNonPersistedFields(rows)(results);
+    return merged.map(poolManager.serializationManager.deserialize<T>).toList();
   }
 
   @override
@@ -267,7 +272,7 @@ class PostgresDatabaseConnection
     );
 
     if (updated.isEmpty) {
-      throw _PgDatabaseUpdateRowException(
+      throw _SqliteDatabaseUpdateRowException(
         'Failed to update row, no rows updated',
       );
     }
@@ -288,33 +293,27 @@ class PostgresDatabaseConnection
       throw ArgumentError('columnValues cannot be empty');
     }
 
+    var encoder = poolManager.encoder;
     var setClause = columnValues
-        .map((cv) {
-          var value = poolManager.encoder.convert(cv.value);
-          return '"${cv.column.columnName}" = $value::${_convertToPostgresType(cv.column)}';
-        })
+        .map((cv) => '"${cv.column.columnName}" = ${encoder.convert(cv.value)}')
         .join(', ');
 
-    var query =
-        'UPDATE "${table.tableName}" SET $setClause '
-        'WHERE "${table.id.columnName}" = ${poolManager.encoder.convert(id)} '
-        'RETURNING *';
+    var sql =
+        'UPDATE "${table.tableName}" SET $setClause WHERE "${table.id.columnName}" = ${encoder.convert(id)} RETURNING *';
 
     var result = await _mappedResultsQuery(
       session,
-      query,
+      sql,
       transaction: transaction,
     );
 
     if (result.isEmpty) {
-      throw _PgDatabaseUpdateRowException(
+      throw _SqliteDatabaseUpdateRowException(
         'Failed to update row, no rows updated',
       );
     }
 
-    return poolManager.serializationManager.deserialize<T>(
-      result.first,
-    );
+    return poolManager.serializationManager.deserialize<T>(result.first);
   }
 
   @override
@@ -335,14 +334,10 @@ class PostgresDatabaseConnection
       throw ArgumentError('columnValues cannot be empty');
     }
 
+    var encoder = poolManager.encoder;
     var setClause = columnValues
-        .map((cv) {
-          var value = poolManager.encoder.convert(cv.value);
-          return '"${cv.column.columnName}" = $value::${_convertToPostgresType(cv.column)}';
-        })
+        .map((cv) => '"${cv.column.columnName}" = ${encoder.convert(cv.value)}')
         .join(', ');
-
-    String updateQuery;
 
     var requiresFilteredSubquery =
         limit != null ||
@@ -350,43 +345,38 @@ class PostgresDatabaseConnection
         orderBy != null ||
         orderByList != null;
 
+    String selectQuery;
     if (requiresFilteredSubquery) {
       var orders = _resolveOrderBy(orderByList, orderBy, orderDescending);
-      var subquery = SelectQueryBuilder(table: table)
+      selectQuery = SelectQueryBuilder(table: table)
           .withSelectFields([table.id])
           .withWhere(where)
           .withOrderBy(orders)
           .withLimit(limit)
           .withOffset(offset)
           .build();
-
-      var idAlias = '${table.tableName}.${table.id.columnName}';
-
-      var orderByClause = switch (orders) {
-        != null when orders.isNotEmpty =>
-          ' ORDER BY '
-              '${orders.map((o) => o.toString().replaceAll('"${table.tableName}".', '')).join(', ')}',
-        _ => '',
-      };
-
-      updateQuery =
-          'WITH rows_to_update AS ($subquery), '
-          'updated AS ('
-          'UPDATE "${table.tableName}" SET $setClause '
-          'WHERE "${table.id.columnName}" IN (SELECT "$idAlias" FROM rows_to_update) '
-          'RETURNING *'
-          ') '
-          'SELECT * FROM updated$orderByClause';
     } else {
-      updateQuery =
-          'UPDATE "${table.tableName}" SET $setClause'
-          ' WHERE $where'
-          ' RETURNING *';
+      selectQuery = SelectQueryBuilder(
+        table: table,
+      ).withSelectFields([table.id]).withWhere(where).build();
     }
+
+    // SQLite: get ids to update, then UPDATE ... WHERE id IN (...)
+    var idResult = await _mappedResultsQuery(
+      session,
+      selectQuery,
+      transaction: transaction,
+    );
+    if (idResult.isEmpty) return [];
+
+    var ids = idResult.map((r) => r['id']).toList();
+    var idList = ids.map(encoder.convert).join(', ');
+    var updateSql =
+        'UPDATE "${table.tableName}" SET $setClause WHERE "${table.id.columnName}" IN ($idList) RETURNING *';
 
     var result = await _mappedResultsQuery(
       session,
-      updateQuery,
+      updateSql,
       transaction: transaction,
     );
 
@@ -400,12 +390,11 @@ class PostgresDatabaseConnection
     Transaction? transaction,
   }) async {
     if (rows.isEmpty) return [];
-    if (rows.any((column) => column.id == null)) {
+    if (rows.any((r) => r.id == null)) {
       throw ArgumentError.notNull('row.id');
     }
 
     var table = rows.first.table;
-
     return deleteWhere<T>(
       session,
       table.id.inSet(rows.map((row) => row.id!).castToIdType().toSet()),
@@ -419,14 +408,10 @@ class PostgresDatabaseConnection
     T row, {
     Transaction? transaction,
   }) async {
-    var result = await delete<T>(
-      session,
-      [row],
-      transaction: transaction,
-    );
+    var result = await delete<T>(session, [row], transaction: transaction);
 
     if (result.isEmpty) {
-      throw _PgDatabaseDeleteRowException(
+      throw _SqliteDatabaseDeleteRowException(
         'Failed to delete row, no rows deleted.',
       );
     }
@@ -442,16 +427,23 @@ class PostgresDatabaseConnection
   }) async {
     var table = _getTableOrAssert<T>(session, operation: 'deleteWhere');
 
-    var query = DeleteQueryBuilder(
+    // SQLite does not support DELETE ... USING. Use subquery to get ids first.
+    var selectIds = SelectQueryBuilder(
       table: table,
-    ).withReturn(Returning.all).withWhere(where).build();
+    ).withSelectFields([table.id]).withWhere(where).build();
 
-    return await _deserializedMappedQuery(
+    var deleteQuery =
+        'DELETE FROM "${table.tableName}" '
+        'WHERE "${table.id.columnName}" IN ($selectIds) '
+        'RETURNING *';
+
+    var result = await _mappedResultsQuery(
       session,
-      query,
-      table: table,
+      deleteQuery,
       transaction: transaction,
     );
+
+    return result.map(poolManager.serializationManager.deserialize<T>).toList();
   }
 
   @override
@@ -467,129 +459,48 @@ class PostgresDatabaseConnection
       table: table,
     ).withCountAlias('c').withWhere(where).withLimit(limit).build();
 
-    var result = await _query(
-      session,
-      query,
-      context: _resolveQueryContext(transaction),
-    );
+    var result = await _runQuery(session, query, transaction: transaction);
 
+    if (result.isEmpty) return 0;
     if (result.length != 1) return 0;
 
-    List rows = result.first;
-    if (rows.length != 1) return 0;
-
-    return rows.first;
+    var firstRow = result.first;
+    var val = firstRow.columnAt(0);
+    if (val is int) return val;
+    return 0;
   }
 
   @override
-  Future<PostgresDatabaseResult> simpleQuery(
+  Future<SqliteDatabaseResult> simpleQuery(
     DatabaseSession session,
     String query, {
     int? timeoutInSeconds,
     Transaction? transaction,
   }) async {
-    var result = await _query(
+    var result = await _runQuery(
       session,
       query,
-      timeoutInSeconds: timeoutInSeconds,
-      simpleQueryMode: true,
-      context: _resolveQueryContext(transaction),
+      transaction: transaction,
     );
-
-    return PostgresDatabaseResult(result);
+    return SqliteDatabaseResult(result);
   }
 
   @override
-  Future<PostgresDatabaseResult> query(
+  Future<SqliteDatabaseResult> query(
     DatabaseSession session,
     String query, {
     int? timeoutInSeconds,
     Transaction? transaction,
     QueryParameters? parameters,
   }) async {
-    var result = await _query(
+    var (sql, params) = _convertParameters(query, parameters);
+    var result = await _runQuery(
       session,
-      query,
-      timeoutInSeconds: timeoutInSeconds,
-      parameters: parameters,
-      context: _resolveQueryContext(transaction),
+      sql,
+      parameters: params,
+      transaction: transaction,
     );
-
-    return PostgresDatabaseResult(result);
-  }
-
-  Future<pg.Result> _query(
-    DatabaseSession session,
-    String query, {
-    int? timeoutInSeconds,
-    bool ignoreRows = false,
-    bool simpleQueryMode = false,
-    QueryParameters? parameters,
-    required pg.Session context,
-  }) async {
-    assert(
-      simpleQueryMode == false ||
-          (simpleQueryMode == true && parameters == null),
-      'simpleQueryMode does not support parameters',
-    );
-
-    var timeout = timeoutInSeconds != null
-        ? Duration(seconds: timeoutInSeconds)
-        : null;
-
-    var startTime = DateTime.now();
-    try {
-      var result = await context.execute(
-        parameters is QueryParametersNamed ? pg.Sql.named(query) : query,
-        timeout: timeout,
-        ignoreRows: ignoreRows,
-        queryMode: simpleQueryMode ? pg.QueryMode.simple : null,
-        parameters: parameters?.parameters,
-      );
-
-      poolManager.lastDatabaseOperationTime = startTime;
-
-      _logQuery(
-        session,
-        query,
-        startTime,
-        numRowsAffected: result.affectedRows,
-      );
-      return result;
-    } on pg.ServerException catch (exception, trace) {
-      var message = switch (exception.code) {
-        (PgErrorCode.undefinedTable) =>
-          'Table not found, have you applied the database migration? (${exception.message})',
-        (_) => exception.message,
-      };
-
-      var serverpodException = _PgDatabaseQueryException.fromServerException(
-        exception,
-        messageOverride: message,
-      );
-
-      _logQuery(
-        session,
-        query,
-        startTime,
-        exception: serverpodException,
-        trace: trace,
-      );
-      Error.throwWithStackTrace(serverpodException, trace);
-    } on pg.PgException catch (exception, trace) {
-      var serverpodException = _PgDatabaseQueryException(exception.message);
-      _logQuery(
-        session,
-        query,
-        startTime,
-        exception: serverpodException,
-        trace: trace,
-      );
-      Error.throwWithStackTrace(serverpodException, trace);
-    } catch (exception, trace) {
-      _logQuery(session, query, startTime, exception: exception, trace: trace);
-      rethrow;
-    }
+    return SqliteDatabaseResult(result);
   }
 
   @override
@@ -600,16 +511,14 @@ class PostgresDatabaseConnection
     Transaction? transaction,
     QueryParameters? parameters,
   }) async {
-    var result = await _query(
+    var (sql, params) = _convertParameters(query, parameters);
+    var result = await _runQuery(
       session,
-      query,
-      timeoutInSeconds: timeoutInSeconds,
-      ignoreRows: true,
-      parameters: parameters,
-      context: _resolveQueryContext(transaction),
+      sql,
+      parameters: params,
+      transaction: transaction,
     );
-
-    return result.affectedRows;
+    return result.length;
   }
 
   @override
@@ -619,47 +528,102 @@ class PostgresDatabaseConnection
     int? timeoutInSeconds,
     Transaction? transaction,
   }) async {
-    var result = await _query(
+    var result = await _runQuery(
       session,
       query,
-      timeoutInSeconds: timeoutInSeconds,
-      ignoreRows: true,
-      simpleQueryMode: true,
-      context: _resolveQueryContext(transaction),
+      transaction: transaction,
     );
+    return result.length;
+  }
 
-    return result.affectedRows;
+  Future<ResultSet> _runQuery(
+    DatabaseSession session,
+    String query, {
+    List<Object?>? parameters,
+    Transaction? transaction,
+  }) async {
+    parameters ??= const [];
+
+    var sqliteTx = _castToSqliteTransaction(transaction);
+    ResultSet? result;
+
+    for (var statement in query.trim().split(';')) {
+      statement = statement.trim();
+      // Ignore transaction statements to avoid recursive locks.
+      if (statement.isEmpty ||
+          statement.startsWith('BEGIN') ||
+          statement.startsWith('COMMIT')) {
+        continue;
+      }
+      result = await _runSingleStatementQuery(
+        session,
+        statement,
+        parameters: parameters,
+        sqliteTx: sqliteTx,
+      );
+    }
+
+    return result ?? ResultSet([], null, []);
+  }
+
+  Future<ResultSet> _runSingleStatementQuery(
+    DatabaseSession session,
+    String statement, {
+    List<Object?>? parameters,
+    _SqliteTransaction? sqliteTx,
+  }) async {
+    var startTime = DateTime.now();
+    parameters ??= const [];
+
+    try {
+      ResultSet? result;
+      statement = statement.trim();
+      if (statement.isEmpty) {
+        return ResultSet([], null, []);
+      }
+
+      if (sqliteTx != null) {
+        result = await sqliteTx.execute(statement, parameters);
+      } else {
+        if (_isSelectStatement(statement)) {
+          result = await _db.getAll(statement, parameters);
+        } else {
+          result = await _db.execute(statement, parameters);
+        }
+      }
+
+      poolManager.lastDatabaseOperationTime = startTime;
+      _logQuery(session, statement, startTime, numRowsAffected: result.length);
+      return result;
+    } catch (exception, trace) {
+      final serverpodException = exception is SqliteException
+          ? _SqliteDatabaseQueryException.fromSqliteException(exception)
+          : _SqliteDatabaseQueryException(exception.toString());
+      _logQuery(
+        session,
+        statement,
+        startTime,
+        exception: serverpodException,
+        trace: trace,
+      );
+      Error.throwWithStackTrace(serverpodException, trace);
+    }
   }
 
   Future<Iterable<Map<String, dynamic>>> _mappedResultsQuery(
     DatabaseSession session,
     String query, {
-    int? timeoutInSeconds,
-    required Transaction? transaction,
+    List<Object?>? parameters,
+    Transaction? transaction,
   }) async {
-    var result = await _query(
+    var result = await _runQuery(
       session,
       query,
-      timeoutInSeconds: timeoutInSeconds,
-      context: _resolveQueryContext(transaction),
+      parameters: parameters,
+      transaction: transaction,
     );
 
-    return result.map((row) {
-      return {
-        for (final entry in row.toColumnMap().entries)
-          // Serverpod serialization already knows the type of the target
-          // class, so we can remove `UndecodedBytes` here to avoid the
-          // dependency of serverpod_serialization on the `postgres` package.
-          entry.key: entry.value is pg.UndecodedBytes
-              ? (entry.value as pg.UndecodedBytes).bytes
-              : entry.value,
-      };
-    });
-  }
-
-  pg.Session _resolveQueryContext(Transaction? transaction) {
-    var postgresTransaction = _castToPostgresTransaction(transaction);
-    return postgresTransaction?.executionContext ?? _postgresConnection;
+    return result.map((row) => Map<String, dynamic>.from(row));
   }
 
   Future<List<T>> _deserializedMappedQuery<T extends TableRow>(
@@ -673,7 +637,6 @@ class PostgresDatabaseConnection
     var result = await _mappedResultsQuery(
       session,
       query,
-      timeoutInSeconds: timeoutInSeconds,
       transaction: transaction,
     );
 
@@ -694,6 +657,7 @@ class PostgresDatabaseConnection
             include: include,
           ),
         )
+        .whereType<Map<String, dynamic>>()
         .map(poolManager.serializationManager.deserialize<T>)
         .toList();
   }
@@ -707,10 +671,7 @@ class PostgresDatabaseConnection
     StackTrace? trace,
   }) {
     var duration = DateTime.now().difference(startTime);
-
-    // Use the current stack trace if there is no exception.
     trace ??= StackTrace.current;
-
     session.logQuery?.call(
       query: query,
       duration: duration,
@@ -726,27 +687,10 @@ class PostgresDatabaseConnection
     required TransactionSettings settings,
     required DatabaseSession session,
   }) {
-    var pgTransactionSettings = pg.TransactionSettings(
-      isolationLevel: switch (settings.isolationLevel) {
-        IsolationLevel.readCommitted => pg.IsolationLevel.readCommitted,
-        IsolationLevel.readUncommitted => pg.IsolationLevel.readUncommitted,
-        IsolationLevel.repeatableRead => pg.IsolationLevel.repeatableRead,
-        IsolationLevel.serializable => pg.IsolationLevel.serializable,
-        null => null,
-      },
-    );
-
-    return _postgresConnection.runTx<R>(
-      (ctx) {
-        var transaction = _PostgresTransaction(
-          ctx,
-          session,
-          this,
-        );
-        return transactionFunction(transaction);
-      },
-      settings: pgTransactionSettings,
-    );
+    return _db.writeTransaction<R>((tx) async {
+      var transaction = _SqliteTransaction(tx, session);
+      return transactionFunction(transaction);
+    });
   }
 
   Future<Map<String, Map<Object, List<Map<String, dynamic>>>>>
@@ -849,7 +793,6 @@ class PostgresDatabaseConnection
 
   void _validateColumnsExists(Set<Column> columns, Set<Column> tableColumns) {
     var additionalColumns = columns.difference(tableColumns);
-
     if (additionalColumns.isNotEmpty) {
       throw ArgumentError.value(
         additionalColumns.toList().toString(),
@@ -866,167 +809,142 @@ class PostgresDatabaseConnection
   ) {
     assert(orderByList == null || orderBy == null);
     if (orderBy != null) {
-      // If order by is set then order by list is overridden.
       return [Order(column: orderBy, orderDescending: orderDescending)];
     }
     return orderByList;
   }
 
-  String _createQueryValueList(
-    Iterable<TableRow> rows,
-    Iterable<Column> column,
-  ) {
-    return rows
-        .map((row) => row.toJsonForDatabase() as Map<String, dynamic>)
-        .map((row) {
-          var values = column
-              .map((column) {
-                var unformattedValue = row[column.columnName];
-
-                var formattedValue = poolManager.encoder.convert(
-                  unformattedValue,
-                );
-
-                return '$formattedValue::${_convertToPostgresType(column)}';
-              })
-              .join(', ');
-
-          return '($values)';
-        })
-        .join(', ');
-  }
-
-  String _convertToPostgresType(Column column) {
-    if (column is ColumnString) return 'text';
-    if (column is ColumnBool) return 'boolean';
-    if (column is ColumnInt) return 'bigint';
-    if (column is ColumnDouble) return 'double precision';
-    if (column is ColumnDateTime) return 'timestamp without time zone';
-    if (column is ColumnByteData) return 'bytea';
-    if (column is ColumnDuration) return 'bigint';
-    if (column is ColumnUuid) return 'uuid';
-    if (column is ColumnUri) return 'text';
-    if (column is ColumnBigInt) return 'text';
-    if (column is ColumnVector) return 'vector(${column.dimension})';
-    if (column is ColumnHalfVector) return 'halfvec(${column.dimension})';
-    if (column is ColumnSparseVector) return 'sparsevec(${column.dimension})';
-    if (column is ColumnBit) return 'bit(${column.dimension})';
-    if (column is ColumnSerializable) return 'json';
-    if (column is ColumnEnumExtended) {
-      switch (column.serialized) {
-        case EnumSerialization.byIndex:
-          return 'bigint';
-        case EnumSerialization.byName:
-          return 'text';
-      }
-    }
-
-    return 'json';
-  }
-
-  /// Merges the database result with the original non-persisted fields.
-  /// Database fields take precedence for common fields, while non-persisted fields are retained.
   List<Map<String, dynamic>> Function(Iterable<Map<String, dynamic>>)
-  _mergeResultsWithNonPersistedFields<T extends TableRow>(
-    List<T> rows,
-  ) {
+  _mergeResultsWithNonPersistedFields<T extends TableRow>(List<T> rows) {
     return (Iterable<Map<String, dynamic>> dbResults) =>
         List<Map<String, dynamic>>.generate(dbResults.length, (i) {
           return {
-            // Add non-persisted fields from the original object
             ...rows[i].toJson(),
-            // Override with database fields (common fields)
             ...dbResults.elementAt(i),
           };
         });
   }
 
-  Table _getTableOrAssert<T>(
-    DatabaseSession session, {
-    required String operation,
-  }) {
-    var table = poolManager.serializationManager.getTableForType(T);
-    assert(table is Table, '''
-You need to specify a template type that is a subclass of TableRow.
-E.g. myRows = await session.db.$operation<MyTableClass>(where: ...);
-Current type was $T''');
-    return table!;
+  /// Converts Postgres-style parameters ($1, $2 or @name) to SQLite ? and list.
+  (String, List<Object?>) _convertParameters(
+    String query,
+    QueryParameters? parameters,
+  ) {
+    if (parameters == null) return (query, const []);
+
+    if (parameters is QueryParametersPositional) {
+      var list = parameters.parameters;
+      var sql = query;
+      for (var i = 0; i < list.length; i++) {
+        sql = sql.replaceFirst(RegExp(r'\$' + (i + 1).toString()), '?');
+      }
+      return (sql, list);
+    }
+
+    if (parameters is QueryParametersNamed) {
+      var map = parameters.parameters;
+      var paramNames = <String>[];
+      var sql = query;
+      final namePattern = RegExp(r'@(\w+)');
+      for (var m in namePattern.allMatches(query)) {
+        var name = m.group(1)!;
+        if (!paramNames.contains(name)) paramNames.add(name);
+        sql = sql.replaceFirst(m.group(0)!, '?');
+      }
+      var list = paramNames.map((n) => map[n]).toList();
+      return (sql, list);
+    }
+
+    return (query, const []);
+  }
+
+  /// Returns true if [sql] is parsed as a SELECT (or compound SELECT) statement.
+  /// Falls back to false on parse errors to avoid incorrectly using read path.
+  static bool _isSelectStatement(String sql) {
+    final trimmed = sql.trim();
+    if (trimmed.isEmpty) return false;
+    final result = _sqlEngine.parse(trimmed);
+    if (result.errors.isNotEmpty) return false;
+    return result.rootNode is BaseSelectStatement;
   }
 }
 
-/// Throws an exception if the given [transaction] is not a Postgres transaction.
-_PostgresTransaction? _castToPostgresTransaction(
-  Transaction? transaction,
-) {
+Table _getTableOrAssert<T>(
+  DatabaseSession session, {
+  required String operation,
+}) {
+  var table = session.db.serializationManager.getTableForType(T);
+  assert(table is Table, '''
+You need to specify a template type that is a subclass of TableRow.
+E.g. myRows = await session.db.$operation<MyTableClass>(where: ...);
+Current type was $T''');
+  return table!;
+}
+
+_SqliteTransaction? _castToSqliteTransaction(Transaction? transaction) {
   if (transaction == null) return null;
-  if (transaction is! _PostgresTransaction) {
+  if (transaction is! _SqliteTransaction) {
     throw ArgumentError.value(
       transaction,
       'transaction',
-      'Transaction type does not match the required database transaction type, $_PostgresTransaction. '
-          'You need to create the transaction from the database by calling '
-          'session.db.transaction();',
+      'Transaction type does not match the required database transaction type, '
+          '_SqliteTransaction. You need to create the transaction from the '
+          'database by calling session.db.transaction();',
     );
   }
   return transaction;
 }
 
-class _PostgresSavepoint implements Savepoint {
+class _SqliteSavepoint implements Savepoint {
   @override
   final String id;
-  final _PostgresTransaction _transaction;
+  final _SqliteTransaction _transaction;
 
-  _PostgresSavepoint(this.id, this._transaction);
+  _SqliteSavepoint(this.id, this._transaction);
 
   @override
   Future<void> release() async {
-    await _transaction._query('RELEASE SAVEPOINT $id;');
+    await _transaction._execute('RELEASE SAVEPOINT $id');
   }
 
   @override
   Future<void> rollback() async {
-    await _transaction._query('ROLLBACK TO SAVEPOINT $id;');
+    await _transaction._execute('ROLLBACK TO SAVEPOINT $id');
   }
 }
 
-/// Postgres specific implementation of transactions.
-class _PostgresTransaction implements Transaction {
-  final pg.TxSession executionContext;
-  final DatabaseSession _session;
-  final PostgresDatabaseConnection _databaseConnection;
+class _SqliteTransaction implements Transaction {
+  final SqliteWriteContext _ctx;
 
   @override
   final Map<String, dynamic> runtimeParameters = {};
 
-  _PostgresTransaction(
-    this.executionContext,
-    this._session,
-    this._databaseConnection,
-  );
+  _SqliteTransaction(this._ctx, DatabaseSession session);
 
   @override
   Future<void> cancel() async {
-    await executionContext.rollback();
+    await _ctx.execute('ROLLBACK');
   }
 
-  Future<void> _query(String query, {QueryParameters? parameters}) async {
-    await _databaseConnection._query(
-      _session,
-      query,
-      parameters: parameters,
-      context: executionContext,
-    );
+  Future<ResultSet> execute(
+    String query, [
+    List<Object?> parameters = const [],
+  ]) {
+    return _ctx.execute(query, parameters);
+  }
+
+  Future<void> _execute(
+    String sql, [
+    List<Object?> parameters = const [],
+  ]) async {
+    await _ctx.execute(sql, parameters);
   }
 
   @override
   Future<Savepoint> createSavepoint() async {
-    var postgresCompatibleRandomString = const Uuid().v4().replaceAll(
-      RegExp(r'-'),
-      '_',
-    );
-    var savepointId = 'savepoint_$postgresCompatibleRandomString';
-    await _query('SAVEPOINT $savepointId;');
-    return _PostgresSavepoint(savepointId, this);
+    var id = 'savepoint_${const Uuid().v4().replaceAll(RegExp(r'-'), '_')}';
+    await _execute('SAVEPOINT $id');
+    return _SqliteSavepoint(id, this);
   }
 
   @override
@@ -1036,21 +954,17 @@ class _PostgresTransaction implements Transaction {
     final parameters = builder(RuntimeParametersBuilder());
     for (var group in parameters) {
       for (var statement in group.buildStatements(isLocal: true)) {
-        await _query(statement);
+        await _execute(statement);
       }
       runtimeParameters.addAll(group.options);
     }
   }
 }
 
-/// Extracts all the primary keys from the result set that are referenced by
-/// the given [relationTable].
 Set<T> _extractPrimaryKeyForRelation<T>(
   Iterable<Map<String, dynamic>> resultSet,
   TableRelation tableRelation,
 ) {
   var idFieldName = tableRelation.fieldQueryAliasWithJoins;
-
-  var ids = resultSet.map((e) => e[idFieldName] as T?).whereType<T>().toSet();
-  return ids;
+  return resultSet.map((e) => e[idFieldName] as T?).whereType<T>().toSet();
 }

@@ -2,6 +2,7 @@ import 'package:meta/meta.dart';
 import 'package:serverpod_shared/serverpod_shared.dart';
 
 import '../adapters/postgres/database_provider.dart';
+import '../adapters/sqlite/database_provider.dart';
 import '../database.dart';
 import '../concepts/runtime_parameters.dart';
 import 'analyzer.dart';
@@ -18,6 +19,7 @@ abstract interface class DatabaseProvider {
   factory DatabaseProvider.forDialect(DatabaseDialect dialect) =>
       switch (dialect) {
         DatabaseDialect.postgres => PostgresDatabaseProvider(),
+        DatabaseDialect.sqlite => SqliteDatabaseProvider(),
       };
 
   /// Creates a new [DatabasePoolManager] for the given parameters.
