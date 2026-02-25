@@ -17,10 +17,7 @@ webServer:
   publicScheme: http
 
 database:
-  host: localhost
-  port: 8090
-  name: serverpod_test
-  user: postgres
+  filePath: serverpod_test_dev.db
 
 redis:
   enabled: true
