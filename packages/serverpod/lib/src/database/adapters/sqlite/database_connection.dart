@@ -172,6 +172,9 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
               if (c is ColumnDuration && v != null && v is! Duration) {
                 v = DurationJsonExtension.fromJson(v);
               }
+              if (c is ColumnUuid && v != null && v is! UuidValue) {
+                v = UuidValueJsonExtension.fromJson(v);
+              }
               return encoder.convert(v, hasDefaults: c.hasDefault);
             })
             .join(', ');
@@ -255,6 +258,9 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
         }
         if (col is ColumnDuration && v != null && v is! Duration) {
           v = DurationJsonExtension.fromJson(v);
+        }
+        if (col is ColumnUuid && v != null && v is! UuidValue) {
+          v = UuidValueJsonExtension.fromJson(v);
         }
         setParts.add('"${col.columnName}" = ${encoder.convert(v)}');
       }

@@ -41,6 +41,19 @@ class SqliteSerializationManager extends SerializationManagerServer {
       return DateTime.fromMillisecondsSinceEpoch(data, isUtc: true);
     }
 
+    if (_isUuidType(t)) {
+      if (data is String) return UuidValueJsonExtension.fromJson(data);
+      // BLOB columns return Uint8List or List (List<int>/List<dynamic> from sqlite3).
+      if (data is Uint8List && data.length == 16) {
+        return UuidValueJsonExtension.fromJson(data);
+      }
+      if (data is List && data.length == 16) {
+        return UuidValueJsonExtension.fromJson(
+          Uint8List.fromList(data.map((e) => e as int).toList()),
+        );
+      }
+    }
+
     // Recursively revert row maps/lists so nested JSON strings become Map/List.
     // SQLite returns JSON columns as text; protocol expects nested Map/list.
     data = _revertSqliteValueInRow(data);
@@ -99,12 +112,15 @@ class SqliteSerializationManager extends SerializationManagerServer {
   static bool _isDateTimeType(Type t) =>
       t == DateTime || t == _typeOfNullableDateTime;
 
+  static bool _isUuidType(Type t) => t == UuidValue || t == _typeOfNullableUuid;
+
   static bool _isByteDataType(Type t) =>
       t == ByteData || t == _typeOfNullableByteData;
 
   static Type get _typeOfNullableBool => _typeOf<bool?>();
   static Type get _typeOfNullableDateTime => _typeOf<DateTime?>();
   static Type get _typeOfNullableByteData => _typeOf<ByteData?>();
+  static Type get _typeOfNullableUuid => _typeOf<UuidValue?>();
   static Type _typeOf<T>() => T;
 
   @override

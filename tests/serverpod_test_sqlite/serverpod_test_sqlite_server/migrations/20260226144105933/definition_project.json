@@ -92,7 +92,7 @@
           "name": "id",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || '4' || substr(hex(randomblob(2)), 2) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue"
         },
         {
@@ -212,7 +212,7 @@
           "name": "id",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "lower(substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 1, 8) || '-' || substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 9, 4) || '-' || '7' || substr(hex(randomblob(2)), 2, 3) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2, 3) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue"
         },
         {
@@ -884,7 +884,7 @@
           "name": "id",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || '4' || substr(hex(randomblob(2)), 2) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue?"
         },
         {
@@ -1167,7 +1167,7 @@
           "name": "id",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || '4' || substr(hex(randomblob(2)), 2) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue?"
         },
         {
@@ -1237,7 +1237,7 @@
           "name": "id",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "lower(substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 1, 8) || '-' || substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 9, 4) || '-' || '7' || substr(hex(randomblob(2)), 2, 3) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2, 3) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue"
         },
         {
@@ -1747,7 +1747,7 @@
           "name": "id",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "lower(substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 1, 8) || '-' || substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 9, 4) || '-' || '7' || substr(hex(randomblob(2)), 2, 3) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2, 3) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue?"
         },
         {
@@ -1931,7 +1931,7 @@
           "name": "id",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "lower(substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 1, 8) || '-' || substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 9, 4) || '-' || '7' || substr(hex(randomblob(2)), 2, 3) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2, 3) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue?"
         },
         {
@@ -5279,7 +5279,7 @@
           "name": "id",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "lower(substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 1, 8) || '-' || substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 9, 4) || '-' || '7' || substr(hex(randomblob(2)), 2, 3) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2, 3) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue"
         },
         {
@@ -5789,7 +5789,7 @@
           "name": "id",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || '4' || substr(hex(randomblob(2)), 2) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue?"
         },
         {
@@ -6121,7 +6121,7 @@
           "name": "id",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || '4' || substr(hex(randomblob(2)), 2) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue?"
         }
       ],
@@ -6597,7 +6597,7 @@
           "name": "id",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || '4' || substr(hex(randomblob(2)), 2) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue?"
         },
         {
@@ -7637,7 +7637,7 @@
           "name": "uuidDefaultRandom",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || '4' || substr(hex(randomblob(2)), 2) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue"
         },
         {
@@ -7645,7 +7645,7 @@
           "name": "uuidDefaultRandomV7",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "lower(substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 1, 8) || '-' || substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 9, 4) || '-' || '7' || substr(hex(randomblob(2)), 2, 3) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2, 3) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue"
         },
         {
@@ -7653,7 +7653,7 @@
           "name": "uuidDefaultRandomNull",
           "columnType": 7,
           "isNullable": true,
-          "columnDefault": "lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || '4' || substr(hex(randomblob(2)), 2) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue?"
         },
         {
@@ -7661,7 +7661,7 @@
           "name": "uuidDefaultStr",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "CAST('550e8400-e29b-41d4-a716-446655440000' AS TEXT)",
+          "columnDefault": "unhex('550e8400e29b41d4a716446655440000')",
           "dartType": "UuidValue"
         },
         {
@@ -7669,7 +7669,7 @@
           "name": "uuidDefaultStrNull",
           "columnType": 7,
           "isNullable": true,
-          "columnDefault": "CAST('3f2504e0-4f89-11d3-9a0c-0305e82c3301' AS TEXT)",
+          "columnDefault": "unhex('3f2504e04f8911d39a0c0305e82c3301')",
           "dartType": "UuidValue?"
         }
       ],
@@ -7712,7 +7712,7 @@
           "name": "uuidDefaultAndDefaultModel",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "CAST('3f2504e0-4f89-11d3-9a0c-0305e82c3301' AS TEXT)",
+          "columnDefault": "unhex('3f2504e04f8911d39a0c0305e82c3301')",
           "dartType": "UuidValue"
         },
         {
@@ -7720,7 +7720,7 @@
           "name": "uuidDefaultAndDefaultPersist",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "CAST('9e107d9d-372b-4d97-9b27-2f0907d0b1d4' AS TEXT)",
+          "columnDefault": "unhex('9e107d9d372b4d979b272f0907d0b1d4')",
           "dartType": "UuidValue"
         },
         {
@@ -7728,7 +7728,7 @@
           "name": "uuidDefaultModelAndDefaultPersist",
           "columnType": 7,
           "isNullable": false,
-          "columnDefault": "CAST('f47ac10b-58cc-4372-a567-0e02b2c3d479' AS TEXT)",
+          "columnDefault": "unhex('f47ac10b58cc4372a5670e02b2c3d479')",
           "dartType": "UuidValue"
         }
       ],
@@ -7841,7 +7841,7 @@
           "name": "uuidDefaultPersistRandom",
           "columnType": 7,
           "isNullable": true,
-          "columnDefault": "lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || '4' || substr(hex(randomblob(2)), 2) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue?"
         },
         {
@@ -7849,7 +7849,7 @@
           "name": "uuidDefaultPersistRandomV7",
           "columnType": 7,
           "isNullable": true,
-          "columnDefault": "lower(substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 1, 8) || '-' || substr(printf('%012x', unixepoch('now', 'subsecond') * 1000), 9, 4) || '-' || '7' || substr(hex(randomblob(2)), 2, 3) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2, 3) || '-' || hex(randomblob(6)))",
+          "columnDefault": "unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
           "dartType": "UuidValue?"
         },
         {
@@ -7857,7 +7857,7 @@
           "name": "uuidDefaultPersistStr",
           "columnType": 7,
           "isNullable": true,
-          "columnDefault": "CAST('550e8400-e29b-41d4-a716-446655440000' AS TEXT)",
+          "columnDefault": "unhex('550e8400e29b41d4a716446655440000')",
           "dartType": "UuidValue?"
         }
       ],

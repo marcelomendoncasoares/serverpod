@@ -507,7 +507,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'UuidValue',
           columnDefault:
-              'lower(hex(randomblob(4)) || \'-\' || hex(randomblob(2)) || \'-\' || \'4\' || substr(hex(randomblob(2)), 2) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || \'-\' || hex(randomblob(6)))',
+              'unhex(hex(randomblob(6)) || \'4\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'street',
@@ -614,7 +614,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'UuidValue',
           columnDefault:
-              'lower(substr(printf(\'%012x\', unixepoch(\'now\', \'subsecond\') * 1000), 1, 8) || \'-\' || substr(printf(\'%012x\', unixepoch(\'now\', \'subsecond\') * 1000), 9, 4) || \'-\' || \'7\' || substr(hex(randomblob(2)), 2, 3) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2, 3) || \'-\' || hex(randomblob(6)))',
+              'unhex(printf(\'%012x\', CAST(unixepoch(\'now\', \'subsecond\') * 1000 AS INTEGER)) || \'7\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'name',
@@ -1212,7 +1212,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'UuidValue?',
           columnDefault:
-              'lower(hex(randomblob(4)) || \'-\' || hex(randomblob(2)) || \'-\' || \'4\' || substr(hex(randomblob(2)), 2) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || \'-\' || hex(randomblob(6)))',
+              'unhex(hex(randomblob(6)) || \'4\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'name',
@@ -1457,7 +1457,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'UuidValue?',
           columnDefault:
-              'lower(hex(randomblob(4)) || \'-\' || hex(randomblob(2)) || \'-\' || \'4\' || substr(hex(randomblob(2)), 2) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || \'-\' || hex(randomblob(6)))',
+              'unhex(hex(randomblob(6)) || \'4\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'grandParentField',
@@ -1521,7 +1521,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'UuidValue',
           columnDefault:
-              'lower(substr(printf(\'%012x\', unixepoch(\'now\', \'subsecond\') * 1000), 1, 8) || \'-\' || substr(printf(\'%012x\', unixepoch(\'now\', \'subsecond\') * 1000), 9, 4) || \'-\' || \'7\' || substr(hex(randomblob(2)), 2, 3) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2, 3) || \'-\' || hex(randomblob(6)))',
+              'unhex(printf(\'%012x\', CAST(unixepoch(\'now\', \'subsecond\') * 1000 AS INTEGER)) || \'7\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'name',
@@ -1960,7 +1960,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'UuidValue?',
           columnDefault:
-              'lower(substr(printf(\'%012x\', unixepoch(\'now\', \'subsecond\') * 1000), 1, 8) || \'-\' || substr(printf(\'%012x\', unixepoch(\'now\', \'subsecond\') * 1000), 9, 4) || \'-\' || \'7\' || substr(hex(randomblob(2)), 2, 3) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2, 3) || \'-\' || hex(randomblob(6)))',
+              'unhex(printf(\'%012x\', CAST(unixepoch(\'now\', \'subsecond\') * 1000 AS INTEGER)) || \'7\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'name',
@@ -2122,7 +2122,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'UuidValue?',
           columnDefault:
-              'lower(substr(printf(\'%012x\', unixepoch(\'now\', \'subsecond\') * 1000), 1, 8) || \'-\' || substr(printf(\'%012x\', unixepoch(\'now\', \'subsecond\') * 1000), 9, 4) || \'-\' || \'7\' || substr(hex(randomblob(2)), 2, 3) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2, 3) || \'-\' || hex(randomblob(6)))',
+              'unhex(printf(\'%012x\', CAST(unixepoch(\'now\', \'subsecond\') * 1000 AS INTEGER)) || \'7\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'name',
@@ -5115,7 +5115,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'UuidValue',
           columnDefault:
-              'lower(substr(printf(\'%012x\', unixepoch(\'now\', \'subsecond\') * 1000), 1, 8) || \'-\' || substr(printf(\'%012x\', unixepoch(\'now\', \'subsecond\') * 1000), 9, 4) || \'-\' || \'7\' || substr(hex(randomblob(2)), 2, 3) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2, 3) || \'-\' || hex(randomblob(6)))',
+              'unhex(printf(\'%012x\', CAST(unixepoch(\'now\', \'subsecond\') * 1000 AS INTEGER)) || \'7\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'description',
@@ -5562,7 +5562,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'UuidValue?',
           columnDefault:
-              'lower(hex(randomblob(4)) || \'-\' || hex(randomblob(2)) || \'-\' || \'4\' || substr(hex(randomblob(2)), 2) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || \'-\' || hex(randomblob(6)))',
+              'unhex(hex(randomblob(6)) || \'4\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'name',
@@ -5855,7 +5855,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'UuidValue?',
           columnDefault:
-              'lower(hex(randomblob(4)) || \'-\' || hex(randomblob(2)) || \'-\' || \'4\' || substr(hex(randomblob(2)), 2) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || \'-\' || hex(randomblob(6)))',
+              'unhex(hex(randomblob(6)) || \'4\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
       ],
       foreignKeys: [],
@@ -6288,7 +6288,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'UuidValue?',
           columnDefault:
-              'lower(hex(randomblob(4)) || \'-\' || hex(randomblob(2)) || \'-\' || \'4\' || substr(hex(randomblob(2)), 2) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || \'-\' || hex(randomblob(6)))',
+              'unhex(hex(randomblob(6)) || \'4\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'name',
@@ -7214,7 +7214,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'UuidValue',
           columnDefault:
-              'lower(hex(randomblob(4)) || \'-\' || hex(randomblob(2)) || \'-\' || \'4\' || substr(hex(randomblob(2)), 2) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || \'-\' || hex(randomblob(6)))',
+              'unhex(hex(randomblob(6)) || \'4\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'uuidDefaultRandomV7',
@@ -7222,7 +7222,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'UuidValue',
           columnDefault:
-              'lower(substr(printf(\'%012x\', unixepoch(\'now\', \'subsecond\') * 1000), 1, 8) || \'-\' || substr(printf(\'%012x\', unixepoch(\'now\', \'subsecond\') * 1000), 9, 4) || \'-\' || \'7\' || substr(hex(randomblob(2)), 2, 3) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2, 3) || \'-\' || hex(randomblob(6)))',
+              'unhex(printf(\'%012x\', CAST(unixepoch(\'now\', \'subsecond\') * 1000 AS INTEGER)) || \'7\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'uuidDefaultRandomNull',
@@ -7230,23 +7230,21 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: true,
           dartType: 'UuidValue?',
           columnDefault:
-              'lower(hex(randomblob(4)) || \'-\' || hex(randomblob(2)) || \'-\' || \'4\' || substr(hex(randomblob(2)), 2) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || \'-\' || hex(randomblob(6)))',
+              'unhex(hex(randomblob(6)) || \'4\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'uuidDefaultStr',
           columnType: _i2.ColumnType.uuid,
           isNullable: false,
           dartType: 'UuidValue',
-          columnDefault:
-              'CAST(\'550e8400-e29b-41d4-a716-446655440000\' AS TEXT)',
+          columnDefault: 'unhex(\'550e8400e29b41d4a716446655440000\')',
         ),
         _i2.ColumnDefinition(
           name: 'uuidDefaultStrNull',
           columnType: _i2.ColumnType.uuid,
           isNullable: true,
           dartType: 'UuidValue?',
-          columnDefault:
-              'CAST(\'3f2504e0-4f89-11d3-9a0c-0305e82c3301\' AS TEXT)',
+          columnDefault: 'unhex(\'3f2504e04f8911d39a0c0305e82c3301\')',
         ),
       ],
       foreignKeys: [],
@@ -7285,24 +7283,21 @@ class Protocol extends _i1.SerializationManagerServer {
           columnType: _i2.ColumnType.uuid,
           isNullable: false,
           dartType: 'UuidValue',
-          columnDefault:
-              'CAST(\'3f2504e0-4f89-11d3-9a0c-0305e82c3301\' AS TEXT)',
+          columnDefault: 'unhex(\'3f2504e04f8911d39a0c0305e82c3301\')',
         ),
         _i2.ColumnDefinition(
           name: 'uuidDefaultAndDefaultPersist',
           columnType: _i2.ColumnType.uuid,
           isNullable: false,
           dartType: 'UuidValue',
-          columnDefault:
-              'CAST(\'9e107d9d-372b-4d97-9b27-2f0907d0b1d4\' AS TEXT)',
+          columnDefault: 'unhex(\'9e107d9d372b4d979b272f0907d0b1d4\')',
         ),
         _i2.ColumnDefinition(
           name: 'uuidDefaultModelAndDefaultPersist',
           columnType: _i2.ColumnType.uuid,
           isNullable: false,
           dartType: 'UuidValue',
-          columnDefault:
-              'CAST(\'f47ac10b-58cc-4372-a567-0e02b2c3d479\' AS TEXT)',
+          columnDefault: 'unhex(\'f47ac10b58cc4372a5670e02b2c3d479\')',
         ),
       ],
       foreignKeys: [],
@@ -7404,7 +7399,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: true,
           dartType: 'UuidValue?',
           columnDefault:
-              'lower(hex(randomblob(4)) || \'-\' || hex(randomblob(2)) || \'-\' || \'4\' || substr(hex(randomblob(2)), 2) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2) || \'-\' || hex(randomblob(6)))',
+              'unhex(hex(randomblob(6)) || \'4\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'uuidDefaultPersistRandomV7',
@@ -7412,15 +7407,14 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: true,
           dartType: 'UuidValue?',
           columnDefault:
-              'lower(substr(printf(\'%012x\', unixepoch(\'now\', \'subsecond\') * 1000), 1, 8) || \'-\' || substr(printf(\'%012x\', unixepoch(\'now\', \'subsecond\') * 1000), 9, 4) || \'-\' || \'7\' || substr(hex(randomblob(2)), 2, 3) || \'-\' || substr(\'89ab\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(2)), 2, 3) || \'-\' || hex(randomblob(6)))',
+              'unhex(printf(\'%012x\', CAST(unixepoch(\'now\', \'subsecond\') * 1000 AS INTEGER)) || \'7\' || substr(hex(randomblob(2)), 2, 3) || substr(\'89AB\', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))',
         ),
         _i2.ColumnDefinition(
           name: 'uuidDefaultPersistStr',
           columnType: _i2.ColumnType.uuid,
           isNullable: true,
           dartType: 'UuidValue?',
-          columnDefault:
-              'CAST(\'550e8400-e29b-41d4-a716-446655440000\' AS TEXT)',
+          columnDefault: 'unhex(\'550e8400e29b41d4a716446655440000\')',
         ),
       ],
       foreignKeys: [],

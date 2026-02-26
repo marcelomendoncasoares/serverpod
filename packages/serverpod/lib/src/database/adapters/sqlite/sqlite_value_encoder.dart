@@ -33,7 +33,9 @@ class SqliteValueEncoder implements ValueEncoder {
     } else if (input is Duration) {
       return SerializationManager.encode(input).toString();
     } else if (input is UuidValue) {
-      return "'${input.uuid}'";
+      // Store as BLOB to match ColumnType.uuid (sqlite_analyzer uses BLOB).
+      final hex = input.uuid.replaceAll('-', '').toLowerCase();
+      return "unhex('$hex')";
     } else if (input is Uri) {
       return "'${_escapeString(input.toString())}'";
     } else if (input is BigInt) {
