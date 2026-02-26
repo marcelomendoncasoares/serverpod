@@ -133,7 +133,8 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
     required Transaction transaction,
     LockBehavior lockBehavior = LockBehavior.wait,
   }) async {
-    throw UnimplementedError('Simply using a transaction is enough for SQLite');
+    // SQLite has no row-level locking; using a transaction is sufficient.
+    // No-op so callers (e.g. lockRows then find) still work.
   }
 
   @override
@@ -147,7 +148,7 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
     var table = rows.first.table;
     var encoder = poolManager.encoder;
 
-    Future<ResultSet> runInsert(
+    Future<List<Map<String, dynamic>>> runInsert(
       List<T> filteredRows,
       bool withIdNull,
     ) async {
@@ -155,34 +156,57 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
           ? table.columns.where((c) => c.columnName != 'id').toList()
           : table.columns;
       if (columns.isEmpty && withIdNull) {
-        return ResultSet([], null, []);
+        return [];
       }
-      var columnNames = columns.map((e) => '"${e.columnName}"').join(', ');
-      var valueClauses = <String>[];
+      // SQLite does not support DEFAULT in VALUES; omit columns that are null
+      // and have a default so SQLite applies the column default.
+      var rowPayloads = <_RowPayload>[];
       for (var row in filteredRows) {
         var rowJson = row.toJsonForDatabase() as Map<String, dynamic>;
-        var values = columns
-            .map((c) {
-              var v = rowJson[c.columnName];
-              // toJsonForDatabase() serializes DateTime as ISO string; SQLite
-              // expects INTEGER (milliseconds). Convert so encoder outputs int.
-              if (c is ColumnDateTime && v != null && v is! DateTime) {
-                v = DateTimeJsonExtension.fromJson(v);
-              }
-              if (c is ColumnDuration && v != null && v is! Duration) {
-                v = DurationJsonExtension.fromJson(v);
-              }
-              if (c is ColumnUuid && v != null && v is! UuidValue) {
-                v = UuidValueJsonExtension.fromJson(v);
-              }
-              return encoder.convert(v, hasDefaults: c.hasDefault);
-            })
-            .join(', ');
-        valueClauses.add('($values)');
+        var includedColumns = <Column>[];
+        var encodedValues = <String>[];
+        for (var c in columns) {
+          var v = rowJson[c.columnName];
+          if (c is ColumnDateTime && v != null && v is! DateTime) {
+            v = DateTimeJsonExtension.fromJson(v);
+          }
+          if (c is ColumnDuration && v != null && v is! Duration) {
+            v = DurationJsonExtension.fromJson(v);
+          }
+          if (c is ColumnUuid && v != null && v is! UuidValue) {
+            v = UuidValueJsonExtension.fromJson(v);
+          }
+          final useDefault = v == null && c.hasDefault;
+          if (!useDefault) {
+            includedColumns.add(c);
+            encodedValues.add(encoder.convert(v, hasDefaults: false));
+          }
+        }
+        rowPayloads.add(_RowPayload(includedColumns, encodedValues));
       }
-      var sql =
-          'INSERT INTO "${table.tableName}" ($columnNames) VALUES ${valueClauses.join(', ')} RETURNING *';
-      return _runQuery(session, sql, transaction: transaction);
+      var allMapsFromRunInsert = <Map<String, dynamic>>[];
+      for (var p in rowPayloads) {
+        if (p.columns.isEmpty) {
+          var sql =
+              'INSERT INTO "${table.tableName}" DEFAULT VALUES RETURNING *';
+          var rs = await _runQuery(session, sql, transaction: transaction);
+          for (var row in rs) {
+            allMapsFromRunInsert.add(Map<String, dynamic>.from(row));
+          }
+        } else {
+          var columnNames = p.columns
+              .map((c) => '"${c.columnName}"')
+              .join(', ');
+          var values = p.values.join(', ');
+          var sql =
+              'INSERT INTO "${table.tableName}" ($columnNames) VALUES ($values) RETURNING *';
+          var rs = await _runQuery(session, sql, transaction: transaction);
+          for (var row in rs) {
+            allMapsFromRunInsert.add(Map<String, dynamic>.from(row));
+          }
+        }
+      }
+      return allMapsFromRunInsert;
     }
 
     var withIdNull = rows.where((r) => r.id == null).toList();
@@ -190,15 +214,21 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
 
     List<Map<String, dynamic>> allMaps = [];
     if (withIdNull.isNotEmpty) {
-      var rs = await runInsert(withIdNull, true);
-      for (var row in rs) {
-        allMaps.add(Map<String, dynamic>.from(row));
+      var rows = await runInsert(withIdNull, true);
+      for (var m in rows) {
+        if (table.hasColumnMapping) {
+          m = _rowDbColumnNamesToFieldNames(table, m);
+        }
+        allMaps.add(m);
       }
     }
     if (withIdNotNull.isNotEmpty) {
-      var rs = await runInsert(withIdNotNull, false);
-      for (var row in rs) {
-        allMaps.add(Map<String, dynamic>.from(row));
+      var rows = await runInsert(withIdNotNull, false);
+      for (var m in rows) {
+        if (table.hasColumnMapping) {
+          m = _rowDbColumnNamesToFieldNames(table, m);
+        }
+        allMaps.add(m);
       }
     }
 
@@ -269,7 +299,11 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
           'UPDATE "${table.tableName}" SET ${setParts.join(', ')} WHERE "${table.id.columnName}" = $idValue RETURNING *';
       var rs = await _runQuery(session, sql, transaction: transaction);
       if (rs.isNotEmpty) {
-        results.add(Map<String, dynamic>.from(rs.first));
+        var m = Map<String, dynamic>.from(rs.first);
+        if (table.hasColumnMapping) {
+          m = _rowDbColumnNamesToFieldNames(table, m);
+        }
+        results.add(m);
       }
     }
 
@@ -325,6 +359,7 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
       session,
       sql,
       transaction: transaction,
+      table: table,
     );
 
     if (result.isEmpty) {
@@ -398,6 +433,7 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
       session,
       updateSql,
       transaction: transaction,
+      table: table,
     );
 
     return result.map(poolManager.serializationManager.deserialize<T>).toList();
@@ -461,6 +497,7 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
       session,
       deleteQuery,
       transaction: transaction,
+      table: table,
     );
 
     return result.map(poolManager.serializationManager.deserialize<T>).toList();
@@ -538,6 +575,26 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
       parameters: params,
       transaction: transaction,
     );
+    // For INSERT/UPDATE/DELETE, sqlite_async's execute() returns ResultSet with 0
+    // rows; use computeWithDatabase to get the actual updatedRows from SQLite.
+    final lastStatement = _lastStatementFromQuery(sql);
+    final isWrite = lastStatement != null && _isWriteStatement(lastStatement);
+    if (result.isEmpty && isWrite) {
+      if (transaction == null) {
+        return await _db.computeWithDatabase((db) async {
+          db.execute(lastStatement, params);
+          return db.updatedRows;
+        });
+      }
+      // Inside a transaction: get row count via SELECT changes().
+      final sqliteTx = _castToSqliteTransaction(transaction)!;
+      var changesResult = await sqliteTx.execute('SELECT changes()', []);
+      if (changesResult.isNotEmpty) {
+        final row = changesResult.first;
+        final n = row.columnAt(0);
+        return n is int ? n : int.tryParse(n.toString()) ?? 0;
+      }
+    }
     return result.length;
   }
 
@@ -553,6 +610,19 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
       query,
       transaction: transaction,
     );
+    // For INSERT/UPDATE/DELETE inside a transaction, result is empty; use changes().
+    if (result.isEmpty && transaction != null) {
+      final lastStatement = _lastStatementFromQuery(query.trim());
+      if (lastStatement != null && _isWriteStatement(lastStatement)) {
+        final sqliteTx = _castToSqliteTransaction(transaction)!;
+        var changesResult = await sqliteTx.execute('SELECT changes()', []);
+        if (changesResult.isNotEmpty) {
+          final row = changesResult.first;
+          final n = row.columnAt(0);
+          return n is int ? n : int.tryParse(n.toString()) ?? 0;
+        }
+      }
+    }
     return result.length;
   }
 
@@ -602,6 +672,8 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
         return ResultSet([], null, []);
       }
 
+      poolManager.lastDatabaseOperationTime = startTime;
+
       if (sqliteTx != null) {
         result = await sqliteTx.execute(statement, parameters);
       } else {
@@ -612,7 +684,6 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
         }
       }
 
-      poolManager.lastDatabaseOperationTime = startTime;
       _logQuery(session, statement, startTime, numRowsAffected: result.length);
       return result;
     } catch (exception, trace) {
@@ -630,11 +701,29 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
     }
   }
 
+  /// Maps a row from database column names to protocol field names when the
+  /// table has explicit column names. Required so RETURNING * deserialization
+  /// matches what Protocol expects (field names).
+  static Map<String, dynamic> _rowDbColumnNamesToFieldNames(
+    Table table,
+    Map<String, dynamic> row,
+  ) {
+    if (!table.hasColumnMapping) return row;
+    var result = <String, dynamic>{};
+    for (var col in table.columns) {
+      if (row.containsKey(col.columnName)) {
+        result[col.fieldName] = row[col.columnName];
+      }
+    }
+    return result;
+  }
+
   Future<Iterable<Map<String, dynamic>>> _mappedResultsQuery(
     DatabaseSession session,
     String query, {
     List<Object?>? parameters,
     Transaction? transaction,
+    Table? table,
   }) async {
     var result = await _runQuery(
       session,
@@ -643,7 +732,11 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
       transaction: transaction,
     );
 
-    return result.map((row) => Map<String, dynamic>.from(row));
+    var rows = result.map((row) => Map<String, dynamic>.from(row));
+    if (table != null && table.hasColumnMapping) {
+      rows = rows.map((row) => _rowDbColumnNamesToFieldNames(table, row));
+    }
+    return rows;
   }
 
   Future<List<T>> _deserializedMappedQuery<T extends TableRow>(
@@ -887,6 +980,31 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
     if (result.errors.isNotEmpty) return false;
     return result.rootNode is BaseSelectStatement;
   }
+
+  /// Returns true if [sql] appears to be INSERT, UPDATE, or DELETE (prefix check).
+  /// Used to route write statements through computeWithDatabase for [updatedRows].
+  static bool _isWriteStatement(String sql) {
+    final upper = sql.trim().toUpperCase();
+    return upper.startsWith('UPDATE') ||
+        upper.startsWith('INSERT') ||
+        upper.startsWith('DELETE');
+  }
+
+  /// Returns the last executable statement from [query], or null if none.
+  static String? _lastStatementFromQuery(String query) {
+    final statements = _splitSqlStatements(query);
+    for (var i = statements.length - 1; i >= 0; i--) {
+      final s = statements[i].trim();
+      if (s.isEmpty ||
+          s.startsWith('BEGIN') ||
+          s.startsWith('COMMIT') ||
+          s.toUpperCase().startsWith('ROLLBACK')) {
+        continue;
+      }
+      return s;
+    }
+    return null;
+  }
 }
 
 Table _getTableOrAssert<T>(
@@ -913,6 +1031,12 @@ _SqliteTransaction? _castToSqliteTransaction(Transaction? transaction) {
     );
   }
   return transaction;
+}
+
+class _RowPayload {
+  final List<Column> columns;
+  final List<String> values;
+  _RowPayload(this.columns, this.values);
 }
 
 class _SqliteSavepoint implements Savepoint {
@@ -971,11 +1095,10 @@ class _SqliteTransaction implements Transaction {
   Future<void> setRuntimeParameters(
     RuntimeParametersListBuilder builder,
   ) async {
+    // SQLite has no SET LOCAL or current_setting; only store options so
+    // transaction.runtimeParameters is still populated for callers that read it.
     final parameters = builder(RuntimeParametersBuilder());
     for (var group in parameters) {
-      for (var statement in group.buildStatements(isLocal: true)) {
-        await _execute(statement);
-      }
       runtimeParameters.addAll(group.options);
     }
   }

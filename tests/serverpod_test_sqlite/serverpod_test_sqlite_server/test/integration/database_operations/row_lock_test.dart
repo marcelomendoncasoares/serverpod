@@ -109,6 +109,7 @@ void main() {
     'Given a table with existing data and a forUpdate lock in place that holds all rows acquired using find method',
     // Concurrency tests require real parallel transactions, which are not
     // compatible with the test framework's database rollback mechanism.
+    // SQLite has no row-level locking (noWait/skipLocked/forUpdate isolation).
     rollbackDatabase: RollbackDatabase.disabled,
     testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
@@ -167,7 +168,7 @@ void main() {
         expect(rows.length, 2);
         expect(rows.first.num, 1);
         expect(rows.last.num, 2);
-      });
+      }, skip: 'SQLite has no row-level locking');
 
       test('when finding matching rows with noWait '
           'then the operation throws due to rows being locked.', () async {
@@ -182,7 +183,7 @@ void main() {
         });
 
         await expectLater(t2, throwsA(isA<Exception>()));
-      });
+      }, skip: 'SQLite has no row-level locking');
 
       test('when finding matching rows with skipLocked '
           'then all rows are skipped.', () async {
@@ -200,7 +201,7 @@ void main() {
         final rows = await t2;
 
         expect(rows, isEmpty);
-      });
+      }, skip: 'SQLite has no row-level locking');
     },
   );
 
@@ -208,6 +209,7 @@ void main() {
     'Given a table with existing data and a forUpdate lock in place that holds part of the rows acquired using find method',
     // Concurrency tests require real parallel transactions, which are not
     // compatible with the test framework's database rollback mechanism.
+    // SQLite has no row-level locking (noWait/skipLocked/forUpdate isolation).
     rollbackDatabase: RollbackDatabase.disabled,
     testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
@@ -263,7 +265,7 @@ void main() {
         });
 
         await expectLater(t2, throwsA(isA<Exception>()));
-      });
+      }, skip: 'SQLite has no row-level locking');
 
       test('when finding not matching rows with noWait '
           'then the rows are returned.', () async {
@@ -282,7 +284,7 @@ void main() {
 
         expect(rows.length, 1);
         expect(rows.first.num, 2);
-      });
+      }, skip: 'SQLite has no row-level locking');
 
       test('when finding all rows with skipLocked '
           'then only matching rows are skipped.', () async {
@@ -301,7 +303,7 @@ void main() {
 
         expect(rows.length, 1);
         expect(rows.first.num, 2);
-      });
+      }, skip: 'SQLite has no row-level locking');
     },
   );
 
@@ -309,6 +311,7 @@ void main() {
     'Given a table with existing data and a forUpdate lock in place that holds part of the rows acquired using findById method',
     // Concurrency tests require real parallel transactions, which are not
     // compatible with the test framework's database rollback mechanism.
+    // SQLite has no row-level locking (noWait/skipLocked/forUpdate isolation).
     rollbackDatabase: RollbackDatabase.disabled,
     testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
@@ -364,7 +367,7 @@ void main() {
         });
 
         await expectLater(t2, throwsA(isA<Exception>()));
-      });
+      }, skip: 'SQLite has no row-level locking');
 
       test('when finding not matching rows with noWait '
           'then the rows are returned.', () async {
@@ -383,7 +386,7 @@ void main() {
 
         expect(rows.length, 1);
         expect(rows.first.num, 2);
-      });
+      }, skip: 'SQLite has no row-level locking');
 
       test('when finding all rows with skipLocked '
           'then only matching rows are skipped.', () async {
@@ -402,7 +405,7 @@ void main() {
 
         expect(rows.length, 1);
         expect(rows.first.num, 2);
-      });
+      }, skip: 'SQLite has no row-level locking');
     },
   );
 
@@ -410,6 +413,7 @@ void main() {
     'Given a table with existing data and a forUpdate lock in place that holds part of the rows acquired using findFirstRow method',
     // Concurrency tests require real parallel transactions, which are not
     // compatible with the test framework's database rollback mechanism.
+    // SQLite has no row-level locking (noWait/skipLocked/forUpdate isolation).
     rollbackDatabase: RollbackDatabase.disabled,
     testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
@@ -465,7 +469,7 @@ void main() {
         });
 
         await expectLater(t2, throwsA(isA<Exception>()));
-      });
+      }, skip: 'SQLite has no row-level locking');
 
       test('when finding not matching rows with noWait '
           'then the rows are returned.', () async {
@@ -484,7 +488,7 @@ void main() {
 
         expect(rows.length, 1);
         expect(rows.first.num, 2);
-      });
+      }, skip: 'SQLite has no row-level locking');
 
       test('when finding all rows with skipLocked '
           'then only matching rows are skipped.', () async {
@@ -503,7 +507,7 @@ void main() {
 
         expect(rows.length, 1);
         expect(rows.first.num, 2);
-      });
+      }, skip: 'SQLite has no row-level locking');
     },
   );
 
@@ -511,6 +515,7 @@ void main() {
     'Given a table with existing data and a forUpdate lock in place that holds part of the rows acquired using lockRows method',
     // Concurrency tests require real parallel transactions, which are not
     // compatible with the test framework's database rollback mechanism.
+    // SQLite has no row-level locking (noWait/skipLocked/forUpdate isolation).
     rollbackDatabase: RollbackDatabase.disabled,
     testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
@@ -566,7 +571,7 @@ void main() {
         });
 
         await expectLater(t2, throwsA(isA<Exception>()));
-      });
+      }, skip: 'SQLite has no row-level locking');
 
       test('when finding not matching rows with noWait '
           'then the rows are returned.', () async {
@@ -585,7 +590,7 @@ void main() {
 
         expect(rows.length, 1);
         expect(rows.first.num, 2);
-      });
+      }, skip: 'SQLite has no row-level locking');
 
       test('when finding all rows with skipLocked '
           'then only matching rows are skipped.', () async {
@@ -604,7 +609,7 @@ void main() {
 
         expect(rows.length, 1);
         expect(rows.first.num, 2);
-      });
+      }, skip: 'SQLite has no row-level locking');
     },
   );
 

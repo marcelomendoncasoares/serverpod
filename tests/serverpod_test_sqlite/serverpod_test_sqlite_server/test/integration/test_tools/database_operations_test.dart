@@ -481,11 +481,17 @@ void main() {
             failingInsert,
             throwsA(
               allOf(
-                isA<DatabaseQueryException>().having(
-                  (e) => e.code,
-                  'code',
-                  PgErrorCode.uniqueViolation,
-                ),
+                isA<DatabaseQueryException>()
+                    .having(
+                      (e) => e.code,
+                      'code',
+                      SqliteErrorCode.integrityConstraintViolation,
+                    )
+                    .having(
+                      (e) => e.detail,
+                      'detail',
+                      contains(SqliteErrorCode.uniqueViolation),
+                    ),
               ),
             ),
           );

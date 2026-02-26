@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:serverpod/protocol.dart' as serverpod;
 import 'package:serverpod/serverpod.dart';
+import 'package:serverpod_test/src/io_overrides.dart';
 import 'package:serverpod_test_sqlite_server/src/generated/endpoints.dart';
 import 'package:serverpod_test_sqlite_server/src/generated/protocol.dart';
 
@@ -58,12 +59,16 @@ class TestServerpod {
     ServerpodConfig? config,
     RuntimeParametersListBuilder? runtimeParametersBuilder,
   }) {
-    _serverpod = Serverpod(
-      args,
-      serializationManager,
-      endpoints,
-      config: config,
-      runtimeParametersBuilder: runtimeParametersBuilder,
+    // Capture the IO output to silence the Serverpod constructor output.
+    _serverpod = IOOverrides.runZoned(
+      () => Serverpod(
+        args,
+        serializationManager,
+        endpoints,
+        config: config,
+        runtimeParametersBuilder: runtimeParametersBuilder,
+      ),
+      stdout: () => NullStdOut(),
     );
   }
 

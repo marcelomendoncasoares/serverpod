@@ -73,9 +73,10 @@ void main() {
           );
 
           var dateTimeDefaultNow = columns.last;
+          // SQLite stores DateTime now as epoch milliseconds.
           expect(
             dateTimeDefaultNow.columnDefault,
-            'CURRENT_TIMESTAMP',
+            "CAST(unixepoch('subsecond') * 1000 AS INTEGER)",
             reason: 'Could not find "columnDefault" for "dateTimeDefaultNow"',
           );
         },
@@ -138,9 +139,10 @@ void main() {
           );
 
           var dateTimeDefaultStr = columns.last;
+          // SQLite stores DateTime as epoch milliseconds (defaultPersist=2024-05-24T22:00:00.000Z).
           expect(
             dateTimeDefaultStr.columnDefault,
-            "'2024-05-24 22:00:00'::timestamp without time zone",
+            '1716588000000',
             reason: 'Could not find "columnDefault" for "dateTimeDefaultStr"',
           );
         },

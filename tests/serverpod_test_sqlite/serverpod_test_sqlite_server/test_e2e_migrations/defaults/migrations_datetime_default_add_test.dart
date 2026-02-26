@@ -89,9 +89,10 @@ void main() {
           );
 
           var newColumn = columns[2];
+          // SQLite stores DateTime now as epoch milliseconds.
           expect(
             newColumn.columnDefault,
-            'CURRENT_TIMESTAMP',
+            "CAST(unixepoch('subsecond') * 1000 AS INTEGER)",
             reason: 'Could not find "columnDefault" for "newColumn"',
           );
         },
@@ -185,7 +186,7 @@ void main() {
           var existingColumn = columns[2];
           expect(
             existingColumn.columnDefault,
-            'CURRENT_TIMESTAMP',
+            equals("CAST(unixepoch('subsecond') * 1000 AS INTEGER)"),
             reason: 'Could not find "columnDefault" for "existingColumn"',
           );
         },
