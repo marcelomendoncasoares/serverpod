@@ -548,6 +548,8 @@ class MigrationVersion {
       dialect: dialect,
       installedModules: installedModules,
       removedModules: removedModules,
+      targetDefinition:
+          dialect == DatabaseDialect.sqlite ? databaseDefinitionFull : null,
     );
 
     // Write the database definition JSON file

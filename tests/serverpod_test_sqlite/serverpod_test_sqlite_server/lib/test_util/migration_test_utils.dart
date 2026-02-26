@@ -50,9 +50,12 @@ abstract class MigrationTestUtils {
       protocolFile.writeAsStringSync(contents);
     });
 
+    // Use dart run serverpod_cli so the project's dependency (path override) is used.
     var exitCode = await _runProcess(
-      'serverpod',
+      'dart',
       arguments: [
+        'run',
+        'serverpod_cli',
         'create-migration',
         '--tag',
         tag,
@@ -182,8 +185,10 @@ abstract class MigrationTestUtils {
     String? targetVersion,
   }) async {
     return await _runProcess(
-      'serverpod',
+      'dart',
       arguments: [
+        'run',
+        'serverpod_cli',
         'create-repair-migration',
         '--tag',
         tag,
@@ -263,9 +268,9 @@ abstract class MigrationTestUtils {
     await serviceClient.insights.executeSql('''
 INSERT INTO "${serverProtocol.DatabaseMigrationVersion.t.tableName}"
     ("module", "version", "timestamp")
-    VALUES ('$_moduleName', '$latestMigration', now())
+    VALUES ('$_moduleName', '$latestMigration', (unixepoch('now') * 1000))
     ON CONFLICT ("module")
-    DO UPDATE SET "version" = '$latestMigration';
+    DO UPDATE SET "version" = '$latestMigration', "timestamp" = (unixepoch('now') * 1000);
 ''');
   }
 

@@ -243,11 +243,13 @@ extension DatabaseMigrationSqlGeneration on DatabaseMigration {
     required List<DatabaseMigrationVersion> installedModules,
     required List<DatabaseMigrationVersion> removedModules,
     required DatabaseDialect dialect,
+    DatabaseDefinition? targetDefinition,
   }) {
     return SqlGenerator.forDialect(dialect).generateDatabaseMigrationSql(
       this,
       installedModules: installedModules,
       removedModules: removedModules,
+      targetDefinition: targetDefinition,
     );
   }
 }

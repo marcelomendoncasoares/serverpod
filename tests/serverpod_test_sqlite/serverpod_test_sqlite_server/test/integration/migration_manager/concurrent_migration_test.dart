@@ -44,9 +44,9 @@ void main() {
       -- MIGRATION VERSION FOR serverpod_test_sqlite
       --
       INSERT INTO "serverpod_migrations" ("module", "version", "timestamp")
-          VALUES ('serverpod_test_sqlite', '${migrationName}', now())
+          VALUES ('serverpod_test_sqlite', '${migrationName}', (unixepoch('now') * 1000))
           ON CONFLICT ("module")
-          DO UPDATE SET "version" = '${migrationName}', "timestamp" = now();
+          DO UPDATE SET "version" = '${migrationName}', "timestamp" = (unixepoch('now') * 1000);
 
       COMMIT;
     ''';
@@ -76,9 +76,9 @@ void main() {
         -- MIGRATION VERSION FOR serverpod_test_sqlite
         --
         INSERT INTO "serverpod_migrations" ("module", "version", "timestamp")
-            VALUES ('serverpod_test_sqlite', '${existingMigrations.last}', now())
+            VALUES ('serverpod_test_sqlite', '${existingMigrations.last}', (unixepoch('now') * 1000))
             ON CONFLICT ("module")
-            DO UPDATE SET "version" = '${existingMigrations.last}', "timestamp" = now();
+            DO UPDATE SET "version" = '${existingMigrations.last}', "timestamp" = (unixepoch('now') * 1000);
 
         COMMIT;
       ''');

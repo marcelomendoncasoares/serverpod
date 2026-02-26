@@ -35,9 +35,9 @@ void main() {
       -- MIGRATION VERSION FOR _repair
       --
       INSERT INTO "serverpod_migrations" ("module", "version", "timestamp")
-          VALUES ('_repair', '${migrationName}', now())
+          VALUES ('_repair', '${migrationName}', (unixepoch('now') * 1000))
           ON CONFLICT ("module")
-          DO UPDATE SET "version" = '${migrationName}', "timestamp" = now();
+          DO UPDATE SET "version" = '${migrationName}', "timestamp" = (unixepoch('now') * 1000);
 
 
       COMMIT;

@@ -15,8 +15,13 @@ class SqliteDatabaseMigrationRunner implements MigrationRunner {
     DatabaseSession session,
     Future<void> Function(Transaction? transaction) action,
   ) async {
-    return session.db.transaction(
-      (transaction) => action(transaction),
-    );
+    await session.db.unsafeExecute('PRAGMA foreign_keys=OFF');
+    try {
+      await session.db.transaction(
+        (transaction) => action(transaction),
+      );
+    } finally {
+      await session.db.unsafeExecute('PRAGMA foreign_keys=ON');
+    }
   }
 }

@@ -250,6 +250,12 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
       for (var col in selectedColumns) {
         if (col.columnName == 'id') continue;
         var v = rowJson[col.columnName];
+        if (col is ColumnDateTime && v != null && v is! DateTime) {
+          v = DateTimeJsonExtension.fromJson(v);
+        }
+        if (col is ColumnDuration && v != null && v is! Duration) {
+          v = DurationJsonExtension.fromJson(v);
+        }
         setParts.add('"${col.columnName}" = ${encoder.convert(v)}');
       }
 
@@ -555,7 +561,7 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
     var sqliteTx = _castToSqliteTransaction(transaction);
     ResultSet? result;
 
-    for (var statement in query.trim().split(';')) {
+    for (var statement in _splitSqlStatements(query)) {
       statement = statement.trim();
       // Ignore transaction statements to avoid recursive locks.
       if (statement.isEmpty ||
@@ -975,4 +981,51 @@ Set<T> _extractPrimaryKeyForRelation<T>(
 ) {
   var idFieldName = tableRelation.fieldQueryAliasWithJoins;
   return resultSet.map((e) => e[idFieldName] as T?).whereType<T>().toSet();
+}
+
+/// Splits SQL into statements by ';', but only when the semicolon is outside
+/// single- or double-quoted strings. This avoids breaking on semicolons inside
+/// string literals or default values (e.g. "; order" in a value).
+List<String> _splitSqlStatements(String sql) {
+  var statements = <String>[];
+  var current = StringBuffer();
+  var i = 0;
+  final chars = sql.trim();
+  while (i < chars.length) {
+    final c = chars[i];
+    if (c == "'" || c == '"') {
+      final quote = c;
+      current.write(c);
+      i++;
+      while (i < chars.length) {
+        final d = chars[i];
+        if (d == quote) {
+          current.write(d);
+          i++;
+          if (i < chars.length && chars[i] == quote) {
+            current.write(chars[i]);
+            i++;
+          } else {
+            break;
+          }
+        } else {
+          current.write(d);
+          i++;
+        }
+      }
+      continue;
+    }
+    if (c == ';') {
+      final stmt = current.toString().trim();
+      if (stmt.isNotEmpty) statements.add(stmt);
+      current = StringBuffer();
+      i++;
+      continue;
+    }
+    current.write(c);
+    i++;
+  }
+  final last = current.toString().trim();
+  if (last.isNotEmpty) statements.add(last);
+  return statements;
 }

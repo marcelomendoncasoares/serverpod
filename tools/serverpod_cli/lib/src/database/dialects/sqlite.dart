@@ -23,10 +23,12 @@ class SqliteSqlGenerator implements SqlGenerator {
     DatabaseMigration databaseMigration, {
     required List<DatabaseMigrationVersion> installedModules,
     required List<DatabaseMigrationVersion> removedModules,
+    DatabaseDefinition? targetDefinition,
   }) {
     return databaseMigration.toSqliteSql(
       installedModules: installedModules,
       removedModules: removedModules,
+      targetDefinition: targetDefinition,
     );
   }
 
@@ -92,14 +94,20 @@ extension SqliteDatabaseDefinitionSqlGeneration on DatabaseDefinition {
 }
 
 extension SqliteTableDefinitionSqlGeneration on TableDefinition {
-  String tableCreationToSql({bool ifNotExists = false}) {
+  String tableCreationToSql({
+    bool ifNotExists = false,
+    String? tableNameOverride,
+    bool skipIndexes = false,
+  }) {
+    final tableName = tableNameOverride ?? name;
+
     String out = '';
 
     // Table
     if (ifNotExists) {
-      out += 'CREATE TABLE IF NOT EXISTS "$name" (\n';
+      out += 'CREATE TABLE IF NOT EXISTS "$tableName" (\n';
     } else {
-      out += 'CREATE TABLE "$name" (\n';
+      out += 'CREATE TABLE "$tableName" (\n';
     }
 
     var definitions = <String>[];
@@ -118,21 +126,26 @@ extension SqliteTableDefinitionSqlGeneration on TableDefinition {
     out += definitions.join(',\n');
     out += '\n) STRICT;\n';
 
-    // Indexes
-    var indexesExceptId = <IndexDefinition>[];
-    for (var index in indexes) {
-      if (index.elements.length == 1 &&
-          index.elements.first.definition == 'id') {
-        continue;
+    if (!skipIndexes) {
+      // Indexes
+      var indexesExceptId = <IndexDefinition>[];
+      for (var index in indexes) {
+        if (index.elements.length == 1 &&
+            index.elements.first.definition == 'id') {
+          continue;
+        }
+        indexesExceptId.add(index);
       }
-      indexesExceptId.add(index);
-    }
 
-    if (indexesExceptId.isNotEmpty) {
-      out += '\n';
-      out += '-- Indexes\n';
-      for (var index in indexesExceptId) {
-        out += index.toSql(tableName: name, ifNotExists: ifNotExists);
+      if (indexesExceptId.isNotEmpty) {
+        out += '\n';
+        out += '-- Indexes\n';
+        for (var index in indexesExceptId) {
+          out += index.toSql(
+            tableName: tableName,
+            ifNotExists: ifNotExists,
+          );
+        }
       }
     }
 
@@ -287,6 +300,7 @@ extension SqliteDatabaseMigrationSqlGeneration on DatabaseMigration {
   String toSqliteSql({
     required List<DatabaseMigrationVersion> installedModules,
     required List<DatabaseMigrationVersion> removedModules,
+    DatabaseDefinition? targetDefinition,
   }) {
     var out = '';
 
@@ -294,7 +308,7 @@ extension SqliteDatabaseMigrationSqlGeneration on DatabaseMigration {
     out += '\n';
 
     for (var action in actions) {
-      out += action.toSqliteSql();
+      out += action.toSqliteSql(targetDefinition: targetDefinition);
     }
 
     if (installedModules.isNotEmpty) {
@@ -324,7 +338,7 @@ extension SqliteDatabaseMigrationSqlGeneration on DatabaseMigration {
 }
 
 extension SqliteMigrationActionSqlGeneration on DatabaseMigrationAction {
-  String toSqliteSql() {
+  String toSqliteSql({DatabaseDefinition? targetDefinition}) {
     var out = '';
 
     switch (type) {
@@ -354,7 +368,14 @@ extension SqliteMigrationActionSqlGeneration on DatabaseMigrationAction {
         out += '--\n';
         out += '-- ACTION ALTER TABLE\n';
         out += '--\n';
-        out += alterTable!.toSql();
+        final rebuildSql = targetDefinition != null
+            ? alterTable!.toSqliteRebuildSql(targetDefinition)
+            : null;
+        if (rebuildSql != null) {
+          out += rebuildSql;
+        } else {
+          out += alterTable!.toSql();
+        }
         break;
     }
 
@@ -363,6 +384,99 @@ extension SqliteMigrationActionSqlGeneration on DatabaseMigrationAction {
 }
 
 extension SqliteTableMigrationSqlGeneration on TableMigration {
+  /// Returns SQL for a full table rebuild (SQLite 12-step procedure) when this
+  /// migration requires it (column type/nullability changes or FK add/drop).
+  /// Returns null when simple ALTER is sufficient.
+  String? toSqliteRebuildSql(DatabaseDefinition targetDefinition) {
+    final needsRebuild =
+        modifyColumns.isNotEmpty ||
+        deleteForeignKeys.isNotEmpty ||
+        addForeignKeys.isNotEmpty;
+    if (!needsRebuild) return null;
+
+    TableDefinition? targetTable;
+    for (var t in targetDefinition.tables) {
+      if (t.name == name) {
+        targetTable = t;
+        break;
+      }
+    }
+    if (targetTable == null) {
+      throw StateError(
+        'SQLite table rebuild for "$name" requires target table definition.',
+      );
+    }
+
+    return _toSqliteTableRebuild(targetTable);
+  }
+
+  /// Implements SQLite's "Making Other Kinds Of Table Schema Changes" procedure.
+  String _toSqliteTableRebuild(TableDefinition targetTable) {
+    const newTablePrefix = 'new_';
+    final newTableName = newTablePrefix + name;
+
+    var out = '';
+
+    // 1. If foreign key constraints are enabled, disable them. (handled by the migration runner)
+
+    // 2. Transaction is already started by the migration script (BEGIN above).
+
+    // 3. Indexes/triggers/views: we recreate from target table (step 8).
+
+    // 4. CREATE TABLE new_X in the desired revised format.
+    out += targetTable.tableCreationToSql(
+      tableNameOverride: newTableName,
+      skipIndexes: true,
+    );
+
+    // 5. Transfer content from X into new_X.
+    final addColumnNames = addColumns.map((c) => c.name).toSet();
+    final copyColumns = targetTable.columns
+        .where((c) => !addColumnNames.contains(c.name))
+        .toList();
+    if (copyColumns.isNotEmpty) {
+      final colList = copyColumns.map((c) => '"${c.name}"').join(', ');
+      out +=
+          'INSERT INTO "$newTableName" ($colList) '
+          'SELECT $colList FROM "$name";\n';
+    }
+
+    // 6. Drop the old table.
+    out += 'DROP TABLE "$name";\n';
+
+    // 7. Rename new_X to X.
+    out += 'ALTER TABLE "$newTableName" RENAME TO "$name";\n';
+
+    // 8. Recreate indexes (excluding primary key on id).
+    var indexesExceptId = <IndexDefinition>[];
+    for (var index in targetTable.indexes) {
+      if (index.elements.length == 1 &&
+          index.elements.first.definition == 'id') {
+        continue;
+      }
+      indexesExceptId.add(index);
+    }
+    if (indexesExceptId.isNotEmpty) {
+      out += '\n';
+      out += '-- Indexes\n';
+      for (var index in indexesExceptId) {
+        out += index.toSql(tableName: name);
+      }
+    }
+
+    // 9. (Triggers/views: Serverpod does not use them; skip.)
+
+    // 10. Verify foreign key constraints (optional; run manually if desired).
+    // out += 'PRAGMA foreign_key_check;\n';
+
+    // 11. Commit is done by the migration script.
+
+    // 12. Re-enable foreign keys. (handled by the migration runner)
+    out += '\n';
+
+    return out;
+  }
+
   String toSql() {
     var out = '';
 
@@ -391,11 +505,11 @@ extension SqliteTableMigrationSqlGeneration on TableMigration {
       out += 'ALTER TABLE "$name" ADD COLUMN ${addColumn.toSqlFragment()};\n';
     }
 
-    // 5. Modify columns (NOT SUPPORTED)
+    // 5. Modify columns (NOT SUPPORTED) - handled via toSqliteRebuildSql when targetDefinition is passed
     if (modifyColumns.isNotEmpty) {
       throw UnimplementedError(
         'Modifying columns (types, nullability) is not supported in SQLite. '
-        'Requires table rebuild.',
+        'Requires table rebuild. Pass targetDefinition when generating migration SQL.',
       );
     }
 
@@ -404,11 +518,11 @@ extension SqliteTableMigrationSqlGeneration on TableMigration {
       out += addIndex.toSql(tableName: name);
     }
 
-    // 7. Add Foreign Keys (NOT SUPPORTED)
+    // 7. Add Foreign Keys (NOT SUPPORTED) - handled via toSqliteRebuildSql when targetDefinition is passed
     if (addForeignKeys.isNotEmpty) {
       throw UnimplementedError(
         'Adding Foreign Keys via ALTER TABLE is not supported in SQLite. '
-        'Requires table rebuild.',
+        'Requires table rebuild. Pass targetDefinition when generating migration SQL.',
       );
     }
 
