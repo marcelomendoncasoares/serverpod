@@ -31,6 +31,9 @@ fields:
 
   ### The order of this log entry, used for sorting.
   order: int
+
 indexes:
   serverpod_log_sessionLogId_idx:
     fields: sessionLogId
+  serverpod_log_sessionLogId_order_idx:
+    fields: sessionLogId, order

@@ -38,3 +38,5 @@ fields:
 indexes:
   serverpod_query_log_sessionLogId_idx:
     fields: sessionLogId
+  serverpod_query_log_sessionLogId_order_idx:
+    fields: sessionLogId, order

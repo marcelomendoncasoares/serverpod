@@ -33,3 +33,9 @@ fields:
 
   ### Used for sorting the message log.
   order: int
+
+indexes:
+  serverpod_message_log_sessionLogId_idx:
+    fields: sessionLogId
+  serverpod_message_log_sessionLogId_order_idx:
+    fields: sessionLogId, order
