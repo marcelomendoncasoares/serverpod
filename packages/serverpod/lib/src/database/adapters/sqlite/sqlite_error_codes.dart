@@ -39,6 +39,9 @@ abstract final class SqliteErrorCode {
   static const String deadlockDetected =
       '5'; // SQLITE_BUSY (SQLite locks DBs; conflicts yield BUSY)
 
+  // Class 3B — Savepoint Exception (SQLite uses SQLITE_ERROR for no such savepoint)
+  static const String invalidSavepointSpecification = '1'; // SQLITE_ERROR
+
   // Class 42 — Syntax Error or Access Rule Violation
   static const String syntaxErrorOrAccessRuleViolation = '1'; // SQLITE_ERROR
   static const String syntaxError = '1'; // SQLITE_ERROR

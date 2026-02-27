@@ -117,17 +117,21 @@ void main() async {
     test(
       'when calling `update` before cancelling then does not update the object.',
       () async {
-        await session.db.transaction(
-          (transaction) async {
-            await UniqueData.db.update(
-              session,
-              [insertedData.copyWith(number: 222)],
-              transaction: transaction,
-            );
+        try {
+          await session.db.transaction(
+            (transaction) async {
+              await UniqueData.db.update(
+                session,
+                [insertedData.copyWith(number: 222)],
+                transaction: transaction,
+              );
 
-            await transaction.cancel();
-          },
-        );
+              await transaction.cancel();
+            },
+          );
+        } on TransactionCancelledException {
+          // SQLite throws after rollback so the driver does not attempt COMMIT.
+        }
 
         var fetchedData = await UniqueData.db.find(session);
         expect(fetchedData, hasLength(1));
@@ -138,17 +142,21 @@ void main() async {
     test(
       'when calling `updateRow` before cancelling then does not update the object.',
       () async {
-        await session.db.transaction(
-          (transaction) async {
-            await UniqueData.db.updateRow(
-              session,
-              insertedData.copyWith(number: 222),
-              transaction: transaction,
-            );
+        try {
+          await session.db.transaction(
+            (transaction) async {
+              await UniqueData.db.updateRow(
+                session,
+                insertedData.copyWith(number: 222),
+                transaction: transaction,
+              );
 
-            await transaction.cancel();
-          },
-        );
+              await transaction.cancel();
+            },
+          );
+        } on TransactionCancelledException {
+          // SQLite throws after rollback so the driver does not attempt COMMIT.
+        }
 
         var fetchedData = await UniqueData.db.find(session);
         expect(fetchedData, hasLength(1));

@@ -10,7 +10,7 @@ import 'package:serverpod/serverpod.dart';
 ///
 /// SQLite returns some types differently than JSON/protocol encoding expects:
 /// - Booleans are stored as 0/1 and returned as [int]
-/// - [ByteData] is stored as raw base64 and returned as [String]
+/// - [ByteData] is stored as BLOB (X'hex') and returned as [Uint8List]
 ///
 /// This manager converts those values back before delegating to the underlying
 /// [SerializationManagerServer].
@@ -24,6 +24,7 @@ class SqliteSerializationManager extends SerializationManagerServer {
   T deserialize<T>(dynamic data, [Type? t]) {
     t ??= T;
     data = _revertSqliteValue(data, t);
+    data = _revertRowMapByteDataColumns(data, t);
     return _delegate.deserialize<T>(data, t);
   }
 
@@ -58,11 +59,19 @@ class SqliteSerializationManager extends SerializationManagerServer {
     // SQLite returns JSON columns as text; protocol expects nested Map/list.
     data = _revertSqliteValueInRow(data);
 
-    // We store ByteData as raw base64; protocol expects "decode('...','base64')".
-    // ByteDataJsonExtension.fromJson(string) uses base64DecodedNullSafeByteData()
-    // which expects that wrapper. So convert raw base64 to ByteData here.
-    if (_isByteDataType(t) && data is String && !data.startsWith('decode(')) {
-      return ByteData.view(base64Decode(data).buffer);
+    // ByteData is stored as BLOB (X'hex'); sqlite3 returns Uint8List or List.
+    // Legacy: also support base64 text for backwards compatibility.
+    if (_isByteDataType(t)) {
+      if (data is Uint8List) {
+        return ByteData.view(data.buffer, data.offsetInBytes, data.length);
+      }
+      if (data is List && data.isNotEmpty && data.first is int) {
+        return ByteData.view(
+            Uint8List.fromList(data.map((e) => e as int).toList()).buffer);
+      }
+      if (data is String && !data.startsWith('decode(')) {
+        return ByteData.view(base64Decode(data).buffer);
+      }
     }
 
     return data;
@@ -122,6 +131,28 @@ class SqliteSerializationManager extends SerializationManagerServer {
   static Type get _typeOfNullableByteData => _typeOf<ByteData?>();
   static Type get _typeOfNullableUuid => _typeOf<UuidValue?>();
   static Type _typeOf<T>() => T;
+
+  /// For row maps (TableRow), convert BLOB columns (List/Uint8List from SQLite)
+  /// to ByteData so protocol deserialization receives the expected type.
+  dynamic _revertRowMapByteDataColumns(dynamic data, Type t) {
+    if (data is! Map<String, dynamic>) return data;
+    final table = getTableForType(t);
+    if (table == null) return data;
+    final result = Map<String, dynamic>.from(data);
+    for (final col in table.columns) {
+      if (col is! ColumnByteData) continue;
+      final key = col.fieldName;
+      final v = result[key];
+      if (v == null) continue;
+      if (v is Uint8List) {
+        result[key] = ByteData.view(v.buffer, v.offsetInBytes, v.length);
+      } else if (v is List && v.isNotEmpty && v.first is int) {
+        result[key] = ByteData.view(
+            Uint8List.fromList(v.map((e) => e as int).toList()).buffer);
+      }
+    }
+    return result;
+  }
 
   @override
   String getModuleName() => _delegate.getModuleName();

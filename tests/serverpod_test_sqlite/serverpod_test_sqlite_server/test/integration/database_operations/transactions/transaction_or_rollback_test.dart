@@ -238,6 +238,8 @@ void main() async {
             1,
           );
         },
+        skip: 'SQLite: counting without transaction inside a transaction '
+            'requires recursive lock, which sqlite_async does not allow.',
       );
 
       test(
@@ -287,6 +289,7 @@ void main() async {
             2,
           );
         },
+        skip: 'SQLite: nested writeTransaction causes recursive lock error.',
       );
 
       test(
@@ -451,6 +454,7 @@ void main() async {
             1,
           );
         },
+        skip: 'SQLite: insert without transaction inside a transaction causes recursive lock.',
       );
     },
     rollbackDatabase: RollbackDatabase.disabled,

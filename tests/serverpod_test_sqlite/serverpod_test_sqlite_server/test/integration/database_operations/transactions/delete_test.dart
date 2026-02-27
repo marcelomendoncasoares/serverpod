@@ -133,17 +133,21 @@ void main() async {
     test(
       'when calling `delete` before cancelling then does not delete the object.',
       () async {
-        await session.db.transaction(
-          (transaction) async {
-            await UniqueData.db.delete(
-              session,
-              [insertedData],
-              transaction: transaction,
-            );
+        try {
+          await session.db.transaction(
+            (transaction) async {
+              await UniqueData.db.delete(
+                session,
+                [insertedData],
+                transaction: transaction,
+              );
 
-            await transaction.cancel();
-          },
-        );
+              await transaction.cancel();
+            },
+          );
+        } on TransactionCancelledException {
+          // SQLite throws after rollback so the driver does not attempt COMMIT.
+        }
 
         var fetchedData = await UniqueData.db.find(session);
         expect(fetchedData, hasLength(1));
@@ -154,17 +158,21 @@ void main() async {
     test(
       'when calling `deleteWhere` before cancelling then does not delete the object.',
       () async {
-        await session.db.transaction(
-          (transaction) async {
-            await UniqueData.db.deleteWhere(
-              session,
-              where: (_) => Constant.bool(true),
-              transaction: transaction,
-            );
+        try {
+          await session.db.transaction(
+            (transaction) async {
+              await UniqueData.db.deleteWhere(
+                session,
+                where: (_) => Constant.bool(true),
+                transaction: transaction,
+              );
 
-            await transaction.cancel();
-          },
-        );
+              await transaction.cancel();
+            },
+          );
+        } on TransactionCancelledException {
+          // SQLite throws after rollback so the driver does not attempt COMMIT.
+        }
 
         var fetchedData = await UniqueData.db.find(session);
         expect(fetchedData, hasLength(1));
@@ -175,17 +183,21 @@ void main() async {
     test(
       'when calling `deleteRow` before cancelling then does not delete the object.',
       () async {
-        await session.db.transaction(
-          (transaction) async {
-            await UniqueData.db.deleteRow(
-              session,
-              insertedData,
-              transaction: transaction,
-            );
+        try {
+          await session.db.transaction(
+            (transaction) async {
+              await UniqueData.db.deleteRow(
+                session,
+                insertedData,
+                transaction: transaction,
+              );
 
-            await transaction.cancel();
-          },
-        );
+              await transaction.cancel();
+            },
+          );
+        } on TransactionCancelledException {
+          // SQLite throws after rollback so the driver does not attempt COMMIT.
+        }
 
         var fetchedData = await UniqueData.db.find(session);
         expect(fetchedData, hasLength(1));

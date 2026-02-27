@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 import 'package:serverpod/src/database/adapters/postgres/postgres_result_parser.dart';
@@ -155,9 +156,6 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
       var columns = withIdNull
           ? table.columns.where((c) => c.columnName != 'id').toList()
           : table.columns;
-      if (columns.isEmpty && withIdNull) {
-        return [];
-      }
       // SQLite does not support DEFAULT in VALUES; omit columns that are null
       // and have a default so SQLite applies the column default.
       var rowPayloads = <_RowPayload>[];
@@ -175,6 +173,9 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
           }
           if (c is ColumnUuid && v != null && v is! UuidValue) {
             v = UuidValueJsonExtension.fromJson(v);
+          }
+          if (c is ColumnByteData && v != null && v is! ByteData) {
+            v = ByteDataJsonExtension.fromJson(v);
           }
           final useDefault = v == null && c.hasDefault;
           if (!useDefault) {
@@ -292,7 +293,14 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
         if (col is ColumnUuid && v != null && v is! UuidValue) {
           v = UuidValueJsonExtension.fromJson(v);
         }
+        if (col is ColumnByteData && v != null && v is! ByteData) {
+          v = ByteDataJsonExtension.fromJson(v);
+        }
         setParts.add('"${col.columnName}" = ${encoder.convert(v)}');
+      }
+      if (setParts.isEmpty) {
+        // No columns to update (e.g. columns: (t) => [t.id]); keep SQL valid.
+        setParts.add('"${table.id.columnName}" = $idValue');
       }
 
       var sql =
@@ -403,11 +411,13 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
     String selectQuery;
     if (requiresFilteredSubquery) {
       var orders = _resolveOrderBy(orderByList, orderBy, orderDescending);
+      // SQLite requires LIMIT before OFFSET; use a large limit when only offset is set.
+      var effectiveLimit = limit ?? (offset != null ? 0x7fffffff : null);
       selectQuery = SelectQueryBuilder(table: table)
           .withSelectFields([table.id])
           .withWhere(where)
           .withOrderBy(orders)
-          .withLimit(limit)
+          .withLimit(effectiveLimit)
           .withOffset(offset)
           .build();
     } else {
@@ -424,7 +434,13 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
     );
     if (idResult.isEmpty) return [];
 
-    var ids = idResult.map((r) => r['id']).toList();
+    // Select result may use column or field name depending on query/engine.
+    var idKey = table.id.columnName;
+    var idKeyAlt = table.id.fieldName;
+    var ids = idResult
+        .map((r) => r[idKey] ?? r[idKeyAlt])
+        .whereType<Object>()
+        .toList();
     var idList = ids.map(encoder.convert).join(', ');
     var updateSql =
         'UPDATE "${table.tableName}" SET $setClause WHERE "${table.id.columnName}" IN ($idList) RETURNING *';
@@ -1068,6 +1084,7 @@ class _SqliteTransaction implements Transaction {
   @override
   Future<void> cancel() async {
     await _ctx.execute('ROLLBACK');
+    throw TransactionCancelledException();
   }
 
   Future<ResultSet> execute(
@@ -1081,7 +1098,14 @@ class _SqliteTransaction implements Transaction {
     String sql, [
     List<Object?> parameters = const [],
   ]) async {
-    await _ctx.execute(sql, parameters);
+    try {
+      await _ctx.execute(sql, parameters);
+    } catch (exception, trace) {
+      final serverpodException = exception is SqliteException
+          ? _SqliteDatabaseQueryException.fromSqliteException(exception)
+          : _SqliteDatabaseQueryException(exception.toString());
+      Error.throwWithStackTrace(serverpodException, trace);
+    }
   }
 
   @override

@@ -51,25 +51,29 @@ void main() async {
     'Given inserting an object inside a transaction that is cancelled when calling `count`'
     'inside the transaction then should return 1 but outside the transaction should return 0.',
     () async {
-      await session.db.transaction(
-        (transaction) async {
-          await UniqueData.db.insertRow(
-            session,
-            UniqueData(number: 111, email: 'test@serverpod.dev'),
-            transaction: transaction,
-          );
+      try {
+        await session.db.transaction(
+          (transaction) async {
+            await UniqueData.db.insertRow(
+              session,
+              UniqueData(number: 111, email: 'test@serverpod.dev'),
+              transaction: transaction,
+            );
 
-          var count = await UniqueData.db.count(
-            session,
-            where: (_) => Constant.bool(true),
-            transaction: transaction,
-          );
+            var count = await UniqueData.db.count(
+              session,
+              where: (_) => Constant.bool(true),
+              transaction: transaction,
+            );
 
-          expect(count, 1);
+            expect(count, 1);
 
-          await transaction.cancel();
-        },
-      );
+            await transaction.cancel();
+          },
+        );
+      } on TransactionCancelledException {
+        // SQLite throws after rollback so the driver does not attempt COMMIT.
+      }
 
       await expectLater(
         UniqueData.db.count(

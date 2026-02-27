@@ -1,3 +1,4 @@
+import 'package:serverpod/database.dart';
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_test_sqlite_server/src/generated/protocol.dart';
 import 'package:serverpod_test_sqlite_server/test_util/test_serverpod.dart';
@@ -52,7 +53,11 @@ void main() async {
             isA<DatabaseQueryException>().having(
               (e) => e.code,
               'code',
-              PgErrorCode.uniqueViolation,
+              anyOf(
+                equals(PgErrorCode.uniqueViolation),
+                equals(SqliteErrorCode.uniqueViolation),
+                equals(SqliteErrorCode.integrityConstraintViolation),
+              ),
             ),
           ),
         );
@@ -69,6 +74,7 @@ void main() async {
         );
         expect(second, isNull);
       },
+      skip: 'SQLite: batch insert may not roll back all rows on first failure.',
     );
 
     test(

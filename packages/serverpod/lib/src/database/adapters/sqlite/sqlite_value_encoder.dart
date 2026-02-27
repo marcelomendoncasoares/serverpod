@@ -27,7 +27,11 @@ class SqliteValueEncoder implements ValueEncoder {
       if (!escapeStrings) return input;
       return "'${_escapeString(input)}'";
     } else if (input is ByteData) {
-      return input.base64encodedString();
+      // Store as BLOB literal so SQLite BLOB columns accept it (strict mode).
+      final bytes = Uint8List.view(
+          input.buffer, input.offsetInBytes, input.lengthInBytes);
+      final hex = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+      return "X'$hex'";
     } else if (input is DateTime) {
       return input.millisecondsSinceEpoch.toString();
     } else if (input is Duration) {
@@ -55,7 +59,11 @@ class SqliteValueEncoder implements ValueEncoder {
     } else if (input is Bit) {
       return '\'${_escapeString(input.toString())}\'';
     } else if (input is SerializableModel && input is Enum) {
-      return "'${_escapeString(SerializationManager.encode(input.toJson()))}'";
+      // Store enum as string; toJson() may return name (String) or index (int).
+      final v = input.toJson();
+      return v is String
+          ? "'${_escapeString(v)}'"
+          : "'${_escapeString(v.toString())}'";
     } else if (input is List || input is Map || input is Set) {
       return "'${_escapeString(SerializationManager.encode(input))}'";
     }

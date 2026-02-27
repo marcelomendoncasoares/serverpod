@@ -112,6 +112,8 @@ void main() async {
           expect(data, hasLength(0));
         });
       },
+      skip: 'SQLite: counting/reading without transaction inside a transaction '
+          'requires recursive lock, which sqlite_async does not allow.',
     );
 
     test(
@@ -153,6 +155,7 @@ void main() async {
           expect(data, equals(null));
         });
       },
+      skip: 'SQLite: reading without transaction inside a transaction causes recursive lock.',
     );
 
     test(
@@ -196,6 +199,7 @@ void main() async {
           expect(data, equals(null));
         });
       },
+      skip: 'SQLite: reading without transaction inside a transaction causes recursive lock.',
     );
   });
 

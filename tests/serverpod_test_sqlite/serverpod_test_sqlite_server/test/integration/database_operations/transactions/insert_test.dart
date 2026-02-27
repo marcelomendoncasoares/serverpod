@@ -108,17 +108,21 @@ void main() async {
     test(
       'when calling `insert` before cancelling then does not create the object.',
       () async {
-        await session.db.transaction(
-          (transaction) async {
-            await UniqueData.db.insert(
-              session,
-              [data],
-              transaction: transaction,
-            );
+        try {
+          await session.db.transaction(
+            (transaction) async {
+              await UniqueData.db.insert(
+                session,
+                [data],
+                transaction: transaction,
+              );
 
-            await transaction.cancel();
-          },
-        );
+              await transaction.cancel();
+            },
+          );
+        } on TransactionCancelledException {
+          // SQLite throws after rollback so the driver does not attempt COMMIT.
+        }
 
         await expectLater(
           UniqueData.db.find(session),
@@ -130,17 +134,21 @@ void main() async {
     test(
       'when calling `insertRow` before cancelling then does not create the object.',
       () async {
-        await session.db.transaction(
-          (transaction) async {
-            await UniqueData.db.insertRow(
-              session,
-              data,
-              transaction: transaction,
-            );
+        try {
+          await session.db.transaction(
+            (transaction) async {
+              await UniqueData.db.insertRow(
+                session,
+                data,
+                transaction: transaction,
+              );
 
-            await transaction.cancel();
-          },
-        );
+              await transaction.cancel();
+            },
+          );
+        } on TransactionCancelledException {
+          // SQLite throws after rollback so the driver does not attempt COMMIT.
+        }
 
         await expectLater(
           UniqueData.db.find(session),
@@ -155,25 +163,29 @@ void main() async {
     () async {
       var data = UniqueData(number: 1, email: 'test@serverpod.dev');
       var data2 = UniqueData(number: 2, email: 'test2@serverpod.dev');
-      await session.db.transaction<void>(
-        (transaction) async {
-          await UniqueData.db.insertRow(
-            session,
-            data,
-            transaction: transaction,
-          );
-          await transaction.cancel();
-          try {
+      try {
+        await session.db.transaction<void>(
+          (transaction) async {
             await UniqueData.db.insertRow(
               session,
-              data2,
+              data,
               transaction: transaction,
             );
-          } catch (_) {
-            // Ignore
-          }
-        },
-      );
+            await transaction.cancel();
+            try {
+              await UniqueData.db.insertRow(
+                session,
+                data2,
+                transaction: transaction,
+              );
+            } catch (_) {
+              // Ignore
+            }
+          },
+        );
+      } on TransactionCancelledException {
+        // SQLite throws after rollback.
+      }
 
       var fetchedData = await UniqueData.db.findFirstRow(session);
 

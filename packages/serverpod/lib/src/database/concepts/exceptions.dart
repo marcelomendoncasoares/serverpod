@@ -63,3 +63,16 @@ abstract base class DatabaseDeleteRowException implements DatabaseException {
   @override
   String toString() => 'DatabaseDeleteRowException: $message';
 }
+
+/// Thrown when [Transaction.cancel] has been called.
+///
+/// With SQLite, the transaction is rolled back and this exception is thrown
+/// so that the driver does not attempt to commit. Callers that cancel a
+/// transaction should catch this exception if they need to continue.
+final class TransactionCancelledException extends DatabaseException {
+  @override
+  String get message => 'Transaction was cancelled.';
+
+  @override
+  String toString() => 'TransactionCancelledException: $message';
+}
