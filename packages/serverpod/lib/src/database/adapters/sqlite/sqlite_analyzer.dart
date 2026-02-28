@@ -135,11 +135,17 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
     );
 
     var indexes = <IndexDefinition>[];
+    var hasPrimaryKeyIndex = false;
     for (var indexRow in indexListResult) {
+      // PRAGMA index_list columns: 0=seq, 1=name, 2=unique, 3=origin, 4=partial
       var indexName = indexRow[1] as String;
       var isUnique = (indexRow[2] as int?) == 1;
       var origin = indexRow[3] as String? ?? '';
       var isPrimary = origin == 'pk';
+
+      if (isPrimary) {
+        hasPrimaryKeyIndex = true;
+      }
 
       var quotedIndex = _quoteIdentifier(indexName);
       var indexInfoResult = await database.unsafeQuery(
@@ -160,6 +166,10 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
           .where((i) => i.indexName.toLowerCase() == indexName.toLowerCase())
           .firstOrNull;
 
+      // Use target's isPrimary when available, since SQLite's origin can be
+      // ambiguous for some index types (e.g. rowid-based INTEGER PRIMARY KEY).
+      final resolvedIsPrimary = targetIndex?.isPrimary ?? isPrimary;
+
       indexes.add(
         IndexDefinition(
           indexName: indexName,
@@ -167,13 +177,77 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
           elements: elements,
           type: targetIndex?.type ?? 'btree',
           isUnique: isUnique,
-          isPrimary: isPrimary,
+          isPrimary: resolvedIsPrimary,
           predicate: null,
           vectorDistanceFunction: null,
           vectorColumnType: null,
           parameters: null,
         ),
       );
+    }
+
+    // For INTEGER PRIMARY KEY columns, SQLite uses rowid as an alias and does
+    // not create a separate index in PRAGMA index_list. Synthesize the primary
+    // key index when missing, using target definition or PRAGMA table_info.
+    if (!hasPrimaryKeyIndex) {
+      final targetTable = _targetCache
+          .where((t) => t.name.toLowerCase() == tableName.toLowerCase())
+          .firstOrNull;
+      final targetPkey = targetTable?.indexes
+          .where((i) => i.isPrimary)
+          .firstOrNull;
+
+      if (targetPkey != null) {
+        indexes.add(
+          IndexDefinition(
+            indexName: targetPkey.indexName,
+            tableSpace: null,
+            elements: targetPkey.elements,
+            type: targetPkey.type,
+            isUnique: targetPkey.isUnique,
+            isPrimary: true,
+            predicate: null,
+            vectorDistanceFunction: null,
+            vectorColumnType: null,
+            parameters: null,
+          ),
+        );
+      } else {
+        var tableInfoResult = await database.unsafeQuery(
+          'PRAGMA table_info($quotedTable)',
+        );
+
+        for (var row in tableInfoResult) {
+          var columnName = row[1] as String;
+          var columnType = (row[2] as String? ?? '').toUpperCase();
+          var isPrimaryKey = (row[5] as int?) == 1;
+
+          if (isPrimaryKey &&
+              columnType == 'INTEGER' &&
+              columnName.toLowerCase() == 'id') {
+            indexes.add(
+              IndexDefinition(
+                indexName: '${tableName}_pkey',
+                tableSpace: null,
+                elements: [
+                  IndexElementDefinition(
+                    type: IndexElementDefinitionType.column,
+                    definition: columnName,
+                  ),
+                ],
+                type: 'btree',
+                isUnique: true,
+                isPrimary: true,
+                predicate: null,
+                vectorDistanceFunction: null,
+                vectorColumnType: null,
+                parameters: null,
+              ),
+            );
+            break;
+          }
+        }
+      }
     }
 
     return indexes;
