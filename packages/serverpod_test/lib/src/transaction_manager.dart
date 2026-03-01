@@ -69,7 +69,12 @@ class TransactionManager {
       throw StateError('No ongoing transaction.');
     }
 
-    await localTransaction.cancel();
+    try {
+      await localTransaction.cancel();
+    } on TransactionCancelledException {
+      // SQLite (and possibly other drivers) throw after rollback so the
+      // driver does not attempt COMMIT; ignore when cancelling intentionally.
+    }
     _endTransactionScopeCompleter.complete();
     currentTransaction = null;
   }

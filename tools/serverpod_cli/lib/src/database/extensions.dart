@@ -96,6 +96,45 @@ extension TableDefinitionExtension on TableDefinition {
   bool get isManaged => managed != false;
 }
 
+extension ColumnTypeComparison on ColumnType {
+  bool like(ColumnType other) {
+    // Integer and bigint are considered the same type.
+    if (this == ColumnType.integer || this == ColumnType.bigint) {
+      return other == ColumnType.integer || other == ColumnType.bigint;
+    }
+
+    return this == other;
+  }
+}
+
+extension DatabaseDefinitionSqlGeneration on DatabaseDefinition {
+  String toSql({
+    required List<DatabaseMigrationVersion> installedModules,
+    required DatabaseDialect dialect,
+  }) {
+    return SqlGenerator.forDialect(dialect).generateDatabaseDefinitionSql(
+      this,
+      installedModules: installedModules,
+    );
+  }
+}
+
+extension DatabaseMigrationSqlGeneration on DatabaseMigration {
+  String toSql({
+    required List<DatabaseMigrationVersion> installedModules,
+    required List<DatabaseMigrationVersion> removedModules,
+    required DatabaseDialect dialect,
+    DatabaseDefinition? targetDefinition,
+  }) {
+    return SqlGenerator.forDialect(dialect).generateDatabaseMigrationSql(
+      this,
+      installedModules: installedModules,
+      removedModules: removedModules,
+      targetDefinition: targetDefinition,
+    );
+  }
+}
+
 /// Returns the last element of the list, or null if the list is empty.
 ///
 /// Used to get the latest migration version from the list of migration versions.

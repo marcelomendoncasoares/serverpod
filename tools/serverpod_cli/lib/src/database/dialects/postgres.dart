@@ -20,6 +20,7 @@ class PostgresSqlGenerator implements SqlGenerator {
     DatabaseDefinition databaseDefinition, {
     required List<DatabaseMigrationVersionModel> installedModules,
     required List<DatabaseMigrationVersionModel> removedModules,
+    DatabaseDefinition? targetDefinition,
   }) {
     return databaseMigration.toPgSql(
       databaseDefinition: databaseDefinition,

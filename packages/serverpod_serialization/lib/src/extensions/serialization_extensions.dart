@@ -57,6 +57,13 @@ extension UuidValueJsonExtension on UuidValue {
   /// Returns a deserialized version of the [UuidValue].
   static UuidValue fromJson(dynamic value) {
     if (value is UuidValue) return value;
+    if (value is Uint8List) return UuidValue.fromByteList(value);
+    // SQLite BLOB columns may return List<int> or List<dynamic> (16 bytes).
+    if (value is List && value.length == 16) {
+      return UuidValue.fromByteList(
+        Uint8List.fromList(value.map((e) => e as int).toList()),
+      );
+    }
     return UuidValue.withValidation(value as String);
   }
 

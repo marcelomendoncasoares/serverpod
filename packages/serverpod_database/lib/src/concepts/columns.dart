@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
-import 'package:serverpod_serialization/serverpod_serialization.dart';
-
 import '../../serverpod_database.dart';
+
+import 'package:serverpod/serverpod.dart';
 
 /// A function that returns a [Column] for a [Table].
 typedef ColumnSelections<T extends Table> = List<Column> Function(T);
@@ -877,14 +877,20 @@ class _ILikeExpression<T> extends _TwoPartColumnExpression<T> {
   _ILikeExpression(super.column, super.other);
 
   @override
-  String get operator => 'ILIKE';
+  String get operator => switch (Serverpod.instance.config.database?.dialect) {
+    DatabaseDialect.sqlite => 'LIKE',
+    _ => 'ILIKE',
+  };
 }
 
 class _NotILikeExpression<T> extends _TwoPartColumnExpression<T> {
   _NotILikeExpression(super.column, super.other);
 
   @override
-  String get operator => 'NOT ILIKE';
+  String get operator => switch (Serverpod.instance.config.database?.dialect) {
+    DatabaseDialect.sqlite => 'NOT LIKE',
+    _ => 'NOT ILIKE',
+  };
 }
 
 class _IsDistinctFromExpression<T> extends _TwoPartColumnExpression<T> {
