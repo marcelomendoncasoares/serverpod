@@ -222,14 +222,19 @@ extension SqliteColumnDefinitionSqlGeneration on ColumnDefinition {
     }
 
     // The id column is special.
-    if (isIdColumn && type == 'INTEGER') {
+    if (isIdColumn) {
       if (isNullable) {
         throw const FormatException('The id column must be non-nullable');
       }
-      // SQLite "INTEGER PRIMARY KEY" is an alias for ROWID (auto-incrementing)
-      type = 'INTEGER PRIMARY KEY';
+      if (type == 'INTEGER') {
+        // SQLite "INTEGER PRIMARY KEY" is an alias for ROWID.
+        type = 'INTEGER PRIMARY KEY';
+        defaultValue = '';
+      } else {
+        // Non-integer ids (e.g. UUID BLOB) still need explicit PK semantics.
+        type = '$type PRIMARY KEY';
+      }
       nullable = '';
-      defaultValue = '';
     }
 
     return '"$name" $type$nullable$defaultValue';
