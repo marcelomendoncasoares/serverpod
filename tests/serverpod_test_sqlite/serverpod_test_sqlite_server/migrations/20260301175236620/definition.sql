@@ -1,7 +1,7 @@
 BEGIN;
 
 --
--- ACTION CREATE TABLE
+-- Class Address as table address
 --
 CREATE TABLE "address" (
     "id" INTEGER PRIMARY KEY,
@@ -13,11 +13,12 @@ CREATE TABLE "address" (
 -- Indexes
 CREATE UNIQUE INDEX "inhabitant_index_idx" ON "address" ("inhabitantId");
 
+
 --
--- ACTION CREATE TABLE
+-- Class AddressUuid as table address_uuid
 --
 CREATE TABLE "address_uuid" (
-    "id" BLOB NOT NULL DEFAULT (unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
+    "id" BLOB PRIMARY KEY DEFAULT (unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
     "street" TEXT NOT NULL,
     "inhabitantId" INTEGER,
     CONSTRAINT "address_uuid_fk_0" FOREIGN KEY ("inhabitantId") REFERENCES "citizen_int" ("id") ON DELETE CASCADE ON UPDATE NO ACTION
@@ -26,24 +27,27 @@ CREATE TABLE "address_uuid" (
 -- Indexes
 CREATE UNIQUE INDEX "inhabitant_uuid_index_idx" ON "address_uuid" ("inhabitantId");
 
+
 --
--- ACTION CREATE TABLE
+-- Class Arena as table arena
 --
 CREATE TABLE "arena" (
     "id" INTEGER PRIMARY KEY,
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ArenaUuid as table arena_uuid
 --
 CREATE TABLE "arena_uuid" (
-    "id" BLOB NOT NULL DEFAULT (unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
+    "id" BLOB PRIMARY KEY DEFAULT (unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class BigIntDefault as table bigint_default
 --
 CREATE TABLE "bigint_default" (
     "id" INTEGER PRIMARY KEY,
@@ -51,8 +55,9 @@ CREATE TABLE "bigint_default" (
     "bigintDefaultStrNull" TEXT DEFAULT (CAST('1234567890123456789099999999' AS TEXT))
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class BigIntDefaultMix as table bigint_default_mix
 --
 CREATE TABLE "bigint_default_mix" (
     "id" INTEGER PRIMARY KEY,
@@ -61,8 +66,9 @@ CREATE TABLE "bigint_default_mix" (
     "bigIntDefaultModelAndDefaultPersist" TEXT NOT NULL DEFAULT (CAST('-1234567890123456789099999999' AS TEXT))
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class BigIntDefaultModel as table bigint_default_model
 --
 CREATE TABLE "bigint_default_model" (
     "id" INTEGER PRIMARY KEY,
@@ -70,16 +76,18 @@ CREATE TABLE "bigint_default_model" (
     "bigIntDefaultModelStrNull" TEXT
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class BigIntDefaultPersist as table bigint_default_persist
 --
 CREATE TABLE "bigint_default_persist" (
     "id" INTEGER PRIMARY KEY,
     "bigIntDefaultPersistStr" TEXT DEFAULT (CAST('1234567890123456789099999999' AS TEXT))
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Blocking as table blocking
 --
 CREATE TABLE "blocking" (
     "id" INTEGER PRIMARY KEY,
@@ -92,16 +100,18 @@ CREATE TABLE "blocking" (
 -- Indexes
 CREATE UNIQUE INDEX "blocking_blocked_unique_idx" ON "blocking" ("blockedId", "blockedById");
 
+
 --
--- ACTION CREATE TABLE
+-- Class Book as table book
 --
 CREATE TABLE "book" (
     "id" INTEGER PRIMARY KEY,
     "title" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class BoolDefault as table bool_default
 --
 CREATE TABLE "bool_default" (
     "id" INTEGER PRIMARY KEY,
@@ -110,8 +120,9 @@ CREATE TABLE "bool_default" (
     "boolDefaultNullFalse" INTEGER DEFAULT (0)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class BoolDefaultMix as table bool_default_mix
 --
 CREATE TABLE "bool_default_mix" (
     "id" INTEGER PRIMARY KEY,
@@ -120,8 +131,9 @@ CREATE TABLE "bool_default_mix" (
     "boolDefaultModelAndDefaultPersist" INTEGER NOT NULL DEFAULT (0)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class BoolDefaultModel as table bool_default_model
 --
 CREATE TABLE "bool_default_model" (
     "id" INTEGER PRIMARY KEY,
@@ -130,8 +142,9 @@ CREATE TABLE "bool_default_model" (
     "boolDefaultModelNullFalse" INTEGER NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class BoolDefaultPersist as table bool_default_persist
 --
 CREATE TABLE "bool_default_persist" (
     "id" INTEGER PRIMARY KEY,
@@ -139,8 +152,9 @@ CREATE TABLE "bool_default_persist" (
     "boolDefaultPersistFalse" INTEGER DEFAULT (0)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Cat as table cat
 --
 CREATE TABLE "cat" (
     "id" INTEGER PRIMARY KEY,
@@ -149,11 +163,12 @@ CREATE TABLE "cat" (
     CONSTRAINT "cat_fk_0" FOREIGN KEY ("motherId") REFERENCES "cat" ("id") ON DELETE SET NULL ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ChangedIdTypeSelf as table changed_id_type_self
 --
 CREATE TABLE "changed_id_type_self" (
-    "id" BLOB NOT NULL DEFAULT (unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
+    "id" BLOB PRIMARY KEY DEFAULT (unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
     "name" TEXT NOT NULL,
     "nextId" BLOB,
     "parentId" BLOB,
@@ -164,8 +179,9 @@ CREATE TABLE "changed_id_type_self" (
 -- Indexes
 CREATE UNIQUE INDEX "changed_id_type_self_next_unique_idx" ON "changed_id_type_self" ("nextId");
 
+
 --
--- ACTION CREATE TABLE
+-- Class Chapter as table chapter
 --
 CREATE TABLE "chapter" (
     "id" INTEGER PRIMARY KEY,
@@ -174,8 +190,9 @@ CREATE TABLE "chapter" (
     CONSTRAINT "chapter_fk_0" FOREIGN KEY ("_bookChaptersBookId") REFERENCES "book" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ChildEntity as table child_entity
 --
 CREATE TABLE "child_entity" (
     "id" INTEGER PRIMARY KEY,
@@ -185,8 +202,9 @@ CREATE TABLE "child_entity" (
     CONSTRAINT "child_entity_fk_0" FOREIGN KEY ("_parentEntityChildrenParentEntityId") REFERENCES "parent_entity" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ChildClassExplicitColumn as table child_table_explicit_column
 --
 CREATE TABLE "child_table_explicit_column" (
     "id" INTEGER PRIMARY KEY,
@@ -194,11 +212,12 @@ CREATE TABLE "child_table_explicit_column" (
     "child_field" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ChildClassWithoutId as table child_table_with_inherited_id
 --
 CREATE TABLE "child_table_with_inherited_id" (
-    "id" BLOB NOT NULL DEFAULT (unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
+    "id" BLOB PRIMARY KEY DEFAULT (unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
     "grandParentField" TEXT NOT NULL,
     "parentField" TEXT NOT NULL,
     "childField" TEXT NOT NULL
@@ -207,18 +226,20 @@ CREATE TABLE "child_table_with_inherited_id" (
 -- Indexes
 CREATE INDEX "child_table_with_inherited_id_base_index" ON "child_table_with_inherited_id" ("grandParentField");
 
+
 --
--- ACTION CREATE TABLE
+-- Class ChildWithInheritedId as table child_with_inherited_id
 --
 CREATE TABLE "child_with_inherited_id" (
-    "id" BLOB NOT NULL DEFAULT (unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
+    "id" BLOB PRIMARY KEY DEFAULT (unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
     "name" TEXT NOT NULL,
     "parentId" BLOB,
     CONSTRAINT "child_with_inherited_id_fk_0" FOREIGN KEY ("parentId") REFERENCES "child_with_inherited_id" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Citizen as table citizen
 --
 CREATE TABLE "citizen" (
     "id" INTEGER PRIMARY KEY,
@@ -229,8 +250,9 @@ CREATE TABLE "citizen" (
     CONSTRAINT "citizen_fk_1" FOREIGN KEY ("oldCompanyId") REFERENCES "company" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class CitizenInt as table citizen_int
 --
 CREATE TABLE "citizen_int" (
     "id" INTEGER PRIMARY KEY,
@@ -241,24 +263,27 @@ CREATE TABLE "citizen_int" (
     CONSTRAINT "citizen_int_fk_1" FOREIGN KEY ("oldCompanyId") REFERENCES "company_uuid" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class City as table city
 --
 CREATE TABLE "city" (
     "id" INTEGER PRIMARY KEY,
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class CityWithLongTableName as table city_with_long_table_name_that_is_still_valid
 --
 CREATE TABLE "city_with_long_table_name_that_is_still_valid" (
     "id" INTEGER PRIMARY KEY,
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Comment as table comment
 --
 CREATE TABLE "comment" (
     "id" INTEGER PRIMARY KEY,
@@ -267,8 +292,9 @@ CREATE TABLE "comment" (
     CONSTRAINT "comment_fk_0" FOREIGN KEY ("orderId") REFERENCES "order" ("id") ON DELETE CASCADE ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class CommentInt as table comment_int
 --
 CREATE TABLE "comment_int" (
     "id" INTEGER PRIMARY KEY,
@@ -277,8 +303,9 @@ CREATE TABLE "comment_int" (
     CONSTRAINT "comment_int_fk_0" FOREIGN KEY ("orderId") REFERENCES "order_uuid" ("id") ON DELETE CASCADE ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Company as table company
 --
 CREATE TABLE "company" (
     "id" INTEGER PRIMARY KEY,
@@ -287,18 +314,20 @@ CREATE TABLE "company" (
     CONSTRAINT "company_fk_0" FOREIGN KEY ("townId") REFERENCES "town" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class CompanyUuid as table company_uuid
 --
 CREATE TABLE "company_uuid" (
-    "id" BLOB NOT NULL DEFAULT (unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
+    "id" BLOB PRIMARY KEY DEFAULT (unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
     "name" TEXT NOT NULL,
     "townId" INTEGER NOT NULL,
     CONSTRAINT "company_uuid_fk_0" FOREIGN KEY ("townId") REFERENCES "town_int" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Contractor as table contractor
 --
 CREATE TABLE "contractor" (
     "id" INTEGER PRIMARY KEY,
@@ -310,40 +339,45 @@ CREATE TABLE "contractor" (
 -- Indexes
 CREATE UNIQUE INDEX "contractor_service_unique_idx" ON "contractor" ("fk_contractor_service_id");
 
+
 --
--- ACTION CREATE TABLE
+-- Class Course as table course
 --
 CREATE TABLE "course" (
     "id" INTEGER PRIMARY KEY,
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class CourseUuid as table course_uuid
 --
 CREATE TABLE "course_uuid" (
-    "id" BLOB NOT NULL DEFAULT (unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
+    "id" BLOB PRIMARY KEY DEFAULT (unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Customer as table customer
 --
 CREATE TABLE "customer" (
     "id" INTEGER PRIMARY KEY,
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class CustomerInt as table customer_int
 --
 CREATE TABLE "customer_int" (
     "id" INTEGER PRIMARY KEY,
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class DateTimeDefault as table datetime_default
 --
 CREATE TABLE "datetime_default" (
     "id" INTEGER PRIMARY KEY,
@@ -352,8 +386,9 @@ CREATE TABLE "datetime_default" (
     "dateTimeDefaultStrNull" INTEGER DEFAULT (1716588000000)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class DateTimeDefaultMix as table datetime_default_mix
 --
 CREATE TABLE "datetime_default_mix" (
     "id" INTEGER PRIMARY KEY,
@@ -362,8 +397,9 @@ CREATE TABLE "datetime_default_mix" (
     "dateTimeDefaultModelAndDefaultPersist" INTEGER NOT NULL DEFAULT (1715378400000)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class DateTimeDefaultModel as table datetime_default_model
 --
 CREATE TABLE "datetime_default_model" (
     "id" INTEGER PRIMARY KEY,
@@ -372,8 +408,9 @@ CREATE TABLE "datetime_default_model" (
     "dateTimeDefaultModelStrNull" INTEGER
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class DateTimeDefaultPersist as table datetime_default_persist
 --
 CREATE TABLE "datetime_default_persist" (
     "id" INTEGER PRIMARY KEY,
@@ -381,16 +418,18 @@ CREATE TABLE "datetime_default_persist" (
     "dateTimeDefaultPersistStr" INTEGER DEFAULT (1715378400000)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Department as table department
 --
 CREATE TABLE "department" (
     "id" INTEGER PRIMARY KEY,
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class DoubleDefault as table double_default
 --
 CREATE TABLE "double_default" (
     "id" INTEGER PRIMARY KEY,
@@ -398,8 +437,9 @@ CREATE TABLE "double_default" (
     "doubleDefaultNull" REAL DEFAULT (20.5)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class DoubleDefaultMix as table double_default_mix
 --
 CREATE TABLE "double_default_mix" (
     "id" INTEGER PRIMARY KEY,
@@ -408,8 +448,9 @@ CREATE TABLE "double_default_mix" (
     "doubleDefaultModelAndDefaultPersist" REAL NOT NULL DEFAULT (20.5)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class DoubleDefaultModel as table double_default_model
 --
 CREATE TABLE "double_default_model" (
     "id" INTEGER PRIMARY KEY,
@@ -417,16 +458,18 @@ CREATE TABLE "double_default_model" (
     "doubleDefaultModelNull" REAL NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class DoubleDefaultPersist as table double_default_persist
 --
 CREATE TABLE "double_default_persist" (
     "id" INTEGER PRIMARY KEY,
     "doubleDefaultPersist" REAL DEFAULT (10.5)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class DurationDefault as table duration_default
 --
 CREATE TABLE "duration_default" (
     "id" INTEGER PRIMARY KEY,
@@ -434,8 +477,9 @@ CREATE TABLE "duration_default" (
     "durationDefaultNull" INTEGER DEFAULT (177640100)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class DurationDefaultMix as table duration_default_mix
 --
 CREATE TABLE "duration_default_mix" (
     "id" INTEGER PRIMARY KEY,
@@ -444,8 +488,9 @@ CREATE TABLE "duration_default_mix" (
     "durationDefaultModelAndDefaultPersist" INTEGER NOT NULL DEFAULT (177640100)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class DurationDefaultModel as table duration_default_model
 --
 CREATE TABLE "duration_default_model" (
     "id" INTEGER PRIMARY KEY,
@@ -453,16 +498,18 @@ CREATE TABLE "duration_default_model" (
     "durationDefaultModelNull" INTEGER
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class DurationDefaultPersist as table duration_default_persist
 --
 CREATE TABLE "duration_default_persist" (
     "id" INTEGER PRIMARY KEY,
     "durationDefaultPersist" INTEGER DEFAULT (94230100)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Employee as table employee
 --
 CREATE TABLE "employee" (
     "id" INTEGER PRIMARY KEY,
@@ -471,8 +518,9 @@ CREATE TABLE "employee" (
     CONSTRAINT "employee_fk_0" FOREIGN KEY ("fk_employee_department_id") REFERENCES "department" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class EmptyModelRelationItem as table empty_model_relation_item
 --
 CREATE TABLE "empty_model_relation_item" (
     "id" INTEGER PRIMARY KEY,
@@ -481,15 +529,17 @@ CREATE TABLE "empty_model_relation_item" (
     CONSTRAINT "empty_model_relation_item_fk_0" FOREIGN KEY ("_relationEmptyModelItemsRelationEmptyModelId") REFERENCES "relation_empty_model" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class EmptyModelWithTable as table empty_model_with_table
 --
 CREATE TABLE "empty_model_with_table" (
     "id" INTEGER PRIMARY KEY
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Enrollment as table enrollment
 --
 CREATE TABLE "enrollment" (
     "id" INTEGER PRIMARY KEY,
@@ -502,8 +552,9 @@ CREATE TABLE "enrollment" (
 -- Indexes
 CREATE UNIQUE INDEX "enrollment_index_idx" ON "enrollment" ("studentId", "courseId");
 
+
 --
--- ACTION CREATE TABLE
+-- Class EnrollmentInt as table enrollment_int
 --
 CREATE TABLE "enrollment_int" (
     "id" INTEGER PRIMARY KEY,
@@ -516,8 +567,9 @@ CREATE TABLE "enrollment_int" (
 -- Indexes
 CREATE UNIQUE INDEX "enrollment_int_index_idx" ON "enrollment_int" ("studentId", "courseId");
 
+
 --
--- ACTION CREATE TABLE
+-- Class EnumDefault as table enum_default
 --
 CREATE TABLE "enum_default" (
     "id" INTEGER PRIMARY KEY,
@@ -527,8 +579,9 @@ CREATE TABLE "enum_default" (
     "byIndexEnumDefaultNull" INTEGER DEFAULT (1)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class EnumDefaultMix as table enum_default_mix
 --
 CREATE TABLE "enum_default_mix" (
     "id" INTEGER PRIMARY KEY,
@@ -537,8 +590,9 @@ CREATE TABLE "enum_default_mix" (
     "byNameEnumDefaultModelAndDefaultPersist" TEXT NOT NULL DEFAULT (CAST('byName2' AS TEXT))
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class EnumDefaultModel as table enum_default_model
 --
 CREATE TABLE "enum_default_model" (
     "id" INTEGER PRIMARY KEY,
@@ -548,8 +602,9 @@ CREATE TABLE "enum_default_model" (
     "byIndexEnumDefaultModelNull" INTEGER
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class EnumDefaultPersist as table enum_default_persist
 --
 CREATE TABLE "enum_default_persist" (
     "id" INTEGER PRIMARY KEY,
@@ -557,16 +612,18 @@ CREATE TABLE "enum_default_persist" (
     "byIndexEnumDefaultPersist" INTEGER DEFAULT (0)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ImmutableObjectWithTable as table immutable_object_with_table
 --
 CREATE TABLE "immutable_object_with_table" (
     "id" INTEGER PRIMARY KEY,
     "variable" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class IntDefault as table int_default
 --
 CREATE TABLE "int_default" (
     "id" INTEGER PRIMARY KEY,
@@ -574,8 +631,9 @@ CREATE TABLE "int_default" (
     "intDefaultNull" INTEGER DEFAULT (20)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class IntDefaultMix as table int_default_mix
 --
 CREATE TABLE "int_default_mix" (
     "id" INTEGER PRIMARY KEY,
@@ -584,8 +642,9 @@ CREATE TABLE "int_default_mix" (
     "intDefaultModelAndDefaultPersist" INTEGER NOT NULL DEFAULT (20)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class IntDefaultModel as table int_default_model
 --
 CREATE TABLE "int_default_model" (
     "id" INTEGER PRIMARY KEY,
@@ -593,16 +652,18 @@ CREATE TABLE "int_default_model" (
     "intDefaultModelNull" INTEGER NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class IntDefaultPersist as table int_default_persist
 --
 CREATE TABLE "int_default_persist" (
     "id" INTEGER PRIMARY KEY,
     "intDefaultPersist" INTEGER DEFAULT (10)
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class LongImplicitIdField as table long_implicit_id_field
 --
 CREATE TABLE "long_implicit_id_field" (
     "id" INTEGER PRIMARY KEY,
@@ -611,32 +672,36 @@ CREATE TABLE "long_implicit_id_field" (
     CONSTRAINT "long_implicit_id_field_fk_0" FOREIGN KEY ("_longImplicitIdFieldCollectionThisfieldisexactly61charact0008Id") REFERENCES "long_implicit_id_field_collection" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class LongImplicitIdFieldCollection as table long_implicit_id_field_collection
 --
 CREATE TABLE "long_implicit_id_field_collection" (
     "id" INTEGER PRIMARY KEY,
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class MaxFieldName as table max_field_name
 --
 CREATE TABLE "max_field_name" (
     "id" INTEGER PRIMARY KEY,
     "thisFieldIsExactly61CharactersLongAndIsThereforeValidAsNameFo" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Member as table member
 --
 CREATE TABLE "member" (
     "id" INTEGER PRIMARY KEY,
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ModelWithRequiredField as table model_with_required_field
 --
 CREATE TABLE "model_with_required_field" (
     "id" INTEGER PRIMARY KEY,
@@ -645,8 +710,9 @@ CREATE TABLE "model_with_required_field" (
     "phone" TEXT
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ModifiedColumnName as table modified_column_name
 --
 CREATE TABLE "modified_column_name" (
     "id" INTEGER PRIMARY KEY,
@@ -654,8 +720,9 @@ CREATE TABLE "modified_column_name" (
     "modified_column" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class MultipleMaxFieldName as table multiple_max_field_name
 --
 CREATE TABLE "multiple_max_field_name" (
     "id" INTEGER PRIMARY KEY,
@@ -665,16 +732,18 @@ CREATE TABLE "multiple_max_field_name" (
     CONSTRAINT "multiple_max_field_name_fk_0" FOREIGN KEY ("_relationToMultipleMaxFieldNameMultiplemaxfieldnamesRelat674eId") REFERENCES "relation_to_multiple_max_field_name" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectFieldPersist as table object_field_persist
 --
 CREATE TABLE "object_field_persist" (
     "id" INTEGER PRIMARY KEY,
     "normal" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectFieldScopes as table object_field_scopes
 --
 CREATE TABLE "object_field_scopes" (
     "id" INTEGER PRIMARY KEY,
@@ -682,8 +751,9 @@ CREATE TABLE "object_field_scopes" (
     "database" TEXT
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectWithBit as table object_with_bit
 --
 CREATE TABLE "object_with_bit" (
     "id" INTEGER PRIMARY KEY,
@@ -697,24 +767,27 @@ CREATE TABLE "object_with_bit" (
 
 -- Indexes
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectWithByteData as table object_with_bytedata
 --
 CREATE TABLE "object_with_bytedata" (
     "id" INTEGER PRIMARY KEY,
     "byteData" BLOB NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectWithDuration as table object_with_duration
 --
 CREATE TABLE "object_with_duration" (
     "id" INTEGER PRIMARY KEY,
     "duration" INTEGER NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectWithEnum as table object_with_enum
 --
 CREATE TABLE "object_with_enum" (
     "id" INTEGER PRIMARY KEY,
@@ -725,8 +798,9 @@ CREATE TABLE "object_with_enum" (
     "enumListList" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectWithEnumEnhanced as table object_with_enum_enhanced
 --
 CREATE TABLE "object_with_enum_enhanced" (
     "id" INTEGER PRIMARY KEY,
@@ -738,8 +812,9 @@ CREATE TABLE "object_with_enum_enhanced" (
     "byNameList" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectWithHalfVector as table object_with_half_vector
 --
 CREATE TABLE "object_with_half_vector" (
     "id" INTEGER PRIMARY KEY,
@@ -753,8 +828,9 @@ CREATE TABLE "object_with_half_vector" (
 
 -- Indexes
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectWithIndex as table object_with_index
 --
 CREATE TABLE "object_with_index" (
     "id" INTEGER PRIMARY KEY,
@@ -765,8 +841,9 @@ CREATE TABLE "object_with_index" (
 -- Indexes
 CREATE INDEX "object_with_index_test_index" ON "object_with_index" ("indexed", "indexed2");
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectWithObject as table object_with_object
 --
 CREATE TABLE "object_with_object" (
     "id" INTEGER PRIMARY KEY,
@@ -781,8 +858,9 @@ CREATE TABLE "object_with_object" (
     "nestedDataMap" TEXT
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectWithParent as table object_with_parent
 --
 CREATE TABLE "object_with_parent" (
     "id" INTEGER PRIMARY KEY,
@@ -790,8 +868,9 @@ CREATE TABLE "object_with_parent" (
     CONSTRAINT "object_with_parent_fk_0" FOREIGN KEY ("other") REFERENCES "object_field_scopes" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectWithSelfParent as table object_with_self_parent
 --
 CREATE TABLE "object_with_self_parent" (
     "id" INTEGER PRIMARY KEY,
@@ -799,8 +878,9 @@ CREATE TABLE "object_with_self_parent" (
     CONSTRAINT "object_with_self_parent_fk_0" FOREIGN KEY ("other") REFERENCES "object_with_self_parent" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectWithSparseVector as table object_with_sparse_vector
 --
 CREATE TABLE "object_with_sparse_vector" (
     "id" INTEGER PRIMARY KEY,
@@ -812,8 +892,9 @@ CREATE TABLE "object_with_sparse_vector" (
 
 -- Indexes
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectWithUuid as table object_with_uuid
 --
 CREATE TABLE "object_with_uuid" (
     "id" INTEGER PRIMARY KEY,
@@ -821,8 +902,9 @@ CREATE TABLE "object_with_uuid" (
     "uuidNullable" BLOB
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ObjectWithVector as table object_with_vector
 --
 CREATE TABLE "object_with_vector" (
     "id" INTEGER PRIMARY KEY,
@@ -836,8 +918,9 @@ CREATE TABLE "object_with_vector" (
 
 -- Indexes
 
+
 --
--- ACTION CREATE TABLE
+-- Class Order as table order
 --
 CREATE TABLE "order" (
     "id" INTEGER PRIMARY KEY,
@@ -846,18 +929,20 @@ CREATE TABLE "order" (
     CONSTRAINT "order_fk_0" FOREIGN KEY ("customerId") REFERENCES "customer" ("id") ON DELETE CASCADE ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class OrderUuid as table order_uuid
 --
 CREATE TABLE "order_uuid" (
-    "id" BLOB NOT NULL DEFAULT (unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
+    "id" BLOB PRIMARY KEY DEFAULT (unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
     "description" TEXT NOT NULL,
     "customerId" INTEGER NOT NULL,
     CONSTRAINT "order_uuid_fk_0" FOREIGN KEY ("customerId") REFERENCES "customer_int" ("id") ON DELETE CASCADE ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Organization as table organization
 --
 CREATE TABLE "organization" (
     "id" INTEGER PRIMARY KEY,
@@ -866,8 +951,9 @@ CREATE TABLE "organization" (
     CONSTRAINT "organization_fk_0" FOREIGN KEY ("cityId") REFERENCES "city" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class OrganizationWithLongTableName as table organization_with_long_table_name_that_is_still_valid
 --
 CREATE TABLE "organization_with_long_table_name_that_is_still_valid" (
     "id" INTEGER PRIMARY KEY,
@@ -876,8 +962,9 @@ CREATE TABLE "organization_with_long_table_name_that_is_still_valid" (
     CONSTRAINT "organization_with_long_table_name_that_is_still_valid_fk_0" FOREIGN KEY ("cityId") REFERENCES "city_with_long_table_name_that_is_still_valid" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ParentClass as table parent_class_table
 --
 CREATE TABLE "parent_class_table" (
     "id" INTEGER PRIMARY KEY,
@@ -885,15 +972,17 @@ CREATE TABLE "parent_class_table" (
     "parentField" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ParentEntity as table parent_entity
 --
 CREATE TABLE "parent_entity" (
     "id" INTEGER PRIMARY KEY
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Person as table person
 --
 CREATE TABLE "person" (
     "id" INTEGER PRIMARY KEY,
@@ -904,8 +993,9 @@ CREATE TABLE "person" (
     CONSTRAINT "person_fk_1" FOREIGN KEY ("_cityCitizensCityId") REFERENCES "city" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class PersonWithLongTableName as table person_with_long_table_name_that_is_still_valid
 --
 CREATE TABLE "person_with_long_table_name_that_is_still_valid" (
     "id" INTEGER PRIMARY KEY,
@@ -916,8 +1006,9 @@ CREATE TABLE "person_with_long_table_name_that_is_still_valid" (
     CONSTRAINT "person_with_long_table_name_that_is_still_valid_fk_1" FOREIGN KEY ("_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id") REFERENCES "city_with_long_table_name_that_is_still_valid" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Player as table player
 --
 CREATE TABLE "player" (
     "id" INTEGER PRIMARY KEY,
@@ -926,18 +1017,20 @@ CREATE TABLE "player" (
     CONSTRAINT "player_fk_0" FOREIGN KEY ("teamId") REFERENCES "team" ("id") ON DELETE SET NULL ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class PlayerUuid as table player_uuid
 --
 CREATE TABLE "player_uuid" (
-    "id" BLOB NOT NULL DEFAULT (unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
+    "id" BLOB PRIMARY KEY DEFAULT (unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
     "name" TEXT NOT NULL,
     "teamId" INTEGER,
     CONSTRAINT "player_uuid_fk_0" FOREIGN KEY ("teamId") REFERENCES "team_int" ("id") ON DELETE SET NULL ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Post as table post
 --
 CREATE TABLE "post" (
     "id" INTEGER PRIMARY KEY,
@@ -949,8 +1042,9 @@ CREATE TABLE "post" (
 -- Indexes
 CREATE UNIQUE INDEX "next_unique_idx" ON "post" ("nextId");
 
+
 --
--- ACTION CREATE TABLE
+-- Class RelatedUniqueData as table related_unique_data
 --
 CREATE TABLE "related_unique_data" (
     "id" INTEGER PRIMARY KEY,
@@ -959,23 +1053,26 @@ CREATE TABLE "related_unique_data" (
     CONSTRAINT "related_unique_data_fk_0" FOREIGN KEY ("uniqueDataId") REFERENCES "unique_data" ("id") ON DELETE RESTRICT ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class RelationEmptyModel as table relation_empty_model
 --
 CREATE TABLE "relation_empty_model" (
     "id" INTEGER PRIMARY KEY
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class RelationToMultipleMaxFieldName as table relation_to_multiple_max_field_name
 --
 CREATE TABLE "relation_to_multiple_max_field_name" (
     "id" INTEGER PRIMARY KEY,
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class ScopeNoneFields as table scope_none_fields
 --
 CREATE TABLE "scope_none_fields" (
     "id" INTEGER PRIMARY KEY,
@@ -983,15 +1080,17 @@ CREATE TABLE "scope_none_fields" (
     "object" TEXT
 ) STRICT;
 
---
--- ACTION CREATE TABLE
---
-CREATE TABLE "server_only_changed_id_field_class" (
-    "id" BLOB NOT NULL DEFAULT (unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15)))
-) STRICT;
 
 --
--- ACTION CREATE TABLE
+-- Class ServerOnlyChangedIdFieldClass as table server_only_changed_id_field_class
+--
+CREATE TABLE "server_only_changed_id_field_class" (
+    "id" BLOB PRIMARY KEY DEFAULT (unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15)))
+) STRICT;
+
+
+--
+-- Class Service as table service
 --
 CREATE TABLE "service" (
     "id" INTEGER PRIMARY KEY,
@@ -999,24 +1098,27 @@ CREATE TABLE "service" (
     "description" TEXT
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class SimpleData as table simple_data
 --
 CREATE TABLE "simple_data" (
     "id" INTEGER PRIMARY KEY,
     "num" INTEGER NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class SimpleDateTime as table simple_date_time
 --
 CREATE TABLE "simple_date_time" (
     "id" INTEGER PRIMARY KEY,
     "dateTime" INTEGER NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class StringDefault as table string_default
 --
 CREATE TABLE "string_default" (
     "id" INTEGER PRIMARY KEY,
@@ -1024,8 +1126,9 @@ CREATE TABLE "string_default" (
     "stringDefaultNull" TEXT DEFAULT (CAST('This is a default null value' AS TEXT))
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class StringDefaultMix as table string_default_mix
 --
 CREATE TABLE "string_default_mix" (
     "id" INTEGER PRIMARY KEY,
@@ -1034,8 +1137,9 @@ CREATE TABLE "string_default_mix" (
     "stringDefaultModelAndDefaultPersist" TEXT NOT NULL DEFAULT (CAST('This is a default persist value' AS TEXT))
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class StringDefaultModel as table string_default_model
 --
 CREATE TABLE "string_default_model" (
     "id" INTEGER PRIMARY KEY,
@@ -1043,8 +1147,9 @@ CREATE TABLE "string_default_model" (
     "stringDefaultModelNull" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class StringDefaultPersist as table string_default_persist
 --
 CREATE TABLE "string_default_persist" (
     "id" INTEGER PRIMARY KEY,
@@ -1059,24 +1164,27 @@ CREATE TABLE "string_default_persist" (
     "stringDefaultPersistDoubleQuoteWithTwoSingleQuote" TEXT DEFAULT (CAST('This is a ''default'' persist value' AS TEXT))
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Student as table student
 --
 CREATE TABLE "student" (
     "id" INTEGER PRIMARY KEY,
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class StudentUuid as table student_uuid
 --
 CREATE TABLE "student_uuid" (
-    "id" BLOB NOT NULL DEFAULT (unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
+    "id" BLOB PRIMARY KEY DEFAULT (unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))),
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class TableWithExplicitColumnName as table table_with_explicit_column_names
 --
 CREATE TABLE "table_with_explicit_column_names" (
     "id" INTEGER PRIMARY KEY,
@@ -1084,8 +1192,9 @@ CREATE TABLE "table_with_explicit_column_names" (
     "user_description" TEXT DEFAULT (CAST('Just some information' AS TEXT))
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Team as table team
 --
 CREATE TABLE "team" (
     "id" INTEGER PRIMARY KEY,
@@ -1097,8 +1206,9 @@ CREATE TABLE "team" (
 -- Indexes
 CREATE UNIQUE INDEX "arena_index_idx" ON "team" ("arenaId");
 
+
 --
--- ACTION CREATE TABLE
+-- Class TeamInt as table team_int
 --
 CREATE TABLE "team_int" (
     "id" INTEGER PRIMARY KEY,
@@ -1110,8 +1220,9 @@ CREATE TABLE "team_int" (
 -- Indexes
 CREATE UNIQUE INDEX "arena_uuid_index_idx" ON "team_int" ("arenaId");
 
+
 --
--- ACTION CREATE TABLE
+-- Class Town as table town
 --
 CREATE TABLE "town" (
     "id" INTEGER PRIMARY KEY,
@@ -1120,8 +1231,9 @@ CREATE TABLE "town" (
     CONSTRAINT "town_fk_0" FOREIGN KEY ("mayorId") REFERENCES "citizen" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class TownInt as table town_int
 --
 CREATE TABLE "town_int" (
     "id" INTEGER PRIMARY KEY,
@@ -1130,8 +1242,9 @@ CREATE TABLE "town_int" (
     CONSTRAINT "town_int_fk_0" FOREIGN KEY ("mayorId") REFERENCES "citizen_int" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class Types as table types
 --
 CREATE TABLE "types" (
     "id" INTEGER PRIMARY KEY,
@@ -1157,8 +1270,9 @@ CREATE TABLE "types" (
     "aRecord" TEXT
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class UniqueData as table unique_data
 --
 CREATE TABLE "unique_data" (
     "id" INTEGER PRIMARY KEY,
@@ -1169,8 +1283,9 @@ CREATE TABLE "unique_data" (
 -- Indexes
 CREATE UNIQUE INDEX "email_index_idx" ON "unique_data" ("email");
 
+
 --
--- ACTION CREATE TABLE
+-- Class UriDefault as table uri_default
 --
 CREATE TABLE "uri_default" (
     "id" INTEGER PRIMARY KEY,
@@ -1178,8 +1293,9 @@ CREATE TABLE "uri_default" (
     "uriDefaultNull" TEXT DEFAULT (CAST('https://serverpod.dev/default' AS TEXT))
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class UriDefaultMix as table uri_default_mix
 --
 CREATE TABLE "uri_default_mix" (
     "id" INTEGER PRIMARY KEY,
@@ -1188,8 +1304,9 @@ CREATE TABLE "uri_default_mix" (
     "uriDefaultModelAndDefaultPersist" TEXT NOT NULL DEFAULT (CAST('https://serverpod.dev/defaultPersist' AS TEXT))
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class UriDefaultModel as table uri_default_model
 --
 CREATE TABLE "uri_default_model" (
     "id" INTEGER PRIMARY KEY,
@@ -1197,16 +1314,18 @@ CREATE TABLE "uri_default_model" (
     "uriDefaultModelNull" TEXT
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class UriDefaultPersist as table uri_default_persist
 --
 CREATE TABLE "uri_default_persist" (
     "id" INTEGER PRIMARY KEY,
     "uriDefaultPersist" TEXT DEFAULT (CAST('https://serverpod.dev/' AS TEXT))
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class UserNote as table user_note
 --
 CREATE TABLE "user_note" (
     "id" INTEGER PRIMARY KEY,
@@ -1215,24 +1334,27 @@ CREATE TABLE "user_note" (
     CONSTRAINT "user_note_fk_0" FOREIGN KEY ("_userNoteCollectionsUsernotespropertynameUserNoteCollectionsId") REFERENCES "user_note_collections" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class UserNoteCollectionWithALongName as table user_note_collection_with_a_long_name
 --
 CREATE TABLE "user_note_collection_with_a_long_name" (
     "id" INTEGER PRIMARY KEY,
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class UserNoteCollection as table user_note_collections
 --
 CREATE TABLE "user_note_collections" (
     "id" INTEGER PRIMARY KEY,
     "name" TEXT NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class UserNoteWithALongName as table user_note_with_a_long_name
 --
 CREATE TABLE "user_note_with_a_long_name" (
     "id" INTEGER PRIMARY KEY,
@@ -1241,8 +1363,9 @@ CREATE TABLE "user_note_with_a_long_name" (
     CONSTRAINT "user_note_with_a_long_name_fk_0" FOREIGN KEY ("_userNoteCollectionWithALongNameNotesUserNoteCollectionWi06adId") REFERENCES "user_note_collection_with_a_long_name" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class UuidDefault as table uuid_default
 --
 CREATE TABLE "uuid_default" (
     "id" INTEGER PRIMARY KEY,
@@ -1253,8 +1376,9 @@ CREATE TABLE "uuid_default" (
     "uuidDefaultStrNull" BLOB DEFAULT (unhex('3f2504e04f8911d39a0c0305e82c3301'))
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class UuidDefaultMix as table uuid_default_mix
 --
 CREATE TABLE "uuid_default_mix" (
     "id" INTEGER PRIMARY KEY,
@@ -1263,8 +1387,9 @@ CREATE TABLE "uuid_default_mix" (
     "uuidDefaultModelAndDefaultPersist" BLOB NOT NULL DEFAULT (unhex('f47ac10b58cc4372a5670e02b2c3d479'))
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class UuidDefaultModel as table uuid_default_model
 --
 CREATE TABLE "uuid_default_model" (
     "id" INTEGER PRIMARY KEY,
@@ -1275,8 +1400,9 @@ CREATE TABLE "uuid_default_model" (
     "uuidDefaultModelStrNull" BLOB
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class UuidDefaultPersist as table uuid_default_persist
 --
 CREATE TABLE "uuid_default_persist" (
     "id" INTEGER PRIMARY KEY,
@@ -1285,8 +1411,9 @@ CREATE TABLE "uuid_default_persist" (
     "uuidDefaultPersistStr" BLOB DEFAULT (unhex('550e8400e29b41d4a716446655440000'))
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class CloudStorageEntry as table serverpod_cloud_storage
 --
 CREATE TABLE "serverpod_cloud_storage" (
     "id" INTEGER PRIMARY KEY,
@@ -1302,8 +1429,9 @@ CREATE TABLE "serverpod_cloud_storage" (
 CREATE UNIQUE INDEX "serverpod_cloud_storage_path_idx" ON "serverpod_cloud_storage" ("storageId", "path");
 CREATE INDEX "serverpod_cloud_storage_expiration" ON "serverpod_cloud_storage" ("expiration");
 
+
 --
--- ACTION CREATE TABLE
+-- Class CloudStorageDirectUploadEntry as table serverpod_cloud_storage_direct_upload
 --
 CREATE TABLE "serverpod_cloud_storage_direct_upload" (
     "id" INTEGER PRIMARY KEY,
@@ -1316,8 +1444,9 @@ CREATE TABLE "serverpod_cloud_storage_direct_upload" (
 -- Indexes
 CREATE UNIQUE INDEX "serverpod_cloud_storage_direct_upload_storage_path" ON "serverpod_cloud_storage_direct_upload" ("storageId", "path");
 
+
 --
--- ACTION CREATE TABLE
+-- Class FutureCallEntry as table serverpod_future_call
 --
 CREATE TABLE "serverpod_future_call" (
     "id" INTEGER PRIMARY KEY,
@@ -1333,8 +1462,9 @@ CREATE INDEX "serverpod_future_call_time_idx" ON "serverpod_future_call" ("time"
 CREATE INDEX "serverpod_future_call_serverId_idx" ON "serverpod_future_call" ("serverId");
 CREATE INDEX "serverpod_future_call_identifier_idx" ON "serverpod_future_call" ("identifier");
 
+
 --
--- ACTION CREATE TABLE
+-- Class ServerHealthConnectionInfo as table serverpod_health_connection_info
 --
 CREATE TABLE "serverpod_health_connection_info" (
     "id" INTEGER PRIMARY KEY,
@@ -1349,8 +1479,9 @@ CREATE TABLE "serverpod_health_connection_info" (
 -- Indexes
 CREATE UNIQUE INDEX "serverpod_health_connection_info_timestamp_idx" ON "serverpod_health_connection_info" ("timestamp", "serverId", "granularity");
 
+
 --
--- ACTION CREATE TABLE
+-- Class ServerHealthMetric as table serverpod_health_metric
 --
 CREATE TABLE "serverpod_health_metric" (
     "id" INTEGER PRIMARY KEY,
@@ -1365,8 +1496,9 @@ CREATE TABLE "serverpod_health_metric" (
 -- Indexes
 CREATE UNIQUE INDEX "serverpod_health_metric_timestamp_idx" ON "serverpod_health_metric" ("timestamp", "serverId", "name", "granularity");
 
+
 --
--- ACTION CREATE TABLE
+-- Class LogEntry as table serverpod_log
 --
 CREATE TABLE "serverpod_log" (
     "id" INTEGER PRIMARY KEY,
@@ -1386,8 +1518,9 @@ CREATE TABLE "serverpod_log" (
 -- Indexes
 CREATE INDEX "serverpod_log_sessionLogId_idx" ON "serverpod_log" ("sessionLogId");
 
+
 --
--- ACTION CREATE TABLE
+-- Class MessageLogEntry as table serverpod_message_log
 --
 CREATE TABLE "serverpod_message_log" (
     "id" INTEGER PRIMARY KEY,
@@ -1404,8 +1537,9 @@ CREATE TABLE "serverpod_message_log" (
     CONSTRAINT "serverpod_message_log_fk_0" FOREIGN KEY ("sessionLogId") REFERENCES "serverpod_session_log" ("id") ON DELETE CASCADE ON UPDATE NO ACTION
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class MethodInfo as table serverpod_method
 --
 CREATE TABLE "serverpod_method" (
     "id" INTEGER PRIMARY KEY,
@@ -1416,8 +1550,9 @@ CREATE TABLE "serverpod_method" (
 -- Indexes
 CREATE UNIQUE INDEX "serverpod_method_endpoint_method_idx" ON "serverpod_method" ("endpoint", "method");
 
+
 --
--- ACTION CREATE TABLE
+-- Class DatabaseMigrationVersion as table serverpod_migrations
 --
 CREATE TABLE "serverpod_migrations" (
     "id" INTEGER PRIMARY KEY,
@@ -1429,8 +1564,9 @@ CREATE TABLE "serverpod_migrations" (
 -- Indexes
 CREATE UNIQUE INDEX "serverpod_migrations_ids" ON "serverpod_migrations" ("module");
 
+
 --
--- ACTION CREATE TABLE
+-- Class QueryLogEntry as table serverpod_query_log
 --
 CREATE TABLE "serverpod_query_log" (
     "id" INTEGER PRIMARY KEY,
@@ -1450,16 +1586,18 @@ CREATE TABLE "serverpod_query_log" (
 -- Indexes
 CREATE INDEX "serverpod_query_log_sessionLogId_idx" ON "serverpod_query_log" ("sessionLogId");
 
+
 --
--- ACTION CREATE TABLE
+-- Class ReadWriteTestEntry as table serverpod_readwrite_test
 --
 CREATE TABLE "serverpod_readwrite_test" (
     "id" INTEGER PRIMARY KEY,
     "number" INTEGER NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class RuntimeSettings as table serverpod_runtime_settings
 --
 CREATE TABLE "serverpod_runtime_settings" (
     "id" INTEGER PRIMARY KEY,
@@ -1469,8 +1607,9 @@ CREATE TABLE "serverpod_runtime_settings" (
     "logMalformedCalls" INTEGER NOT NULL
 ) STRICT;
 
+
 --
--- ACTION CREATE TABLE
+-- Class SessionLogEntry as table serverpod_session_log
 --
 CREATE TABLE "serverpod_session_log" (
     "id" INTEGER PRIMARY KEY,
@@ -1497,13 +1636,14 @@ CREATE INDEX "serverpod_session_log_touched_idx" ON "serverpod_session_log" ("to
 CREATE INDEX "serverpod_session_log_isopen_idx" ON "serverpod_session_log" ("isOpen");
 
 
+
 --
 -- MIGRATION VERSION FOR serverpod_test_sqlite
 --
 INSERT INTO "serverpod_migrations" ("module", "version", "timestamp")
-    VALUES ('serverpod_test_sqlite', '20260226144105933', (unixepoch('now', 'subsecond') * 1000))
+    VALUES ('serverpod_test_sqlite', '20260301175236620', (unixepoch('now', 'subsecond') * 1000))
     ON CONFLICT ("module")
-    DO UPDATE SET "version" = '20260226144105933', "timestamp" = (unixepoch('now', 'subsecond') * 1000);
+    DO UPDATE SET "version" = '20260301175236620', "timestamp" = (unixepoch('now', 'subsecond') * 1000);
 
 --
 -- MIGRATION VERSION FOR serverpod
