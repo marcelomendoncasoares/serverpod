@@ -1,4 +1,5 @@
 import 'package:serverpod/serverpod.dart';
+import 'package:serverpod/src/database/adapters/sqlite/sqlite_value_encoder.dart';
 import 'package:serverpod/src/generated/protocol.dart';
 import 'package:test/test.dart';
 
@@ -62,12 +63,8 @@ void main() {
       Protocol(),
       _EmptyEndpoints(),
       config: ServerpodConfig(
-        database: DatabaseConfig(
-          host: 'postgres',
-          port: 5432,
-          name: 'serverpod_test',
-          user: 'postgres',
-          password: 'password',
+        database: SqliteDatabaseConfig(
+          filePath: 'serverpod_test_prod.db',
         ),
         apiServer: ServerConfig(
           port: 0,
@@ -87,8 +84,8 @@ void main() {
     });
 
     test('when ValueEncoder instance is accessed '
-        'then returns the ValueEncoder instance', () {
-      expect(ValueEncoder.instance, isA<ValueEncoder>());
+        'then returns the SqliteValueEncoder instance', () {
+      expect(ValueEncoder.instance, isA<SqliteValueEncoder>());
     });
   });
 }

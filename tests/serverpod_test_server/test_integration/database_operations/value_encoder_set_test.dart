@@ -87,8 +87,8 @@ void main() {
     });
 
     test('when ValueEncoder instance is accessed '
-        'then returns the ValueEncoder instance', () {
-      expect(ValueEncoder.instance, isA<ValueEncoder>());
+        'then returns the PostgresValueEncoder instance', () {
+      expect(ValueEncoder.instance, isA<PostgresValueEncoder>());
     });
   });
 }

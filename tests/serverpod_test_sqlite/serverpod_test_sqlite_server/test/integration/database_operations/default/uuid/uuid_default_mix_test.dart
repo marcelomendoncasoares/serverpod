@@ -18,10 +18,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "uuidDefaultAndDefaultPersist" field value should match the defaultModel value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${UuidDefaultMix.t.tableName}" ("uuidDefaultAndDefaultModel", "uuidDefaultAndDefaultPersist", "uuidDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${UuidDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await UuidDefaultMix.db.findFirstRow(session);
         expect(
@@ -35,10 +32,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "uuidDefaultAndDefaultPersist" field value should match the defaultPersist value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${UuidDefaultMix.t.tableName}" ("uuidDefaultAndDefaultModel", "uuidDefaultAndDefaultPersist", "uuidDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${UuidDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await UuidDefaultMix.db.findFirstRow(session);
         expect(
@@ -52,10 +46,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "uuidDefaultModelAndDefaultPersist" field value should match the defaultPersist value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${UuidDefaultMix.t.tableName}" ("uuidDefaultAndDefaultModel", "uuidDefaultAndDefaultPersist", "uuidDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${UuidDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await UuidDefaultMix.db.findFirstRow(session);
         expect(

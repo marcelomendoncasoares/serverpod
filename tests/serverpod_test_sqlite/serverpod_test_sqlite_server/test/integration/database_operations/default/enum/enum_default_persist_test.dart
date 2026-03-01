@@ -33,10 +33,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "defaultPersist=byName1" field should be byName1',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${EnumDefaultPersist.t.tableName}
-        VALUES (DEFAULT);
-        ''',
+          'INSERT INTO "${EnumDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await EnumDefaultPersist.db.findFirstRow(session);
         expect(
@@ -65,10 +62,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "defaultPersist=byIndex1" field should be byIndex1',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${EnumDefaultPersist.t.tableName}
-        VALUES (DEFAULT);
-        ''',
+          'INSERT INTO "${EnumDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await EnumDefaultPersist.db.findFirstRow(session);
         expect(

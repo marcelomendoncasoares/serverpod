@@ -189,7 +189,7 @@ void main() {
             isA<DatabaseQueryException>().having(
               (e) => e.code,
               'code',
-              PgErrorCode.uniqueViolation,
+              SqliteErrorCode.uniqueViolation,
             ),
           ),
         );
@@ -284,9 +284,9 @@ void main() {
 
       test(
         'when inserting an object without transaction but is executed inside a transaction'
-        'then should persist object',
+        'then should throw because SQLite does not allow recursive write lock',
         () async {
-          await session.db.transaction((tx) async {
+          final future = session.db.transaction((tx) async {
             // This is a theoretical scenario that would likely be
             // considered erroneous in real code
             await SimpleData.db.insertRow(
@@ -296,9 +296,16 @@ void main() {
             );
           });
 
-          var simpleDatas = await SimpleData.db.find(session);
-          expect(simpleDatas, hasLength(1));
-          expect(simpleDatas.first.num, 1);
+          await expectLater(
+            future,
+            throwsA(
+              isA<DatabaseQueryException>().having(
+                (e) => e.code,
+                'code',
+                SqliteErrorCode.objectInUse,
+              ),
+            ),
+          );
         },
       );
 
@@ -328,7 +335,7 @@ void main() {
     },
   );
 
-  group('Demontrate transaction difference between prod and test tools', () {
+  group('Demonstrate transaction difference between prod and test tools', () {
     withServerpod(
       'Given transaction call in test with database rollbacks enabled (default)',
       (sessionBuilder, endpoints) {

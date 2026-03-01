@@ -263,9 +263,9 @@ abstract class MigrationTestUtils {
     await serviceClient.insights.executeSql('''
 INSERT INTO "${serverProtocol.DatabaseMigrationVersion.t.tableName}"
     ("module", "version", "timestamp")
-    VALUES ('$_moduleName', '$latestMigration', now())
+    VALUES ('$_moduleName', '$latestMigration', (unixepoch('subsecond') * 1000))
     ON CONFLICT ("module")
-    DO UPDATE SET "version" = '$latestMigration';
+    DO UPDATE SET "version" = '$latestMigration', "timestamp" = (unixepoch('subsecond') * 1000);
 ''');
   }
 
