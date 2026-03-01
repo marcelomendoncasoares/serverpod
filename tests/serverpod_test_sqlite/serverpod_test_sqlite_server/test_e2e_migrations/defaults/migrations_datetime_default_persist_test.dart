@@ -75,7 +75,7 @@ void main() {
           var dateTimeDefaultNow = columns.last;
           expect(
             dateTimeDefaultNow.columnDefault,
-            'CURRENT_TIMESTAMP',
+            "CAST(unixepoch('subsecond') * 1000 AS INTEGER)",
             reason: 'Could not find "columnDefault" for "dateTimeDefaultNow"',
           );
         },
@@ -140,7 +140,9 @@ void main() {
           var dateTimeDefaultStr = columns.last;
           expect(
             dateTimeDefaultStr.columnDefault,
-            "'2024-05-24 22:00:00'::timestamp without time zone",
+            DateTime.parse(
+              '2024-05-24T22:00:00.000Z',
+            ).millisecondsSinceEpoch.toString(),
             reason: 'Could not find "columnDefault" for "dateTimeDefaultStr"',
           );
         },

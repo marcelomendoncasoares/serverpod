@@ -18,10 +18,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "durationDefaultAndDefaultModel" field value should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${DurationDefaultMix.t.tableName}" ("durationDefaultAndDefaultModel", "durationDefaultAndDefaultPersist", "durationDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${DurationDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await DurationDefaultMix.db.findFirstRow(session);
         expect(
@@ -43,10 +40,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "durationDefaultAndDefaultPersist" field value should match the defaultPersist value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${DurationDefaultMix.t.tableName}" ("durationDefaultAndDefaultModel", "durationDefaultAndDefaultPersist", "durationDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${DurationDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await DurationDefaultMix.db.findFirstRow(session);
         expect(
@@ -68,10 +62,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "durationDefaultModelAndDefaultPersist" field value should match the defaultPersist value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${DurationDefaultMix.t.tableName}" ("durationDefaultAndDefaultModel", "durationDefaultAndDefaultPersist", "durationDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${DurationDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await DurationDefaultMix.db.findFirstRow(session);
         expect(

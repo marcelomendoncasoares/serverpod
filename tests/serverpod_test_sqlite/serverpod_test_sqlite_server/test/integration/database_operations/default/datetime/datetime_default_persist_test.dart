@@ -73,10 +73,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "defaultPersist=now" field should be in UTC',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${DateTimeDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${DateTimeDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await DateTimeDefaultPersist.db.findFirstRow(
           session,
@@ -89,10 +86,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "defaultPersist" field with UTC string should be in UTC',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${DateTimeDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${DateTimeDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await DateTimeDefaultPersist.db.findFirstRow(
           session,
@@ -105,10 +99,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "defaultPersist=now" field value should match the current time',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${DateTimeDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${DateTimeDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await DateTimeDefaultPersist.db.findFirstRow(
           session,
@@ -126,10 +117,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "defaultPersist" field value should match the default',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${DateTimeDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${DateTimeDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await DateTimeDefaultPersist.db.findFirstRow(
           session,

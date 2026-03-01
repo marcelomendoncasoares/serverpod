@@ -126,7 +126,7 @@ void main() async {
           isA<DatabaseQueryException>().having(
             (e) => e.code,
             'code',
-            PgErrorCode.invalidSavepointSpecification,
+            SqliteErrorCode.invalidSavepointSpecification,
           ),
         ),
       );
@@ -174,7 +174,7 @@ void main() async {
             isA<DatabaseQueryException>().having(
               (e) => e.code,
               'code',
-              PgErrorCode.invalidSavepointSpecification,
+              SqliteErrorCode.invalidSavepointSpecification,
             ),
           ),
         );

@@ -18,10 +18,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "stringDefaultAndDefaultModel" field value should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${StringDefaultMix.t.tableName}" ("stringDefaultAndDefaultModel", "stringDefaultAndDefaultPersist", "stringDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${StringDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await StringDefaultMix.db.findFirstRow(session);
         expect(
@@ -35,10 +32,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "stringDefaultAndDefaultPersist" field value should match the defaultPersist value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${StringDefaultMix.t.tableName}" ("stringDefaultAndDefaultModel", "stringDefaultAndDefaultPersist", "stringDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${StringDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await StringDefaultMix.db.findFirstRow(session);
         expect(
@@ -52,10 +46,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "stringDefaultModelAndDefaultPersist" field value should match the defaultPersist value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${StringDefaultMix.t.tableName}" ("stringDefaultAndDefaultModel", "stringDefaultAndDefaultPersist", "stringDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${StringDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await StringDefaultMix.db.findFirstRow(session);
         expect(

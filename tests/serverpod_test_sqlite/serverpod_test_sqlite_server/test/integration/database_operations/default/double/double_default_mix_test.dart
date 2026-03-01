@@ -18,10 +18,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "doubleDefaultAndDefaultModel" field value should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${DoubleDefaultMix.t.tableName}" ("doubleDefaultAndDefaultModel", "doubleDefaultAndDefaultPersist", "doubleDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${DoubleDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await DoubleDefaultMix.db.findFirstRow(session);
         expect(databaseObject?.doubleDefaultAndDefaultModel, 10.5);
@@ -32,10 +29,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "doubleDefaultAndDefaultPersist" field value should match the defaultPersist value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${DoubleDefaultMix.t.tableName}" ("doubleDefaultAndDefaultModel", "doubleDefaultAndDefaultPersist", "doubleDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${DoubleDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await DoubleDefaultMix.db.findFirstRow(session);
         expect(databaseObject?.doubleDefaultAndDefaultPersist, 20.5);
@@ -46,10 +40,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "doubleDefaultModelAndDefaultPersist" field value should match the defaultPersist value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${DoubleDefaultMix.t.tableName}" ("doubleDefaultAndDefaultModel", "doubleDefaultAndDefaultPersist", "doubleDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${DoubleDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await DoubleDefaultMix.db.findFirstRow(session);
         expect(databaseObject?.doubleDefaultModelAndDefaultPersist, 20.5);

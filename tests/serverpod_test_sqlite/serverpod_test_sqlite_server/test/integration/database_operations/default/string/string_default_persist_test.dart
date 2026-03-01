@@ -33,10 +33,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "defaultPersist=\'This is a default persist value\'" field should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${StringDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${StringDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await StringDefaultPersist.db.findFirstRow(
           session,
@@ -87,10 +84,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "stringDefaultPersistSingleQuoteWithOneSingleEscapeQuote" field should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${StringDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${StringDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await StringDefaultPersist.db.findFirstRow(
           session,
@@ -142,10 +136,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "stringDefaultPersistSingleQuoteWithTwoSingleEscapeQuote" field should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${StringDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${StringDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await StringDefaultPersist.db.findFirstRow(
           session,
@@ -197,10 +188,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "stringDefaultPersistDoubleQuoteWithOneDoubleEscapeQuote" field should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${StringDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${StringDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await StringDefaultPersist.db.findFirstRow(
           session,
@@ -257,10 +245,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "stringDefaultPersistDoubleQuoteWithTwoDoubleEscapeQuote" field should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${StringDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${StringDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await StringDefaultPersist.db.findFirstRow(
           session,
@@ -311,10 +296,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "stringDefaultPersistSingleQuoteWithOneDoubleQuote" field should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${StringDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${StringDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await StringDefaultPersist.db.findFirstRow(
           session,
@@ -364,10 +346,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "stringDefaultPersistSingleQuoteWithTwoDoubleQuote" field should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${StringDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${StringDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await StringDefaultPersist.db.findFirstRow(
           session,
@@ -417,10 +396,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "stringDefaultPersistDoubleQuoteWithOneSingleQuote" field should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${StringDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${StringDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await StringDefaultPersist.db.findFirstRow(
           session,
@@ -470,10 +446,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "stringDefaultPersistDoubleQuoteWithTwoSingleQuote" field should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${StringDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${StringDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await StringDefaultPersist.db.findFirstRow(
           session,

@@ -69,10 +69,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "defaultPersist=random" UUID field should generate a valid UUID',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${UuidDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${UuidDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await UuidDefaultPersist.db.findFirstRow(session);
         expect(databaseObject?.uuidDefaultPersistRandom, isNotNull);
@@ -89,10 +86,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "defaultPersist=random_v7" UUID field should generate a valid UUID',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${UuidDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${UuidDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await UuidDefaultPersist.db.findFirstRow(session);
         expect(databaseObject?.uuidDefaultPersistRandomV7, isNotNull);
@@ -109,10 +103,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "defaultPersist" UUID field with a string should match the default',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${UuidDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${UuidDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await UuidDefaultPersist.db.findFirstRow(session);
         expect(

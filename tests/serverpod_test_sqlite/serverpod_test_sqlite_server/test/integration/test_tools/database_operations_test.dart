@@ -142,7 +142,7 @@ void main() {
           } catch (e) {}
         });
 
-        test('then only one transaction should have been comitted', () async {
+        test('then only one transaction should have been committed', () async {
           var simpleDatas = await SimpleData.db.find(session);
 
           expect(simpleDatas, hasLength(1));
@@ -254,12 +254,15 @@ void main() {
             } catch (e) {}
           });
 
-          test('then only one transaction should have been comitted', () async {
-            var simpleDatas = await SimpleData.db.find(session);
+          test(
+            'then only one transaction should have been committed',
+            () async {
+              var simpleDatas = await SimpleData.db.find(session);
 
-            expect(simpleDatas, hasLength(1));
-            expect(simpleDatas.first.num, 123);
-          });
+              expect(simpleDatas, hasLength(1));
+              expect(simpleDatas.first.num, 123);
+            },
+          );
         },
         rollbackDatabase: RollbackDatabase.afterAll,
       );
@@ -395,12 +398,15 @@ void main() {
             } catch (e) {}
           });
 
-          test('then only one transaction should have been comitted', () async {
-            var simpleDatas = await SimpleData.db.find(session);
+          test(
+            'then only one transaction should have been committed',
+            () async {
+              var simpleDatas = await SimpleData.db.find(session);
 
-            expect(simpleDatas, hasLength(1));
-            expect(simpleDatas.first.num, 123);
-          });
+              expect(simpleDatas, hasLength(1));
+              expect(simpleDatas.first.num, 123);
+            },
+          );
         },
         rollbackDatabase: RollbackDatabase.disabled,
         testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
@@ -484,7 +490,7 @@ void main() {
                 isA<DatabaseQueryException>().having(
                   (e) => e.code,
                   'code',
-                  PgErrorCode.uniqueViolation,
+                  SqliteErrorCode.uniqueViolation,
                 ),
               ),
             ),
