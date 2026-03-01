@@ -52,7 +52,7 @@ void main() async {
             isA<DatabaseQueryException>().having(
               (e) => e.code,
               'code',
-              PgErrorCode.uniqueViolation,
+              SqliteErrorCode.uniqueViolation,
             ),
           ),
         );

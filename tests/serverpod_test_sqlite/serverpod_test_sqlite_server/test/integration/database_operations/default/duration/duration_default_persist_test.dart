@@ -41,10 +41,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "defaultPersist=1d 2h 10min 30s 100ms" field should be the expected duration',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${DurationDefaultPersist.t.tableName}
-        VALUES (DEFAULT);
-        ''',
+          'INSERT INTO "${DurationDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await DurationDefaultPersist.db.findFirstRow(
           session,

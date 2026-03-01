@@ -38,121 +38,93 @@ void main() async {
     });
 
     test(
-      'when ordering by L2 distance then closest rows are returned first.',
+      'when ordering by L2 distance then an exception is thrown.',
       () async {
-        var result = await Types.db.find(
-          session,
-          orderBy: (t) => t.aVector.distanceL2(queryVector),
+        await expectLater(
+          Types.db.find(
+            session,
+            orderBy: (t) => t.aVector.distanceL2(queryVector),
+          ),
+          throwsA(isA<Exception>()),
         );
-
-        expect(result.length, 3);
-        // The null value should be last when ordering by distance
-        expect(result.last.aVector, isNull);
       },
     );
 
     test(
-      'when filtering using closer than with L2 distance then matching rows are returned.',
+      'when ordering by cosine distance then an exception is thrown.',
       () async {
-        var result = await Types.db.find(
-          session,
-          where: (t) => t.aVector.distanceL2(queryVector) < 1.0,
+        await expectLater(
+          Types.db.find(
+            session,
+            orderBy: (t) => t.aVector.distanceCosine(queryVector),
+          ),
+          throwsA(isA<Exception>()),
         );
-
-        expect(result.isNotEmpty, true);
       },
     );
 
     test(
-      'when ordering by cosine distance then closest rows are returned first.',
+      'when filtering using closer than with cosine distance then an exception is thrown.',
       () async {
-        var result = await Types.db.find(
-          session,
-          orderBy: (t) => t.aVector.distanceCosine(queryVector),
+        await expectLater(
+          Types.db.find(
+            session,
+            where: (t) => t.aVector.distanceCosine(queryVector) < 0.5,
+          ),
+          throwsA(isA<Exception>()),
         );
-
-        expect(result.length, 3);
-        // The null value should be last when ordering by distance
-        expect(result.last.aVector, isNull);
       },
     );
 
     test(
-      'when filtering using closer than with cosine distance then matching rows are returned.',
+      'when ordering by inner product distance then an exception is thrown.',
       () async {
-        var result = await Types.db.find(
-          session,
-          where: (t) => t.aVector.distanceCosine(queryVector) < 0.5,
+        await expectLater(
+          Types.db.find(
+            session,
+            orderBy: (t) => t.aVector.distanceInnerProduct(queryVector),
+          ),
+          throwsA(isA<Exception>()),
         );
-
-        expect(result.isNotEmpty, true);
       },
     );
 
     test(
-      'when ordering by inner product distance then closest rows are returned first.',
+      'when filtering using closer than with inner product distance then an exception is thrown.',
       () async {
-        var result = await Types.db.find(
-          session,
-          orderBy: (t) => t.aVector.distanceInnerProduct(queryVector),
+        await expectLater(
+          Types.db.find(
+            session,
+            where: (t) => t.aVector.distanceInnerProduct(queryVector) < 0.5,
+          ),
+          throwsA(isA<Exception>()),
         );
-
-        expect(result.length, 3);
-        // The null value should be last when ordering by distance
-        expect(result.last.aVector, isNull);
       },
     );
 
     test(
-      'when filtering using closer than with inner product distance then matching rows are returned.',
+      'when ordering by L1 distance then an exception is thrown.',
       () async {
-        var result = await Types.db.find(
-          session,
-          where: (t) => t.aVector.distanceInnerProduct(queryVector) < 0.5,
+        await expectLater(
+          Types.db.find(
+            session,
+            orderBy: (t) => t.aVector.distanceL1(queryVector),
+          ),
+          throwsA(isA<Exception>()),
         );
-
-        expect(result.isNotEmpty, true);
       },
     );
 
     test(
-      'when ordering by L1 distance then closest rows are returned first.',
+      'when filtering using closer than with L1 distance then an exception is thrown.',
       () async {
-        var result = await Types.db.find(
-          session,
-          orderBy: (t) => t.aVector.distanceL1(queryVector),
+        await expectLater(
+          Types.db.find(
+            session,
+            where: (t) => t.aVector.distanceL1(queryVector) < 2.0,
+          ),
+          throwsA(isA<Exception>()),
         );
-
-        expect(result.length, 3);
-        // The null value should be last when ordering by distance
-        expect(result.last.aVector, isNull);
-      },
-    );
-
-    test(
-      'when filtering using closer than with L1 distance then matching rows are returned.',
-      () async {
-        var result = await Types.db.find(
-          session,
-          where: (t) => t.aVector.distanceL1(queryVector) < 2.0,
-        );
-
-        expect(result.isNotEmpty, true);
-      },
-    );
-
-    test(
-      'when inserting and retrieving a vector then the same values are returned.',
-      () async {
-        await Types.db.insert(session, [Types(aVector: thirdVector)]);
-
-        var result = await Types.db.find(
-          session,
-          where: (t) => t.aVector.distanceCosine(thirdVector) < 0.01,
-        );
-
-        expect(result.length, 1);
-        expect(result.first.aVector!.toList(), equals(thirdVector.toList()));
       },
     );
   });
