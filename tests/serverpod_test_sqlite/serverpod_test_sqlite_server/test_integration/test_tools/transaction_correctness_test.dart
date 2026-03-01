@@ -189,7 +189,7 @@ void main() {
             isA<DatabaseQueryException>().having(
               (e) => e.code,
               'code',
-              PgErrorCode.uniqueViolation,
+              SqliteErrorCode.uniqueViolation,
             ),
           ),
         );
@@ -284,9 +284,9 @@ void main() {
 
       test(
         'when inserting an object without transaction but is executed inside a transaction'
-        'then should persist object',
+        'then should throw because SQLite does not allow recursive write lock',
         () async {
-          await session.db.transaction((tx) async {
+          final future = session.db.transaction((tx) async {
             // This is a theoretical scenario that would likely be
             // considered erroneous in real code
             await SimpleData.db.insertRow(
@@ -296,9 +296,16 @@ void main() {
             );
           });
 
-          var simpleDatas = await SimpleData.db.find(session);
-          expect(simpleDatas, hasLength(1));
-          expect(simpleDatas.first.num, 1);
+          await expectLater(
+            future,
+            throwsA(
+              isA<DatabaseQueryException>().having(
+                (e) => e.code,
+                'code',
+                SqliteErrorCode.objectInUse,
+              ),
+            ),
+          );
         },
       );
 
@@ -328,7 +335,7 @@ void main() {
     },
   );
 
-  group('Demontrate transaction difference between prod and test tools', () {
+  group('Demonstrate transaction difference between prod and test tools', () {
     withServerpod(
       'Given transaction call in test with database rollbacks enabled (default)',
       (sessionBuilder, endpoints) {
@@ -345,8 +352,9 @@ void main() {
               } catch (_) {}
             });
 
-            // ATTENTION: This does not throw in test tools when rollbacks are enabled,
-            // but does throw in production environment where rollbacks are disabled!
+            // NOTE: On SQLite, this is the behavior both with or without
+            // rollbacks enabled, since the driver does not poison the
+            // surrounding transaction when the error is caught.
             await expectLater(future, completes);
           },
         );
@@ -358,9 +366,16 @@ void main() {
       (sessionBuilder, endpoints) {
         var session = sessionBuilder.build();
 
+        tearDown(() async {
+          await UniqueData.db.deleteWhere(
+            session,
+            where: (t) => t.email.equals('test@test.com'),
+          );
+        });
+
         test(
           'when database exception occurs '
-          'then transaction WILL throw exception even if it was caught in the transaction',
+          'then transaction will complete if it was caught in the transaction',
           () async {
             var future = session.db.transaction((tx) async {
               var data = UniqueData(number: 1, email: 'test@test.com');
@@ -370,9 +385,10 @@ void main() {
               } catch (_) {}
             });
 
-            // ATTENTION: This does not throw in test tools when rollbacks are enabled,
-            // but does throw in production environment where rollbacks are disabled!
-            await expectLater(future, throwsA(isA<Exception>()));
+            // NOTE: This behavior differs from PostgreSQL because SQLite does
+            // not poison the surrounding transaction when an error that happen
+            // inside a transaction is caught.
+            await expectLater(future, completes);
           },
         );
       },

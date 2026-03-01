@@ -261,7 +261,7 @@ fields:
         );
 
         await serviceClient.insights.executeSql(
-          'DELETE FROM serverpod_migrations WHERE module=\'serverpod_test\';',
+          'DELETE FROM serverpod_migrations WHERE module=\'serverpod_test_sqlite\';',
         );
       });
 

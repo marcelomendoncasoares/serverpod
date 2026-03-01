@@ -18,10 +18,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "intDefaultAndDefaultModel" field value should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${IntDefaultMix.t.tableName}" ("intDefaultAndDefaultModel", "intDefaultAndDefaultPersist", "intDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${IntDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await IntDefaultMix.db.findFirstRow(session);
         expect(databaseObject?.intDefaultAndDefaultModel, 10);
@@ -32,10 +29,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "intDefaultAndDefaultPersist" field value should match the defaultPersist value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${IntDefaultMix.t.tableName}" ("intDefaultAndDefaultModel", "intDefaultAndDefaultPersist", "intDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${IntDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await IntDefaultMix.db.findFirstRow(session);
         expect(databaseObject?.intDefaultAndDefaultPersist, 20);
@@ -46,10 +40,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "intDefaultModelAndDefaultPersist" field value should match the defaultPersist value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${IntDefaultMix.t.tableName}" ("intDefaultAndDefaultModel", "intDefaultAndDefaultPersist", "intDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${IntDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await IntDefaultMix.db.findFirstRow(session);
         expect(databaseObject?.intDefaultModelAndDefaultPersist, 20);

@@ -29,17 +29,18 @@ void main() {
         name VARCHAR(255) NOT NULL
       );
 
-      -- Sleep for 1 second to ensure multiple concurrent migrations
-      -- are triggered at the same time
-      SELECT pg_sleep(1);
+      -- Delay to ensure multiple concurrent migrations are triggered at the same time.
+      -- SQLite has no sleep: use a recursive CTE to burn CPU for ~1 second.
+      WITH RECURSIVE r(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM r LIMIT 2000000)
+      SELECT 1 FROM r;
 
       --
       -- MIGRATION VERSION FOR serverpod_test_sqlite
       --
       INSERT INTO "serverpod_migrations" ("module", "version", "timestamp")
-          VALUES ('serverpod_test_sqlite', '${migrationName}', now())
+          VALUES ('serverpod_test_sqlite', '${migrationName}', (unixepoch('subsecond') * 1000))
           ON CONFLICT ("module")
-          DO UPDATE SET "version" = '${migrationName}', "timestamp" = now();
+          DO UPDATE SET "version" = '${migrationName}', "timestamp" = (unixepoch('subsecond') * 1000);
 
       COMMIT;
     ''';
@@ -56,7 +57,7 @@ void main() {
 
         const minimalDefinition = '''
 {
-  "moduleName": "serverpod_test",
+  "moduleName": "serverpod_test_sqlite",
   "tables": [],
   "installedModules": [],
   "migrationApiVersion": 1
@@ -94,9 +95,9 @@ void main() {
         -- MIGRATION VERSION FOR serverpod_test_sqlite
         --
         INSERT INTO "serverpod_migrations" ("module", "version", "timestamp")
-            VALUES ('serverpod_test_sqlite', '${existingMigrations.last}', now())
+            VALUES ('serverpod_test_sqlite', '${existingMigrations.last}', (unixepoch('subsecond') * 1000))
             ON CONFLICT ("module")
-            DO UPDATE SET "version" = '${existingMigrations.last}', "timestamp" = now();
+            DO UPDATE SET "version" = '${existingMigrations.last}', "timestamp" = (unixepoch('subsecond') * 1000);
 
         COMMIT;
       ''');

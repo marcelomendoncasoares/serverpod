@@ -142,7 +142,7 @@ void main() {
           } catch (e) {}
         });
 
-        test('then only one transaction should have been comitted', () async {
+        test('then only one transaction should have been committed', () async {
           var simpleDatas = await SimpleData.db.find(session);
 
           expect(simpleDatas, hasLength(1));
@@ -254,12 +254,15 @@ void main() {
             } catch (e) {}
           });
 
-          test('then only one transaction should have been comitted', () async {
-            var simpleDatas = await SimpleData.db.find(session);
+          test(
+            'then only one transaction should have been committed',
+            () async {
+              var simpleDatas = await SimpleData.db.find(session);
 
-            expect(simpleDatas, hasLength(1));
-            expect(simpleDatas.first.num, 123);
-          });
+              expect(simpleDatas, hasLength(1));
+              expect(simpleDatas.first.num, 123);
+            },
+          );
         },
         rollbackDatabase: RollbackDatabase.afterAll,
       );
@@ -395,12 +398,15 @@ void main() {
             } catch (e) {}
           });
 
-          test('then only one transaction should have been comitted', () async {
-            var simpleDatas = await SimpleData.db.find(session);
+          test(
+            'then only one transaction should have been committed',
+            () async {
+              var simpleDatas = await SimpleData.db.find(session);
 
-            expect(simpleDatas, hasLength(1));
-            expect(simpleDatas.first.num, 123);
-          });
+              expect(simpleDatas, hasLength(1));
+              expect(simpleDatas.first.num, 123);
+            },
+          );
         },
         rollbackDatabase: RollbackDatabase.disabled,
         testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
@@ -433,6 +439,7 @@ void main() {
       'when calling createSimpleDatasInParallelTransactionCalls',
       (sessionBuilder, endpoints) {
         var session = sessionBuilder.build();
+
         setUpAll(() async {
           await endpoints.testTools.createSimpleDatasInParallelTransactionCalls(
             sessionBuilder,
@@ -464,27 +471,36 @@ void main() {
       var session = sessionBuilder.build();
 
       group('when creating UniqueData with the same unique value', () {
-        late Future failingInsert;
+        late Future<UniqueData> Function() failingInsert;
+        const email = 'test@test.com';
+
         setUp(() async {
           await UniqueData.db.insertRow(
             session,
-            UniqueData(email: 'test@test.com', number: 1),
+            UniqueData(email: email, number: 1),
           );
-          failingInsert = UniqueData.db.insertRow(
+          failingInsert = () => UniqueData.db.insertRow(
             session,
-            UniqueData(email: 'test@test.com', number: 1),
+            UniqueData(email: email, number: 1),
+          );
+        });
+
+        tearDown(() async {
+          await UniqueData.db.deleteWhere(
+            session,
+            where: (t) => t.email.equals(email),
           );
         });
 
         test('then should throw database exception', () async {
           await expectLater(
-            failingInsert,
+            failingInsert(),
             throwsA(
               allOf(
                 isA<DatabaseQueryException>().having(
                   (e) => e.code,
                   'code',
-                  PgErrorCode.uniqueViolation,
+                  SqliteErrorCode.uniqueViolation,
                 ),
               ),
             ),
@@ -496,7 +512,7 @@ void main() {
           () async {
             SimpleData? simpleData;
             try {
-              await failingInsert;
+              await failingInsert();
             } on DatabaseException catch (_) {
               simpleData = await SimpleData.db.insertRow(
                 session,
@@ -514,15 +530,24 @@ void main() {
         'when creating multiple UniqueData with the same unique value in parallel '
         'then should throw database exception but still insert the one that was successful',
         () async {
+          const email = 'test@test2.com';
+
+          addTearDown(() async {
+            await UniqueData.db.deleteWhere(
+              session,
+              where: (t) => t.email.equals(email),
+            );
+          });
+
           try {
             await Future.wait([
               UniqueData.db.insertRow(
                 session,
-                UniqueData(email: 'test@test2.com', number: 2),
+                UniqueData(email: email, number: 2),
               ),
               UniqueData.db.insertRow(
                 session,
-                UniqueData(email: 'test@test2.com', number: 2),
+                UniqueData(email: email, number: 2),
               ),
             ]);
           } on DatabaseException catch (_) {}
@@ -530,7 +555,7 @@ void main() {
           var uniqueDatas = await UniqueData.db.find(session);
 
           expect(uniqueDatas, hasLength(1));
-          expect(uniqueDatas.first.email, 'test@test2.com');
+          expect(uniqueDatas.first.email, email);
         },
       );
 

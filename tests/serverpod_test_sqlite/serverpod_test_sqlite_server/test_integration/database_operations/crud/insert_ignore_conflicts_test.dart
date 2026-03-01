@@ -1,7 +1,7 @@
 import 'package:serverpod/protocol.dart' as protocol;
 import 'package:serverpod/serverpod.dart';
-import 'package:serverpod_test_server/src/generated/protocol.dart';
-import 'package:serverpod_test_server/test_util/test_serverpod.dart';
+import 'package:serverpod_test_sqlite_server/src/generated/protocol.dart';
+import 'package:serverpod_test_sqlite_server/test_util/test_serverpod.dart';
 import 'package:test/test.dart';
 
 void main() async {
@@ -101,7 +101,7 @@ void main() async {
             isA<DatabaseQueryException>().having(
               (e) => e.code,
               'code',
-              PgErrorCode.uniqueViolation,
+              SqliteErrorCode.uniqueViolation,
             ),
           ),
         );
@@ -292,54 +292,6 @@ void main() async {
     },
   );
 
-  group(
-    'Given a model with non-persistent fields and a batch of more than 100 entries',
-    () {
-      test(
-        'when inserting all rows with ignoreConflicts then a performance warning is logged.',
-        () async {
-          // Use a separate session that can be closed to flush cached logs
-          // to the database.
-          var logServer = IntegrationTestServer();
-          var logSession = await logServer.session();
-
-          var data = List.generate(
-            101,
-            (i) => UniqueDataWithNonPersist(
-              number: i,
-              email: '$i@serverpod.dev',
-              extra: 'extra-$i',
-            ),
-          );
-
-          await UniqueDataWithNonPersist.db.insert(
-            logSession,
-            data,
-            ignoreConflicts: true,
-          );
-
-          // Closing the session flushes cached log entries to the database.
-          await logSession.close();
-
-          var logEntries = await protocol.LogEntry.db.find(
-            session,
-            where: (t) => t.message.like(
-              '%Inserting 101 rows with ignoreConflicts%',
-            ),
-          );
-
-          expect(logEntries, hasLength(1));
-          expect(logEntries.first.logLevel, LogLevel.warning);
-          expect(
-            logEntries.first.message,
-            'WARNING: Inserting 101 rows with ignoreConflicts on '
-            'table "unique_data_with_non_persist" with non-persistent fields. '
-            'This requires individual inserts and may cause performance '
-            'issues. Consider removing non-persistent fields or inserting in '
-            'smaller batches.',
-          );
-        },
-      );
-    },
-  );
+  /// NOTE: No performance warning is logged for SQLite since it always runs
+  /// inserts individually due to how SQLite handles DEFAULT values.
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_test_sqlite_server/src/generated/protocol.dart';
 import 'package:serverpod_test_server/test_util/test_tags.dart';
@@ -212,7 +214,9 @@ void main() async {
         'when creating a transaction with `transactionOrSavepoint`, '
         'then the data is visible only on the transaction until the closure completes.',
         () async {
-          await DatabaseUtil.runInTransactionOrSavepoint(
+          final completer = Completer<void>();
+
+          final result = DatabaseUtil.runInTransactionOrSavepoint(
             session.db,
             null,
             (final transaction) async {
@@ -226,12 +230,18 @@ void main() async {
                 await SimpleData.db.count(session, transaction: transaction),
                 1,
               );
-              expect(
-                await SimpleData.db.count(session),
-                0,
-              );
+
+              await completer.future;
             },
           );
+
+          expect(
+            await SimpleData.db.count(session),
+            0,
+          );
+
+          completer.complete();
+          await result;
 
           expect(
             await SimpleData.db.count(session),
@@ -244,48 +254,54 @@ void main() async {
         'when creating two independent transactions with `transactionOrSavepoint`, '
         'then the data is visible only to each transaction that wrote it.',
         () async {
-          await DatabaseUtil.runInTransactionOrSavepoint(
+          final completer = Completer<void>();
+
+          final t1 = DatabaseUtil.runInTransactionOrSavepoint(
             session.db,
             null,
             (final transaction1) async {
-              await DatabaseUtil.runInTransactionOrSavepoint(
-                session.db,
-                null,
-                (final transaction2) async {
-                  await SimpleData.db.insertRow(
-                    session,
-                    SimpleData(num: 1),
-                    transaction: transaction2,
-                  );
-                  await SimpleData.db.insertRow(
-                    session,
-                    SimpleData(num: 2),
-                    transaction: transaction1,
-                  );
+              await SimpleData.db.insertRow(
+                session,
+                SimpleData(num: 2),
+                transaction: transaction1,
+              );
 
-                  expect(
-                    await SimpleData.db.count(
-                      session,
-                      transaction: transaction1,
-                    ),
-                    1,
-                  );
-                  expect(
-                    await SimpleData.db.count(
-                      session,
-                      transaction: transaction2,
-                    ),
-                    1,
-                  );
-                },
+              expect(
+                await SimpleData.db.count(
+                  session,
+                  transaction: transaction1,
+                ),
+                1,
+              );
+
+              await completer.future;
+              await transaction1.cancel();
+            },
+          );
+
+          final t2 = DatabaseUtil.runInTransactionOrSavepoint(
+            session.db,
+            null,
+            (final transaction2) async {
+              await SimpleData.db.insertRow(
+                session,
+                SimpleData(num: 1),
+                transaction: transaction2,
+              );
+
+              expect(
+                await SimpleData.db.count(
+                  session,
+                  transaction: transaction2,
+                ),
+                1,
               );
             },
           );
 
-          expect(
-            await SimpleData.db.count(session),
-            2,
-          );
+          completer.complete();
+          await t1;
+          await t2;
         },
       );
 
@@ -431,14 +447,10 @@ void main() async {
                   SimpleData(num: 1),
                   transaction: transaction,
                 );
-                await SimpleData.db.insertRow(
-                  session,
-                  SimpleData(num: 2),
-                );
 
                 expect(
                   await SimpleData.db.count(session, transaction: transaction),
-                  2,
+                  1,
                 );
 
                 throw _ForcedTestException();
@@ -448,7 +460,7 @@ void main() async {
 
           expect(
             await SimpleData.db.count(session),
-            1,
+            0,
           );
         },
       );

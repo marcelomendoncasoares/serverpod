@@ -96,7 +96,8 @@ void main() async {
     );
 
     test(
-      'when calling `find` without transaction then does not find the object',
+      'when calling `find` without transaction '
+      'then an exception is thrown because SQLite does not allow recursive locks',
       () async {
         await session.db.transaction((transaction) async {
           await UniqueData.db.insertRow(
@@ -105,11 +106,16 @@ void main() async {
             transaction: transaction,
           );
 
-          var data = await UniqueData.db.find(
-            session,
+          await expectLater(
+            UniqueData.db.find(session),
+            throwsA(
+              isA<DatabaseQueryException>().having(
+                (e) => e.code,
+                'code',
+                SqliteErrorCode.objectInUse,
+              ),
+            ),
           );
-
-          expect(data, hasLength(0));
         });
       },
     );
@@ -137,25 +143,6 @@ void main() async {
     );
 
     test(
-      'when calling `findFirstRow` without transaction then does not find the object',
-      () async {
-        await session.db.transaction((transaction) async {
-          await UniqueData.db.insertRow(
-            session,
-            UniqueData(number: 111, email: 'test@serverpod.com'),
-            transaction: transaction,
-          );
-
-          var data = await UniqueData.db.findFirstRow(
-            session,
-          );
-
-          expect(data, equals(null));
-        });
-      },
-    );
-
-    test(
       'when calling `findById` with transaction then does find the object',
       () async {
         await session.db.transaction((transaction) async {
@@ -174,26 +161,6 @@ void main() async {
           expect(fetchedData, isNot(equals(null)));
           expect(fetchedData?.number, 111);
           expect(fetchedData?.email, 'test@serverpod.com');
-        });
-      },
-    );
-
-    test(
-      'when calling `find` without transaction then does not find the object',
-      () async {
-        await session.db.transaction((transaction) async {
-          var insertedData = await UniqueData.db.insertRow(
-            session,
-            UniqueData(number: 111, email: 'test@serverpod.com'),
-            transaction: transaction,
-          );
-
-          var data = await UniqueData.db.findById(
-            session,
-            insertedData.id!,
-          );
-
-          expect(data, equals(null));
         });
       },
     );

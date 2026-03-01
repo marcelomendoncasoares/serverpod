@@ -18,10 +18,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "byNameEnumDefaultAndDefaultModel" field value should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${EnumDefaultMix.t.tableName}" ("byNameEnumDefaultAndDefaultModel", "byNameEnumDefaultAndDefaultPersist", "byNameEnumDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${EnumDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await EnumDefaultMix.db.findFirstRow(session);
         expect(
@@ -35,10 +32,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "byNameEnumDefaultAndDefaultPersist" field value should match the defaultPersist value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${EnumDefaultMix.t.tableName}" ("byNameEnumDefaultAndDefaultModel", "byNameEnumDefaultAndDefaultPersist", "byNameEnumDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${EnumDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await EnumDefaultMix.db.findFirstRow(session);
         expect(
@@ -52,10 +46,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "byNameEnumDefaultModelAndDefaultPersist" field value should match the defaultPersist value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${EnumDefaultMix.t.tableName}" ("byNameEnumDefaultAndDefaultModel", "byNameEnumDefaultAndDefaultPersist", "byNameEnumDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${EnumDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await EnumDefaultMix.db.findFirstRow(session);
         expect(

@@ -578,7 +578,11 @@ void main() async {
 
         var updated = await Types.db.updateRow(session, value);
 
-        expect(updated.aDateTime, equals(now));
+        // SQLite stores timestamps with millisecond precision only.
+        expect(
+          updated.aDateTime?.millisecondsSinceEpoch,
+          equals(now.millisecondsSinceEpoch),
+        );
       },
     );
 
@@ -1287,7 +1291,11 @@ void main() async {
 
         var updated = await Types.db.update(session, toUpdate);
 
-        expect(updated.first.aDateTime, equals(now));
+        // SQLite stores timestamps with millisecond precision only.
+        expect(
+          updated.first.aDateTime?.millisecondsSinceEpoch,
+          equals(now.millisecondsSinceEpoch),
+        );
       },
     );
 
