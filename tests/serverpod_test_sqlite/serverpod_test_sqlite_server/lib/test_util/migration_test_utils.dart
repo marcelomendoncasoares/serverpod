@@ -51,8 +51,10 @@ abstract class MigrationTestUtils {
     });
 
     var exitCode = await _runProcess(
-      'serverpod',
+      'dart',
       arguments: [
+        'run',
+        'serverpod_cli',
         'create-migration',
         '--tag',
         tag,
@@ -182,8 +184,10 @@ abstract class MigrationTestUtils {
     String? targetVersion,
   }) async {
     return await _runProcess(
-      'serverpod',
+      'dart',
       arguments: [
+        'run',
+        'serverpod_cli',
         'create-repair-migration',
         '--tag',
         tag,

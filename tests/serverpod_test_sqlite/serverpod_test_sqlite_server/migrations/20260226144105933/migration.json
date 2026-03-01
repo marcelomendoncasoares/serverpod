@@ -16,7 +16,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('address_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -98,7 +98,7 @@
             "name": "id",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "gen_random_uuid()",
+            "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue"
           },
           {
@@ -180,7 +180,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('arena_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -226,7 +226,7 @@
             "name": "id",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "gen_random_uuid_v7()",
+            "columnDefault": "unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue"
           },
           {
@@ -272,7 +272,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('bigint_default_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -280,7 +280,7 @@
             "name": "bigintDefaultStr",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'-1234567890123456789099999999'::text",
+            "columnDefault": "CAST('-1234567890123456789099999999' AS TEXT)",
             "dartType": "BigInt"
           },
           {
@@ -288,7 +288,7 @@
             "name": "bigintDefaultStrNull",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'1234567890123456789099999999'::text",
+            "columnDefault": "CAST('1234567890123456789099999999' AS TEXT)",
             "dartType": "BigInt?"
           }
         ],
@@ -327,7 +327,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('bigint_default_mix_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -335,7 +335,7 @@
             "name": "bigIntDefaultAndDefaultModel",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'1'::text",
+            "columnDefault": "CAST('1' AS TEXT)",
             "dartType": "BigInt"
           },
           {
@@ -343,7 +343,7 @@
             "name": "bigIntDefaultAndDefaultPersist",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'12345678901234567890'::text",
+            "columnDefault": "CAST('12345678901234567890' AS TEXT)",
             "dartType": "BigInt"
           },
           {
@@ -351,7 +351,7 @@
             "name": "bigIntDefaultModelAndDefaultPersist",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'-1234567890123456789099999999'::text",
+            "columnDefault": "CAST('-1234567890123456789099999999' AS TEXT)",
             "dartType": "BigInt"
           }
         ],
@@ -390,7 +390,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('bigint_default_model_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -443,7 +443,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('bigint_default_persist_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -451,7 +451,7 @@
             "name": "bigIntDefaultPersistStr",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'1234567890123456789099999999'::text",
+            "columnDefault": "CAST('1234567890123456789099999999' AS TEXT)",
             "dartType": "BigInt?"
           }
         ],
@@ -490,7 +490,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('blocking_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -591,7 +591,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('book_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -637,7 +637,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('bool_default_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -700,7 +700,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('bool_default_mix_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -763,7 +763,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('bool_default_model_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -823,7 +823,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('bool_default_persist_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -878,7 +878,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('cat_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -946,7 +946,7 @@
             "name": "id",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "gen_random_uuid()",
+            "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue?"
           },
           {
@@ -1049,7 +1049,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('chapter_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -1117,7 +1117,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('child_entity_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -1192,7 +1192,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('child_table_explicit_column_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -1245,7 +1245,7 @@
             "name": "id",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "gen_random_uuid()",
+            "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue?"
           },
           {
@@ -1319,7 +1319,7 @@
             "name": "id",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "gen_random_uuid_v7()",
+            "columnDefault": "unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue"
           },
           {
@@ -1387,7 +1387,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('citizen_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -1476,7 +1476,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('citizen_int_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -1565,7 +1565,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('city_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -1611,7 +1611,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('city_with_long_table_name_that_is_still_valid_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -1657,7 +1657,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('comment_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -1725,7 +1725,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('comment_int_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -1793,7 +1793,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('company_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -1861,7 +1861,7 @@
             "name": "id",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "gen_random_uuid_v7()",
+            "columnDefault": "unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue?"
           },
           {
@@ -1929,7 +1929,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('contractor_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2011,7 +2011,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('course_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2057,7 +2057,7 @@
             "name": "id",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "gen_random_uuid_v7()",
+            "columnDefault": "unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue?"
           },
           {
@@ -2103,7 +2103,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('customer_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2149,7 +2149,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('customer_int_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2195,7 +2195,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('datetime_default_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2203,7 +2203,7 @@
             "name": "dateTimeDefaultNow",
             "columnType": 4,
             "isNullable": false,
-            "columnDefault": "CURRENT_TIMESTAMP",
+            "columnDefault": "CAST(unixepoch('subsecond') * 1000 AS INTEGER)",
             "dartType": "DateTime"
           },
           {
@@ -2211,7 +2211,7 @@
             "name": "dateTimeDefaultStr",
             "columnType": 4,
             "isNullable": false,
-            "columnDefault": "'2024-05-24 22:00:00'::timestamp without time zone",
+            "columnDefault": "1716588000000",
             "dartType": "DateTime"
           },
           {
@@ -2219,7 +2219,7 @@
             "name": "dateTimeDefaultStrNull",
             "columnType": 4,
             "isNullable": true,
-            "columnDefault": "'2024-05-24 22:00:00'::timestamp without time zone",
+            "columnDefault": "1716588000000",
             "dartType": "DateTime?"
           }
         ],
@@ -2258,7 +2258,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('datetime_default_mix_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2266,7 +2266,7 @@
             "name": "dateTimeDefaultAndDefaultModel",
             "columnType": 4,
             "isNullable": false,
-            "columnDefault": "'2024-05-01 22:00:00'::timestamp without time zone",
+            "columnDefault": "1714600800000",
             "dartType": "DateTime"
           },
           {
@@ -2274,7 +2274,7 @@
             "name": "dateTimeDefaultAndDefaultPersist",
             "columnType": 4,
             "isNullable": false,
-            "columnDefault": "'2024-05-10 22:00:00'::timestamp without time zone",
+            "columnDefault": "1715378400000",
             "dartType": "DateTime"
           },
           {
@@ -2282,7 +2282,7 @@
             "name": "dateTimeDefaultModelAndDefaultPersist",
             "columnType": 4,
             "isNullable": false,
-            "columnDefault": "'2024-05-10 22:00:00'::timestamp without time zone",
+            "columnDefault": "1715378400000",
             "dartType": "DateTime"
           }
         ],
@@ -2321,7 +2321,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('datetime_default_model_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2381,7 +2381,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('datetime_default_persist_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2389,7 +2389,7 @@
             "name": "dateTimeDefaultPersistNow",
             "columnType": 4,
             "isNullable": true,
-            "columnDefault": "CURRENT_TIMESTAMP",
+            "columnDefault": "CAST(unixepoch('subsecond') * 1000 AS INTEGER)",
             "dartType": "DateTime?"
           },
           {
@@ -2397,7 +2397,7 @@
             "name": "dateTimeDefaultPersistStr",
             "columnType": 4,
             "isNullable": true,
-            "columnDefault": "'2024-05-10 22:00:00'::timestamp without time zone",
+            "columnDefault": "1715378400000",
             "dartType": "DateTime?"
           }
         ],
@@ -2436,7 +2436,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('department_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2482,7 +2482,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('double_default_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2537,7 +2537,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('double_default_mix_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2600,7 +2600,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('double_default_model_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2653,7 +2653,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('double_default_persist_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2700,7 +2700,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('duration_default_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2755,7 +2755,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('duration_default_mix_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2818,7 +2818,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('duration_default_model_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2871,7 +2871,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('duration_default_persist_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2918,7 +2918,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('employee_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -2986,7 +2986,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('empty_model_relation_item_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3054,7 +3054,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('empty_model_with_table_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           }
         ],
@@ -3093,7 +3093,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('enrollment_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3194,7 +3194,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('enrollment_int_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3295,7 +3295,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('enum_default_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3303,7 +3303,7 @@
             "name": "byNameEnumDefault",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'byName1'::text",
+            "columnDefault": "CAST('byName1' AS TEXT)",
             "dartType": "protocol:ByNameEnum"
           },
           {
@@ -3311,7 +3311,7 @@
             "name": "byNameEnumDefaultNull",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'byName2'::text",
+            "columnDefault": "CAST('byName2' AS TEXT)",
             "dartType": "protocol:ByNameEnum?"
           },
           {
@@ -3366,7 +3366,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('enum_default_mix_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3374,7 +3374,7 @@
             "name": "byNameEnumDefaultAndDefaultModel",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'byName1'::text",
+            "columnDefault": "CAST('byName1' AS TEXT)",
             "dartType": "protocol:ByNameEnum"
           },
           {
@@ -3382,7 +3382,7 @@
             "name": "byNameEnumDefaultAndDefaultPersist",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'byName2'::text",
+            "columnDefault": "CAST('byName2' AS TEXT)",
             "dartType": "protocol:ByNameEnum"
           },
           {
@@ -3390,7 +3390,7 @@
             "name": "byNameEnumDefaultModelAndDefaultPersist",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'byName2'::text",
+            "columnDefault": "CAST('byName2' AS TEXT)",
             "dartType": "protocol:ByNameEnum"
           }
         ],
@@ -3429,7 +3429,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('enum_default_model_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3496,7 +3496,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('enum_default_persist_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3504,7 +3504,7 @@
             "name": "byNameEnumDefaultPersist",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'byName1'::text",
+            "columnDefault": "CAST('byName1' AS TEXT)",
             "dartType": "protocol:ByNameEnum?"
           },
           {
@@ -3551,7 +3551,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('immutable_object_with_table_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3597,7 +3597,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('int_default_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3652,7 +3652,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('int_default_mix_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3715,7 +3715,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('int_default_model_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3768,7 +3768,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('int_default_persist_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3815,7 +3815,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('long_implicit_id_field_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3883,7 +3883,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('long_implicit_id_field_collection_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3929,7 +3929,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('max_field_name_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -3975,7 +3975,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('member_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -4021,7 +4021,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('model_with_required_field_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -4081,7 +4081,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('modified_column_name_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -4134,7 +4134,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('multiple_max_field_name_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -4209,7 +4209,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_field_persist_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -4255,7 +4255,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_field_scopes_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -4308,7 +4308,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_with_bit_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -4482,7 +4482,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_with_bytedata_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -4528,7 +4528,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_with_duration_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -4574,7 +4574,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_with_enum_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -4648,7 +4648,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_with_enum_enhanced_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -4729,7 +4729,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_with_half_vector_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -4903,7 +4903,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_with_index_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -4975,7 +4975,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_with_object_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -5077,7 +5077,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_with_parent_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -5138,7 +5138,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_with_self_parent_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -5199,7 +5199,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_with_sparse_vector_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -5322,7 +5322,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_with_uuid_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -5375,7 +5375,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('object_with_vector_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -5549,7 +5549,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('order_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -5617,7 +5617,7 @@
             "name": "id",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "gen_random_uuid_v7()",
+            "columnDefault": "unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue"
           },
           {
@@ -5685,7 +5685,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('organization_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -5753,7 +5753,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('organization_with_long_table_name_that_is_still_valid_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -5821,7 +5821,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('parent_class_table_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -5874,7 +5874,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('parent_entity_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           }
         ],
@@ -5913,7 +5913,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('person_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -6002,7 +6002,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('person_with_long_table_name_that_is_still_valid_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -6091,7 +6091,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('player_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -6159,7 +6159,7 @@
             "name": "id",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "gen_random_uuid()",
+            "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue?"
           },
           {
@@ -6227,7 +6227,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('post_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -6309,7 +6309,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('related_unique_data_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -6377,7 +6377,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('relation_empty_model_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           }
         ],
@@ -6416,7 +6416,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('relation_to_multiple_max_field_name_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -6462,7 +6462,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('scope_none_fields_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -6515,7 +6515,7 @@
             "name": "id",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "gen_random_uuid()",
+            "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue?"
           }
         ],
@@ -6554,7 +6554,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('service_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -6607,7 +6607,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('simple_data_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -6653,7 +6653,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('simple_date_time_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -6699,7 +6699,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('string_default_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -6707,7 +6707,7 @@
             "name": "stringDefault",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'This is a default value'::text",
+            "columnDefault": "CAST('This is a default value' AS TEXT)",
             "dartType": "String"
           },
           {
@@ -6715,7 +6715,7 @@
             "name": "stringDefaultNull",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'This is a default null value'::text",
+            "columnDefault": "CAST('This is a default null value' AS TEXT)",
             "dartType": "String?"
           }
         ],
@@ -6754,7 +6754,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('string_default_mix_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -6762,7 +6762,7 @@
             "name": "stringDefaultAndDefaultModel",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'This is a default value'::text",
+            "columnDefault": "CAST('This is a default value' AS TEXT)",
             "dartType": "String"
           },
           {
@@ -6770,7 +6770,7 @@
             "name": "stringDefaultAndDefaultPersist",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'This is a default persist value'::text",
+            "columnDefault": "CAST('This is a default persist value' AS TEXT)",
             "dartType": "String"
           },
           {
@@ -6778,7 +6778,7 @@
             "name": "stringDefaultModelAndDefaultPersist",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'This is a default persist value'::text",
+            "columnDefault": "CAST('This is a default persist value' AS TEXT)",
             "dartType": "String"
           }
         ],
@@ -6817,7 +6817,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('string_default_model_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -6870,7 +6870,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('string_default_persist_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -6878,7 +6878,7 @@
             "name": "stringDefaultPersist",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'This is a default persist value'::text",
+            "columnDefault": "CAST('This is a default persist value' AS TEXT)",
             "dartType": "String?"
           },
           {
@@ -6886,7 +6886,7 @@
             "name": "stringDefaultPersistSingleQuoteWithOneSingleEscapeQuote",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'This is a ''default persist value'::text",
+            "columnDefault": "CAST('This is a ''default persist value' AS TEXT)",
             "dartType": "String?"
           },
           {
@@ -6894,7 +6894,7 @@
             "name": "stringDefaultPersistSingleQuoteWithTwoSingleEscapeQuote",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'This is a ''default'' persist value'::text",
+            "columnDefault": "CAST('This is a ''default'' persist value' AS TEXT)",
             "dartType": "String?"
           },
           {
@@ -6902,7 +6902,7 @@
             "name": "stringDefaultPersistDoubleQuoteWithOneDoubleEscapeQuote",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'This is a \"default persist value'::text",
+            "columnDefault": "CAST('This is a \"default persist value' AS TEXT)",
             "dartType": "String?"
           },
           {
@@ -6910,7 +6910,7 @@
             "name": "stringDefaultPersistDoubleQuoteWithTwoDoubleEscapeQuote",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'This is a \"default\" persist value'::text",
+            "columnDefault": "CAST('This is a \"default\" persist value' AS TEXT)",
             "dartType": "String?"
           },
           {
@@ -6918,7 +6918,7 @@
             "name": "stringDefaultPersistSingleQuoteWithOneDoubleQuote",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'This is a \"default persist value'::text",
+            "columnDefault": "CAST('This is a \"default persist value' AS TEXT)",
             "dartType": "String?"
           },
           {
@@ -6926,7 +6926,7 @@
             "name": "stringDefaultPersistSingleQuoteWithTwoDoubleQuote",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'This is a \"default\" persist value'::text",
+            "columnDefault": "CAST('This is a \"default\" persist value' AS TEXT)",
             "dartType": "String?"
           },
           {
@@ -6934,7 +6934,7 @@
             "name": "stringDefaultPersistDoubleQuoteWithOneSingleQuote",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'This is a ''default persist value'::text",
+            "columnDefault": "CAST('This is a ''default persist value' AS TEXT)",
             "dartType": "String?"
           },
           {
@@ -6942,7 +6942,7 @@
             "name": "stringDefaultPersistDoubleQuoteWithTwoSingleQuote",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'This is a ''default'' persist value'::text",
+            "columnDefault": "CAST('This is a ''default'' persist value' AS TEXT)",
             "dartType": "String?"
           }
         ],
@@ -6981,7 +6981,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('student_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -7027,7 +7027,7 @@
             "name": "id",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "gen_random_uuid()",
+            "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue?"
           },
           {
@@ -7073,7 +7073,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('table_with_explicit_column_names_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -7088,7 +7088,7 @@
             "name": "user_description",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'Just some information'::text",
+            "columnDefault": "CAST('Just some information' AS TEXT)",
             "dartType": "String?"
           }
         ],
@@ -7127,7 +7127,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('team_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -7209,7 +7209,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('team_int_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -7291,7 +7291,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('town_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -7359,7 +7359,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('town_int_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -7427,7 +7427,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('types_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -7610,7 +7610,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('unique_data_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -7677,7 +7677,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('uri_default_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -7685,7 +7685,7 @@
             "name": "uriDefault",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'https://serverpod.dev/default'::text",
+            "columnDefault": "CAST('https://serverpod.dev/default' AS TEXT)",
             "dartType": "Uri"
           },
           {
@@ -7693,7 +7693,7 @@
             "name": "uriDefaultNull",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'https://serverpod.dev/default'::text",
+            "columnDefault": "CAST('https://serverpod.dev/default' AS TEXT)",
             "dartType": "Uri?"
           }
         ],
@@ -7732,7 +7732,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('uri_default_mix_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -7740,7 +7740,7 @@
             "name": "uriDefaultAndDefaultModel",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'https://serverpod.dev/default'::text",
+            "columnDefault": "CAST('https://serverpod.dev/default' AS TEXT)",
             "dartType": "Uri"
           },
           {
@@ -7748,7 +7748,7 @@
             "name": "uriDefaultAndDefaultPersist",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'https://serverpod.dev/defaultPersist'::text",
+            "columnDefault": "CAST('https://serverpod.dev/defaultPersist' AS TEXT)",
             "dartType": "Uri"
           },
           {
@@ -7756,7 +7756,7 @@
             "name": "uriDefaultModelAndDefaultPersist",
             "columnType": 0,
             "isNullable": false,
-            "columnDefault": "'https://serverpod.dev/defaultPersist'::text",
+            "columnDefault": "CAST('https://serverpod.dev/defaultPersist' AS TEXT)",
             "dartType": "Uri"
           }
         ],
@@ -7795,7 +7795,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('uri_default_model_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -7848,7 +7848,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('uri_default_persist_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -7856,7 +7856,7 @@
             "name": "uriDefaultPersist",
             "columnType": 0,
             "isNullable": true,
-            "columnDefault": "'https://serverpod.dev/'::text",
+            "columnDefault": "CAST('https://serverpod.dev/' AS TEXT)",
             "dartType": "Uri?"
           }
         ],
@@ -7895,7 +7895,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('user_note_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -7963,7 +7963,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('user_note_collection_with_a_long_name_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -8009,7 +8009,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('user_note_collections_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -8055,7 +8055,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('user_note_with_a_long_name_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -8123,7 +8123,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('uuid_default_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -8131,7 +8131,7 @@
             "name": "uuidDefaultRandom",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "gen_random_uuid()",
+            "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue"
           },
           {
@@ -8139,7 +8139,7 @@
             "name": "uuidDefaultRandomV7",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "gen_random_uuid_v7()",
+            "columnDefault": "unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue"
           },
           {
@@ -8147,7 +8147,7 @@
             "name": "uuidDefaultRandomNull",
             "columnType": 7,
             "isNullable": true,
-            "columnDefault": "gen_random_uuid()",
+            "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue?"
           },
           {
@@ -8155,7 +8155,7 @@
             "name": "uuidDefaultStr",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "'550e8400-e29b-41d4-a716-446655440000'::uuid",
+            "columnDefault": "unhex('550e8400e29b41d4a716446655440000')",
             "dartType": "UuidValue"
           },
           {
@@ -8163,7 +8163,7 @@
             "name": "uuidDefaultStrNull",
             "columnType": 7,
             "isNullable": true,
-            "columnDefault": "'3f2504e0-4f89-11d3-9a0c-0305e82c3301'::uuid",
+            "columnDefault": "unhex('3f2504e04f8911d39a0c0305e82c3301')",
             "dartType": "UuidValue?"
           }
         ],
@@ -8202,7 +8202,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('uuid_default_mix_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -8210,7 +8210,7 @@
             "name": "uuidDefaultAndDefaultModel",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "'3f2504e0-4f89-11d3-9a0c-0305e82c3301'::uuid",
+            "columnDefault": "unhex('3f2504e04f8911d39a0c0305e82c3301')",
             "dartType": "UuidValue"
           },
           {
@@ -8218,7 +8218,7 @@
             "name": "uuidDefaultAndDefaultPersist",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "'9e107d9d-372b-4d97-9b27-2f0907d0b1d4'::uuid",
+            "columnDefault": "unhex('9e107d9d372b4d979b272f0907d0b1d4')",
             "dartType": "UuidValue"
           },
           {
@@ -8226,7 +8226,7 @@
             "name": "uuidDefaultModelAndDefaultPersist",
             "columnType": 7,
             "isNullable": false,
-            "columnDefault": "'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid",
+            "columnDefault": "unhex('f47ac10b58cc4372a5670e02b2c3d479')",
             "dartType": "UuidValue"
           }
         ],
@@ -8265,7 +8265,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('uuid_default_model_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -8339,7 +8339,7 @@
             "name": "id",
             "columnType": 6,
             "isNullable": false,
-            "columnDefault": "nextval('uuid_default_persist_id_seq'::regclass)",
+            "columnDefault": "AUTOINCREMENT",
             "dartType": "int?"
           },
           {
@@ -8347,7 +8347,7 @@
             "name": "uuidDefaultPersistRandom",
             "columnType": 7,
             "isNullable": true,
-            "columnDefault": "gen_random_uuid()",
+            "columnDefault": "unhex(hex(randomblob(6)) || '4' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue?"
           },
           {
@@ -8355,7 +8355,7 @@
             "name": "uuidDefaultPersistRandomV7",
             "columnType": 7,
             "isNullable": true,
-            "columnDefault": "gen_random_uuid_v7()",
+            "columnDefault": "unhex(printf('%012x', CAST(unixepoch('now', 'subsecond') * 1000 AS INTEGER)) || '7' || substr(hex(randomblob(2)), 2, 3) || substr('89AB', 1 + (abs(random()) % 4), 1) || substr(hex(randomblob(8)), 2, 15))",
             "dartType": "UuidValue?"
           },
           {
@@ -8363,7 +8363,7 @@
             "name": "uuidDefaultPersistStr",
             "columnType": 7,
             "isNullable": true,
-            "columnDefault": "'550e8400-e29b-41d4-a716-446655440000'::uuid",
+            "columnDefault": "unhex('550e8400e29b41d4a716446655440000')",
             "dartType": "UuidValue?"
           }
         ],

@@ -9,13 +9,13 @@ String serverpodHome = '';
 bool loadEnvironmentVars() {
   if (!productionMode) {
     var home = Platform.environment['SERVERPOD_HOME'];
-    if (home == null || home == '' || !Directory(home).existsSync()) {
-      log.error(
-        'The SERVERPOD_HOME environmental variable is required in development mode,',
-      );
-      return false;
-    }
-    serverpodHome = home;
+    // if (home == null || home == '' || !Directory(home).existsSync()) {
+    //   log.error(
+    //     'The SERVERPOD_HOME environmental variable is required in development mode,',
+    //   );
+    //   return false;
+    // }
+    serverpodHome = home ?? '/home/msoares/Codes/GitHub/serverpod';
   }
 
   return true;

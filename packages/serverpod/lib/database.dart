@@ -1,4 +1,5 @@
 export 'src/database/adapters/postgres/postgres_error_codes.dart';
+export 'src/database/adapters/sqlite/sqlite_error_codes.dart';
 export 'src/database/adapters/postgres/value_encoder.dart';
 export 'src/database/concepts/columns.dart';
 export 'src/database/concepts/column_value.dart';
