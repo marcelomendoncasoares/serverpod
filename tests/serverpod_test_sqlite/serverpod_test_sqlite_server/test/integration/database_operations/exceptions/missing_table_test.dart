@@ -16,11 +16,11 @@ void main() async {
             isA<DatabaseQueryException>().having(
               (e) => e.code,
               'code',
-              PgErrorCode.undefinedTable,
+              SqliteErrorCode.undefinedTable,
             ),
             predicate<DatabaseQueryException>(
               (e) => e.message.contains(
-                'Table not found, have you applied the database migration? (',
+                'no such table: ',
               ),
             ),
           ),

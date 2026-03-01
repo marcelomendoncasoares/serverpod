@@ -18,10 +18,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "boolDefaultAndDefaultModel" field value should match the default value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${BoolDefaultMix.t.tableName}" ("boolDefaultAndDefaultModel", "boolDefaultAndDefaultPersist", "boolDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${BoolDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await BoolDefaultMix.db.findFirstRow(session);
         expect(databaseObject?.boolDefaultAndDefaultModel, isTrue);
@@ -32,10 +29,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "boolDefaultAndDefaultPersist" field value should match the defaultPersist value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${BoolDefaultMix.t.tableName}" ("boolDefaultAndDefaultModel", "boolDefaultAndDefaultPersist", "boolDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${BoolDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await BoolDefaultMix.db.findFirstRow(session);
         expect(databaseObject?.boolDefaultAndDefaultPersist, isFalse);
@@ -46,10 +40,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "boolDefaultModelAndDefaultPersist" field value should match the defaultPersist value',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO "${BoolDefaultMix.t.tableName}" ("boolDefaultAndDefaultModel", "boolDefaultAndDefaultPersist", "boolDefaultModelAndDefaultPersist")
-        VALUES (DEFAULT, DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${BoolDefaultMix.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await BoolDefaultMix.db.findFirstRow(session);
         expect(databaseObject?.boolDefaultModelAndDefaultPersist, isFalse);

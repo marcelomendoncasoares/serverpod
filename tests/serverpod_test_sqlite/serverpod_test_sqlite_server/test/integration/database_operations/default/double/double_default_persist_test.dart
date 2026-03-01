@@ -30,10 +30,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "defaultPersist=10.5" field should be 10.5',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${DoubleDefaultPersist.t.tableName}
-        VALUES (DEFAULT);
-        ''',
+          'INSERT INTO "${DoubleDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await DoubleDefaultPersist.db.findFirstRow(
           session,

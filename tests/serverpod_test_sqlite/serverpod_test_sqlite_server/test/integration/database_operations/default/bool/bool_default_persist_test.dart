@@ -42,10 +42,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "defaultPersist=true" field should be true',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${BoolDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${BoolDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await BoolDefaultPersist.db.findFirstRow(session);
         expect(databaseObject?.boolDefaultPersistTrue, isTrue);
@@ -56,10 +53,7 @@ void main() async {
       'when creating a record in the database with an unsafe query, then the "defaultPersist=false" field should be false',
       () async {
         await session.db.unsafeQuery(
-          '''
-        INSERT INTO ${BoolDefaultPersist.t.tableName}
-        VALUES (DEFAULT, DEFAULT);
-        ''',
+          'INSERT INTO "${BoolDefaultPersist.t.tableName}" DEFAULT VALUES',
         );
         var databaseObject = await BoolDefaultPersist.db.findFirstRow(session);
         expect(databaseObject?.boolDefaultPersistFalse, isFalse);

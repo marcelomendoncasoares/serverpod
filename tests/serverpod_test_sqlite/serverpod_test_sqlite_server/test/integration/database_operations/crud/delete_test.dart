@@ -254,7 +254,7 @@ void main() async {
             isA<DatabaseQueryException>().having(
               (e) => e.code,
               'code',
-              PgErrorCode.foreignKeyViolation,
+              SqliteErrorCode.foreignKeyViolation,
             ),
           ),
         );
