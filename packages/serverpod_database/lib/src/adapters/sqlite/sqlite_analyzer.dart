@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:serverpod/protocol.dart';
 import 'package:serverpod/src/database/concepts/database_result.dart';
 import 'package:serverpod/src/database/database.dart';
@@ -29,34 +31,31 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
   @override
   Future<List<TableDefinition>> getTableDefinitions() async {
     var result = await database.unsafeQuery(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
+      'SELECT name '
+      'FROM sqlite_master '
+      "WHERE (type = 'table') AND (name NOT LIKE 'sqlite_%')",
     );
 
-    return Future.wait(
-      result.map((row) async {
-        var tableName = row[0] as String;
-        var columns = getColumnDefinitions(
-          schemaName: _defaultSchema,
-          tableName: tableName,
-        );
-        var foreignKeys = getForeignKeyDefinitions(
-          schemaName: _defaultSchema,
-          tableName: tableName,
-        );
-        var indexes = getIndexDefinitions(
-          schemaName: _defaultSchema,
-          tableName: tableName,
-        );
+    return result.map((row) async {
+      var tableName = row[0] as String;
 
-        return TableDefinition(
-          name: tableName,
-          schema: _defaultSchema,
-          columns: await columns,
-          foreignKeys: await foreignKeys,
-          indexes: await indexes,
-        );
-      }),
-    );
+      return TableDefinition(
+        name: tableName,
+        schema: _defaultSchema,
+        columns: await getColumnDefinitions(
+          schemaName: _defaultSchema,
+          tableName: tableName,
+        ),
+        foreignKeys: await getForeignKeyDefinitions(
+          schemaName: _defaultSchema,
+          tableName: tableName,
+        ),
+        indexes: await getIndexDefinitions(
+          schemaName: _defaultSchema,
+          tableName: tableName,
+        ),
+      );
+    }).wait;
   }
 
   @override
