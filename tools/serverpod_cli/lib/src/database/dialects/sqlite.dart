@@ -23,7 +23,7 @@ class SqliteSqlGenerator implements SqlGenerator {
     DatabaseMigration databaseMigration, {
     required List<DatabaseMigrationVersion> installedModules,
     required List<DatabaseMigrationVersion> removedModules,
-    DatabaseDefinition? targetDefinition,
+    required DatabaseDefinition targetDefinition,
   }) {
     return databaseMigration.toSqliteSql(
       installedModules: installedModules,
@@ -373,6 +373,8 @@ extension SqliteMigrationActionSqlGeneration on DatabaseMigrationAction {
         out += '--\n';
         out += '-- ACTION ALTER TABLE\n';
         out += '--\n';
+        // TODO: It should not be always a rebuild.
+        // This logic must be done inside the [alterTable!.toSql()]
         final rebuildSql = targetDefinition != null
             ? alterTable!.toSqliteRebuildSql(targetDefinition)
             : null;

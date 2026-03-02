@@ -20,6 +20,6 @@ abstract interface class SqlGenerator {
     DatabaseDefinition databaseDefinition, {
     required List<DatabaseMigrationVersionModel> installedModules,
     required List<DatabaseMigrationVersionModel> removedModules,
-    DatabaseDefinition? targetDefinition,
+    required DatabaseDefinition targetDefinition,
   });
 }

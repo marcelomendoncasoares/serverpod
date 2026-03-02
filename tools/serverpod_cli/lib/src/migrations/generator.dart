@@ -249,6 +249,7 @@ class MigrationGenerator {
       dstDatabase,
       installedModules,
       removedModules,
+      dstDatabase,
       dialect,
     );
   }
@@ -422,6 +423,7 @@ class MigrationGenerator {
     DatabaseDefinition databaseDefinition,
     List<DatabaseMigrationVersionModel> installedModules,
     List<DatabaseMigrationVersionModel> removedModules,
+    DatabaseDefinition targetDefinition,
     DatabaseDialect dialect,
   ) async {
     var sqlGenerator = SqlGenerator.forDialect(dialect);
@@ -431,6 +433,7 @@ class MigrationGenerator {
       databaseDefinition,
       installedModules: installedModules,
       removedModules: removedModules,
+      targetDefinition: targetDefinition,
     );
 
     await _artifactStore.writeRepairMigration(
