@@ -20,7 +20,7 @@ abstract interface class SqlGenerator {
     DatabaseMigration databaseMigration, {
     required List<DatabaseMigrationVersion> installedModules,
     required List<DatabaseMigrationVersion> removedModules,
-    DatabaseDefinition? targetDefinition,
+    required DatabaseDefinition targetDefinition,
   });
 
   String? getColumnDefault(

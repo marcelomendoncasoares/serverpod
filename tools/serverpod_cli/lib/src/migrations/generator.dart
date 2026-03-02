@@ -235,6 +235,7 @@ class MigrationGenerator {
       migration,
       installedModules,
       removedModules,
+      dstDatabase,
       dialect,
     );
   }
@@ -398,12 +399,14 @@ class MigrationGenerator {
     DatabaseMigration migration,
     List<DatabaseMigrationVersion> installedModules,
     List<DatabaseMigrationVersion> removedModules,
+    DatabaseDefinition targetDefinition,
     DatabaseDialect dialect,
   ) {
     var repairMigrationSql = migration.toSql(
       dialect: dialect,
       installedModules: installedModules,
       removedModules: removedModules,
+      targetDefinition: targetDefinition,
     );
 
     var repairMigrationFile = File(
@@ -548,8 +551,7 @@ class MigrationVersion {
       dialect: dialect,
       installedModules: installedModules,
       removedModules: removedModules,
-      targetDefinition:
-          dialect == DatabaseDialect.sqlite ? databaseDefinitionFull : null,
+      targetDefinition: databaseDefinitionFull,
     );
 
     // Write the database definition JSON file

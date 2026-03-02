@@ -242,8 +242,8 @@ extension DatabaseMigrationSqlGeneration on DatabaseMigration {
   String toSql({
     required List<DatabaseMigrationVersion> installedModules,
     required List<DatabaseMigrationVersion> removedModules,
+    required DatabaseDefinition targetDefinition,
     required DatabaseDialect dialect,
-    DatabaseDefinition? targetDefinition,
   }) {
     return SqlGenerator.forDialect(dialect).generateDatabaseMigrationSql(
       this,
