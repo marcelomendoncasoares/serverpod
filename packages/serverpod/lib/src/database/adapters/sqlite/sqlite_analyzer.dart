@@ -137,31 +137,24 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
     var indexes = <IndexDefinition>[];
     for (var indexRow in indexListResult) {
       var indexName = indexRow[1] as String;
-      var isUnique = (indexRow[2] as int?) == 1;
-      var origin = indexRow[3] as String? ?? '';
-      var isPrimary = origin == 'pk';
-
-      var quotedIndex = _quoteIdentifier(indexName);
       var indexInfoResult = await database.unsafeQuery(
-        'PRAGMA index_info($quotedIndex)',
+        'PRAGMA index_info(${_quoteIdentifier(indexName)})',
       );
-
-      var elements = indexInfoResult.map((infoRow) {
-        var columnName = infoRow[2] as String?;
-        return IndexElementDefinition(
-          type: IndexElementDefinitionType.column,
-          definition: columnName ?? '',
-        );
-      }).toList();
 
       indexes.add(
         IndexDefinition(
           indexName: indexName,
           tableSpace: null,
-          elements: elements,
+          elements: [
+            for (var infoRow in indexInfoResult)
+              IndexElementDefinition(
+                type: IndexElementDefinitionType.column,
+                definition: infoRow[2] as String? ?? '',
+              ),
+          ],
           type: 'btree',
-          isUnique: isUnique,
-          isPrimary: isPrimary,
+          isUnique: (indexRow[2] as int?) == 1,
+          isPrimary: indexRow[3] == 'pk',
           predicate: null,
           vectorDistanceFunction: null,
           vectorColumnType: null,

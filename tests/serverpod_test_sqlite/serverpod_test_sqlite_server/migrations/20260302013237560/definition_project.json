@@ -51,20 +51,6 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "address_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
           "indexName": "inhabitant_index_idx",
           "elements": [
             {
@@ -129,7 +115,7 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "address_uuid_pkey",
+          "indexName": "sqlite_autoindex_address_uuid_1",
           "elements": [
             {
               "__className__": "serverpod.IndexElementDefinition",
@@ -182,22 +168,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "arena_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -227,7 +198,7 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "arena_uuid_pkey",
+          "indexName": "sqlite_autoindex_arena_uuid_1",
           "elements": [
             {
               "__className__": "serverpod.IndexElementDefinition",
@@ -275,22 +246,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "bigint_default_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -334,22 +290,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "bigint_default_mix_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -383,22 +324,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "bigint_default_model_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -426,22 +352,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "bigint_default_persist_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -507,20 +418,6 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "blocking_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
           "indexName": "blocking_blocked_unique_idx",
           "elements": [
             {
@@ -565,22 +462,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "book_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -624,22 +506,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "bool_default_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -683,22 +550,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "bool_default_mix_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -739,22 +591,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "bool_default_model_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -790,22 +627,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "bool_default_persist_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -854,22 +676,7 @@
           "onDelete": 0
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "cat_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -942,7 +749,7 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "changed_id_type_self_pkey",
+          "indexName": "sqlite_autoindex_changed_id_type_self_1",
           "elements": [
             {
               "__className__": "serverpod.IndexElementDefinition",
@@ -1017,22 +824,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "chapter_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -1088,22 +880,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "child_entity_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -1137,22 +914,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "child_table_explicit_column_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -1196,7 +958,7 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "child_table_with_inherited_id_pkey",
+          "indexName": "sqlite_autoindex_child_table_with_inherited_id_1",
           "elements": [
             {
               "__className__": "serverpod.IndexElementDefinition",
@@ -1274,7 +1036,7 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "child_with_inherited_id_pkey",
+          "indexName": "sqlite_autoindex_child_with_inherited_id_1",
           "elements": [
             {
               "__className__": "serverpod.IndexElementDefinition",
@@ -1356,22 +1118,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "citizen_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -1441,22 +1188,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "citizen_int_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -1483,22 +1215,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "city_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -1525,22 +1242,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "city_with_long_table_name_that_is_still_valid_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -1589,22 +1291,7 @@
           "onDelete": 4
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "comment_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -1653,22 +1340,7 @@
           "onDelete": 4
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "comment_int_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -1717,22 +1389,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "company_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -1784,7 +1441,7 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "company_uuid_pkey",
+          "indexName": "sqlite_autoindex_company_uuid_1",
           "elements": [
             {
               "__className__": "serverpod.IndexElementDefinition",
@@ -1848,20 +1505,6 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "contractor_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
           "indexName": "contractor_service_unique_idx",
           "elements": [
             {
@@ -1901,22 +1544,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "course_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -1946,7 +1574,7 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "course_uuid_pkey",
+          "indexName": "sqlite_autoindex_course_uuid_1",
           "elements": [
             {
               "__className__": "serverpod.IndexElementDefinition",
@@ -1985,22 +1613,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "customer_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2027,22 +1640,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "customer_int_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2086,22 +1684,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "datetime_default_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2145,22 +1728,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "datetime_default_mix_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2201,22 +1769,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "datetime_default_model_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2252,22 +1805,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "datetime_default_persist_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2294,22 +1832,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "department_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2345,22 +1868,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "double_default_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2404,22 +1912,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "double_default_mix_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2453,22 +1946,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "double_default_model_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2496,22 +1974,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "double_default_persist_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2547,22 +2010,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "duration_default_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2606,22 +2054,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "duration_default_mix_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2655,22 +2088,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "duration_default_model_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2698,22 +2116,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "duration_default_persist_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2762,22 +2165,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "employee_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2826,22 +2214,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "empty_model_relation_item_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2861,22 +2234,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "empty_model_with_table_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -2940,20 +2298,6 @@
         }
       ],
       "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "enrollment_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
         {
           "__className__": "serverpod.IndexDefinition",
           "indexName": "enrollment_index_idx",
@@ -3039,20 +2383,6 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "enrollment_int_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
           "indexName": "enrollment_int_index_idx",
           "elements": [
             {
@@ -3122,22 +2452,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "enum_default_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3181,22 +2496,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "enum_default_mix_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3244,22 +2544,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "enum_default_model_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3295,22 +2580,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "enum_default_persist_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3337,22 +2607,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "immutable_object_with_table_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3388,22 +2643,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "int_default_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3447,22 +2687,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "int_default_mix_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3496,22 +2721,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "int_default_model_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3539,22 +2749,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "int_default_persist_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3603,22 +2798,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "long_implicit_id_field_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3645,22 +2825,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "long_implicit_id_field_collection_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3687,22 +2852,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "max_field_name_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3729,22 +2879,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "member_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3785,22 +2920,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "model_with_required_field_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3834,22 +2954,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "modified_column_name_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3905,22 +3010,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "multiple_max_field_name_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3947,22 +3037,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_field_persist_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -3996,22 +3071,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_field_scopes_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -4080,20 +3140,6 @@
       ],
       "foreignKeys": [],
       "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_with_bit_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
         {
           "__className__": "serverpod.IndexDefinition",
           "indexName": "bit_index_default",
@@ -4208,22 +3254,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_with_bytedata_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -4250,22 +3281,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_with_duration_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -4320,22 +3336,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_with_enum_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -4397,22 +3398,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_with_enum_enhanced_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -4481,20 +3467,6 @@
       ],
       "foreignKeys": [],
       "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_with_half_vector_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
         {
           "__className__": "serverpod.IndexDefinition",
           "indexName": "half_vector_index_default",
@@ -4619,20 +3591,6 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_with_index_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
           "indexName": "object_with_index_test_index",
           "elements": [
             {
@@ -4646,7 +3604,7 @@
               "definition": "indexed2"
             }
           ],
-          "type": "brin",
+          "type": "btree",
           "isUnique": false,
           "isPrimary": false
         }
@@ -4733,22 +3691,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_with_object_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -4790,22 +3733,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_with_parent_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -4847,22 +3775,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_with_self_parent_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -4915,20 +3828,6 @@
       ],
       "foreignKeys": [],
       "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_with_sparse_vector_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
         {
           "__className__": "serverpod.IndexDefinition",
           "indexName": "sparse_vector_index_default",
@@ -5015,22 +3914,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_with_uuid_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -5099,20 +3983,6 @@
       ],
       "foreignKeys": [],
       "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "object_with_vector_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
         {
           "__className__": "serverpod.IndexDefinition",
           "indexName": "vector_index_default",
@@ -5249,22 +4119,7 @@
           "onDelete": 4
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "order_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -5316,7 +4171,7 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "order_uuid_pkey",
+          "indexName": "sqlite_autoindex_order_uuid_1",
           "elements": [
             {
               "__className__": "serverpod.IndexElementDefinition",
@@ -5377,22 +4232,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "organization_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -5441,22 +4281,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "organization_with_long_table_name_that_is_still_valid_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -5490,22 +4315,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "parent_class_table_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -5525,22 +4335,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "parent_entity_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -5610,22 +4405,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "person_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -5695,22 +4475,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "person_with_long_table_name_that_is_still_valid_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -5759,22 +4524,7 @@
           "onDelete": 0
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "player_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -5826,7 +4576,7 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "player_uuid_pkey",
+          "indexName": "sqlite_autoindex_player_uuid_1",
           "elements": [
             {
               "__className__": "serverpod.IndexElementDefinition",
@@ -5890,20 +4640,6 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "post_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
           "indexName": "next_unique_idx",
           "elements": [
             {
@@ -5965,22 +4701,7 @@
           "onDelete": 2
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "related_unique_data_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -6000,22 +4721,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "relation_empty_model_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -6042,22 +4748,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "relation_to_multiple_max_field_name_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -6091,22 +4782,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "scope_none_fields_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -6129,7 +4805,7 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "server_only_changed_id_field_class_pkey",
+          "indexName": "sqlite_autoindex_server_only_changed_id_field_class_1",
           "elements": [
             {
               "__className__": "serverpod.IndexElementDefinition",
@@ -6175,22 +4851,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "service_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -6217,22 +4878,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "simple_data_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -6259,22 +4905,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "simple_date_time_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -6310,22 +4941,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "string_default_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -6369,22 +4985,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "string_default_mix_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -6418,22 +5019,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "string_default_model_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -6525,22 +5111,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "string_default_persist_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -6567,22 +5138,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "student_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -6612,7 +5168,7 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "student_uuid_pkey",
+          "indexName": "sqlite_autoindex_student_uuid_1",
           "elements": [
             {
               "__className__": "serverpod.IndexElementDefinition",
@@ -6659,22 +5215,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "table_with_explicit_column_names_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -6724,20 +5265,6 @@
         }
       ],
       "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "team_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
         {
           "__className__": "serverpod.IndexDefinition",
           "indexName": "arena_index_idx",
@@ -6804,20 +5331,6 @@
       "indexes": [
         {
           "__className__": "serverpod.IndexDefinition",
-          "indexName": "team_int_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
           "indexName": "arena_uuid_index_idx",
           "elements": [
             {
@@ -6879,22 +5392,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "town_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -6943,22 +5441,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "town_int_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -7122,22 +5605,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "types_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -7172,20 +5640,6 @@
       ],
       "foreignKeys": [],
       "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "unique_data_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
         {
           "__className__": "serverpod.IndexDefinition",
           "indexName": "email_index_idx",
@@ -7236,22 +5690,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "uri_default_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -7295,22 +5734,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "uri_default_mix_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -7344,22 +5768,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "uri_default_model_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -7387,22 +5796,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "uri_default_persist_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -7451,22 +5845,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "user_note_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -7493,22 +5872,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "user_note_collection_with_a_long_name_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -7535,22 +5899,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "user_note_collections_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -7599,22 +5948,7 @@
           "onDelete": 3
         }
       ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "user_note_with_a_long_name_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -7674,22 +6008,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "uuid_default_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -7733,22 +6052,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "uuid_default_mix_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -7803,22 +6107,7 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "uuid_default_model_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
+      "indexes": [],
       "managed": true
     },
     {
@@ -7862,1362 +6151,11 @@
         }
       ],
       "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "uuid_default_persist_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
-      "managed": true
-    },
-    {
-      "__className__": "serverpod.TableDefinition",
-      "name": "serverpod_cloud_storage",
-      "dartName": "CloudStorageEntry",
-      "module": "serverpod",
-      "schema": "public",
-      "columns": [
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "id",
-          "columnType": 6,
-          "isNullable": false,
-          "columnDefault": "nextval('serverpod_cloud_storage_id_seq'::regclass)",
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "storageId",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "path",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "addedTime",
-          "columnType": 4,
-          "isNullable": false,
-          "dartType": "DateTime"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "expiration",
-          "columnType": 4,
-          "isNullable": true,
-          "dartType": "DateTime?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "byteData",
-          "columnType": 5,
-          "isNullable": false,
-          "dartType": "dart:typed_data:ByteData"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "verified",
-          "columnType": 1,
-          "isNullable": false,
-          "dartType": "bool"
-        }
-      ],
-      "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_cloud_storage_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_cloud_storage_path_idx",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "storageId"
-            },
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "path"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": false
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_cloud_storage_expiration",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "expiration"
-            }
-          ],
-          "type": "btree",
-          "isUnique": false,
-          "isPrimary": false
-        }
-      ],
-      "managed": true
-    },
-    {
-      "__className__": "serverpod.TableDefinition",
-      "name": "serverpod_cloud_storage_direct_upload",
-      "dartName": "CloudStorageDirectUploadEntry",
-      "module": "serverpod",
-      "schema": "public",
-      "columns": [
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "id",
-          "columnType": 6,
-          "isNullable": false,
-          "columnDefault": "nextval('serverpod_cloud_storage_direct_upload_id_seq'::regclass)",
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "storageId",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "path",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "expiration",
-          "columnType": 4,
-          "isNullable": false,
-          "dartType": "DateTime"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "authKey",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        }
-      ],
-      "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_cloud_storage_direct_upload_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_cloud_storage_direct_upload_storage_path",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "storageId"
-            },
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "path"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": false
-        }
-      ],
-      "managed": true
-    },
-    {
-      "__className__": "serverpod.TableDefinition",
-      "name": "serverpod_future_call",
-      "dartName": "FutureCallEntry",
-      "module": "serverpod",
-      "schema": "public",
-      "columns": [
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "id",
-          "columnType": 6,
-          "isNullable": false,
-          "columnDefault": "nextval('serverpod_future_call_id_seq'::regclass)",
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "name",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "time",
-          "columnType": 4,
-          "isNullable": false,
-          "dartType": "DateTime"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "serializedObject",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "serverId",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "identifier",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        }
-      ],
-      "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_future_call_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_future_call_time_idx",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "time"
-            }
-          ],
-          "type": "btree",
-          "isUnique": false,
-          "isPrimary": false
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_future_call_serverId_idx",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "serverId"
-            }
-          ],
-          "type": "btree",
-          "isUnique": false,
-          "isPrimary": false
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_future_call_identifier_idx",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "identifier"
-            }
-          ],
-          "type": "btree",
-          "isUnique": false,
-          "isPrimary": false
-        }
-      ],
-      "managed": true
-    },
-    {
-      "__className__": "serverpod.TableDefinition",
-      "name": "serverpod_health_connection_info",
-      "dartName": "ServerHealthConnectionInfo",
-      "module": "serverpod",
-      "schema": "public",
-      "columns": [
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "id",
-          "columnType": 6,
-          "isNullable": false,
-          "columnDefault": "nextval('serverpod_health_connection_info_id_seq'::regclass)",
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "serverId",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "timestamp",
-          "columnType": 4,
-          "isNullable": false,
-          "dartType": "DateTime"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "active",
-          "columnType": 6,
-          "isNullable": false,
-          "dartType": "int"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "closing",
-          "columnType": 6,
-          "isNullable": false,
-          "dartType": "int"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "idle",
-          "columnType": 6,
-          "isNullable": false,
-          "dartType": "int"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "granularity",
-          "columnType": 6,
-          "isNullable": false,
-          "dartType": "int"
-        }
-      ],
-      "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_health_connection_info_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_health_connection_info_timestamp_idx",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "timestamp"
-            },
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "serverId"
-            },
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "granularity"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": false
-        }
-      ],
-      "managed": true
-    },
-    {
-      "__className__": "serverpod.TableDefinition",
-      "name": "serverpod_health_metric",
-      "dartName": "ServerHealthMetric",
-      "module": "serverpod",
-      "schema": "public",
-      "columns": [
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "id",
-          "columnType": 6,
-          "isNullable": false,
-          "columnDefault": "nextval('serverpod_health_metric_id_seq'::regclass)",
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "name",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "serverId",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "timestamp",
-          "columnType": 4,
-          "isNullable": false,
-          "dartType": "DateTime"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "isHealthy",
-          "columnType": 1,
-          "isNullable": false,
-          "dartType": "bool"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "value",
-          "columnType": 3,
-          "isNullable": false,
-          "dartType": "double"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "granularity",
-          "columnType": 6,
-          "isNullable": false,
-          "dartType": "int"
-        }
-      ],
-      "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_health_metric_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_health_metric_timestamp_idx",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "timestamp"
-            },
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "serverId"
-            },
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "name"
-            },
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "granularity"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": false
-        }
-      ],
-      "managed": true
-    },
-    {
-      "__className__": "serverpod.TableDefinition",
-      "name": "serverpod_log",
-      "dartName": "LogEntry",
-      "module": "serverpod",
-      "schema": "public",
-      "columns": [
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "id",
-          "columnType": 6,
-          "isNullable": false,
-          "columnDefault": "nextval('serverpod_log_id_seq'::regclass)",
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "sessionLogId",
-          "columnType": 6,
-          "isNullable": false,
-          "dartType": "int"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "messageId",
-          "columnType": 6,
-          "isNullable": true,
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "reference",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "serverId",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "time",
-          "columnType": 4,
-          "isNullable": false,
-          "dartType": "DateTime"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "logLevel",
-          "columnType": 6,
-          "isNullable": false,
-          "dartType": "protocol:LogLevel"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "message",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "error",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "stackTrace",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "order",
-          "columnType": 6,
-          "isNullable": false,
-          "dartType": "int"
-        }
-      ],
-      "foreignKeys": [
-        {
-          "__className__": "serverpod.ForeignKeyDefinition",
-          "constraintName": "serverpod_log_fk_0",
-          "columns": [
-            "sessionLogId"
-          ],
-          "referenceTable": "serverpod_session_log",
-          "referenceTableSchema": "public",
-          "referenceColumns": [
-            "id"
-          ],
-          "onUpdate": 3,
-          "onDelete": 4
-        }
-      ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_log_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_log_sessionLogId_idx",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "sessionLogId"
-            }
-          ],
-          "type": "btree",
-          "isUnique": false,
-          "isPrimary": false
-        }
-      ],
-      "managed": true
-    },
-    {
-      "__className__": "serverpod.TableDefinition",
-      "name": "serverpod_message_log",
-      "dartName": "MessageLogEntry",
-      "module": "serverpod",
-      "schema": "public",
-      "columns": [
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "id",
-          "columnType": 6,
-          "isNullable": false,
-          "columnDefault": "nextval('serverpod_message_log_id_seq'::regclass)",
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "sessionLogId",
-          "columnType": 6,
-          "isNullable": false,
-          "dartType": "int"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "serverId",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "messageId",
-          "columnType": 6,
-          "isNullable": false,
-          "dartType": "int"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "endpoint",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "messageName",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "duration",
-          "columnType": 3,
-          "isNullable": false,
-          "dartType": "double"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "error",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "stackTrace",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "slow",
-          "columnType": 1,
-          "isNullable": false,
-          "dartType": "bool"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "order",
-          "columnType": 6,
-          "isNullable": false,
-          "dartType": "int"
-        }
-      ],
-      "foreignKeys": [
-        {
-          "__className__": "serverpod.ForeignKeyDefinition",
-          "constraintName": "serverpod_message_log_fk_0",
-          "columns": [
-            "sessionLogId"
-          ],
-          "referenceTable": "serverpod_session_log",
-          "referenceTableSchema": "public",
-          "referenceColumns": [
-            "id"
-          ],
-          "onUpdate": 3,
-          "onDelete": 4
-        }
-      ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_message_log_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
-      "managed": true
-    },
-    {
-      "__className__": "serverpod.TableDefinition",
-      "name": "serverpod_method",
-      "dartName": "MethodInfo",
-      "module": "serverpod",
-      "schema": "public",
-      "columns": [
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "id",
-          "columnType": 6,
-          "isNullable": false,
-          "columnDefault": "nextval('serverpod_method_id_seq'::regclass)",
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "endpoint",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "method",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        }
-      ],
-      "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_method_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_method_endpoint_method_idx",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "endpoint"
-            },
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "method"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": false
-        }
-      ],
-      "managed": true
-    },
-    {
-      "__className__": "serverpod.TableDefinition",
-      "name": "serverpod_migrations",
-      "dartName": "DatabaseMigrationVersion",
-      "module": "serverpod",
-      "schema": "public",
-      "columns": [
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "id",
-          "columnType": 6,
-          "isNullable": false,
-          "columnDefault": "nextval('serverpod_migrations_id_seq'::regclass)",
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "module",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "version",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "timestamp",
-          "columnType": 4,
-          "isNullable": true,
-          "dartType": "DateTime?"
-        }
-      ],
-      "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_migrations_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_migrations_ids",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "module"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": false
-        }
-      ],
-      "managed": true
-    },
-    {
-      "__className__": "serverpod.TableDefinition",
-      "name": "serverpod_query_log",
-      "dartName": "QueryLogEntry",
-      "module": "serverpod",
-      "schema": "public",
-      "columns": [
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "id",
-          "columnType": 6,
-          "isNullable": false,
-          "columnDefault": "nextval('serverpod_query_log_id_seq'::regclass)",
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "serverId",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "sessionLogId",
-          "columnType": 6,
-          "isNullable": false,
-          "dartType": "int"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "messageId",
-          "columnType": 6,
-          "isNullable": true,
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "query",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "duration",
-          "columnType": 3,
-          "isNullable": false,
-          "dartType": "double"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "numRows",
-          "columnType": 6,
-          "isNullable": true,
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "error",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "stackTrace",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "slow",
-          "columnType": 1,
-          "isNullable": false,
-          "dartType": "bool"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "order",
-          "columnType": 6,
-          "isNullable": false,
-          "dartType": "int"
-        }
-      ],
-      "foreignKeys": [
-        {
-          "__className__": "serverpod.ForeignKeyDefinition",
-          "constraintName": "serverpod_query_log_fk_0",
-          "columns": [
-            "sessionLogId"
-          ],
-          "referenceTable": "serverpod_session_log",
-          "referenceTableSchema": "public",
-          "referenceColumns": [
-            "id"
-          ],
-          "onUpdate": 3,
-          "onDelete": 4
-        }
-      ],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_query_log_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_query_log_sessionLogId_idx",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "sessionLogId"
-            }
-          ],
-          "type": "btree",
-          "isUnique": false,
-          "isPrimary": false
-        }
-      ],
-      "managed": true
-    },
-    {
-      "__className__": "serverpod.TableDefinition",
-      "name": "serverpod_readwrite_test",
-      "dartName": "ReadWriteTestEntry",
-      "module": "serverpod",
-      "schema": "public",
-      "columns": [
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "id",
-          "columnType": 6,
-          "isNullable": false,
-          "columnDefault": "nextval('serverpod_readwrite_test_id_seq'::regclass)",
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "number",
-          "columnType": 6,
-          "isNullable": false,
-          "dartType": "int"
-        }
-      ],
-      "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_readwrite_test_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
-      "managed": true
-    },
-    {
-      "__className__": "serverpod.TableDefinition",
-      "name": "serverpod_runtime_settings",
-      "dartName": "RuntimeSettings",
-      "module": "serverpod",
-      "schema": "public",
-      "columns": [
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "id",
-          "columnType": 6,
-          "isNullable": false,
-          "columnDefault": "nextval('serverpod_runtime_settings_id_seq'::regclass)",
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "logSettings",
-          "columnType": 8,
-          "isNullable": false,
-          "dartType": "protocol:LogSettings"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "logSettingsOverrides",
-          "columnType": 8,
-          "isNullable": false,
-          "dartType": "List<protocol:LogSettingsOverride>"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "logServiceCalls",
-          "columnType": 1,
-          "isNullable": false,
-          "dartType": "bool"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "logMalformedCalls",
-          "columnType": 1,
-          "isNullable": false,
-          "dartType": "bool"
-        }
-      ],
-      "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_runtime_settings_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        }
-      ],
-      "managed": true
-    },
-    {
-      "__className__": "serverpod.TableDefinition",
-      "name": "serverpod_session_log",
-      "dartName": "SessionLogEntry",
-      "module": "serverpod",
-      "schema": "public",
-      "columns": [
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "id",
-          "columnType": 6,
-          "isNullable": false,
-          "columnDefault": "nextval('serverpod_session_log_id_seq'::regclass)",
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "serverId",
-          "columnType": 0,
-          "isNullable": false,
-          "dartType": "String"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "time",
-          "columnType": 4,
-          "isNullable": false,
-          "dartType": "DateTime"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "module",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "endpoint",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "method",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "duration",
-          "columnType": 3,
-          "isNullable": true,
-          "dartType": "double?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "numQueries",
-          "columnType": 6,
-          "isNullable": true,
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "slow",
-          "columnType": 1,
-          "isNullable": true,
-          "dartType": "bool?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "error",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "stackTrace",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "authenticatedUserId",
-          "columnType": 6,
-          "isNullable": true,
-          "dartType": "int?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "userId",
-          "columnType": 0,
-          "isNullable": true,
-          "dartType": "String?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "isOpen",
-          "columnType": 1,
-          "isNullable": true,
-          "dartType": "bool?"
-        },
-        {
-          "__className__": "serverpod.ColumnDefinition",
-          "name": "touched",
-          "columnType": 4,
-          "isNullable": false,
-          "dartType": "DateTime"
-        }
-      ],
-      "foreignKeys": [],
-      "indexes": [
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_session_log_pkey",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "id"
-            }
-          ],
-          "type": "btree",
-          "isUnique": true,
-          "isPrimary": true
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_session_log_serverid_idx",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "serverId"
-            }
-          ],
-          "type": "btree",
-          "isUnique": false,
-          "isPrimary": false
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_session_log_time_idx",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "time"
-            }
-          ],
-          "type": "btree",
-          "isUnique": false,
-          "isPrimary": false
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_session_log_touched_idx",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "touched"
-            }
-          ],
-          "type": "btree",
-          "isUnique": false,
-          "isPrimary": false
-        },
-        {
-          "__className__": "serverpod.IndexDefinition",
-          "indexName": "serverpod_session_log_isopen_idx",
-          "elements": [
-            {
-              "__className__": "serverpod.IndexElementDefinition",
-              "type": 0,
-              "definition": "isOpen"
-            }
-          ],
-          "type": "btree",
-          "isUnique": false,
-          "isPrimary": false
-        }
-      ],
+      "indexes": [],
       "managed": true
     }
   ],
   "installedModules": [
-    {
-      "__className__": "serverpod.DatabaseMigrationVersion",
-      "module": "serverpod_test_sqlite",
-      "version": "20260301175236620"
-    },
     {
       "__className__": "serverpod.DatabaseMigrationVersion",
       "module": "serverpod",
