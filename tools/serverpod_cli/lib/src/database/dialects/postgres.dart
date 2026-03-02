@@ -33,6 +33,25 @@ class PostgresSqlGenerator implements SqlGenerator {
   }
 
   @override
+  IndexDefinition? getPrimaryKeyIndex({
+    required SerializableModelFieldDefinition idField,
+    required String tableName,
+  }) {
+    return IndexDefinition(
+      indexName: '${tableName}_pkey',
+      elements: [
+        IndexElementDefinition(
+          definition: idField.columnName,
+          type: IndexElementDefinitionType.column,
+        ),
+      ],
+      type: 'btree',
+      isUnique: true,
+      isPrimary: true,
+    );
+  }
+
+  @override
   String? getColumnDefault(
     TypeDefinition columnType,
     dynamic defaultValue,

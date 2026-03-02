@@ -130,26 +130,16 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
     required String tableName,
   }) async {
     var quotedTable = _quoteIdentifier(tableName);
-    final targetTable = _targetCache
-        .where((t) => t.name.toLowerCase() == tableName.toLowerCase())
-        .firstOrNull;
     var indexListResult = await database.unsafeQuery(
       'PRAGMA index_list($quotedTable)',
     );
 
     var indexes = <IndexDefinition>[];
-    var seenIndexNames = <String>{};
-    var hasPrimaryKeyIndex = false;
     for (var indexRow in indexListResult) {
-      // PRAGMA index_list columns: 0=seq, 1=name, 2=unique, 3=origin, 4=partial
       var indexName = indexRow[1] as String;
       var isUnique = (indexRow[2] as int?) == 1;
       var origin = indexRow[3] as String? ?? '';
       var isPrimary = origin == 'pk';
-
-      if (isPrimary) {
-        hasPrimaryKeyIndex = true;
-      }
 
       var quotedIndex = _quoteIdentifier(indexName);
       var indexInfoResult = await database.unsafeQuery(
@@ -164,27 +154,12 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
         );
       }).toList();
 
-      // SQLite uses ephemeral sqlite_autoindex_* names for implicit primary key
-      // indexes. Normalize them to the same stable name used by target schema.
-      final normalizedIndexName = isPrimary ? '${tableName}_pkey' : indexName;
-      if (!seenIndexNames.add(normalizedIndexName.toLowerCase())) {
-        continue;
-      }
-      final targetIndex = targetTable?.indexes
-          .where(
-            (i) =>
-                i.indexName.toLowerCase() == normalizedIndexName.toLowerCase(),
-          )
-          .firstOrNull;
-
       indexes.add(
         IndexDefinition(
-          indexName: normalizedIndexName,
+          indexName: indexName,
           tableSpace: null,
           elements: elements,
-          // Keep target index type for logical comparison of dialects where
-          // index strategies are represented in metadata (e.g. pgvector).
-          type: targetIndex?.type ?? 'btree',
+          type: 'btree',
           isUnique: isUnique,
           isPrimary: isPrimary,
           predicate: null,
@@ -193,52 +168,6 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
           parameters: null,
         ),
       );
-    }
-
-    // For INTEGER PRIMARY KEY columns, SQLite uses rowid as an alias and does
-    // not create a separate index in PRAGMA index_list. Synthesize the primary
-    // key index when missing, based on table metadata.
-    if (!hasPrimaryKeyIndex) {
-      var tableInfoResult = await database.unsafeQuery(
-        'PRAGMA table_info($quotedTable)',
-      );
-      var pkColumns = <MapEntry<int, String>>[];
-      for (var row in tableInfoResult) {
-        var columnName = row[1] as String;
-        var pkOrder = row[5] as int? ?? 0;
-        if (pkOrder > 0) {
-          pkColumns.add(MapEntry(pkOrder, columnName));
-        }
-      }
-
-      if (pkColumns.isNotEmpty &&
-          seenIndexNames.add('${tableName}_pkey'.toLowerCase())) {
-        pkColumns.sort((a, b) => a.key.compareTo(b.key));
-        final targetPrimaryIndex = targetTable?.indexes
-            .where((i) => i.isPrimary)
-            .firstOrNull;
-        indexes.add(
-          IndexDefinition(
-            indexName: '${tableName}_pkey',
-            tableSpace: null,
-            elements: pkColumns
-                .map(
-                  (entry) => IndexElementDefinition(
-                    type: IndexElementDefinitionType.column,
-                    definition: entry.value,
-                  ),
-                )
-                .toList(),
-            type: targetPrimaryIndex?.type ?? 'btree',
-            isUnique: true,
-            isPrimary: true,
-            predicate: null,
-            vectorDistanceFunction: null,
-            vectorColumnType: null,
-            parameters: null,
-          ),
-        );
-      }
     }
 
     return indexes;

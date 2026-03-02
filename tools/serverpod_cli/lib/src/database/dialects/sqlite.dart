@@ -33,6 +33,28 @@ class SqliteSqlGenerator implements SqlGenerator {
   }
 
   @override
+  IndexDefinition? getPrimaryKeyIndex({
+    required SerializableModelFieldDefinition idField,
+    required String tableName,
+  }) {
+    if (idField.type.className == 'int') {
+      return null;
+    }
+    return IndexDefinition(
+      indexName: 'sqlite_autoindex_${tableName}_1',
+      elements: [
+        IndexElementDefinition(
+          definition: idField.columnName,
+          type: IndexElementDefinitionType.column,
+        ),
+      ],
+      type: 'btree',
+      isUnique: true,
+      isPrimary: true,
+    );
+  }
+
+  @override
   String? getColumnDefault(
     TypeDefinition columnType,
     dynamic defaultValue,

@@ -11,6 +11,8 @@ DatabaseDefinition createDatabaseDefinitionFromModels(
   List<ModuleConfig> allModules, {
   DatabaseDialect dialect = DatabaseDialect.postgres,
 }) {
+  final sqlGenerator = SqlGenerator.forDialect(dialect);
+
   var tables = <TableDefinition>[
     for (var classDefinition in serializableModels)
       if (classDefinition is ModelClassDefinition &&
@@ -31,28 +33,19 @@ DatabaseDefinition createDatabaseDefinitionFromModels(
                   // The id column is not null, since it is auto generated.
                   isNullable: column.name != 'id' && column.type.nullable,
                   dartType: column.type.toString(),
-                  columnDefault: SqlGenerator.forDialect(dialect)
-                      .getColumnDefault(
-                        column.type,
-                        column.defaultPersistValue,
-                        classDefinition.tableName!,
-                      ),
+                  columnDefault: sqlGenerator.getColumnDefault(
+                    column.type,
+                    column.defaultPersistValue,
+                    classDefinition.tableName!,
+                  ),
                   vectorDimension: column.type.vectorDimension,
                 ),
           ],
           foreignKeys: _createForeignKeys(classDefinition),
           indexes: [
-            IndexDefinition(
-              indexName: '${classDefinition.tableName!}_pkey',
-              elements: [
-                IndexElementDefinition(
-                  definition: 'id',
-                  type: IndexElementDefinitionType.column,
-                ),
-              ],
-              type: 'btree',
-              isUnique: true,
-              isPrimary: true,
+            ?sqlGenerator.getPrimaryKeyIndex(
+              idField: classDefinition.idField,
+              tableName: classDefinition.tableName!,
             ),
             for (var index in classDefinition.indexesIncludingInherited)
               IndexDefinition(
