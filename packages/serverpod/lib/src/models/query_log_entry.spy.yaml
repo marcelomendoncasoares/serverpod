@@ -37,4 +37,4 @@ fields:
 
 indexes:
   serverpod_query_log_sessionLogId_idx:
-    fields: sessionLogId
+    fields: sessionLogId, order

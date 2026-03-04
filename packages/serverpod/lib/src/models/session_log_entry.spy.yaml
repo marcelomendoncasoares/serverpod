@@ -56,3 +56,11 @@ indexes:
     fields: touched
   serverpod_session_log_isopen_idx:
     fields: isOpen
+  serverpod_session_log_slow_idx:
+    fields: slow
+  serverpod_session_log_error_idx:
+    fields: error
+  serverpod_session_log_endpoint_idx:
+    fields: endpoint
+  serverpod_session_log_method_idx:
+    fields: method
