@@ -31,6 +31,7 @@ dependencies:
   redis: ^4.0.0
   relic: ^1.1.0
   retry: ^3.1.1
+  serverpod_database: 3.4.1
   serverpod_serialization: 3.4.1
   serverpod_shared: 3.4.1
   synchronized: ^3.1.0
@@ -48,6 +49,8 @@ dev_dependencies:
 dependency_overrides:
   serverpod_lints:
     path: ../serverpod_lints
+  serverpod_database:
+    path: ../serverpod_database
   serverpod_serialization:
     path: ../serverpod_serialization
   serverpod_shared:
