@@ -12,7 +12,7 @@ void main() {
   test(
     'Given a shared package model when the model has a table property '
     'when analyzing model '
-    'then an error is collected that table is not allowed in shared packages.',
+    'then no error is collected.',
     () {
       var models = <ModelSource>[
         ModelSourceBuilder()
@@ -38,12 +38,8 @@ fields:
 
       expect(
         collector.errors,
-        isNotEmpty,
-        reason: 'Expected an error to be collected',
-      );
-      expect(
-        collector.errors.first.message,
-        'The "table" property is not allowed in shared packages.',
+        isEmpty,
+        reason: 'Expected no errors to be collected',
       );
     },
   );

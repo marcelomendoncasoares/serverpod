@@ -15,7 +15,9 @@ class BuildRepositoryClass {
 
   Reference get _sessionReference => refer(
     'DatabaseSession',
-    'package:serverpod/serverpod.dart',
+    serverCode
+        ? 'package:serverpod/serverpod.dart'
+        : 'package:serverpod_database/serverpod_database.dart',
   );
 
   Class buildModelRepositoryClass(

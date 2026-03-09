@@ -151,7 +151,7 @@ class SerializableModelLibraryGenerator {
             _buildModelImplicitClass(className, classDefinition),
         ]);
 
-        if (serverCode && tableName != null) {
+        if (tableName != null) {
           var idTypeReference =
               classDefinition.idField.type.reference(
                     serverCode,
@@ -364,7 +364,7 @@ class SerializableModelLibraryGenerator {
         );
       }
 
-      if (serverCode && tableName != null) {
+      if (tableName != null) {
         var idTypeReference =
             classDefinition.idField.type.reference(
                   serverCode,
@@ -409,7 +409,7 @@ class SerializableModelLibraryGenerator {
         );
       }
 
-      if (serverCode) {
+      if (serverCode || tableName != null) {
         classBuilder.implements.add(
           refer('ProtocolSerialization', serverpodUrl(serverCode)),
         );
@@ -510,30 +510,28 @@ class SerializableModelLibraryGenerator {
       }
 
       // Serialization for database and everything
-      if (serverCode) {
-        if (!classDefinition.isSealed) {
-          classBuilder.methods.add(
-            _buildModelClassToJsonForProtocolMethod(
-              fields,
-              classDefinition.serverOnly,
-              className,
-              classDefinition.sharedPackageName,
-            ),
-          );
-        }
+      if (serverCode && !classDefinition.isSealed) {
+        classBuilder.methods.add(
+          _buildModelClassToJsonForProtocolMethod(
+            fields,
+            classDefinition.serverOnly,
+            className,
+            classDefinition.sharedPackageName,
+          ),
+        );
+      }
 
-        if (tableName != null) {
-          classBuilder.methods.addAll([
-            _buildModelClassIncludeMethod(
-              className,
-              relationFields,
-              classDefinition.subDirParts,
-            ),
-            _buildModelClassIncludeListMethod(
-              className,
-            ),
-          ]);
-        }
+      if (tableName != null) {
+        classBuilder.methods.addAll([
+          _buildModelClassIncludeMethod(
+            className,
+            relationFields,
+            classDefinition.subDirParts,
+          ),
+          _buildModelClassIncludeListMethod(
+            className,
+          ),
+        ]);
       }
 
       if (!classDefinition.isSealed) {
@@ -2061,7 +2059,7 @@ class SerializableModelLibraryGenerator {
               f.shouldIncludeField(serverCode) ||
               (tableName != null && f.hiddenSerializableField(serverCode)),
         )
-        .where((f) => !(f.name == 'id' && serverCode && tableName != null));
+        .where((f) => !(f.name == 'id' && tableName != null));
 
     for (var field in classFields) {
       modelClassFields.add(
@@ -2102,7 +2100,7 @@ class SerializableModelLibraryGenerator {
         .where((f) => f.shouldSerializeFieldForDatabase(serverCode))
         .toSet();
     var hiddenSerializedFields = serializedFields
-        .where((f) => f.hiddenSerializableField(serverCode))
+        .where(_isHiddenDatabaseField)
         .toSet();
     return Class((c) {
       c.name = '${className}Table';
@@ -2172,7 +2170,7 @@ class SerializableModelLibraryGenerator {
   ) {
     var serializedFields = fields
         .where((f) => f.shouldSerializeFieldForDatabase(serverCode))
-        .where((f) => !(f.name == 'id' && serverCode));
+        .where((f) => f.name != 'id');
 
     return Class((c) {
       c.name = '${className}UpdateTable';
@@ -2228,7 +2226,7 @@ class SerializableModelLibraryGenerator {
                   );
 
             m
-              ..name = createFieldName(serverCode, field)
+              ..name = _createDatabaseFieldName(field)
               ..returns = TypeReference(
                 (t) => t
                   ..symbol = 'ColumnValue'
@@ -2261,14 +2259,14 @@ class SerializableModelLibraryGenerator {
               );
 
               m.body = refer('ColumnValue', serverpodUrl(serverCode)).call([
-                refer('table').property(createFieldName(serverCode, field)),
+                refer('table').property(_createDatabaseFieldName(field)),
                 protocolRef.call([]).property(mapRecordToJsonFuncName).call([
                   refer('value'),
                 ]),
               ]).code;
             } else {
               m.body = refer('ColumnValue', serverpodUrl(serverCode)).call([
-                refer('table').property(createFieldName(serverCode, field)),
+                refer('table').property(_createDatabaseFieldName(field)),
                 refer('value'),
               ]).code;
             }
@@ -2341,7 +2339,7 @@ class SerializableModelLibraryGenerator {
         ..lambda = true
         ..type = MethodType.getter
         ..body = literalList(
-          fields.map((f) => refer(createFieldName(serverCode, f))),
+          fields.map((f) => refer(_createDatabaseFieldName(f))),
         ).code,
     );
   }
@@ -2355,13 +2353,13 @@ class SerializableModelLibraryGenerator {
     for (var field in fields) {
       // Simple column field
       if (field.shouldSerializeFieldForDatabase(serverCode) &&
-          !(field.name == 'id' && serverCode)) {
+          field.name != 'id') {
         tableFields.add(
           Field(
             (f) => f
               ..late = true
               ..modifier = FieldModifier.final$
-              ..name = createFieldName(serverCode, field)
+              ..name = _createDatabaseFieldName(field)
               ..docs.addAll(field.documentation ?? [])
               ..type = TypeReference(
                 (t) => t
@@ -2719,8 +2717,8 @@ class SerializableModelLibraryGenerator {
         for (var field in fields.where(
           (field) => field.shouldSerializeFieldForDatabase(serverCode),
         ))
-          if (!(field.name == 'id' && serverCode))
-            refer(createFieldName(serverCode, field))
+          if (field.name != 'id')
+            refer(_createDatabaseFieldName(field))
                 .assign(
                   field.type.isEnumType
                       ? _buildModelTableEnumFieldTypeReference(field)
@@ -3353,6 +3351,18 @@ class SerializableModelLibraryGenerator {
     }
 
     return field.name;
+  }
+
+  bool _isHiddenDatabaseField(SerializableModelFieldDefinition field) {
+    return field.shouldPersist && field.scope == ModelFieldScopeDefinition.none;
+  }
+
+  String _createDatabaseFieldName(SerializableModelFieldDefinition field) {
+    if (_isHiddenDatabaseField(field)) {
+      return createImplicitFieldName(field.name);
+    }
+
+    return createFieldName(serverCode, field);
   }
 
   Code _buildDefaultSwitchCase(

@@ -43,7 +43,11 @@ class DartSharedCodeGenerator extends CodeGenerator {
         var code = generator
             .generateModelLibrary(entry.model)
             .generateCode(allocator: entry.allocator)
-            .replaceAll(serverpodProtocolUrl(false), serverpodSerializationUrl);
+            .replaceAll(serverpodProtocolUrl(false), serverpodSerializationUrl)
+            .replaceAll(
+              'package:serverpod/serverpod.dart',
+              'package:serverpod_database/serverpod_database.dart',
+            );
         result[path] = code;
       }
     }
@@ -100,10 +104,17 @@ class DartSharedCodeGenerator extends CodeGenerator {
         'src',
         'generated',
         'protocol.dart',
-      ])] = sharedClassGenerator.generateProtocol().generateCode().replaceAll(
-        serverpodProtocolUrl(false),
-        serverpodSerializationUrl,
-      );
+      ])] = sharedClassGenerator
+          .generateProtocol()
+          .generateCode()
+          .replaceAll(
+            serverpodProtocolUrl(false),
+            serverpodSerializationUrl,
+          )
+          .replaceAll(
+            'package:serverpod/serverpod.dart',
+            'package:serverpod_database/serverpod_database.dart',
+          );
     }
 
     return result;

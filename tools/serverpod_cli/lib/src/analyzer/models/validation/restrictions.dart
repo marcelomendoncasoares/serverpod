@@ -236,15 +236,6 @@ class Restrictions {
     String _,
     SourceSpan? span,
   ) {
-    if (documentDefinition?.isSharedModel ?? false) {
-      return [
-        SourceSpanSeverityException(
-          'The "table" property is not allowed in shared packages.',
-          span,
-        ),
-      ];
-    }
-
     if (!config.isFeatureEnabled(ServerpodFeature.database)) {
       return [
         SourceSpanSeverityException(
