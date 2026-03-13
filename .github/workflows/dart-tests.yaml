@@ -210,6 +210,25 @@ jobs:
         run: flutter test
         working-directory: ${{ matrix.path }}
 
+  web_build_test:
+    name: Web build test (serverpod_database)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        flutter-version: ["3.32.0", "3.38.4"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter-version }}
+          cache: true
+      - name: Install melos
+        run: dart pub global activate melos
+      - name: Bootstrap
+        run: melos bootstrap
+      - name: Run web build test
+        run: util/run_tests_web_build
+
   e2e_io_tests:
     name: Serverpod E2E IO tests
     runs-on: ubuntu-latest

@@ -25,6 +25,7 @@ declare -a FLUTTER_PACKAGES_PATHS=(
     "templates/serverpod_templates/projectname_flutter"
     "tests/serverpod_auth_test/serverpod_auth_test_flutter"
     "tests/serverpod_test_flutter"
+    "tests/serverpod_web_build_test"
 )
 
 declare -a DART_PACKAGES_PATHS=(

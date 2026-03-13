@@ -38,6 +38,7 @@ declare -a projectPaths=(
     "tests/serverpod_test_server"
     "tests/serverpod_test_client"
     "tests/serverpod_test_flutter"
+    "tests/serverpod_web_build_test"
     "tests/serverpod_test_module/serverpod_test_module_server"
     "tests/serverpod_test_module/serverpod_test_module_client"
     "tests/serverpod_test_nonvector/serverpod_test_nonvector_server"

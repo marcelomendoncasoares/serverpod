@@ -1,0 +1,33 @@
+# TEMPLATE
+
+publish_to: none
+
+name: serverpod_web_build_test
+version: 1.0.0
+description: CI test that validates serverpod_database can be imported in Flutter web apps.
+repository: https://github.com/serverpod/serverpod
+
+environment:
+  sdk: DART_VERSION
+  flutter: FLUTTER_VERSION
+
+dependencies:
+  flutter:
+    sdk: flutter
+  serverpod_database: SERVERPOD_VERSION
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  test: ^1.25.5
+
+dependency_overrides:
+  serverpod_database:
+    path: ../../packages/serverpod_database
+  serverpod_serialization:
+    path: ../../packages/serverpod_serialization
+  serverpod_shared:
+    path: ../../packages/serverpod_shared
+
+flutter:
+  uses-material-design: true
