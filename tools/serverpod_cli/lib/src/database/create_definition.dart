@@ -34,10 +34,13 @@ DatabaseDefinition createDatabaseDefinitionFromModels(
                   isNullable: column.name != 'id' && column.type.nullable,
                   dartType: column.type.toString(),
                   columnDefault: SqlGenerator.forDialect(dialect)
-                      .getColumnDefault(
-                        column.type,
-                        column.defaultPersistValue,
-                        classDefinition.tableName!,
+                      .resolveAbstractDefault(
+                        columnDefault: column.defaultPersistValue,
+                        columnType: ColumnType.values.byName(
+                          column.type.databaseTypeEnum,
+                        ),
+                        tableName: classDefinition.tableName!,
+                        dartType: column.type.toString(),
                       ),
                   vectorDimension: column.type.vectorDimension,
                 ),

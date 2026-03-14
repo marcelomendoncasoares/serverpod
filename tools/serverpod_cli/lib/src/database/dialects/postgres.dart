@@ -4,7 +4,6 @@ import 'package:serverpod_serialization/serverpod_serialization.dart';
 import 'package:serverpod_shared/serverpod_shared.dart';
 
 import '../../analyzer/models/utils/quote_utils.dart';
-import '../../generator/types.dart';
 import '../sql_generator.dart';
 
 class PostgresSqlGenerator implements SqlGenerator {
@@ -31,14 +30,16 @@ class PostgresSqlGenerator implements SqlGenerator {
   }
 
   @override
-  String? getColumnDefault(
-    TypeDefinition columnType,
-    dynamic defaultValue,
-    String tableName,
-  ) {
+  String? resolveAbstractDefault({
+    required String? columnDefault,
+    required ColumnType columnType,
+    required String tableName,
+    required String? dartType,
+  }) {
     return columnType.getPgColumnDefault(
-      defaultValue,
+      columnDefault,
       tableName,
+      dartType: dartType,
     );
   }
 }
@@ -664,62 +665,64 @@ extension PostgresVectorIndexDistanceFunction on VectorDistanceFunction {
   }
 }
 
-extension PostgresTypeDefinition on TypeDefinition {
+extension PostgresColumnTypeDefault on ColumnType {
   String? getPgColumnDefault(
     dynamic defaultValue,
-    String tableName,
-  ) {
-    var defaultValueType = this.defaultValueType;
-    if ((defaultValue == null) || (defaultValueType == null)) return null;
+    String tableName, {
+    String? dartType,
+  }) {
+    if (defaultValue == null) return null;
 
-    switch (defaultValueType) {
-      case DefaultValueAllowedType.dateTime:
+    // defaultIntSerial uses nextval; only int/bigint id columns support it.
+    if ((this == ColumnType.integer || this == ColumnType.bigint) &&
+        defaultValue == defaultIntSerial) {
+      return "nextval('${tableName}_id_seq'::regclass)";
+    }
+
+    // Duration is stored as bigint; dartType distinguishes from BigInt.
+    if (this == ColumnType.bigint &&
+        (dartType?.startsWith('Duration') ?? false)) {
+      if (defaultValue is int) {
+        return '$defaultValue';
+      }
+      if (defaultValue is String && RegExp(r'^\d+$').hasMatch(defaultValue)) {
+        return '${int.parse(defaultValue)}';
+      }
+      return '${parseDuration(defaultValue).toJson()}';
+    }
+
+    switch (this) {
+      case ColumnType.timestampWithoutTimeZone:
         if (defaultValue is! String) {
           throw StateError('Invalid DateTime default value: $defaultValue');
         }
-
         if (defaultValue == defaultDateTimeValueNow) {
           return 'CURRENT_TIMESTAMP';
         }
-
-        DateTime? dateTime = DateTime.parse(defaultValue);
-        return '\'${DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime)}\'::timestamp without time zone';
-      case DefaultValueAllowedType.bool:
-        return defaultValue;
-      case DefaultValueAllowedType.int:
-        if (defaultValue == defaultIntSerial) {
-          return "nextval('${tableName}_id_seq'::regclass)";
-        }
+        var dateTime = DateTime.parse(defaultValue);
+        var formatted = DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
+        return "'$formatted'::timestamp without time zone";
+      case ColumnType.boolean:
+      case ColumnType.integer:
+      case ColumnType.doublePrecision:
         return '$defaultValue';
-      case DefaultValueAllowedType.double:
-        return '$defaultValue';
-      case DefaultValueAllowedType.string:
-        return '${escapeSqlString(defaultValue)}::text';
-      case DefaultValueAllowedType.uuidValue:
-        if (defaultUuidValueRandom == defaultValue) {
-          return 'gen_random_uuid()';
+      case ColumnType.bigint:
+      case ColumnType.text:
+      case ColumnType.json:
+        // BigInt is stored as text in PostgreSQL.
+        if (dartType == 'BigInt') {
+          var parsedBigInt = BigInt.parse(defaultValue);
+          return "'${parsedBigInt.toString()}'::text";
         }
-        if (defaultUuidValueRandomV7 == defaultValue) {
-          return 'gen_random_uuid_v7()';
-        }
-        return '${escapeSqlString(defaultValue)}::uuid';
-      case DefaultValueAllowedType.uri:
         return '${escapeSqlString(defaultValue)}::text';
-      case DefaultValueAllowedType.bigInt:
-        var parsedBigInt = BigInt.parse(defaultValue);
-        return "'${parsedBigInt.toString()}'::text";
-      case DefaultValueAllowedType.duration:
-        Duration parsedDuration = parseDuration(defaultValue);
-        return '${parsedDuration.toJson()}';
-      case DefaultValueAllowedType.isEnum:
-        var enumDefinition = this.enumDefinition;
-        if (enumDefinition == null) return null;
-        var values = enumDefinition.values;
-        return switch (enumDefinition.serialized) {
-          EnumSerialization.byIndex =>
-            '${values.indexWhere((e) => e.name == defaultValue)}',
-          EnumSerialization.byName => '\'$defaultValue\'::text',
+      case ColumnType.uuid:
+        return switch (defaultValue) {
+          defaultUuidValueRandom => 'gen_random_uuid()',
+          defaultUuidValueRandomV7 => 'gen_random_uuid_v7()',
+          _ => '${escapeSqlString(defaultValue)}::uuid',
         };
+      default:
+        return '${escapeSqlString(defaultValue)}::text';
     }
   }
 }

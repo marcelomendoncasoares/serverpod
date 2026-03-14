@@ -1,7 +1,6 @@
 import 'package:serverpod_service_client/serverpod_service_client.dart';
 import 'package:serverpod_shared/serverpod_shared.dart';
 
-import '../generator/types.dart';
 import 'dialects/postgres.dart';
 
 abstract interface class SqlGenerator {
@@ -20,9 +19,10 @@ abstract interface class SqlGenerator {
     required List<DatabaseMigrationVersionModel> removedModules,
   });
 
-  String? getColumnDefault(
-    TypeDefinition columnType,
-    dynamic defaultValue,
-    String tableName,
-  );
+  String? resolveAbstractDefault({
+    required String? columnDefault,
+    required ColumnType columnType,
+    required String tableName,
+    required String? dartType,
+  });
 }

@@ -40,13 +40,14 @@ class ColumnDefinitionBuilder {
     _name = 'id';
     _isNullable = false;
     _columnType = ColumnType.values.byName(idType.type.databaseTypeEnum);
-    _columnDefault = SqlGenerator.forDialect(dialect).getColumnDefault(
-      idType.type,
-      idType.defaultValue,
-      tableName,
-    );
     _dartType = (nullableModelField ? idType.type.asNullable : idType.type)
         .toString();
+    _columnDefault = SqlGenerator.forDialect(dialect).resolveAbstractDefault(
+      columnType: _columnType,
+      columnDefault: idType.defaultValue,
+      tableName: tableName,
+      dartType: _dartType,
+    );
     return this;
   }
 
