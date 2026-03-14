@@ -4,6 +4,8 @@ import 'package:serverpod_cli/src/database/sql_generator.dart';
 import 'package:serverpod_service_client/serverpod_service_client.dart';
 import 'package:serverpod_shared/serverpod_shared.dart';
 
+const currentSchemaVersion = 2;
+
 /// Create the target [DatabaseDefinition] based on the [serializableModel].
 DatabaseDefinition createDatabaseDefinitionFromModels(
   List<SerializableModelDefinition> serializableModels,
@@ -93,6 +95,7 @@ DatabaseDefinition createDatabaseDefinitionFromModels(
   _sortTableDefinitions(tables);
 
   return DatabaseDefinition(
+    schemaVersion: currentSchemaVersion,
     moduleName: moduleName,
     tables: tables,
     migrationApiVersion: DatabaseConstants.migrationApiVersion,
