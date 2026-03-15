@@ -1,4 +1,3 @@
-import 'package:serverpod_cli/src/database/sql_generator.dart';
 import 'package:serverpod_cli/src/generator/types.dart';
 import 'package:serverpod_service_client/serverpod_service_client.dart';
 import 'package:serverpod_shared/serverpod_shared.dart';
@@ -40,14 +39,9 @@ class ColumnDefinitionBuilder {
     _name = 'id';
     _isNullable = false;
     _columnType = ColumnType.values.byName(idType.type.databaseTypeEnum);
+    _columnDefault = idType.defaultValue;
     _dartType = (nullableModelField ? idType.type.asNullable : idType.type)
         .toString();
-    _columnDefault = SqlGenerator.forDialect(dialect).resolveAbstractDefault(
-      columnType: _columnType,
-      columnDefault: idType.defaultValue,
-      tableName: tableName,
-      dartType: _dartType,
-    );
     return this;
   }
 

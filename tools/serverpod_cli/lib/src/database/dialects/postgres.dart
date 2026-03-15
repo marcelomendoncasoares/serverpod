@@ -80,7 +80,11 @@ extension PostgresDatabaseDefinitionPgSqlGeneration on DatabaseDefinition {
 
     // Must be declared at the beginning for the function to be available.
     if (tables.any(
-      (t) => t.columns.any((c) => c.columnDefault == pgsqlFunctionRandomUuidV7),
+      (t) => t.columns.any(
+        (c) =>
+            c.columnDefault == pgsqlFunctionRandomUuidV7 ||
+            c.columnDefault == defaultUuidValueRandomV7,
+      ),
     )) {
       out += _sqlUuidGenerateV7FunctionDeclaration();
       out += '\n';
@@ -123,7 +127,7 @@ extension PostgresTableDefinitionPgSqlGeneration on TableDefinition {
 
     var columnsPgSql = <String>[];
     for (var column in columns) {
-      columnsPgSql.add('    ${column.toPgSqlFragment()}');
+      columnsPgSql.add('    ${column.toPgSqlFragment(tableName: name)}');
     }
     out += columnsPgSql.join(',\n');
 
@@ -173,7 +177,8 @@ extension PostgresColumnDefinitionPgSqlGeneration on ColumnDefinition {
   bool get isIntSerialIdColumn =>
       isPrimary &&
       (columnType == ColumnType.integer || columnType == ColumnType.bigint) &&
-      (columnDefault?.startsWith('nextval') ?? false);
+      ((columnDefault?.startsWith('nextval') ?? false) ||
+          columnDefault == defaultIntSerial);
 
   /// Whether the column is of a vector type.
   bool get isVectorColumn =>
@@ -182,7 +187,7 @@ extension PostgresColumnDefinitionPgSqlGeneration on ColumnDefinition {
       columnType == ColumnType.sparsevec ||
       columnType == ColumnType.bit;
 
-  String toPgSqlFragment() {
+  String toPgSqlFragment({String tableName = ''}) {
     String type;
     switch (columnType) {
       case ColumnType.bigint:
@@ -229,7 +234,13 @@ extension PostgresColumnDefinitionPgSqlGeneration on ColumnDefinition {
     }
 
     var nullable = isNullable ? '' : ' NOT NULL';
-    var defaultValue = columnDefault != null ? ' DEFAULT $columnDefault' : '';
+    var defaultSql = columnType.getPgColumnDefault(
+      columnDefault,
+      tableName,
+      dartType: dartType,
+    );
+
+    var defaultValue = defaultSql != null ? ' DEFAULT $defaultSql' : '';
 
     // The id column is special.
     if (isPrimary) {

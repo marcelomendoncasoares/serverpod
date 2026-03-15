@@ -54,7 +54,7 @@ void main() {
           var column = table.columns.last;
           expect(
             column.columnDefault,
-            '94230100', // 1 day, 2 hours, 10 minutes, 30 seconds, 100 milliseconds in total
+            '1d 2h 10min 30s 100ms',
           );
         },
       );
@@ -158,7 +158,7 @@ void main() {
           var column = table.columns.last;
           expect(
             column.columnDefault,
-            '94230100', // 1 day, 2 hours, 10 minutes, 30 seconds, 100 milliseconds in total
+            '1d 2h 10min 30s 100ms',
           );
         },
       );

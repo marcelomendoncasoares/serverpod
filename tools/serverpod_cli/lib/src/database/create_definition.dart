@@ -1,12 +1,12 @@
 import 'package:serverpod_cli/src/analyzer/models/definitions.dart';
 import 'package:serverpod_cli/src/config/config.dart';
-import 'package:serverpod_cli/src/database/sql_generator.dart';
+import 'package:serverpod_cli/src/generator/types.dart';
 import 'package:serverpod_service_client/serverpod_service_client.dart';
 import 'package:serverpod_shared/serverpod_shared.dart';
 
 const currentSchemaVersion = 2;
 
-/// Create the target [DatabaseDefinition] based on the [serializableModel].
+/// Create the target [DatabaseDefinition] based on the [serializableModels].
 DatabaseDefinition createDatabaseDefinitionFromModels(
   List<SerializableModelDefinition> serializableModels,
   String moduleName,
@@ -33,32 +33,12 @@ DatabaseDefinition createDatabaseDefinitionFromModels(
                   // The id column is not null, since it is auto generated.
                   isNullable: column.name != 'id' && column.type.nullable,
                   dartType: column.type.toString(),
-                  columnDefault: SqlGenerator.forDialect(dialect)
-                      .resolveAbstractDefault(
-                        columnDefault: column.defaultPersistValue,
-                        columnType: ColumnType.values.byName(
-                          column.type.databaseTypeEnum,
-                        ),
-                        tableName: classDefinition.tableName!,
-                        dartType: column.type.toString(),
-                      ),
+                  columnDefault: _parseColumnDefault(column),
                   vectorDimension: column.type.vectorDimension,
                 ),
           ],
           foreignKeys: _createForeignKeys(classDefinition),
           indexes: [
-            IndexDefinition(
-              indexName: '${classDefinition.tableName!}_pkey',
-              elements: [
-                IndexElementDefinition(
-                  definition: 'id',
-                  type: IndexElementDefinitionType.column,
-                ),
-              ],
-              type: 'btree',
-              isUnique: true,
-              isPrimary: true,
-            ),
             for (var index in classDefinition.indexesIncludingInherited)
               IndexDefinition(
                 indexName: index.name,
@@ -141,6 +121,30 @@ List<ForeignKeyDefinition> _createForeignKeys(
   }
 
   return foreignKeys;
+}
+
+/// Parses the default value for a column.
+///
+/// If the column is an enum, it returns the value in the expected format for
+/// the enum serialization.
+///
+/// If the column is not an enum, it returns the default value.
+dynamic _parseColumnDefault(SerializableModelFieldDefinition column) {
+  final defaultPersistValue = column.defaultPersistValue;
+  if (defaultPersistValue == null ||
+      column.type.defaultValueType != DefaultValueAllowedType.isEnum) {
+    return defaultPersistValue;
+  }
+
+  final enumDefinition = column.type.enumDefinition;
+  if (enumDefinition == null) return null;
+  return switch (enumDefinition.serialized) {
+    // Matches the expected value format for an integer column.
+    EnumSerialization.byIndex =>
+      '${enumDefinition.values.indexWhere((e) => e.name == defaultPersistValue)}',
+    // Matches the expected value format for a text column.
+    EnumSerialization.byName => "'$defaultPersistValue'",
+  };
 }
 
 void _sortTableDefinitions(List<TableDefinition> tables) {
