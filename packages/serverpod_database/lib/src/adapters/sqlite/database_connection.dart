@@ -653,7 +653,8 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
     var sqliteTx = _castToSqliteTransaction(transaction);
     ResultSet? result;
 
-    for (var statement in _splitSqlStatements(query)) {
+    for (var i = 0; i < _splitSqlStatements(query).length; i++) {
+      var statement = _splitSqlStatements(query)[i];
       statement = statement.trim();
       // Ignore transaction statements to avoid recursive locks.
       if (statement.isEmpty ||
@@ -1000,9 +1001,13 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
   static bool _isSelectStatement(String sql) {
     final trimmed = sql.trim();
     if (trimmed.isEmpty) return false;
-    final result = _sqlEngine.parse(trimmed);
-    if (result.errors.isNotEmpty) return false;
-    return result.rootNode is BaseSelectStatement;
+    try {
+      final result = _sqlEngine.parse(trimmed);
+      if (result.errors.isNotEmpty) return false;
+      return result.rootNode is BaseSelectStatement;
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Returns true if [sql] appears to be INSERT, UPDATE, or DELETE (prefix check).

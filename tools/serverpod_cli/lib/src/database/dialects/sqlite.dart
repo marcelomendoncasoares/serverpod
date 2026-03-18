@@ -97,6 +97,11 @@ extension SqliteDatabaseDefinitionSqlGeneration on DatabaseDefinition {
     // Create tables
     out += tableCreation;
 
+    out += _sqlStoreColumnTypesForMigrations(
+      tables,
+      installedModules.first,
+    );
+
     if (installedModules.isNotEmpty) {
       out += '\n';
     }
@@ -248,14 +253,11 @@ extension SqliteColumnDefinitionSqlGeneration on ColumnDefinition {
       if (isNullable) {
         throw const FormatException('The id column must be non-nullable');
       }
+      // SQLite "INTEGER PRIMARY KEY" is an alias for ROWID.
       if (type == 'INTEGER') {
-        // SQLite "INTEGER PRIMARY KEY" is an alias for ROWID.
-        type = 'INTEGER PRIMARY KEY';
         defaultValue = '';
-      } else {
-        // Non-integer ids (e.g. UUID BLOB) still need explicit PK semantics.
-        type = '$type PRIMARY KEY';
       }
+      type = '$type PRIMARY KEY';
       nullable = '';
     }
 
@@ -327,7 +329,7 @@ extension SqliteDatabaseMigrationSqlGeneration on DatabaseMigration {
   String toSqliteSql({
     required List<DatabaseMigrationVersion> installedModules,
     required List<DatabaseMigrationVersion> removedModules,
-    DatabaseDefinition? targetDefinition,
+    required DatabaseDefinition targetDefinition,
   }) {
     var out = '';
 
@@ -337,6 +339,11 @@ extension SqliteDatabaseMigrationSqlGeneration on DatabaseMigration {
     for (var action in actions) {
       out += action.toSqliteSql(targetDefinition: targetDefinition);
     }
+
+    out += _sqlStoreColumnTypesForMigrations(
+      targetDefinition.tables,
+      installedModules.first,
+    );
 
     if (installedModules.isNotEmpty) {
       out += '\n';
@@ -353,9 +360,6 @@ extension SqliteDatabaseMigrationSqlGeneration on DatabaseMigration {
       out += '\n';
       out += _sqlRemoveMigrationVersion(removedModules);
     }
-
-    // FIXME:
-    // out += _sqlStoreColumnTypesForMigrations();
 
     out += '\n';
     out += 'COMMIT;\n';
@@ -590,23 +594,44 @@ String _sqlStoreMigrationVersion({
 /// and comparing only the actual column types would be too permissive and
 /// generate deserialization errors in case the dart type being stored changes
 /// between migrations.
-String _sqlStoreColumnTypesForMigrations(List<TableDefinition> tables) {
+String _sqlStoreColumnTypesForMigrations(
+  List<TableDefinition> tables,
+  DatabaseMigrationVersion currentModule,
+) {
   String out = '';
   out += '--\n';
   out += '-- STORE COLUMN TYPES FOR MIGRATIONS\n';
   out += '--\n';
-  out += 'CREATE TABLE IF NOT EXISTS "$_sqliteSchemaTable" (\n';
+  out += 'DROP TABLE IF EXISTS "$_sqliteSchemaTable";\n';
+  out += '\n';
+  out += 'CREATE TABLE "$_sqliteSchemaTable" (\n';
   out += '    "table_name" TEXT NOT NULL,\n';
   out += '    "column_name" TEXT NOT NULL,\n';
   out += '    "column_type" TEXT NOT NULL,\n';
+  out += '    "column_default" TEXT,\n';
+  out += '    "column_vector_dimension" INTEGER,\n';
   out += '    PRIMARY KEY ("table_name", "column_name")\n';
   out += ');\n';
   out += '\n';
-  out +=
-      'INSERT INTO "$_sqliteSchemaTable" ("table_name", "column_name", "column_type") VALUES\n';
+  out += 'INSERT INTO "$_sqliteSchemaTable" VALUES\n';
   for (var t in tables) {
+    var isTableFromCurrentModule = currentModule.module == t.module;
     for (var c in t.columns) {
-      out += "    ('${t.name}', '${c.name}', '${c.columnType.name}');\n";
+      // Modules might have their definition generated for Postgres, with
+      // default values that differ from the SQLite default value. In these
+      // cases, we store the default value for the analyzer to use later.
+      var shouldStoreDefaultValue =
+          !isTableFromCurrentModule && c.columnDefault != null;
+
+      out += '    (';
+      out += "'${t.name}', ";
+      out += "'${c.name}', ";
+      out += "'${c.columnType.name}', ";
+      out +=
+          "${shouldStoreDefaultValue ? "'${c.columnDefault!.replaceAll("'", "''")}'" : 'NULL'}, ";
+      out += "${c.vectorDimension ?? 'NULL'}";
+      out += ')';
+      out += (t == tables.last && c == t.columns.last) ? ';\n' : ',\n';
     }
   }
   return out;
@@ -647,7 +672,7 @@ extension SqliteTypeDefinition on TypeDefinition {
         DateTime? dateTime = DateTime.parse(defaultValue).toUtc();
         return '${dateTime.millisecondsSinceEpoch}';
       case DefaultValueAllowedType.bool:
-        return defaultValue;
+        return defaultValue == 'true' ? '1' : '0';
       case DefaultValueAllowedType.int:
         if (defaultValue == defaultIntSerial) {
           return 'AUTOINCREMENT';
