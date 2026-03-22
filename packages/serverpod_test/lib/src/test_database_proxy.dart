@@ -22,6 +22,14 @@ class TestDatabaseProxy implements Database {
     this._runtimeParametersBuilder,
   );
 
+  /// When rollback is enabled and no transaction is passed, use the test's
+  /// current transaction so the operation sees uncommitted data (e.g. SQLite).
+  Transaction? _effectiveTransaction(Transaction? transaction) =>
+      transaction ??
+      (_rollbackDatabase != RollbackDatabase.disabled
+          ? _transactionManager.currentTransaction
+          : null);
+
   @override
   DatabaseAnalyzer get analyzer => _db.analyzer;
 
@@ -44,7 +52,7 @@ class TestDatabaseProxy implements Database {
         where: where,
         limit: limit,
         useCache: useCache,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
       ),
       isPartOfUserTransaction: transaction != null,
     );
@@ -58,7 +66,7 @@ class TestDatabaseProxy implements Database {
     return _rollbackSingleOperationIfDatabaseException(
       () => _db.delete<T>(
         rows,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
       ),
       isPartOfUserTransaction: transaction != null,
     );
@@ -72,7 +80,7 @@ class TestDatabaseProxy implements Database {
     return _rollbackSingleOperationIfDatabaseException(
       () => _db.deleteRow<T>(
         row,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
       ),
       isPartOfUserTransaction: transaction != null,
     );
@@ -86,7 +94,7 @@ class TestDatabaseProxy implements Database {
     return _rollbackSingleOperationIfDatabaseException(
       () => _db.deleteWhere<T>(
         where: where,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
       ),
       isPartOfUserTransaction: transaction != null,
     );
@@ -113,7 +121,7 @@ class TestDatabaseProxy implements Database {
         orderBy: orderBy,
         orderByList: orderByList,
         orderDescending: orderDescending,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
         include: include,
         lockMode: lockMode,
         lockBehavior: lockBehavior,
@@ -133,7 +141,7 @@ class TestDatabaseProxy implements Database {
     return _rollbackSingleOperationIfDatabaseException(
       () => _db.findById<T>(
         id,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
         include: include,
         lockMode: lockMode,
         lockBehavior: lockBehavior,
@@ -161,7 +169,7 @@ class TestDatabaseProxy implements Database {
         orderBy: orderBy,
         orderByList: orderByList,
         orderDescending: orderDescending,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
         include: include,
         lockMode: lockMode,
         lockBehavior: lockBehavior,
@@ -197,7 +205,7 @@ class TestDatabaseProxy implements Database {
     return _rollbackSingleOperationIfDatabaseException(
       () => _db.insert<T>(
         rows,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
         ignoreConflicts: ignoreConflicts,
       ),
       isPartOfUserTransaction: transaction != null,
@@ -212,7 +220,7 @@ class TestDatabaseProxy implements Database {
     return _rollbackSingleOperationIfDatabaseException(
       () => _db.insertRow<T>(
         row,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
       ),
       isPartOfUserTransaction: transaction != null,
     );
@@ -269,7 +277,7 @@ class TestDatabaseProxy implements Database {
       () => _db.unsafeExecute(
         query,
         timeoutInSeconds: timeoutInSeconds,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
         parameters: parameters,
       ),
       isPartOfUserTransaction: transaction != null,
@@ -287,7 +295,7 @@ class TestDatabaseProxy implements Database {
     return _db.unsafeExecute(
       query,
       timeoutInSeconds: timeoutInSeconds,
-      transaction: transaction,
+      transaction: _effectiveTransaction(transaction),
       parameters: parameters,
     );
   }
@@ -303,7 +311,7 @@ class TestDatabaseProxy implements Database {
       () => _db.unsafeQuery(
         query,
         timeoutInSeconds: timeoutInSeconds,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
         parameters: parameters,
       ),
       isPartOfUserTransaction: transaction != null,
@@ -320,7 +328,7 @@ class TestDatabaseProxy implements Database {
       () => _db.unsafeSimpleExecute(
         query,
         timeoutInSeconds: timeoutInSeconds,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
       ),
       isPartOfUserTransaction: transaction != null,
     );
@@ -336,7 +344,7 @@ class TestDatabaseProxy implements Database {
       () => _db.unsafeSimpleQuery(
         query,
         timeoutInSeconds: timeoutInSeconds,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
       ),
       isPartOfUserTransaction: transaction != null,
     );
@@ -352,7 +360,7 @@ class TestDatabaseProxy implements Database {
       () => _db.update<T>(
         rows,
         columns: columns,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
       ),
       isPartOfUserTransaction: transaction != null,
     );
@@ -369,7 +377,7 @@ class TestDatabaseProxy implements Database {
         return _db.updateRow<T>(
           row,
           columns: columns,
-          transaction: transaction,
+          transaction: _effectiveTransaction(transaction),
         );
       },
       isPartOfUserTransaction: transaction != null,
@@ -386,7 +394,7 @@ class TestDatabaseProxy implements Database {
       () => _db.updateById<T>(
         id,
         columnValues: columnValues,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
       ),
       isPartOfUserTransaction: transaction != null,
     );
@@ -412,7 +420,7 @@ class TestDatabaseProxy implements Database {
         orderBy: orderBy,
         orderByList: orderByList,
         orderDescending: orderDescending,
-        transaction: transaction,
+        transaction: _effectiveTransaction(transaction),
       ),
       isPartOfUserTransaction: transaction != null,
     );

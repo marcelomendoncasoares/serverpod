@@ -3,9 +3,11 @@ import 'package:serverpod_cli/src/database/migration.dart';
 import 'package:serverpod_database/serverpod_database.dart' as db;
 import 'package:serverpod_service_client/serverpod_service_client.dart';
 
+import 'sql_generator.dart';
+
 // Export underlying dialect implementations.
-export 'package:serverpod_database/src/extensions.dart';
 export 'dialects/postgres.dart';
+export 'dialects/sqlite.dart';
 
 //
 // Comparisons of database models
@@ -94,6 +96,45 @@ extension TableDiffComparisons on TableMigration {
 
 extension TableDefinitionExtension on TableDefinition {
   bool get isManaged => managed != false;
+}
+
+extension ColumnTypeComparison on ColumnType {
+  bool like(ColumnType other) {
+    // Integer and bigint are considered the same type.
+    if (this == ColumnType.integer || this == ColumnType.bigint) {
+      return other == ColumnType.integer || other == ColumnType.bigint;
+    }
+
+    return this == other;
+  }
+}
+
+extension DatabaseDefinitionSqlGeneration on DatabaseDefinition {
+  String toSql({
+    required List<DatabaseMigrationVersion> installedModules,
+    required db.DatabaseDialect dialect,
+  }) {
+    return SqlGenerator.forDialect(dialect).generateDatabaseDefinitionSql(
+      this,
+      installedModules: installedModules,
+    );
+  }
+}
+
+extension DatabaseMigrationSqlGeneration on DatabaseMigration {
+  String toSql({
+    required List<DatabaseMigrationVersion> installedModules,
+    required List<DatabaseMigrationVersion> removedModules,
+    required db.DatabaseDialect dialect,
+    required DatabaseDefinition databaseDefinition,
+  }) {
+    return SqlGenerator.forDialect(dialect).generateDatabaseMigrationSql(
+      this,
+      databaseDefinition,
+      installedModules: installedModules,
+      removedModules: removedModules,
+    );
+  }
 }
 
 /// Returns the last element of the list, or null if the list is empty.
