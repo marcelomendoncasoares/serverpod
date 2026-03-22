@@ -6981,7 +6981,7 @@
     {
       "__className__": "serverpod.DatabaseMigrationVersionModel",
       "module": "serverpod_test_sqlite",
-      "version": "20260331033653579"
+      "version": "20260401043450828"
     },
     {
       "__className__": "serverpod.DatabaseMigrationVersion",

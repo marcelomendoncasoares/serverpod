@@ -21,6 +21,6 @@ database:
 
 sessionLogs:
   persistentEnabled: true
-  consoleEnabled: true
+  consoleEnabled: false
 
 futureCallExecutionEnabled: false
