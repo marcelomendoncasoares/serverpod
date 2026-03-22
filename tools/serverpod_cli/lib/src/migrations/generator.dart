@@ -84,7 +84,6 @@ class MigrationGenerator {
       modelDefinitions,
       config.name,
       config.modulesAll,
-      dialect: config.databaseDialect,
     );
 
     var databaseDefinitions = await _loadModuleDatabaseDefinitions(
