@@ -12,6 +12,14 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
   static const String _defaultSchema = 'main';
 
   @override
+  List<TableDefinition> getTargetTableDefinitions() => [
+    for (var t in database.serializationManager.getTargetTableDefinitions())
+      t.copyWith(
+        indexes: t.indexes.where((i) => i.type == 'btree').toList(),
+      ),
+  ];
+
+  @override
   Future<String> getCurrentDatabaseName() async {
     var result = await database.unsafeQuery('PRAGMA database_list');
     if (result.isEmpty) return _defaultSchema;

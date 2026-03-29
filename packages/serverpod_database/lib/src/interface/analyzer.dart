@@ -26,6 +26,14 @@ abstract class DatabaseAnalyzer {
     );
   }
 
+  /// Gets the target database definition for the current dialect.
+  ///
+  /// This is used to compare the live database to the target database. The
+  /// definitions returned by this method do not contain elements that are
+  /// ignored on the current dialect (e.g. unsupported index types).
+  List<TableDefinition> getTargetTableDefinitions() =>
+      database.serializationManager.getTargetTableDefinitions();
+
   /// Retrieves the current database from the [database].
   Future<String> getCurrentDatabaseName();
 
