@@ -8,6 +8,15 @@ import 'sqlite_pool_manager.dart';
 
 /// Provides a [DatabaseProvider] for the Sqlite database.
 class SqliteDatabaseProvider implements DatabaseProvider {
+  /// Creates a new [SqliteDatabaseProvider].
+  const SqliteDatabaseProvider();
+
+  @override
+  DatabaseDefinitionRestrictions get definitionRestrictions =>
+      const DatabaseDefinitionRestrictions(
+        supportedIndexTypes: ['btree'],
+      );
+
   @override
   SqlitePoolManager createPoolManager(
     SerializationManagerServer serializationManager,

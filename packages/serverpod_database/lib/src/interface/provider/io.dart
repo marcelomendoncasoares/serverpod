@@ -7,6 +7,6 @@ import '../provider.dart';
 /// Creates a [DatabaseProvider] for the given [dialect].
 DatabaseProvider createDatabaseProviderForDialect(DatabaseDialect dialect) =>
     switch (dialect) {
-      DatabaseDialect.postgres => PostgresDatabaseProvider(),
-      DatabaseDialect.sqlite => SqliteDatabaseProvider(),
+      DatabaseDialect.postgres => const PostgresDatabaseProvider(),
+      DatabaseDialect.sqlite => const SqliteDatabaseProvider(),
     };

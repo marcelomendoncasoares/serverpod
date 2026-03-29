@@ -10,6 +10,13 @@ import 'postgres_pool_manager.dart';
 /// Provides a [DatabaseProvider] for the Postgres database.
 @internal
 class PostgresDatabaseProvider implements DatabaseProvider {
+  /// Creates a new [PostgresDatabaseProvider].
+  const PostgresDatabaseProvider();
+
+  @override
+  DatabaseDefinitionRestrictions get definitionRestrictions =>
+      const DatabaseDefinitionRestrictions();
+
   @override
   PostgresPoolManager createPoolManager(
     SerializationManagerServer serializationManager,

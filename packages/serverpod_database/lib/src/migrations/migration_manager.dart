@@ -296,8 +296,7 @@ abstract class MigrationManager {
     var warnings = <String>[];
 
     var liveDatabase = await session.db.analyzer.analyze();
-    var targetTables = session.db.serializationManager
-        .getTargetTableDefinitions();
+    var targetTables = session.db.analyzer.getTargetTableDefinitions();
 
     for (var table in targetTables) {
       var liveTable = liveDatabase.findTableNamed(table.name);

@@ -5,6 +5,7 @@ import '../database.dart';
 import 'analyzer.dart';
 import 'database_connection.dart';
 import 'database_pool_manager.dart';
+import 'definition_restrictions.dart';
 import 'migration_runner.dart';
 import 'provider/io.dart' if (dart.library.html) 'provider/web.dart';
 import 'serialization_manager.dart';
@@ -15,6 +16,9 @@ abstract interface class DatabaseProvider {
   /// Creates a new [DatabaseProvider] for the given [dialect].
   factory DatabaseProvider.forDialect(DatabaseDialect dialect) =>
       createDatabaseProviderForDialect(dialect);
+
+  /// Creates a new [DatabaseDefinitionRestrictions] for the current dialect.
+  DatabaseDefinitionRestrictions get definitionRestrictions;
 
   /// Creates a new [DatabasePoolManager] for the given parameters.
   DatabasePoolManager createPoolManager(

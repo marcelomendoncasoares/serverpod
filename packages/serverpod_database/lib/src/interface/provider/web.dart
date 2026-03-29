@@ -6,7 +6,7 @@ import '../provider.dart';
 /// Creates a [DatabaseProvider] for the given [dialect].
 DatabaseProvider createDatabaseProviderForDialect(DatabaseDialect dialect) =>
     switch (dialect) {
-      DatabaseDialect.sqlite => SqliteDatabaseProvider(),
+      DatabaseDialect.sqlite => const SqliteDatabaseProvider(),
       _ => throw UnsupportedError(
         'Database provider for dialect $dialect is not available on web.',
       ),

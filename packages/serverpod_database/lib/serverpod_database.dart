@@ -23,6 +23,7 @@ export 'src/generated/protocol.dart';
 export 'src/interface/analyzer.dart';
 export 'src/interface/database_pool_manager.dart';
 export 'src/interface/database_session.dart';
+export 'src/interface/definition_restrictions.dart';
 export 'src/interface/provider.dart';
 export 'src/interface/serialization_manager.dart';
 export 'src/interface/value_encoder.dart';
