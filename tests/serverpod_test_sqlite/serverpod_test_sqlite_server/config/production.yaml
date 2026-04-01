@@ -17,7 +17,8 @@ webServer:
   publicScheme: http
 
 database:
-  filePath: serverpod_test_prod.db
+  # Under sqlite_data/ so Docker e2e can bind-mount on directory (db + WAL/SHM)
+  filePath: sqlite_data/serverpod_test_prod.db
 
 sessionLogs:
   persistentEnabled: true
