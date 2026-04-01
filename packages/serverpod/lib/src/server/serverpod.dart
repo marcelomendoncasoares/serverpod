@@ -843,7 +843,10 @@ class Serverpod {
 
     try {
       _internalLogVerbose('Initializing migration manager.');
-      var migrationManager = ServerMigrationManager(Directory.current);
+      var migrationManager = ServerMigrationManager(
+        Directory.current,
+        runMode: runMode,
+      );
 
       if (applyRepairMigration) {
         _internalLogVerbose('Applying database repair migration');

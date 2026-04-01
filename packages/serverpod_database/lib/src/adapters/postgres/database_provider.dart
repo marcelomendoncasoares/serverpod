@@ -39,8 +39,8 @@ class PostgresDatabaseProvider implements DatabaseProvider {
   }
 
   @override
-  PostgresDatabaseMigrationRunner createMigrationRunner() {
-    return const PostgresDatabaseMigrationRunner();
+  PostgresDatabaseMigrationRunner createMigrationRunner({String? runMode}) {
+    return PostgresDatabaseMigrationRunner(runMode: runMode);
   }
 
   @override

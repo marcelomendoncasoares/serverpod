@@ -31,7 +31,7 @@ abstract interface class DatabaseProvider {
   DatabaseConnection createConnection(DatabasePoolManager poolManager);
 
   /// Creates a new [MigrationRunner].
-  MigrationRunner createMigrationRunner();
+  MigrationRunner createMigrationRunner({String? runMode});
 
   /// Creates a new [DatabaseAnalyzer] for the given [database].
   DatabaseAnalyzer createAnalyzer(Database database);

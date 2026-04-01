@@ -44,8 +44,8 @@ class SqliteDatabaseProvider implements DatabaseProvider {
   }
 
   @override
-  SqliteDatabaseMigrationRunner createMigrationRunner() {
-    return const SqliteDatabaseMigrationRunner();
+  SqliteDatabaseMigrationRunner createMigrationRunner({String? runMode}) {
+    return SqliteDatabaseMigrationRunner(runMode: runMode);
   }
 
   @override
