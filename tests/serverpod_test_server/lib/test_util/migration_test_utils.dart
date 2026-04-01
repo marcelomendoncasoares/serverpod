@@ -93,14 +93,23 @@ abstract class MigrationTestUtils {
     String? resetSql,
     required Client serviceClient,
   }) async {
-    removeAllTaggedMigrations();
-    removeRepairMigration();
-    _removeMigrationTestProtocolFolder();
-    await _recreateMigrationRegistryFile();
+    await migrationArtifactsCleanup();
     if (resetSql != null) {
       await _resetDatabase(resetSql: resetSql, serviceClient: serviceClient);
     }
     await _setDatabaseMigrationToLatestInRegistry(serviceClient: serviceClient);
+  }
+
+  /// Removes tagged migrations, repair migration, protocol test files, and
+  /// rewrites the migration registry from disk, without contacting the server.
+  ///
+  /// For tests that only run `create-migration` (no apply) and must not require
+  /// a running database.
+  static Future<void> migrationArtifactsCleanup() async {
+    removeAllTaggedMigrations();
+    removeRepairMigration();
+    _removeMigrationTestProtocolFolder();
+    await _recreateMigrationRegistryFile();
   }
 
   static Future<void> _recreateMigrationRegistryFile() async {

@@ -126,9 +126,10 @@ class MigrationGenerator {
     var sqlGenerator = SqlGenerator.forDialect(config.databaseDialect);
 
     // Filter the elements here to keep the definition files complete. Only
-    // the migration SQL will be filtered by the dialect.
+    // the migration and definition SQL will be filtered by the dialect.
     var databaseDefinitionNextForDialect = databaseDefinitionNext.forDialect(
       config.databaseDialect,
+      logWarnings: log.warning,
     );
 
     var artifacts = MigrationVersionArtifacts(
@@ -203,6 +204,7 @@ class MigrationGenerator {
     // target—otherwise unsupported indexes (etc.) appear as spurious drift.
     var dstDatabaseForDialect = dstDatabase.forDialect(
       dialect,
+      logWarnings: log.warning,
     );
 
     var client = ConfigInfo(runMode).createServiceClient();
