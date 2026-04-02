@@ -484,6 +484,9 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
   Future<List<T>> delete<T extends TableRow>(
     DatabaseSession session,
     List<T> rows, {
+    Column? orderBy,
+    List<Order>? orderByList,
+    bool orderDescending = false,
     Transaction? transaction,
   }) async {
     if (rows.isEmpty) return [];
@@ -495,6 +498,9 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
     return deleteWhere<T>(
       session,
       table.id.inSet(rows.map((row) => row.id!).castToIdType().toSet()),
+      orderBy: orderBy,
+      orderByList: orderByList,
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }
@@ -520,6 +526,9 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
   Future<List<T>> deleteWhere<T extends TableRow>(
     DatabaseSession session,
     Expression where, {
+    Column? orderBy,
+    List<Order>? orderByList,
+    bool orderDescending = false,
     Transaction? transaction,
   }) async {
     var table = _getTableOrAssert<T>(session, operation: 'deleteWhere');
