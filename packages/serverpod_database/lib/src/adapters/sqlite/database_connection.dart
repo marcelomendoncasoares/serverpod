@@ -532,11 +532,43 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
     Transaction? transaction,
   }) async {
     var table = _getTableOrAssert<T>(session, operation: 'deleteWhere');
+    orderByList = _resolveOrderBy(orderByList, orderBy, orderDescending);
 
     // SQLite does not support DELETE ... USING. Use subquery to get ids first.
-    var selectIds = SelectQueryBuilder(
-      table: table,
-    ).withSelectFields([table.id]).withWhere(where).build();
+    var selectIds = SelectQueryBuilder(table: table)
+        .withSelectFields([table.id])
+        .withWhere(where)
+        .withOrderBy(orderByList)
+        .build();
+
+    // It is not possible to use CTEs with delete on SQLite, so we need to first
+    // select the ids and then delete the rows. For the operation to be atomic,
+    // it runs inside a transaction or savepoint.
+    if (orderByList != null) {
+      return await DatabaseUtil.runInTransactionOrSavepoint(
+        session.db,
+        transaction,
+        (tx) async {
+          final orderedIds = (await _mappedResultsQuery(
+            session,
+            selectIds,
+            transaction: tx,
+          )).map((row) => row.values.first).toList();
+
+          final deletedRows = await deleteWhere<T>(
+            session,
+            table.id.inSet(orderedIds.castToIdType().toSet()),
+            transaction: tx,
+          );
+
+          return deletedRows.toList()..sort((a, b) {
+            final aId = orderedIds.indexOf(a.id);
+            final bId = orderedIds.indexOf(b.id);
+            return aId.compareTo(bId);
+          });
+        },
+      );
+    }
 
     var deleteQuery =
         'DELETE FROM "${table.tableName}" '
