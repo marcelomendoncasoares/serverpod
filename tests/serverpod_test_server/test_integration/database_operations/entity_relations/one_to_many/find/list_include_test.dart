@@ -1,5 +1,4 @@
-import 'package:serverpod/serverpod.dart' as pod;
-
+import 'package:serverpod_database/serverpod_database.dart';
 import 'package:serverpod_test_server/src/generated/protocol.dart';
 import 'package:serverpod_test_server/test_util/test_serverpod.dart';
 
@@ -27,12 +26,12 @@ void main() async {
    */
 
   tearDown(() async {
-    await Person.db.deleteWhere(session, where: (t) => pod.Constant.bool(true));
+    await Person.db.deleteWhere(session, where: (t) => Constant.bool(true));
     await Organization.db.deleteWhere(
       session,
-      where: (t) => pod.Constant.bool(true),
+      where: (t) => Constant.bool(true),
     );
-    await City.db.deleteWhere(session, where: (t) => pod.Constant.bool(true));
+    await City.db.deleteWhere(session, where: (t) => Constant.bool(true));
   });
 
   test(
@@ -677,13 +676,8 @@ void main() async {
         include: City.include(
           citizens: Person.includeList(
             orderByList: (t) => [
-              pod.Order(
-                column: t.name,
-              ),
-              pod.Order(
-                column: t.id,
-                orderDescending: true,
-              ),
+              t.name.asc(),
+              t.id.desc(),
             ],
           ),
         ),

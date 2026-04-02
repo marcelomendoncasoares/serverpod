@@ -1,6 +1,6 @@
+import 'package:serverpod/database.dart' hide Order;
 import 'package:serverpod_test_server/src/generated/protocol.dart';
 import 'package:serverpod_test_server/test_util/test_serverpod.dart';
-import 'package:serverpod/database.dart' as db;
 import 'package:test/test.dart';
 
 void main() async {
@@ -8,10 +8,10 @@ void main() async {
 
   group('Given models with one to many relation', () {
     tearDown(() async {
-      await Order.db.deleteWhere(session, where: (_) => db.Constant.bool(true));
+      await Order.db.deleteWhere(session, where: (_) => Constant.bool(true));
       await Customer.db.deleteWhere(
         session,
-        where: (_) => db.Constant.bool(true),
+        where: (_) => Constant.bool(true),
       );
     });
 
@@ -82,13 +82,13 @@ void main() async {
     tearDown(() async {
       await Person.db.deleteWhere(
         session,
-        where: (_) => db.Constant.bool(true),
+        where: (_) => Constant.bool(true),
       );
       await Organization.db.deleteWhere(
         session,
-        where: (_) => db.Constant.bool(true),
+        where: (_) => Constant.bool(true),
       );
-      await City.db.deleteWhere(session, where: (_) => db.Constant.bool(true));
+      await City.db.deleteWhere(session, where: (_) => Constant.bool(true));
     });
     test(
       'when fetching models ordered on multiple separate one to many relations then result order is as expected.',
@@ -143,14 +143,8 @@ void main() async {
           session,
           // Order cities by number of citizens and then the number of organizations
           orderByList: (t) => [
-            db.Order(
-              column: t.citizens.count(),
-              orderDescending: true,
-            ),
-            db.Order(
-              column: t.organizations.count(),
-              orderDescending: true,
-            ),
+            t.citizens.count().desc(),
+            t.organizations.count().desc(),
           ],
         );
 
