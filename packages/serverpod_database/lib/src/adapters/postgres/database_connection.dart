@@ -161,15 +161,21 @@ class PostgresDatabaseConnection
     if (ignoreConflicts &&
         rows.length > 1 &&
         _hasNonPersistedFields(session, rows)) {
-      return [
-        for (var row in rows)
-          await insert<T>(
-            session,
-            [row],
-            transaction: transaction,
-            ignoreConflicts: ignoreConflicts,
-          ).then((results) => results.firstOrNull),
-      ].whereType<T>().toList();
+      // Wrap in a transaction or savepoint to ensure the per-row inserts are
+      // atomic as a whole.
+      return DatabaseUtil.runInTransactionOrSavepoint(
+        session.db,
+        transaction,
+        (tx) async => [
+          for (var row in rows)
+            await insert<T>(
+              session,
+              [row],
+              transaction: tx,
+              ignoreConflicts: ignoreConflicts,
+            ).then((results) => results.firstOrNull),
+        ].whereType<T>().toList(),
+      );
     }
 
     var table = rows.first.table;
@@ -403,6 +409,9 @@ class PostgresDatabaseConnection
   Future<List<T>> delete<T extends TableRow>(
     DatabaseSession session,
     List<T> rows, {
+    Column? orderBy,
+    List<Order>? orderByList,
+    bool orderDescending = false,
     Transaction? transaction,
   }) async {
     if (rows.isEmpty) return [];
@@ -415,6 +424,9 @@ class PostgresDatabaseConnection
     return deleteWhere<T>(
       session,
       table.id.inSet(rows.map((row) => row.id!).castToIdType().toSet()),
+      orderBy: orderBy,
+      orderByList: orderByList,
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }
@@ -444,13 +456,20 @@ class PostgresDatabaseConnection
   Future<List<T>> deleteWhere<T extends TableRow>(
     DatabaseSession session,
     Expression where, {
+    Column? orderBy,
+    List<Order>? orderByList,
+    bool orderDescending = false,
     Transaction? transaction,
   }) async {
     var table = _getTableOrAssert<T>(session, operation: 'deleteWhere');
+    orderByList = _resolveOrderBy(orderByList, orderBy, orderDescending);
 
-    var query = DeleteQueryBuilder(
-      table: table,
-    ).withReturn(Returning.all).withWhere(where).build();
+    // Ordering applies to the returned deleted rows, not to which rows are deleted.
+    var query = DeleteQueryBuilder(table: table)
+        .withReturn(Returning.all)
+        .withWhere(where)
+        .withOrderBy(orderByList)
+        .build();
 
     return await _deserializedMappedQuery(
       session,
