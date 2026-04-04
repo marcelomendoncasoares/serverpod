@@ -87,7 +87,7 @@ indexes:
         'then a warning is logged that unsupported indexes were skipped.',
         () async {
           final msg =
-              'The following indexes will be skipped since its type is not supported';
+              'The following indexes will be skipped due to unsupported types';
           expect(stdout, contains(msg));
 
           final indexMentions = stdout
