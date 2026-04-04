@@ -677,7 +677,17 @@ class SqliteDatabaseConfig extends DatabaseConfig {
     if (path == null || path is! String || path.trim().isEmpty) {
       throw ArgumentError('Invalid SQLite database configuration: $dbSetup');
     }
-    return SqliteDatabaseConfig(filePath: path);
+
+    int? maxConnectionCount =
+        dbSetup[ServerpodEnv.databaseMaxConnectionCount.configKey] ??
+        DatabaseConfig.defaultMaxConnectionCount;
+
+    return SqliteDatabaseConfig(
+      filePath: path,
+      maxConnectionCount: maxConnectionCount != null && maxConnectionCount > 0
+          ? maxConnectionCount
+          : null,
+    );
   }
 
   @override

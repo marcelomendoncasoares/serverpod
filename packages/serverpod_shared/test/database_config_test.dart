@@ -721,6 +721,90 @@ database:
   );
 
   test(
+    'Given a Serverpod config with database dialect sqlite and filePath including maxConnectionCount when loading from Map then SqliteDatabaseConfig maxConnectionCount is set correctly.',
+    () {
+      var serverpodConfig = '''
+apiServer:
+  port: 8080
+  publicHost: localhost
+  publicPort: 8080
+  publicScheme: http
+database:
+  dialect: sqlite
+  filePath: /tmp/serverpod.sqlite
+  maxConnectionCount: 20
+''';
+
+      var config = ServerpodConfig.loadFromMap(
+        runMode,
+        serverId,
+        passwords,
+        loadYaml(serverpodConfig),
+      );
+
+      expect(config.database, isA<SqliteDatabaseConfig>());
+      final sqliteConfig = config.database! as SqliteDatabaseConfig;
+      expect(sqliteConfig.maxConnectionCount, 20);
+    },
+  );
+
+  test(
+    'Given a Serverpod config with database dialect sqlite and filePath including zero maxConnectionCount when loading from Map then SqliteDatabaseConfig maxConnectionCount is null.',
+    () {
+      var serverpodConfig = '''
+apiServer:
+  port: 8080
+  publicHost: localhost
+  publicPort: 8080
+  publicScheme: http
+database:
+  dialect: sqlite
+  filePath: /tmp/serverpod.sqlite
+  maxConnectionCount: 0
+''';
+
+      var config = ServerpodConfig.loadFromMap(
+        runMode,
+        serverId,
+        passwords,
+        loadYaml(serverpodConfig),
+      );
+
+      expect(config.database, isA<SqliteDatabaseConfig>());
+      final sqliteConfig = config.database! as SqliteDatabaseConfig;
+      expect(sqliteConfig.maxConnectionCount, isNull);
+    },
+  );
+
+  test(
+    'Given a Serverpod config with database dialect sqlite and filePath including negative maxConnectionCount when loading from Map then SqliteDatabaseConfig maxConnectionCount is null.',
+    () {
+      var serverpodConfig = '''
+apiServer:
+  port: 8080
+  publicHost: localhost
+  publicPort: 8080
+  publicScheme: http
+database:
+  dialect: sqlite
+  filePath: /tmp/serverpod.sqlite
+  maxConnectionCount: -1
+''';
+
+      var config = ServerpodConfig.loadFromMap(
+        runMode,
+        serverId,
+        passwords,
+        loadYaml(serverpodConfig),
+      );
+
+      expect(config.database, isA<SqliteDatabaseConfig>());
+      final sqliteConfig = config.database! as SqliteDatabaseConfig;
+      expect(sqliteConfig.maxConnectionCount, isNull);
+    },
+  );
+
+  test(
     'Given a Serverpod config with database dialect sqlite but missing filePath when loading from Map then ArgumentError is thrown.',
     () {
       var serverpodConfig = '''
