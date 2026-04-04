@@ -63,6 +63,13 @@ void main() {
           ),
         ),
       );
+
+      final createdTables = await session.db.unsafeQuery(
+        'SELECT * '
+        'FROM sqlite_master '
+        "WHERE type = 'table' AND (name = 'child' OR name = 'parent');",
+      );
+      expect(createdTables, isEmpty);
     },
   );
 
@@ -83,6 +90,17 @@ void main() {
           transaction: tx,
         );
       });
+
+      final parents = await session.db.unsafeQuery('SELECT id FROM parent;');
+      expect(parents, hasLength(1));
+      expect(parents.first.toColumnMap()['id'], 1);
+
+      final children = await session.db.unsafeQuery(
+        'SELECT id, parent_id FROM child;',
+      );
+      expect(children, hasLength(1));
+      expect(children.first.toColumnMap()['id'], 1);
+      expect(children.first.toColumnMap()['parent_id'], 1);
     },
   );
 
@@ -99,6 +117,16 @@ void main() {
           transaction: tx,
         );
       });
+
+      final parents = await session.db.unsafeQuery('SELECT id FROM parent;');
+      expect(parents, isEmpty);
+
+      final children = await session.db.unsafeQuery(
+        'SELECT id, parent_id FROM child;',
+      );
+      expect(children, hasLength(1));
+      expect(children.first.toColumnMap()['id'], 1);
+      expect(children.first.toColumnMap()['parent_id'], 999);
     },
   );
 }
