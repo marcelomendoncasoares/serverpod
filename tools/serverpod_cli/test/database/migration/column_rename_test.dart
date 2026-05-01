@@ -156,6 +156,87 @@ void main() {
   });
 
   group(
+    'Given a renamed column and a new field reusing the old SQL name, '
+    'when detecting migration,',
+    () {
+      const tableName = 'example_table';
+      const oldSqlName = 'old_name';
+      const newSqlName = 'new_name';
+      const renamedField = 'renamedField';
+      const newField = 'newField';
+
+      var sourceDefinition = DatabaseDefinitionBuilder()
+          .withDefaultModules()
+          .withTable(
+            TableDefinitionBuilder()
+                .withName(tableName)
+                .withColumn(
+                  ColumnDefinitionBuilder()
+                      .withName(oldSqlName)
+                      .withFieldName(renamedField)
+                      .withColumnType(ColumnType.text)
+                      .build(),
+                )
+                .build(),
+          )
+          .build();
+
+      var targetDefinition = DatabaseDefinitionBuilder()
+          .withDefaultModules()
+          .withTable(
+            TableDefinitionBuilder()
+                .withName(tableName)
+                .withColumn(
+                  ColumnDefinitionBuilder()
+                      .withName(newSqlName)
+                      .withFieldName(renamedField)
+                      .withColumnType(ColumnType.text)
+                      .build(),
+                )
+                .withColumn(
+                  ColumnDefinitionBuilder()
+                      .withName(oldSqlName)
+                      .withFieldName(newField)
+                      .withColumnType(ColumnType.integer)
+                      .withIsNullable(true)
+                      .build(),
+                )
+                .build(),
+          )
+          .build();
+
+      var migration = generateDatabaseMigration(
+        databaseSource: sourceDefinition,
+        databaseTarget: targetDefinition,
+      );
+
+      test('then the rename and the new column are both present.', () {
+        var action = migration.actions.first;
+        var tableMigration = action.alterTable!;
+
+        expect(tableMigration.modifyColumns, hasLength(1));
+        var columnMigration = tableMigration.modifyColumns.single;
+
+        expect(columnMigration.columnName, oldSqlName);
+        expect(columnMigration.newColumnName, newSqlName);
+
+        expect(tableMigration.addColumns, hasLength(1));
+        var addColumn = tableMigration.addColumns.single;
+        expect(addColumn.name, oldSqlName);
+        expect(addColumn.fieldName, newField);
+        expect(tableMigration.deleteColumns, isEmpty);
+      });
+
+      test('then no destructive warnings are generated.', () {
+        var destructiveWarnings = migration.warnings
+            .where((w) => w.destructive)
+            .toList();
+        expect(destructiveWarnings, isEmpty);
+      });
+    },
+  );
+
+  group(
     'Given a table with multiple renamed columns when detecting migration',
     () {
       const tableName = 'example_table';

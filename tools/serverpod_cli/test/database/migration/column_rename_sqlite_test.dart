@@ -242,6 +242,84 @@ void main() {
     });
   });
 
+  group(
+    'Given a table migration that renames a column and adds a new field with the old SQL name, '
+    'when generating SQLite,',
+    () {
+      const tableName = 'example_table';
+      const oldSqlName = 'old_name';
+      const newSqlName = 'new_name';
+      const renamedField = 'renamedField';
+      const newField = 'newField';
+
+      var sourceDefinition = DatabaseDefinitionBuilder()
+          .withDefaultModules()
+          .withTable(
+            TableDefinitionBuilder()
+                .withName(tableName)
+                .withColumn(
+                  ColumnDefinitionBuilder()
+                      .withName(oldSqlName)
+                      .withFieldName(renamedField)
+                      .withColumnType(ColumnType.text)
+                      .build(),
+                )
+                .build(),
+          )
+          .build();
+
+      var targetDefinition = DatabaseDefinitionBuilder()
+          .withDefaultModules()
+          .withTable(
+            TableDefinitionBuilder()
+                .withName(tableName)
+                .withColumn(
+                  ColumnDefinitionBuilder()
+                      .withName(newSqlName)
+                      .withFieldName(renamedField)
+                      .withColumnType(ColumnType.text)
+                      .build(),
+                )
+                .withColumn(
+                  ColumnDefinitionBuilder()
+                      .withName(oldSqlName)
+                      .withFieldName(newField)
+                      .withColumnType(ColumnType.integer)
+                      .withIsNullable(true)
+                      .build(),
+                )
+                .build(),
+          )
+          .build();
+
+      var migration = generateDatabaseMigration(
+        databaseSource: sourceDefinition,
+        databaseTarget: targetDefinition,
+      );
+
+      var sqlite = migration.toSqliteSql(
+        databaseDefinition: targetDefinition,
+        installedModules: targetDefinition.installedModules,
+        removedModules: [],
+      );
+
+      test('then rename appears before add.', () {
+        var renameIndex = sqlite.indexOf('RENAME COLUMN');
+        var addIndex = sqlite.indexOf('ADD COLUMN');
+        expect(renameIndex, isNot(-1));
+        expect(addIndex, isNot(-1));
+        expect(renameIndex, lessThan(addIndex));
+      });
+
+      test('then add column reuses the freed SQL name.', () {
+        expect(
+          sqlite,
+          contains('ALTER TABLE "$tableName" ADD COLUMN "$oldSqlName" INTEGER'),
+        );
+      });
+    },
+  );
+
   group('Given a table migration with renamed column and nullability change', () {
     const tableName = 'example_table';
     const oldColumnName = 'old_name';

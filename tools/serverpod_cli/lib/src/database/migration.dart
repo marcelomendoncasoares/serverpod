@@ -201,13 +201,27 @@ TableMigration? generateTableMigration(
   var renameSources = renameColumns.keys.toSet();
   var renameTargets = renameColumns.values.toSet();
 
-  // Find added columns
+  var sourceColumnPerField = <String, ColumnDefinition>{
+    for (var column in srcTable.columns) column.effectiveFieldName: column,
+  };
+
+  // Find added columns. A target column is new when:
+  // - Its effectiveFieldName is absent on the source (new field).
+  // - It shares a field with the source but the SQL name changed without a tracked rename.
+  // - It's a new field reusing a SQL name that still exists on the source until rename.
   var addColumns = <ColumnDefinition>[];
   for (var dstColumn in dstTable.columns) {
-    if (!srcTable.containsColumnNamed(dstColumn.name)) {
-      if (renameTargets.contains(dstColumn.name)) continue;
+    if (renameTargets.contains(dstColumn.name)) continue;
+
+    final srcWithSameField = sourceColumnPerField[dstColumn.effectiveFieldName];
+    if (srcWithSameField == null) {
       addColumns.add(dstColumn);
+      continue;
     }
+
+    if (srcWithSameField.name == dstColumn.name) continue;
+    if (renameColumns[srcWithSameField.name] == dstColumn.name) continue;
+    addColumns.add(dstColumn);
   }
 
   // Find deleted columns

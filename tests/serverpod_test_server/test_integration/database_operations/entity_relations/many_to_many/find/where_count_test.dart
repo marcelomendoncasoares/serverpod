@@ -236,3 +236,27 @@ void main() async {
     );
   });
 }
+
+extension UpdateAndGetData<T extends TableRow> on EnrollmentRepository {
+  Future<T?> updateAndGet(
+    DatabaseSession session,
+    T row, {
+    IncludeObject<T>? include,
+    required Transaction transaction,
+  }) async {
+    final updatedRow = await session.db.updateRow<T>(
+      session,
+      row,
+      transaction: transaction,
+    );
+    if (updatedRow.id == null) {
+      return null;
+    }
+    return await session.db.findById<T>(
+      session,
+      updatedRow.id!,
+      transaction: transaction,
+      include: include,
+    );
+  }
+}
