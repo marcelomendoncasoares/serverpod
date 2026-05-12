@@ -8,6 +8,7 @@ import 'package:code_builder/code_builder.dart' hide RecordType;
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cli/analyzer.dart';
 import 'package:serverpod_cli/src/analyzer/models/definitions.dart';
+import 'package:serverpod_cli/src/analyzer/models/serialization_data_type.dart';
 import 'package:serverpod_cli/src/generator/keywords.dart';
 import 'package:serverpod_cli/src/generator/shared.dart';
 import 'package:serverpod_cli/src/util/model_helper.dart';
@@ -57,6 +58,9 @@ class TypeDefinition {
   /// Stores the dimension of Vector type (e.g., 1536 for Vector(1536)).
   /// Only populated for Vector types.
   final d.int? vectorDimension;
+
+  /// If set, the data type of the database JSON column this type definition should use for serialization.
+  SerializationDataType? serializationDataType;
 
   /// Stores the precision of Decimal type (e.g., 10 for Decimal(10,2)).
   /// Only populated for Decimal types with explicit precision.
@@ -125,6 +129,7 @@ class TypeDefinition {
     this.url,
     this.dartType,
     this.customClass = false,
+    this.serializationDataType,
     this.enumDefinition,
     this.projectModelDefinition,
     this.recordFieldName,
@@ -176,6 +181,11 @@ class TypeDefinition {
   bool get isEnumType => enumDefinition != null;
 
   bool get isColumnSerializable => columnType == 'ColumnSerializable';
+
+  bool get isColumnStructured => columnType == 'ColumnStructured';
+
+  bool get isJsonbSerialized =>
+      serializationDataType == SerializationDataType.jsonb;
 
   bool get isSerializableDartType => ![
     ValueType.record,
@@ -246,6 +256,7 @@ class TypeDefinition {
     customClass: customClass,
     dartType: dartType,
     generics: generics,
+    serializationDataType: serializationDataType,
     enumDefinition: enumDefinition,
     projectModelDefinition: projectModelDefinition,
     recordFieldName: recordFieldName,
@@ -262,6 +273,7 @@ class TypeDefinition {
     customClass: customClass,
     dartType: dartType,
     generics: generics,
+    serializationDataType: serializationDataType,
     enumDefinition: enumDefinition,
     projectModelDefinition: projectModelDefinition,
     recordFieldName: recordFieldName,
@@ -278,6 +290,7 @@ class TypeDefinition {
     customClass: customClass,
     dartType: dartType,
     generics: generics,
+    serializationDataType: serializationDataType,
     enumDefinition: enumDefinition,
     projectModelDefinition: projectModelDefinition,
     recordFieldName: recordFieldName,
@@ -448,7 +461,9 @@ class TypeDefinition {
         } else {
           t.url = url;
         }
-        t.isNullable = nullable ?? this.nullable;
+        // The `dynamic` type is already nullable. Using `dynamic?` is invalid
+        // and triggers analyzer "unnecessary_question_mark".
+        t.isNullable = (nullable ?? this.nullable) && className != 'dynamic';
         t.symbol = typeSuffix != null ? '$className$typeSuffix' : className;
         t.types.addAll(
           generics.map(
@@ -494,7 +509,7 @@ class TypeDefinition {
     if (className == 'HalfVector') return 'halfvec';
     if (className == 'SparseVector') return 'sparsevec';
     if (className == 'Bit') return 'bit';
-
+    if (isJsonbSerialized) return 'jsonb';
     return 'json';
   }
 
@@ -526,6 +541,7 @@ class TypeDefinition {
     if (className == 'SparseVector') return 'ColumnSparseVector';
     if (className == 'Bit') return 'ColumnBit';
 
+    if (isJsonbSerialized) return 'ColumnStructured';
     return 'ColumnSerializable';
   }
 
@@ -733,6 +749,13 @@ class TypeDefinition {
         ...generics.first.generateDeserialization(serverCode, config: config),
         ...generics[1].generateDeserialization(serverCode, config: config),
       ];
+    } else if (className == 'dynamic') {
+      return [
+        MapEntry(
+          refer('dynamic'),
+          const Code('decodeDynamicFieldValue(data) as T'),
+        ),
+      ];
     } else if (customClass) {
       // This is the only place the customClass bool is used.
       // It could be moved as we already know that we are working on custom classes
@@ -804,6 +827,7 @@ class TypeDefinition {
       generics: generics
           .map((e) => e.applyProtocolReferences(classDefinitions))
           .toList(),
+      serializationDataType: serializationDataType,
       enumDefinition: enumDefinition,
       url: isProjectModel ? defaultModuleAlias : url,
       recordFieldName: recordFieldName,
@@ -835,6 +859,7 @@ class TypeDefinition {
     if (className == 'Map') return ValueType.map;
     if (className == '_Record') return ValueType.record;
     if (isEnumType) return ValueType.isEnum;
+    if (className == 'dynamic') return ValueType.dynamicType;
     return ValueType.classType;
   }
 
@@ -1082,6 +1107,7 @@ enum ValueType {
   map,
   record,
   isEnum,
+  dynamicType,
   classType,
   vector,
   halfVector,

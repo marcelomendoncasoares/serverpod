@@ -48,6 +48,12 @@ extension ColumnComparisons on ColumnDefinition {
       return false;
     }
 
+    const jsonEquivalentTypes = {ColumnType.json, ColumnType.jsonb};
+    if (jsonEquivalentTypes.contains(columnType) &&
+        jsonEquivalentTypes.contains(other.columnType)) {
+      return true;
+    }
+
     // Decimal precision/scale changes require dropping and recreating the column.
     if (decimalPrecision != other.decimalPrecision ||
         decimalScale != other.decimalScale) {
@@ -96,7 +102,6 @@ extension TableDiffComparisons on TableMigration {
       addColumns.isEmpty &&
       deleteColumns.isEmpty &&
       modifyColumns.isEmpty &&
-      (renameColumns?.isEmpty ?? true) &&
       addIndexes.isEmpty &&
       deleteIndexes.isEmpty &&
       addForeignKeys.isEmpty &&
