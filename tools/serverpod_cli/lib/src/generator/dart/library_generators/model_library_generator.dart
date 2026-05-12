@@ -2896,8 +2896,8 @@ class SerializableModelLibraryGenerator {
         'dimension': literalNum(field.type.vectorDimension!),
       if (field.type.isDecimalType && field.type.decimalPrecision != null)
         'precision': literalNum(field.type.decimalPrecision!),
-      if (field.type.isDecimalType && field.type.decimalPrecision != null)
-        'scale': literalNum(field.type.decimalScale ?? 0),
+      if (field.type.isDecimalType && field.type.decimalScale != null)
+        'scale': literalNum(field.type.decimalScale!),
       if (field.defaultPersistValue != null) 'hasDefault': literalBool(true),
       if (field.hasColumnNameOverride) 'fieldName': literalString(field.name),
     });

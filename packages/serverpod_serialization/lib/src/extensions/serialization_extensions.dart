@@ -94,9 +94,42 @@ extension BigIntJsonExtension on BigInt {
 /// Expose toJson on Decimal
 /// Expose static fromJson builder
 extension DecimalJsonExtension on Decimal {
+  /// Converts a decimal string to an integer scaled representation.
+  /// of the decimal value.
+  static int stringToIntegerScaled(String value, {required int? scale}) {
+    final parts = value.split('.');
+    if (parts.length > 2) {
+      throw FormatException(
+        'Invalid decimal string: $value, expected format: "integer.decimal"',
+      );
+    }
+
+    if (parts.length == 1) return int.parse(value);
+    final integerPart = parts.first;
+    final decimalPart = parts.last
+        .padRight(scale ?? 0, '0')
+        .substring(0, scale ?? 0);
+    return int.parse('$integerPart$decimalPart');
+  }
+
+  /// Parses an int value to a Decimal string with the given scale.
+  static String intToDecimalString(int value, {required int? scale}) {
+    final str = value.toString();
+    final integerPart = str.substring(0, str.length - (scale ?? 0));
+    if (scale == null) return integerPart;
+    final decimalPart = str.substring(str.length - scale);
+    return '$integerPart.$decimalPart';
+  }
+
   /// Returns a deserialized version of the [Decimal].
-  static Decimal fromJson(dynamic value) {
+  ///
+  /// The [scale] parameter is only used to deserialize decimal values stored
+  /// as integer scaled values in databases that do not support decimal values,
+  /// like SQLite. If the [scale] parameter is not provided and the value is an
+  /// [int], it will assume the [scale] as 0.
+  static Decimal fromJson(dynamic value, [int? scale]) {
     if (value is Decimal) return value;
+    if (value is int) value = intToDecimalString(value, scale: scale);
     return Decimal.parse(value as String);
   }
 

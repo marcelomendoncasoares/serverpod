@@ -480,8 +480,7 @@ class DefaultValueRestriction extends ValueRestriction {
   ) {
     if (value is Decimal) return [];
 
-    var valueStr = value is String ? value : value?.toString() ?? '';
-    if (valueStr.isEmpty || Decimal.tryParse(valueStr) == null) {
+    if (value is! String || value.isEmpty || Decimal.tryParse(value) == null) {
       return [
         SourceSpanSeverityException(
           'The "$key" value must be a valid Decimal (e.g., "$key"=\'10.5\').',

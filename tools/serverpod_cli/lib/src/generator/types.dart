@@ -67,7 +67,7 @@ class TypeDefinition {
   final d.int? decimalPrecision;
 
   /// Stores the scale of Decimal type (e.g., 2 for Decimal(10,2)).
-  /// Only populated for Decimal types with explicit precision.
+  /// Only populated for Decimal types with explicit precision and scale.
   final d.int? decimalScale;
 
   EnumDefinition? enumDefinition;
@@ -499,12 +499,7 @@ class TypeDefinition {
     if (className == 'UuidValue') return 'uuid';
     if (className == 'Uri') return 'text';
     if (className == 'BigInt') return 'text';
-    if (className == 'Decimal') {
-      if (decimalPrecision != null) {
-        return 'decimal($decimalPrecision,${decimalScale ?? 0})';
-      }
-      return 'decimal';
-    }
+    if (className == 'Decimal') return 'decimal';
     if (className == 'Vector') return 'vector';
     if (className == 'HalfVector') return 'halfvec';
     if (className == 'SparseVector') return 'sparsevec';
@@ -516,9 +511,6 @@ class TypeDefinition {
   /// Get the enum name of the [ColumnType], representing this [TypeDefinition]
   /// in the database.
   String get databaseTypeEnum {
-    // databaseType for Decimal includes precision (e.g. 'decimal(10,2)'),
-    // but the enum name is always just 'decimal'.
-    if (isDecimalType) return 'decimal';
     return databaseTypeToLowerCamelCase(databaseType);
   }
 
@@ -1042,13 +1034,8 @@ TypeDefinition parseType(
       trimmedInput.indexOf(')'),
     );
     var params = paramsStr.split(',').map((s) => s.trim()).toList();
-    if (params.length == 2) {
-      decimalPrecision = int.tryParse(params[0]);
-      decimalScale = int.tryParse(params[1]);
-    } else if (params.length == 1) {
-      decimalPrecision = int.tryParse(params[0]);
-      decimalScale = 0;
-    }
+    decimalPrecision = (params.isNotEmpty) ? int.tryParse(params.first) : null;
+    decimalScale = (params.length == 2) ? int.tryParse(params.last) : 0;
   }
 
   var extraClass = extraClasses?.cast<TypeDefinition?>().firstWhere(

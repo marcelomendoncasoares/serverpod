@@ -1,17 +1,19 @@
+import 'package:serverpod_serialization/serverpod_serialization.dart';
+
 import '../../../serverpod_database.dart';
 
 /// Extension methods for [ColumnType] to convert default values to SQLite.
-extension SqliteTypeDefinition on ColumnType {
+extension SqliteTypeDefinition on ColumnDefinition {
   /// Converts abstract default values to SQLite column default SQL.
   String? getSqliteColumnDefault(dynamic defaultValue) {
     if (defaultValue == null) return null;
 
-    if ((this == ColumnType.integer || this == ColumnType.bigint) &&
+    if ((columnType == ColumnType.integer || columnType == ColumnType.bigint) &&
         defaultValue == defaultIntSerial) {
       return 'AUTOINCREMENT';
     }
 
-    switch (this) {
+    switch (columnType) {
       case ColumnType.timestampWithoutTimeZone:
         if (defaultValue is! String) {
           throw StateError('Invalid DateTime default value: $defaultValue');
@@ -33,9 +35,12 @@ extension SqliteTypeDefinition on ColumnType {
           _ => "X${defaultValue.replaceAll('-', '')}",
         };
       case ColumnType.decimal:
-        // Decimal columns are stored as TEXT in STRICT tables, so the default
-        // literal must be a quoted string.
-        return "'$defaultValue'";
+        return (decimalPrecision != null && decimalPrecision! <= 18)
+            ? DecimalJsonExtension.stringToIntegerScaled(
+                defaultValue.toString(),
+                scale: decimalScale,
+              ).toString()
+            : "'$defaultValue'";
       default:
         return '$defaultValue';
     }
@@ -49,8 +54,10 @@ extension SqliteTypeDefinition on ColumnType {
 /// the dialect-neutral target database definition.
 String? sqliteSqlToAbstractDefault(
   String? sql,
-  ColumnType columnType,
-) {
+  ColumnType columnType, {
+  int? decimalPrecision,
+  int? decimalScale,
+}) {
   if (sql == null || sql.isEmpty) return null;
 
   switch (columnType) {
@@ -80,11 +87,12 @@ String? sqliteSqlToAbstractDefault(
             (m) => '${m[1]}-${m[2]}-${m[3]}-${m[4]}-${m[5]}',
           );
     case ColumnType.decimal:
-      // Strip the surrounding single quotes that the STRICT TEXT default uses.
-      if (sql.length >= 2 && sql.startsWith("'") && sql.endsWith("'")) {
-        return sql.substring(1, sql.length - 1);
-      }
-      return sql;
+      return (decimalPrecision != null && decimalPrecision <= 18)
+          ? DecimalJsonExtension.intToDecimalString(
+              int.parse(sql),
+              scale: decimalScale,
+            )
+          : sql.replaceAll("'", '');
     default:
       return sql;
   }

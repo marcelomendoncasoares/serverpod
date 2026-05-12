@@ -95,6 +95,17 @@ abstract class _ValueOperatorColumn<T> extends Column<T> {
     super.fieldName,
   });
 
+  void _assertNotSqliteDecimal() {
+    if (this case final ColumnDecimal column
+        when (column.precision == null || column.precision! > 18) &&
+            ValueEncoder.instance is SqliteValueEncoder) {
+      throw StateError(
+        'This operation is no supported on Decimal columns with precision '
+        'greater than 18 on SQLite because the data is stored as TEXT.',
+      );
+    }
+  }
+
   /// Applies encoding to value before it is sent to the database.
   Expression _encodeValueForQuery(T value);
 }
@@ -630,6 +641,8 @@ mixin _ColumnComparisonDefaultOperations<T> on _ValueOperatorColumn<T> {
   }
 
   Expression _createValueExpression(dynamic other) {
+    _assertNotSqliteDecimal();
+
     if (other is Expression) {
       return other;
     }
@@ -652,6 +665,7 @@ mixin _ColumnComparisonBetweenOperations<T> on _ValueOperatorColumn<T> {
   /// Creates an [Expression] checking if the value in the column inclusively
   /// is between the [min], [max] values.
   Expression between(T min, T max) {
+    _assertNotSqliteDecimal();
     return _BetweenExpression(
       this,
       _encodeValueForQuery(min),
@@ -662,6 +676,7 @@ mixin _ColumnComparisonBetweenOperations<T> on _ValueOperatorColumn<T> {
   /// Creates an [Expression] checking if the value in the column inclusively
   /// is NOT between the [min], [max] values.
   Expression notBetween(T min, T max) {
+    _assertNotSqliteDecimal();
     return _NotBetweenExpression(
       this,
       _encodeValueForQuery(min),

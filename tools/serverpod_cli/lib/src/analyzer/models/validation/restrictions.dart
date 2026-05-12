@@ -1460,7 +1460,7 @@ class Restrictions {
     }
 
     if (fieldType.isDecimalType && fieldType.decimalPrecision != null) {
-      if (fieldType.decimalPrecision! < 1) {
+      if (fieldType.decimalPrecision! <= 0) {
         errors.add(
           SourceSpanSeverityException(
             'Invalid decimal precision "${fieldType.decimalPrecision}". '
@@ -1469,6 +1469,7 @@ class Restrictions {
           ),
         );
       }
+
       if (fieldType.decimalScale != null) {
         if (fieldType.decimalScale! < 0) {
           errors.add(

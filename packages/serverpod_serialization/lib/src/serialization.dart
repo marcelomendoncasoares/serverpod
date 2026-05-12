@@ -119,7 +119,7 @@ abstract class SerializationManager {
       return BigInt.parse(data) as T;
     } else if (_isNullableType<Decimal>(t)) {
       if (data == null) return null as T;
-      return Decimal.parse(data as String) as T;
+      return DecimalJsonExtension.fromJson(data) as T;
     }
 
     throw DeserializationTypeNotFoundException(

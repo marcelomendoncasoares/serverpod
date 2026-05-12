@@ -397,13 +397,13 @@ class ModelParser {
     var scope = _parseClassFieldScope(node, serverOnlyClass);
     var shouldPersist = _parseShouldPersist(node);
 
-    var defaultModelValue = _parseDefaultValue(
-      node,
-      Keyword.defaultModelKey,
+    var defaultModelValue = _truncateDecimalDefaultValue(
+      _parseDefaultValue(node, Keyword.defaultModelKey),
+      typeResult,
     );
-    var defaultPersistValue = _parseDefaultValue(
-      node,
-      Keyword.defaultPersistKey,
+    var defaultPersistValue = _truncateDecimalDefaultValue(
+      _parseDefaultValue(node, Keyword.defaultPersistKey),
+      typeResult,
     );
 
     RelationDefinition? relation = _parseRelation(
@@ -575,6 +575,24 @@ class ModelParser {
     }
 
     return value;
+  }
+
+  static dynamic _truncateDecimalDefaultValue(
+    dynamic value,
+    TypeDefinition type,
+  ) {
+    var scale = type.decimalScale;
+    if (!type.isDecimalType || scale == null || value is! String) {
+      return value;
+    }
+
+    if (Decimal.tryParse(value) == null) return value;
+
+    var parts = value.split('.');
+    if (scale == 0) return parts.first;
+    if (parts.length != 2) return '$value.${'0' * scale}';
+    if (parts.last.length == scale) return value;
+    return '${parts.first}.${parts.last.padRight(scale, '0').substring(0, scale)}';
   }
 
   static bool _parseBooleanKey(YamlMap node, String key) {
@@ -926,8 +944,7 @@ class ModelParser {
         if (lower == 'false') return false;
         return null;
       case 'Decimal':
-        if (Decimal.tryParse(valueStr) == null) return null;
-        return valueStr;
+        return Decimal.tryParse(valueStr);
       case 'String':
       default:
         var escaped = valueStr.replaceAll("'", r"\'");

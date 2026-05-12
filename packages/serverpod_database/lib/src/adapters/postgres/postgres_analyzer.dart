@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
+import 'package:serverpod_shared/serverpod_shared.dart';
 
 import '../../../serverpod_database.dart';
-import '../../util/column_type_extension.dart';
 import 'postgres_default_value.dart';
 
 @internal
@@ -86,7 +86,7 @@ ORDER BY ordinal_position;
     );
 
     return queryResult.map((e) {
-      var columnType = ExtendedColumnType.fromSqlType(e[3]);
+      var columnType = (e[3] as String).toColumnType();
 
       return ColumnDefinition(
         name: e[0] as String,
@@ -381,5 +381,26 @@ extension on String {
     } else {
       return this;
     }
+  }
+}
+
+extension on String {
+  /// Get a [ColumnType] from a type used in SQL.
+  /// If the string does not match a known type, returns [ColumnType.unknown].
+  ColumnType toColumnType() {
+    var target = databaseTypeToLowerCamelCase(this);
+
+    // PostgreSQL always reports 'numeric' in information_schema even when
+    // the column was created with DECIMAL (they are synonyms).
+    if (target == 'numeric') {
+      target = 'decimal';
+    }
+
+    for (var value in ColumnType.values) {
+      if (value.name == target) {
+        return value;
+      }
+    }
+    return ColumnType.unknown;
   }
 }
