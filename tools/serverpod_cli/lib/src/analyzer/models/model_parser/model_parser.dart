@@ -32,7 +32,10 @@ class ModelParser {
     var manageMigration = _parseBool(migrationValue) ?? true;
 
     var tableName = _parseTableName(documentContents);
-    var database = _parseDatabase(documentContents);
+    var database = _parseDatabase(
+      documentContents,
+      isSharedModel: protocolSource.isSharedModel,
+    );
     var serializationDataType = _parseSerializationDataType(documentContents);
 
     return _initializeFromClassFields(
@@ -300,9 +303,16 @@ class ModelParser {
     return tableName;
   }
 
-  static ModelDatabaseDefinition _parseDatabase(YamlMap documentContents) {
+  static ModelDatabaseDefinition _parseDatabase(
+    YamlMap documentContents, {
+    required bool isSharedModel,
+  }) {
     var database = documentContents.nodes[Keyword.database]?.value;
-    if (database is! String) return ModelDatabaseDefinition.server;
+    if (database is! String) {
+      return isSharedModel
+          ? ModelDatabaseDefinition.all
+          : ModelDatabaseDefinition.server;
+    }
 
     return convertToEnum(
       value: database,

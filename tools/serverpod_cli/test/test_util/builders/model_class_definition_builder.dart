@@ -19,7 +19,7 @@ class ModelClassDefinitionBuilder {
   SupportedIdType? _idType;
   bool _idTypeNullable;
   bool _managedMigration;
-  ModelDatabaseDefinition _database;
+  ModelDatabaseDefinition? _database;
   List<_FieldBuilder> _fields;
   List<SerializableModelIndexDefinition> _indexes;
   List<String>? _documentation;
@@ -38,7 +38,7 @@ class ModelClassDefinitionBuilder {
       _fields = [],
       _subDirParts = [],
       _managedMigration = true,
-      _database = ModelDatabaseDefinition.server,
+      _database = null,
       _serverOnly = false,
       _indexes = [],
       _childClasses = [],
@@ -68,7 +68,11 @@ class ModelClassDefinitionBuilder {
       fields: _fields.map((f) => f()).toList(),
       subDirParts: _subDirParts,
       serverOnly: _serverOnly,
-      database: _database,
+      database:
+          _database ??
+          (_sharedPackageName != null
+              ? ModelDatabaseDefinition.all
+              : ModelDatabaseDefinition.server),
       tableName: _tableName,
       manageMigration: _managedMigration,
       indexes: _indexes,

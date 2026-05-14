@@ -1,3 +1,4 @@
+import 'package:serverpod_cli/src/analyzer/models/definitions.dart';
 import 'package:serverpod_cli/src/analyzer/models/stateful_analyzer.dart';
 import 'package:serverpod_cli/src/generator/code_generation_collector.dart';
 import 'package:serverpod_cli/src/util/model_helper.dart';
@@ -9,10 +10,9 @@ import '../../../../test_util/builders/model_source_builder.dart';
 void main() {
   var config = GeneratorConfigBuilder().build();
 
-  test(
-    'Given a shared package model when the model has a table property '
-    'when analyzing model '
-    'then an error is collected that table is not allowed in shared packages.',
+  group(
+    'Given a shared package model with a table and database omitted '
+    'when analyzing the model ',
     () {
       var models = <ModelSource>[
         ModelSourceBuilder()
@@ -23,7 +23,46 @@ void main() {
 class: SharedExample
 table: shared_example
 fields:
-  name: String
+  id: int?, defaultPersist=serial
+''',
+            )
+            .build(),
+      ];
+
+      late var collector = CodeGenerationCollector();
+      late var validated = StatefulAnalyzer(
+        config,
+        models,
+        onErrorsCollector(collector),
+      ).validateAll();
+
+      test('then no error is collected.', () {
+        expect(collector.errors, isEmpty);
+      });
+
+      test('then database defaults to all.', () {
+        var model = validated.whereType<ModelClassDefinition>().single;
+        expect(model.database, ModelDatabaseDefinition.all);
+      });
+    },
+  );
+
+  test(
+    'Given a shared package model with a table when database is server '
+    'when analyzing the model '
+    'then an error is collected that the database must be all.',
+    () {
+      var models = <ModelSource>[
+        ModelSourceBuilder()
+            .withIsSharedModel(true)
+            .withModuleAlias('shared')
+            .withYaml(
+              '''
+class: SharedExample
+table: shared_example
+database: server
+fields:
+  id: int?, defaultPersist=serial
 ''',
             )
             .build(),
@@ -43,7 +82,47 @@ fields:
       );
       expect(
         collector.errors.first.message,
-        'The "table" property is not allowed in shared packages.',
+        'Shared package models with a "table" must use "database: all".',
+      );
+    },
+  );
+
+  test(
+    'Given a shared package model with a table when database is client '
+    'when analyzing the model '
+    'then an error is collected that the database must be all.',
+    () {
+      var models = <ModelSource>[
+        ModelSourceBuilder()
+            .withIsSharedModel(true)
+            .withModuleAlias('shared')
+            .withYaml(
+              '''
+class: SharedExample
+table: shared_example
+database: client
+fields:
+  id: int?, defaultPersist=serial
+''',
+            )
+            .build(),
+      ];
+
+      var collector = CodeGenerationCollector();
+      StatefulAnalyzer(
+        config,
+        models,
+        onErrorsCollector(collector),
+      ).validateAll();
+
+      expect(
+        collector.errors,
+        isNotEmpty,
+        reason: 'Expected an error to be collected',
+      );
+      expect(
+        collector.errors.first.message,
+        'Shared package models with a "table" must use "database: all".',
       );
     },
   );

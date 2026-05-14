@@ -1,5 +1,6 @@
 import 'package:path/path.dart' as path;
 import 'package:serverpod_cli/analyzer.dart';
+import 'package:serverpod_cli/src/analyzer/models/definitions.dart';
 import 'package:serverpod_cli/src/generator/dart/shared_code_generator.dart';
 import 'package:serverpod_cli/src/generator/shared.dart';
 import 'package:test/test.dart';
@@ -73,6 +74,47 @@ void main() {
           expect(code, contains(serverpodSerializationUrl));
         },
       );
+    },
+  );
+
+  group(
+    'Given a shared model with a client database table when generating shared package code',
+    () {
+      const tableName = 'shared_example_table';
+      var sharedModel = ModelClassDefinitionBuilder()
+          .withClassName(testClassName)
+          .withFileName(testClassFileName)
+          .withTableName(tableName)
+          .withDatabase(ModelDatabaseDefinition.client)
+          .withSimpleField('name', 'String')
+          .withSharedPackageName(sharedPackageName)
+          .build();
+
+      var codeMap = generator.generateSerializableModelsCode(
+        models: [sharedModel],
+        config: config,
+      );
+
+      test('then a table class is generated.', () {
+        expect(
+          codeMap[expectedFilePath],
+          contains('class ${testClassName}Table'),
+        );
+      });
+
+      test('then a repository class is generated.', () {
+        expect(
+          codeMap[expectedFilePath],
+          contains('class ${testClassName}Repository'),
+        );
+      });
+
+      test('then the database runtime package is imported.', () {
+        expect(
+          codeMap[expectedFilePath],
+          contains('package:serverpod_database/serverpod_database.dart'),
+        );
+      });
     },
   );
 

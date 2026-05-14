@@ -189,14 +189,14 @@ void main() {
     group(
       'then the class named $testClassName',
       () {
-        test('still implements SerializableModel.', () {
+        test('implements TableRow.', () {
           expect(
             CompilationUnitHelpers.hasImplementsClause(
               maybeClassNamedExample!,
-              name: 'SerializableModel',
+              name: 'TableRow',
             ),
             isTrue,
-            reason: 'Missing extends clause for SerializableModel.',
+            reason: 'Missing implements clause for TableRow.',
           );
         });
 
@@ -226,14 +226,14 @@ void main() {
       },
     );
 
-    test('then a class named ${testClassName}Include does NOT exist.', () {
+    test('then a class named ${testClassName}Include is generated.', () {
       expect(
         CompilationUnitHelpers.hasClassDeclaration(
           compilationUnit,
           name: '${testClassName}Include',
         ),
-        isFalse,
-        reason: 'Class ${testClassName}Include should not be generated.',
+        isTrue,
+        reason: 'Class ${testClassName}Include should be generated.',
       );
     });
   });

@@ -236,15 +236,6 @@ class Restrictions {
     String _,
     SourceSpan? span,
   ) {
-    if (documentDefinition?.isSharedModel ?? false) {
-      return [
-        SourceSpanSeverityException(
-          'The "table" property is not allowed in shared packages.',
-          span,
-        ),
-      ];
-    }
-
     if (!config.isFeatureEnabled(ServerpodFeature.database)) {
       return [
         SourceSpanSeverityException(
@@ -298,8 +289,22 @@ class Restrictions {
     }
 
     var definition = documentDefinition;
-    if (definition is! ModelClassDefinition ||
-        database == ModelDatabaseDefinition.server) {
+    if (definition is! ModelClassDefinition) {
+      return [];
+    }
+
+    if (definition.isSharedModel &&
+        definition.tableName != null &&
+        database != ModelDatabaseDefinition.all) {
+      return [
+        SourceSpanSeverityException(
+          'Shared package models with a "table" must use "database: all".',
+          span,
+        ),
+      ];
+    }
+
+    if (database == ModelDatabaseDefinition.server) {
       return [];
     }
 
