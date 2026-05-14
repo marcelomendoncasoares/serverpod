@@ -26,6 +26,7 @@ abstract class EmailAccount
     DateTime? createdAt,
     required this.email,
     required this.passwordHash,
+    this.passwordSetAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
   factory EmailAccount({
@@ -35,6 +36,7 @@ abstract class EmailAccount
     DateTime? createdAt,
     required String email,
     required String passwordHash,
+    DateTime? passwordSetAt,
   }) = _EmailAccountImpl;
 
   factory EmailAccount.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -55,6 +57,11 @@ abstract class EmailAccount
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       email: jsonSerialization['email'] as String,
       passwordHash: jsonSerialization['passwordHash'] as String,
+      passwordSetAt: jsonSerialization['passwordSetAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(
+              jsonSerialization['passwordSetAt'],
+            ),
     );
   }
 
@@ -83,6 +90,12 @@ abstract class EmailAccount
   /// Stored in PHC format: $argon2id$v=19$m={memory},t={iterations},p={lanes}${base64Salt}$${base64Hash}
   String passwordHash;
 
+  /// The time when the password was last set.
+  ///
+  /// Used to determine if the password has expired based on
+  /// [EmailIDPConfig.passwordExpirationDuration].
+  DateTime? passwordSetAt;
+
   @override
   _i1.Table<_i1.UuidValue?> get table => t;
 
@@ -96,6 +109,7 @@ abstract class EmailAccount
     DateTime? createdAt,
     String? email,
     String? passwordHash,
+    DateTime? passwordSetAt,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -107,6 +121,7 @@ abstract class EmailAccount
       'createdAt': createdAt.toJson(),
       'email': email,
       'passwordHash': passwordHash,
+      if (passwordSetAt != null) 'passwordSetAt': passwordSetAt?.toJson(),
     };
   }
 
@@ -157,6 +172,7 @@ class _EmailAccountImpl extends EmailAccount {
     DateTime? createdAt,
     required String email,
     required String passwordHash,
+    DateTime? passwordSetAt,
   }) : super._(
          id: id,
          authUserId: authUserId,
@@ -164,6 +180,7 @@ class _EmailAccountImpl extends EmailAccount {
          createdAt: createdAt,
          email: email,
          passwordHash: passwordHash,
+         passwordSetAt: passwordSetAt,
        );
 
   /// Returns a shallow copy of this [EmailAccount]
@@ -177,6 +194,7 @@ class _EmailAccountImpl extends EmailAccount {
     DateTime? createdAt,
     String? email,
     String? passwordHash,
+    Object? passwordSetAt = _Undefined,
   }) {
     return EmailAccount(
       id: id is _i1.UuidValue? ? id : this.id,
@@ -187,6 +205,9 @@ class _EmailAccountImpl extends EmailAccount {
       createdAt: createdAt ?? this.createdAt,
       email: email ?? this.email,
       passwordHash: passwordHash ?? this.passwordHash,
+      passwordSetAt: passwordSetAt is DateTime?
+          ? passwordSetAt
+          : this.passwordSetAt,
     );
   }
 }
@@ -216,6 +237,12 @@ class EmailAccountUpdateTable extends _i1.UpdateTable<EmailAccountTable> {
     table.passwordHash,
     value,
   );
+
+  _i1.ColumnValue<DateTime, DateTime> passwordSetAt(DateTime? value) =>
+      _i1.ColumnValue(
+        table.passwordSetAt,
+        value,
+      );
 }
 
 class EmailAccountTable extends _i1.Table<_i1.UuidValue?> {
@@ -236,6 +263,10 @@ class EmailAccountTable extends _i1.Table<_i1.UuidValue?> {
     );
     passwordHash = _i1.ColumnString(
       'passwordHash',
+      this,
+    );
+    passwordSetAt = _i1.ColumnDateTime(
+      'passwordSetAt',
       this,
     );
   }
@@ -260,6 +291,12 @@ class EmailAccountTable extends _i1.Table<_i1.UuidValue?> {
   /// Stored in PHC format: $argon2id$v=19$m={memory},t={iterations},p={lanes}${base64Salt}$${base64Hash}
   late final _i1.ColumnString passwordHash;
 
+  /// The time when the password was last set.
+  ///
+  /// Used to determine if the password has expired based on
+  /// [EmailIDPConfig.passwordExpirationDuration].
+  late final _i1.ColumnDateTime passwordSetAt;
+
   _i2.AuthUserTable get authUser {
     if (_authUser != null) return _authUser!;
     _authUser = _i1.createRelationTable(
@@ -280,6 +317,7 @@ class EmailAccountTable extends _i1.Table<_i1.UuidValue?> {
     createdAt,
     email,
     passwordHash,
+    passwordSetAt,
   ];
 
   @override

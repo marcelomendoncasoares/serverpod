@@ -41,6 +41,10 @@ final class EmailAuthenticationInvalidCredentialsException
 final class EmailAuthenticationTooManyAttemptsException
     extends EmailLoginServerException {}
 
+/// Exception thrown when the password has expired and must be reset.
+final class EmailPasswordExpiredException
+    extends EmailLoginServerException {}
+
 /// Base exception for all login related errors.
 sealed class EmailLoginServerException extends EmailServerException {}
 

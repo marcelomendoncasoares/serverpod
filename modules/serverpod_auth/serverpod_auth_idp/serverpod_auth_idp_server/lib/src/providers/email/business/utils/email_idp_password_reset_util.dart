@@ -411,6 +411,7 @@ class EmailIdpPasswordResetUtil {
       session,
       emailAccount.copyWith(
         passwordHash: passwordHash,
+        passwordSetAt: password != null ? clock.now() : null,
       ),
       transaction: transaction,
     );

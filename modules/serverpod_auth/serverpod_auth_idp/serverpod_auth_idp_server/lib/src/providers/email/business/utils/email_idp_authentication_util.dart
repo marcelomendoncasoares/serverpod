@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:serverpod/serverpod.dart';
 
 import '../../../../../core.dart';
@@ -16,11 +17,13 @@ class EmailIdpAuthenticationUtil {
   final Argon2HashUtil _hashUtil;
   final DatabaseRateLimitedRequestAttemptUtil<String> _rateLimitUtil;
   final int _maxAttempts;
+  final Duration? _passwordExpirationDuration;
 
   /// Creates a new instance of [EmailIdpAuthenticationUtil].
   EmailIdpAuthenticationUtil({
     required final Argon2HashUtil hashUtil,
     required final RateLimit failedLoginRateLimit,
+    final Duration? passwordExpirationDuration,
   }) : _hashUtil = hashUtil,
        _rateLimitUtil = DatabaseRateLimitedRequestAttemptUtil(
          RateLimitedRequestAttemptConfig(
@@ -30,7 +33,8 @@ class EmailIdpAuthenticationUtil {
            timeframe: failedLoginRateLimit.timeframe,
          ),
        ),
-       _maxAttempts = failedLoginRateLimit.maxAttempts;
+       _maxAttempts = failedLoginRateLimit.maxAttempts,
+       _passwordExpirationDuration = passwordExpirationDuration;
 
   /// Returns the [AuthUser]'s ID upon successful email/password verification.
   ///
@@ -41,6 +45,7 @@ class EmailIdpAuthenticationUtil {
   ///   valid for an existing account.
   /// - [EmailAuthenticationTooManyAttemptsException] if the user has made
   ///   too many failed attempts.
+  /// - [EmailPasswordExpiredException] if the password has expired and must be reset.
   ///
   /// In case of invalid credentials, the failed attempt will be logged to
   /// the database outside of the [transaction] and can not be rolled back.
@@ -84,6 +89,14 @@ class EmailIdpAuthenticationUtil {
         nonce: email,
       );
       throw EmailAuthenticationInvalidCredentialsException();
+    }
+
+    final passwordSetAt = account.passwordSetAt;
+    if (_passwordExpirationDuration != null && passwordSetAt != null) {
+      final expirationTime = passwordSetAt.add(_passwordExpirationDuration);
+      if (clock.now().isAfter(expirationTime)) {
+        throw EmailPasswordExpiredException();
+      }
     }
 
     return account.authUserId;

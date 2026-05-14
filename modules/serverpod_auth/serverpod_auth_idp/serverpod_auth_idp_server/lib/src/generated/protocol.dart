@@ -296,6 +296,12 @@ class Protocol extends _i1.DatabaseSerializationManager {
           isNullable: false,
           dartType: 'String',
         ),
+        _i2.ColumnDefinition(
+          name: 'passwordSetAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
       ],
       foreignKeys: [
         _i2.ForeignKeyDefinition(

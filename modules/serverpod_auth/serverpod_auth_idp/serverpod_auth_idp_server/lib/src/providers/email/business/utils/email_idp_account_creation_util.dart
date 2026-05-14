@@ -225,6 +225,7 @@ class EmailIdpAccountCreationUtil {
         authUserId: newUser.id,
         email: request.email,
         passwordHash: passwordHash,
+        passwordSetAt: clock.now(),
       ),
       transaction: transaction,
     );
@@ -279,6 +280,7 @@ class EmailIdpAccountCreationUtil {
         authUserId: authUserId,
         email: email.normalizedEmail,
         passwordHash: passwordHash,
+        passwordSetAt: password != null ? clock.now() : null,
       ),
       transaction: transaction,
     );

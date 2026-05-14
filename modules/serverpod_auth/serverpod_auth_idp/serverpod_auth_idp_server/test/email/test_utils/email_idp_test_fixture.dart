@@ -77,6 +77,50 @@ final class EmailIdpTestFixture {
     );
   }
 
+  Future<void> changeAccountPassword(
+    final Session session, {
+    required final EmailAccount emailAccount,
+    required final String password,
+  }) async {
+    final verificationCode = const Uuid().v4().toString();
+    final tempFixture = EmailIdpTestFixture(
+      config: EmailIdpConfig(
+        secretHashPepper: 'pepper',
+        passwordResetVerificationCodeGenerator: () => verificationCode,
+        passwordValidationFunction: (final password) => true,
+        passwordHistory: const PasswordHistory(
+          count: 15,
+          retentionPeriod: Duration(days: 365),
+        ),
+      ),
+    );
+    final passwordResetRequestId = await session.db.transaction(
+      (final transaction) => passwordResetUtil.startPasswordReset(
+        session,
+        email: emailAccount.email,
+        transaction: transaction,
+      ),
+    );
+
+    final completePasswordResetToken = await session.db.transaction(
+      (final transaction) => passwordResetUtil.verifyPasswordResetCode(
+        session,
+        passwordResetRequestId: passwordResetRequestId,
+        verificationCode: verificationCode,
+        transaction: transaction,
+      ),
+    );
+
+    await session.db.transaction(
+      (final transaction) => passwordResetUtil.completePasswordReset(
+        session,
+        completePasswordResetToken: completePasswordResetToken,
+        newPassword: password,
+        transaction: transaction,
+      ),
+    );
+  }
+
   Future<void> tearDown(final Session session) async {
     await session.db.transaction((final transaction) async {
       await Future.wait([
