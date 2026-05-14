@@ -1,0 +1,4 @@
+class: SharedTableModel
+table: shared_table_model
+fields:
+  name: String

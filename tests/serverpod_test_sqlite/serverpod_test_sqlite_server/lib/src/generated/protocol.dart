@@ -164,6 +164,8 @@ import 'upsert_test_model.dart' as _i141;
 import 'dart:typed_data' as _i142;
 import 'package:serverpod_test_sqlite_server/src/generated/simple_data.dart'
     as _i143;
+import 'package:serverpod_test_sqlite_shared/serverpod_test_sqlite_shared.dart'
+    as _i144;
 export 'changed_id_type/many_to_many/course.dart';
 export 'changed_id_type/many_to_many/enrollment.dart';
 export 'changed_id_type/many_to_many/student.dart';
@@ -7190,6 +7192,9 @@ class Protocol extends _i1.DatabaseSerializationManager {
                 )
                 as T;
     }
+    try {
+      return _i144.Protocol().deserialize<T>(data, t);
+    } on _i1.DeserializationTypeNotFoundException catch (_) {}
     try {
       return _i2.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}

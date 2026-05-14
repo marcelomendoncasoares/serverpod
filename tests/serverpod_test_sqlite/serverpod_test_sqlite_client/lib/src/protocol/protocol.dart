@@ -163,8 +163,10 @@ import 'package:serverpod_client/serverpod_client.dart' as _i140;
 import 'dart:typed_data' as _i141;
 import 'package:serverpod_test_sqlite_client/src/protocol/simple_data.dart'
     as _i142;
-import 'package:serverpod_service_client/serverpod_service_client.dart'
+import 'package:serverpod_test_sqlite_shared/serverpod_test_sqlite_shared.dart'
     as _i143;
+import 'package:serverpod_service_client/serverpod_service_client.dart'
+    as _i144;
 export 'changed_id_type/many_to_many/course.dart';
 export 'changed_id_type/many_to_many/enrollment.dart';
 export 'changed_id_type/many_to_many/student.dart';
@@ -3256,6 +3258,9 @@ class Protocol extends _i1.DatabaseSerializationManager {
     try {
       return _i143.Protocol().deserialize<T>(data, t);
     } on _i140.DeserializationTypeNotFoundException catch (_) {}
+    try {
+      return _i144.Protocol().deserialize<T>(data, t);
+    } on _i140.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
 
@@ -4231,7 +4236,7 @@ class Protocol extends _i1.DatabaseSerializationManager {
       };
     }
     try {
-      return _i143.Protocol().mapRecordToJson(record);
+      return _i144.Protocol().mapRecordToJson(record);
     } catch (_) {}
     throw Exception('Unsupported record type ${record.runtimeType}');
   }
