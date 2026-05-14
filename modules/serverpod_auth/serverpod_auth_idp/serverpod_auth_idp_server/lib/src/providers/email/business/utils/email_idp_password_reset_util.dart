@@ -209,6 +209,39 @@ class EmailIdpPasswordResetUtil {
       throw EmailPasswordResetEmailNotFoundException();
     }
 
+    if (_config.passwordHistory != null) {
+      final passwordHistory = _config.passwordHistory!;
+
+      // Build where clause conditionally based on retention period
+      final cutoffDate = passwordHistory.retentionPeriod != null
+          ? clock.now().subtract(passwordHistory.retentionPeriod!)
+          : null;
+
+      final previousPasswords = await EmailAccountPasswordHistory.db.find(
+        session,
+        where: (final t) {
+          var expression = t.emailAccountId.equals(account.id!);
+          if (cutoffDate != null) {
+            expression &= t.createdAt >= cutoffDate;
+          }
+          return expression;
+        },
+        orderBy: (final t) => t.createdAt,
+        orderDescending: true,
+        limit: passwordHistory.count,
+        transaction: transaction,
+      );
+
+      for (final historyEntry in previousPasswords) {
+        if (await _passwordHashUtil.validateHashFromString(
+          secret: newPassword,
+          hashString: historyEntry.passwordHash.toString(),
+        )) {
+          throw EmailPasswordResetPasswordReuseException();
+        }
+      }
+    }
+
     await setPassword(
       session,
       emailAccount: account,
@@ -278,6 +311,62 @@ class EmailIdpPasswordResetUtil {
     );
   }
 
+  /// Cleans up old password history entries for the given email account.
+  ///
+  /// Removes entries older than [retentionPeriod] (if specified) and keeps
+  /// only the most recent [count] entries (if specified).
+  Future<void> _cleanupPasswordHistory(
+    final Session session, {
+    required final EmailAccount emailAccount,
+    required final Transaction transaction,
+  }) async {
+    if (_config.passwordHistory == null) {
+      return;
+    }
+
+    final passwordHistory = _config.passwordHistory!;
+
+    // Remove entries older than retention period if specified
+    if (passwordHistory.retentionPeriod != null) {
+      final cutoffDate = clock.now().subtract(
+        passwordHistory.retentionPeriod!,
+      );
+
+      await EmailAccountPasswordHistory.db.deleteWhere(
+        session,
+        where: (final t) =>
+            t.emailAccountId.equals(emailAccount.id!) &
+            (t.createdAt < cutoffDate),
+        transaction: transaction,
+      );
+    }
+
+    // Keep only the most recent count entries if specified
+    if (passwordHistory.count != null) {
+      final allHistoryEntries = await EmailAccountPasswordHistory.db.find(
+        session,
+        where: (final t) => t.emailAccountId.equals(emailAccount.id!),
+        orderBy: (final t) => t.createdAt,
+        orderDescending: true,
+        transaction: transaction,
+      );
+
+      if (allHistoryEntries.length > passwordHistory.count!) {
+        final entriesToDelete = allHistoryEntries.sublist(
+          passwordHistory.count!,
+        );
+
+        for (final entry in entriesToDelete) {
+          await EmailAccountPasswordHistory.db.deleteRow(
+            session,
+            entry,
+            transaction: transaction,
+          );
+        }
+      }
+    }
+  }
+
   /// Sets the password for the authentication belonging to the given email
   /// account.
   ///
@@ -292,6 +381,25 @@ class EmailIdpPasswordResetUtil {
     required final String? password,
     required final Transaction transaction,
   }) async {
+    if (_config.passwordHistory != null && password != null) {
+      if (emailAccount.passwordHash.isNotEmpty) {
+        await EmailAccountPasswordHistory.db.insertRow(
+          session,
+          EmailAccountPasswordHistory(
+            emailAccountId: emailAccount.id!,
+            passwordHash: emailAccount.passwordHash,
+          ),
+          transaction: transaction,
+        );
+
+        await _cleanupPasswordHistory(
+          session,
+          emailAccount: emailAccount,
+          transaction: transaction,
+        );
+      }
+    }
+
     final passwordHash = switch (password) {
       null => '',
       final String value => await _passwordHashUtil.createHashFromString(
@@ -452,6 +560,11 @@ class EmailIdpPasswordResetUtilsConfig {
   final SendPasswordResetVerificationCodeFunction?
   sendPasswordResetVerificationCode;
 
+  /// Configuration for password history checking and retention.
+  ///
+  /// If null, password history checking is disabled.
+  final PasswordHistory? passwordHistory;
+
   /// Creates a new [EmailIdpPasswordResetUtilsConfig] instance.
   EmailIdpPasswordResetUtilsConfig({
     required this.passwordValidationFunction,
@@ -461,6 +574,7 @@ class EmailIdpPasswordResetUtilsConfig {
     required this.maxPasswordResetAttempts,
     required this.passwordResetVerificationCodeGenerator,
     required this.sendPasswordResetVerificationCode,
+    required this.passwordHistory,
   });
 
   /// Creates a new [EmailIdpPasswordResetUtilsConfig] instance from an
@@ -480,6 +594,7 @@ class EmailIdpPasswordResetUtilsConfig {
           config.passwordResetVerificationCodeGenerator,
       sendPasswordResetVerificationCode:
           config.sendPasswordResetVerificationCode,
+      passwordHistory: config.passwordHistory,
     );
   }
 }
