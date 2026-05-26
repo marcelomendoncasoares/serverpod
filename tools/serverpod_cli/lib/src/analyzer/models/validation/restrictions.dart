@@ -236,6 +236,19 @@ class Restrictions {
     String _,
     SourceSpan? span,
   ) {
+    var definition = documentDefinition;
+    if (definition is ModelClassDefinition &&
+        definition.isSharedModel &&
+        definition.tableName != null &&
+        documentContents.nodes[Keyword.database]?.value == null) {
+      return [
+        SourceSpanSeverityException(
+          'Shared package models with a "table" must use "database: all".',
+          span,
+        ),
+      ];
+    }
+
     if (!config.isFeatureEnabled(ServerpodFeature.database)) {
       return [
         SourceSpanSeverityException(

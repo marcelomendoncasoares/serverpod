@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:path/path.dart' as path;
 import 'package:serverpod_cli/analyzer.dart';
+import 'package:serverpod_cli/src/analyzer/models/definitions.dart';
 import 'package:serverpod_cli/src/generator/dart/shared_code_generator.dart';
 import 'package:test/test.dart';
 
@@ -163,80 +164,84 @@ void main() {
     });
   });
 
-  group('Given a class with table name when generating code', () {
-    var models = [
-      ModelClassDefinitionBuilder()
-          .withFileName(testClassFileName)
-          .withTableName('example_table')
-          .withSharedPackageName(sharedPackageName)
-          .build(),
-    ];
+  group(
+    'Given a class with table name and database all when generating code',
+    () {
+      var models = [
+        ModelClassDefinitionBuilder()
+            .withFileName(testClassFileName)
+            .withTableName('example_table')
+            .withDatabase(ModelDatabaseDefinition.all)
+            .withSharedPackageName(sharedPackageName)
+            .build(),
+      ];
 
-    late var codeMap = generator.generateSerializableModelsCode(
-      models: models,
-      config: config,
-    );
-
-    late var compilationUnit = parseString(
-      content: codeMap[expectedFileName]!,
-    ).unit;
-
-    late var maybeClassNamedExample =
-        CompilationUnitHelpers.tryFindClassDeclaration(
-          compilationUnit,
-          name: testClassName,
-        );
-    group(
-      'then the class named $testClassName',
-      () {
-        test('implements TableRow.', () {
-          expect(
-            CompilationUnitHelpers.hasImplementsClause(
-              maybeClassNamedExample!,
-              name: 'TableRow',
-            ),
-            isTrue,
-            reason: 'Missing implements clause for TableRow.',
-          );
-        });
-
-        test('has id in constructor.', () {
-          expect(
-            CompilationUnitHelpers.hasConstructorDeclaration(
-              maybeClassNamedExample!,
-              name: null,
-              parameters: ['int? id'],
-            ),
-            isTrue,
-            reason: 'Missing declaration for $testClassName constructor.',
-          );
-        });
-
-        test('is generated with id field.', () {
-          expect(
-            CompilationUnitHelpers.hasFieldDeclaration(
-              maybeClassNamedExample!,
-              name: 'id',
-              type: 'int?',
-            ),
-            isTrue,
-            reason: 'Declaration for id field was should be generated.',
-          );
-        });
-      },
-    );
-
-    test('then a class named ${testClassName}Include is generated.', () {
-      expect(
-        CompilationUnitHelpers.hasClassDeclaration(
-          compilationUnit,
-          name: '${testClassName}Include',
-        ),
-        isTrue,
-        reason: 'Class ${testClassName}Include should be generated.',
+      late var codeMap = generator.generateSerializableModelsCode(
+        models: models,
+        config: config,
       );
-    });
-  });
+
+      late var compilationUnit = parseString(
+        content: codeMap[expectedFileName]!,
+      ).unit;
+
+      late var maybeClassNamedExample =
+          CompilationUnitHelpers.tryFindClassDeclaration(
+            compilationUnit,
+            name: testClassName,
+          );
+      group(
+        'then the class named $testClassName',
+        () {
+          test('implements TableRow.', () {
+            expect(
+              CompilationUnitHelpers.hasImplementsClause(
+                maybeClassNamedExample!,
+                name: 'TableRow',
+              ),
+              isTrue,
+              reason: 'Missing implements clause for TableRow.',
+            );
+          });
+
+          test('has id in constructor.', () {
+            expect(
+              CompilationUnitHelpers.hasConstructorDeclaration(
+                maybeClassNamedExample!,
+                name: null,
+                parameters: ['int? id'],
+              ),
+              isTrue,
+              reason: 'Missing declaration for $testClassName constructor.',
+            );
+          });
+
+          test('is generated with id field.', () {
+            expect(
+              CompilationUnitHelpers.hasFieldDeclaration(
+                maybeClassNamedExample!,
+                name: 'id',
+                type: 'int?',
+              ),
+              isTrue,
+              reason: 'Declaration for id field was should be generated.',
+            );
+          });
+        },
+      );
+
+      test('then a class named ${testClassName}Include is generated.', () {
+        expect(
+          CompilationUnitHelpers.hasClassDeclaration(
+            compilationUnit,
+            name: '${testClassName}Include',
+          ),
+          isTrue,
+          reason: 'Class ${testClassName}Include should be generated.',
+        );
+      });
+    },
+  );
 
   group('Given a class with a none nullable field when generating code', () {
     var models = [

@@ -10,9 +10,10 @@ import '../../../../test_util/builders/model_source_builder.dart';
 void main() {
   var config = GeneratorConfigBuilder().build();
 
-  group(
+  test(
     'Given a shared package model with a table and database omitted '
-    'when analyzing the model ',
+    'when analyzing the model '
+    'then an error is collected that the database must be all.',
     () {
       var models = <ModelSource>[
         ModelSourceBuilder()
@@ -29,21 +30,22 @@ fields:
             .build(),
       ];
 
-      late var collector = CodeGenerationCollector();
-      late var validated = StatefulAnalyzer(
+      var collector = CodeGenerationCollector();
+      final definitions = StatefulAnalyzer(
         config,
         models,
         onErrorsCollector(collector),
       ).validateAll();
 
-      test('then no error is collected.', () {
-        expect(collector.errors, isEmpty);
-      });
-
-      test('then database defaults to all.', () {
-        var model = validated.whereType<ModelClassDefinition>().single;
-        expect(model.database, ModelDatabaseDefinition.all);
-      });
+      expect(
+        collector.errors,
+        isNotEmpty,
+        reason: 'Expected an error to be collected',
+      );
+      expect(
+        collector.errors.first.message,
+        'Shared package models with a "table" must use "database: all".',
+      );
     },
   );
 
