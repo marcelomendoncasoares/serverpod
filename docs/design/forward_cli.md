@@ -136,3 +136,81 @@ Use temp dirs with fixture `pubspec.lock` files (pattern from [`serverpod_packag
 - New: `test/version_delegate/*`
 - [`tools/serverpod_cli/CHANGELOG.md`](tools/serverpod_cli/CHANGELOG.md)
 - Later: refactor [`cloud.dart`](tools/serverpod_cli/lib/src/commands/cloud.dart) (when merged) to use `process_forwarder.dart`
+
+## Unsolved questions
+
+Investigation notes from design review of the initial implementation. These are open problems, not decisions.
+
+### Interactive project finder
+
+The delegation layer uses `ServerDirectoryFinder.search()` (non-interactive). Commands and `GeneratorConfig.load` use `ServerDirectoryFinder.findOrPrompt()` (interactive when multiple server projects are found).
+
+- Does delegation need to call `findOrPrompt` before forwarding, honoring `--interactive` / `--no-interactive` and CI detection?
+- When multiple server directories exist, the current implementation skips delegation entirely. The command may then prompt interactively and run on the **global** CLI — wrong version for the project the user selects.
+- Should `--interactive` be parsed and applied during the pre-delegation project resolution step?
+
+### Command-specific directory flags
+
+Delegation runs before command parsing and only searches from `Directory.current`. It does not read command-level flags such as:
+
+- `generate --directory` / `-d`
+- `mcp --server-dir` / `-s`
+
+- How much argv parsing is required pre-delegation to honor these flags?
+- Should there be a shared helper that maps subcommand → directory flag name?
+
+### Late vs early project resolution
+
+If `findOrPrompt` only runs inside commands (after delegation), the entry CLI may delegate based on a different project than the command eventually uses — or skip delegation when ambiguity would have been resolved interactively later.
+
+- Is a lightweight **project context** step (server dir + lock-file version) sufficient as the early resolution, without loading full `GeneratorConfig`?
+- What is the minimal set of information that must be resolved before delegating?
+
+### Full `GeneratorConfig` as a universal pre-step
+
+Not all commands need `GeneratorConfig`:
+
+| Needs full config | Project-scoped, config-light | Not project-scoped |
+|-------------------|------------------------------|--------------------|
+| `generate`, `start`, `migrate`, `create-migration`, `create-repair-migration` | `run`, `mcp` | `create`, `quickstart`, `upgrade`, `version`, `analyze-pubspecs`, `generate-pubspecs` |
+
+`GeneratorConfig.load` also requires `dart pub get`, reads `generator.yaml`, resolves modules, etc. — heavier than version delegation needs.
+
+- Should `GeneratorConfig` ever be promoted to a universal pre-command step?
+- If not, should a thinner `ProjectContext` type be introduced and shared between delegation and commands to avoid duplicate resolution?
+
+### Double prompt after early interactive resolution
+
+If the entry CLI prompts the user to pick a server project, then delegates to a child CLI with the same argv and cwd, the child may hit the same ambiguity and prompt again.
+
+- Should the resolved server directory be passed to the child (env var, injected `--directory`, or similar)?
+- How do we keep entry and child resolution consistent without duplicating UX?
+
+### Ambiguous layout + version mismatch
+
+When multiple server projects exist and versions differ, skipping delegation means the user may interactively pick a project but still run the global CLI.
+
+- Is skipping delegation on ambiguity the right default?
+- Should delegation require interactive resolution instead of bailing out?
+
+### Path/git `serverpod` dependencies
+
+Delegation is skipped when the locked `serverpod` package is not hosted (path/git), e.g. Serverpod monorepo development.
+
+- Is lock-file-only version resolution the right source of truth, or should pubspec constraints be a fallback when lock is missing?
+- How should monorepo / path-dependency workflows behave?
+
+### Version mismatch warnings after delegation
+
+`generate` still warns when CLI and project package versions mismatch. Delegation largely makes those warnings redundant when forwarding succeeds.
+
+- Should entry-level or generate-level warnings be downgraded or removed once delegation is reliable?
+- What warnings remain useful when versions match but pubspec and lock are inconsistent?
+
+### Shared process forwarding
+
+Commit `bbdf844` introduces a `cloud` command that forwards to `scloud` with the same child-process pattern as delegation.
+
+- Should `process_forwarder.dart` be reused by `cloud.dart` once that branch lands?
+- Are there other external CLIs that should share the same utility?
+
