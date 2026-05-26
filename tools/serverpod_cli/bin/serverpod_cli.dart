@@ -24,6 +24,7 @@ import 'package:serverpod_cli/src/runner/serverpod_command_runner.dart';
 import 'package:serverpod_cli/src/util/browser_launcher.dart';
 import 'package:serverpod_cli/src/util/internal_error.dart';
 import 'package:serverpod_cli/src/util/serverpod_cli_logger.dart';
+import 'package:serverpod_cli/src/version_delegate/delegate.dart';
 
 const _mixPanelToken = '05e8ab306c393c7482e0f41851a176d8';
 const _postHogApiKey = 'phc_xGBPHgcrTrDuWGtyNX3UJODXgnR684rzRPZjWRlqVxf';
@@ -96,6 +97,7 @@ Future<void> _main(List<String> args) async {
   // the terminal column width that is accessed through the logger for proper
   // formatted usage messages.
   initializeLogger();
+  if (await maybeDelegateToProjectCli(args)) return;
   var runner = buildCommandRunner();
   try {
     await runner.run(args);
