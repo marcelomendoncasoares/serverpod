@@ -14,6 +14,8 @@ typedef RedisSubscriptionCallback =
 /// across Redis are best effort and not guaranteed to be delivered, if a
 /// message fails to be sent it will not retry.
 class RedisController {
+  static const _subscriptionConfirmationTimeout = Duration(seconds: 5);
+
   /// The host of the Redis server.
   final String host;
 
@@ -37,12 +39,15 @@ class RedisController {
   final Duration connectTimeout;
 
   final Map<String, RedisSubscriptionCallback> _subscriptions = {};
+  final Map<String, Completer<bool>> _subscribeCompleters = {};
+  final Map<String, Completer<bool>> _unsubscribeCompleters = {};
 
   Command? _command;
   bool _connecting = false;
 
   Command? _pubSubCommand;
   bool _connectingPubSub = false;
+  Completer<bool>? _pubSubConnectionCompleter;
   PubSub? _pubSub;
 
   bool _running = true;
@@ -155,58 +160,91 @@ class RedisController {
     if (_pubSub != null) {
       return true;
     }
-    if (_connectingPubSub || !_running) {
+    if (!_running) {
       return false;
     }
+    if (_connectingPubSub) {
+      return await _pubSubConnectionCompleter?.future ?? false;
+    }
+
     _connectingPubSub = true;
+    final connectionCompleter = Completer<bool>();
+    _pubSubConnectionCompleter = connectionCompleter;
 
-    _pubSubCommand = await _createAndAuthCommand(
-      connectTimeoutOverride: connectTimeoutOverride,
-    );
-    if (_pubSubCommand == null) {
-      _connectingPubSub = false;
-      return false;
-    }
+    try {
+      _pubSubCommand = await _createAndAuthCommand(
+        connectTimeoutOverride: connectTimeoutOverride,
+      );
+      if (_pubSubCommand == null) {
+        connectionCompleter.complete(false);
+        return false;
+      }
 
-    runZonedGuarded(
-      () {
-        _pubSub = PubSub(_pubSubCommand!);
-      },
-      (e, stackTrace) {
-        _invalidatePubSub();
+      runZonedGuarded(
+        () {
+          _pubSub = PubSub(_pubSubCommand!);
+        },
+        (e, stackTrace) {
+          _invalidatePubSub();
 
-        log.error(
-          'Internal server error. Failed to connect to Redis when creating PubSub.',
-          error: e,
-          stackTrace: stackTrace,
+          log.error(
+            'Internal server error. Failed to connect to Redis when creating PubSub.',
+            error: e,
+            stackTrace: stackTrace,
+          );
+        },
+      );
+
+      var stream = _pubSub!.getStream();
+      unawaited(_listenToSubscriptions(stream));
+
+      if (_subscriptions.keys.isNotEmpty) {
+        final subscribed = await _subscribeToChannels(
+          _subscriptions.keys.toList(),
         );
-      },
-    );
+        if (!subscribed) {
+          _invalidatePubSub();
+          connectionCompleter.complete(false);
+          return false;
+        }
+      }
 
-    var stream = _pubSub!.getStream();
-    unawaited(_listenToSubscriptions(stream));
-
-    if (_subscriptions.keys.isNotEmpty) {
-      _pubSub!.subscribe(_subscriptions.keys.toList());
+      connectionCompleter.complete(true);
+      return true;
+    } catch (e) {
+      _invalidatePubSub();
+      if (!connectionCompleter.isCompleted) {
+        connectionCompleter.complete(false);
+      }
+      return false;
+    } finally {
+      if (identical(_pubSubConnectionCompleter, connectionCompleter)) {
+        _pubSubConnectionCompleter = null;
+      }
+      _connectingPubSub = false;
+      if (!connectionCompleter.isCompleted) {
+        connectionCompleter.complete(false);
+      }
     }
-
-    _connectingPubSub = false;
-    return true;
   }
 
   Future<void> _listenToSubscriptions(Stream stream) async {
     try {
       await for (var message in stream) {
         if (message is List && message.length == 3) {
-          if (message[0] == 'message') {
-            // We got a message (can also be confirmation on publish)
-            String channel = message[1];
-            String data = message[2];
+          final messageType = message[0];
+          final channel = message[1];
+          final data = message[2];
 
-            var callback = _subscriptions[channel];
+          if (messageType == 'message' && channel is String && data is String) {
+            final callback = _subscriptions[channel];
             if (callback != null) {
               callback(channel, data);
             }
+          } else if (messageType == 'subscribe' && channel is String) {
+            _subscribeCompleters.remove(channel)?.complete(true);
+          } else if (messageType == 'unsubscribe' && channel is String) {
+            _unsubscribeCompleters.remove(channel)?.complete(true);
           }
         }
       }
@@ -234,6 +272,78 @@ class RedisController {
     }
     _pubSub = null;
     _pubSubCommand = null;
+    for (final completer in _subscribeCompleters.values) {
+      if (!completer.isCompleted) {
+        completer.complete(false);
+      }
+    }
+    _subscribeCompleters.clear();
+    for (final completer in _unsubscribeCompleters.values) {
+      if (!completer.isCompleted) {
+        completer.complete(false);
+      }
+    }
+    _unsubscribeCompleters.clear();
+  }
+
+  Future<bool> _subscribeToChannels(List<String> channels) async {
+    if (channels.isEmpty) {
+      return true;
+    }
+
+    final confirmations = <Future<bool>>[];
+    for (final channel in channels) {
+      _subscribeCompleters.remove(channel)?.complete(false);
+
+      final completer = Completer<bool>();
+      _subscribeCompleters[channel] = completer;
+      confirmations.add(
+        completer.future.timeout(
+          _subscriptionConfirmationTimeout,
+          onTimeout: () {
+            if (identical(_subscribeCompleters[channel], completer)) {
+              _subscribeCompleters.remove(channel);
+            }
+            return false;
+          },
+        ),
+      );
+    }
+
+    _pubSub!.subscribe(channels);
+
+    final results = await Future.wait(confirmations);
+    return results.every((final result) => result);
+  }
+
+  Future<bool> _unsubscribeFromChannels(List<String> channels) async {
+    if (channels.isEmpty) {
+      return true;
+    }
+
+    final confirmations = <Future<bool>>[];
+    for (final channel in channels) {
+      _unsubscribeCompleters.remove(channel)?.complete(false);
+
+      final completer = Completer<bool>();
+      _unsubscribeCompleters[channel] = completer;
+      confirmations.add(
+        completer.future.timeout(
+          _subscriptionConfirmationTimeout,
+          onTimeout: () {
+            if (identical(_unsubscribeCompleters[channel], completer)) {
+              _unsubscribeCompleters.remove(channel);
+            }
+            return false;
+          },
+        ),
+      );
+    }
+
+    _pubSub!.unsubscribe(channels);
+
+    final results = await Future.wait(confirmations);
+    return results.every((final result) => result);
   }
 
   /// Sets a [String] in the Redis cache, which optionally expires.
@@ -303,10 +413,17 @@ class RedisController {
     RedisSubscriptionCallback listener,
   ) async {
     try {
-      await _connectPubSub();
-      _pubSub!.subscribe([channel]);
+      if (!await _connectPubSub()) {
+        return false;
+      }
+
+      if (_subscriptions.containsKey(channel)) {
+        _subscriptions[channel] = listener;
+        return true;
+      }
+
       _subscriptions[channel] = listener;
-      return true;
+      return await _subscribeToChannels([channel]);
     } catch (e) {
       _invalidatePubSub();
       return false;
@@ -318,10 +435,16 @@ class RedisController {
     String channel,
   ) async {
     try {
-      await _connectPubSub();
-      _pubSub!.unsubscribe([channel]);
+      if (!await _connectPubSub()) {
+        return false;
+      }
+
+      if (!_subscriptions.containsKey(channel)) {
+        return true;
+      }
+
       _subscriptions.remove(channel);
-      return true;
+      return await _unsubscribeFromChannels([channel]);
     } catch (e) {
       _invalidatePubSub();
       return false;

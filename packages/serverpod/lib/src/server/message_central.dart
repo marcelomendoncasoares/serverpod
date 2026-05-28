@@ -27,6 +27,7 @@ class MessageCentral {
   final _sessionToCallbacksLookup =
       <Session, Set<MessageCentralListenerCallback>>{};
   final _sessionToCleanupCallbacksLookup = <Session, Set<Function()>>{};
+  final _redisSubscriptionFutures = <String, Future<bool>>{};
 
   /// Posts a [message] to a named channel. Optionally a [destinationServerId]
   /// can be provided, in which case the message is sent only to that specific
@@ -50,6 +51,8 @@ class MessageCentral {
       if (redisController == null) {
         throw StateError('Redis needs to be enabled to use this method');
       }
+
+      await _redisSubscriptionFutures[channelName];
 
       return await redisController.publish(channelName, data);
     } else {
@@ -99,11 +102,24 @@ class MessageCentral {
     }
     callbacks.add(listener);
 
-    if (session.serverpod.redisController != null) {
-      session.serverpod.redisController!.subscribe(
-        channelName,
-        _receivedRedisMessage,
-      );
+    var redisController = session.serverpod.redisController;
+    if (redisController != null) {
+      late Future<bool> subscriptionFuture;
+      subscriptionFuture = redisController
+          .subscribe(
+            channelName,
+            _receivedRedisMessage,
+          )
+          .whenComplete(() {
+            if (identical(
+              _redisSubscriptionFutures[channelName],
+              subscriptionFuture,
+            )) {
+              _redisSubscriptionFutures.remove(channelName);
+            }
+          });
+      _redisSubscriptionFutures[channelName] = subscriptionFuture;
+      unawaited(subscriptionFuture);
     }
   }
 
