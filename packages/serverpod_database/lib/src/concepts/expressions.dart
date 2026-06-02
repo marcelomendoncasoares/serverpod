@@ -84,6 +84,106 @@ class Constant extends Expression {
   static Constant nullValue = const Constant._('NULL');
 }
 
+/// A builder for a SQL CASE expression.
+///
+/// Creates a searched CASE expression when [column] is omitted and a
+/// simple CASE expression when it is provided.
+class Case {
+  final Column? _column;
+
+  /// Creates a new [Case] expression builder.
+  Case([this._column]);
+
+  /// Adds the first WHEN and THEN expressions.
+  When when(Expression expression, {required Expression then}) {
+    return When._(
+      _column,
+      [_WhenThen(expression, then)],
+    );
+  }
+}
+
+/// A SQL CASE expression builder containing at least one WHEN clause.
+class When {
+  final Column? _column;
+  final List<_WhenThen> _whenThenExpressions;
+
+  When._(this._column, this._whenThenExpressions);
+
+  /// Adds another WHEN and THEN expression.
+  When when(Expression expression, {required Expression then}) {
+    return When._(
+      _column,
+      [
+        ..._whenThenExpressions,
+        _WhenThen(expression, then),
+      ],
+    );
+  }
+
+  /// Completes the CASE expression with an ELSE expression.
+  Expression orElse(Expression expression) {
+    return _CaseExpression(
+      _column,
+      _whenThenExpressions,
+      expression,
+    );
+  }
+}
+
+class _CaseExpression extends Expression<void> {
+  final Column? _column;
+  final List<_WhenThen> _whenThenExpressions;
+  final Expression _elseExpression;
+
+  _CaseExpression(
+    this._column,
+    this._whenThenExpressions,
+    this._elseExpression,
+  ) : super(null);
+
+  @override
+  List<Column> get columns => [
+    if (_column != null) _column,
+    ..._whenThenExpressions.expand(
+      (expressions) => [
+        ...expressions.when.columns,
+        ...expressions.then.columns,
+      ],
+    ),
+    ..._elseExpression.columns,
+  ];
+
+  @override
+  Iterable<Expression> get depthFirst sync* {
+    yield* super.depthFirst;
+    for (final expressions in _whenThenExpressions) {
+      yield* expressions.when.depthFirst;
+      yield* expressions.then.depthFirst;
+    }
+    yield* _elseExpression.depthFirst;
+  }
+
+  @override
+  String toString() {
+    var expression = 'CASE';
+    if (_column != null) {
+      expression += ' $_column';
+    }
+    for (final expressions in _whenThenExpressions) {
+      expression += ' WHEN ${expressions.when} THEN ${expressions.then}';
+    }
+    return '$expression ELSE $_elseExpression END';
+  }
+}
+
+class _WhenThen {
+  final Expression when;
+  final Expression then;
+
+  _WhenThen(this.when, this.then);
+}
+
 /// A database expression to invert the result of another expression.
 class NotExpression extends Expression<Expression> {
   /// Creates a new [NotExpression].

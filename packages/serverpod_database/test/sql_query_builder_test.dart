@@ -151,6 +151,49 @@ void main() {
     );
 
     test(
+      'when a select query with a searched CASE where expression is built, '
+      'then the WHERE clause contains the searched CASE expression.',
+      () {
+        final age = ColumnInt('age', citizenTable);
+        final expression = Case()
+            .when(age > 18, then: Constant.bool(true))
+            .orElse(Constant.bool(false));
+
+        final query = SelectQueryBuilder(
+          table: citizenTable,
+        ).withWhere(expression).build();
+
+        expect(
+          query,
+          'SELECT "citizen"."id" AS "citizen.id" FROM "citizen" '
+          'WHERE CASE WHEN "citizen"."age" > 18 THEN TRUE ELSE FALSE END',
+        );
+      },
+    );
+
+    test(
+      'when a select query with a simple CASE where expression is built, '
+      'then the WHERE clause contains the simple CASE expression.',
+      () {
+        final status = ColumnString('status', citizenTable);
+        final expression = Case(status)
+            .when(Constant.string('active'), then: Constant.bool(true))
+            .orElse(Constant.bool(false));
+
+        final query = SelectQueryBuilder(
+          table: citizenTable,
+        ).withWhere(expression).build();
+
+        expect(
+          query,
+          'SELECT "citizen"."id" AS "citizen.id" FROM "citizen" '
+          'WHERE CASE "citizen"."status" WHEN \'active\' THEN TRUE '
+          'ELSE FALSE END',
+        );
+      },
+    );
+
+    test(
       'when query with single order by is built then output is single order by query.',
       () {
         var order = ColumnString('id', citizenTable).asc();
