@@ -90,42 +90,22 @@ class Constant extends Expression {
 /// simple CASE expression when it is provided.
 class Case {
   final Column? _column;
+  final List<_WhenThen> _whenThenExpressions = [];
 
   /// Creates a new [Case] expression builder.
   Case([this._column]);
 
-  /// Adds the first WHEN and THEN expressions.
-  When when(Expression expression, {required Expression then}) {
-    return When._(
-      _column,
-      [_WhenThen(expression, then)],
-    );
-  }
-}
-
-/// A SQL CASE expression builder containing at least one WHEN clause.
-class When {
-  final Column? _column;
-  final List<_WhenThen> _whenThenExpressions;
-
-  When._(this._column, this._whenThenExpressions);
-
-  /// Adds another WHEN and THEN expression.
-  When when(Expression expression, {required Expression then}) {
-    return When._(
-      _column,
-      [
-        ..._whenThenExpressions,
-        _WhenThen(expression, then),
-      ],
-    );
+  /// Adds a WHEN and THEN expression.
+  Case when(Expression expression, {required Expression then}) {
+    _whenThenExpressions.add(_WhenThen(expression, then));
+    return this;
   }
 
   /// Completes the CASE expression with an ELSE expression.
   Expression orElse(Expression expression) {
     return _CaseExpression(
       _column,
-      _whenThenExpressions,
+      List.unmodifiable(_whenThenExpressions),
       expression,
     );
   }

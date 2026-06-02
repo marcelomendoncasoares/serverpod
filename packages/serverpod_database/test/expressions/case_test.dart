@@ -101,6 +101,74 @@ void main() {
   );
 
   test(
+    'Given a searched CASE expression with cascaded branches, '
+    'when the expression is converted to SQL, '
+    'then every cascaded branch is included.',
+    () {
+      final age = ColumnInt('age', testTable);
+
+      final builder = Case()
+        ..when(age > 18, then: Constant.string('adult'))
+        ..when(age > 12, then: Constant.string('teenager'));
+      final expression = builder.orElse(Constant.string('child'));
+
+      expect(
+        expression.toString(),
+        'CASE WHEN "test"."age" > 18 THEN \'adult\' '
+        'WHEN "test"."age" > 12 THEN \'teenager\' ELSE \'child\' END',
+      );
+    },
+  );
+
+  test(
+    'Given searched CASE conditions added in a loop, '
+    'when the expression is converted to SQL, '
+    'then every condition is included.',
+    () {
+      const branches = [
+        (Expression('first condition'), Expression('first result')),
+        (Expression('second condition'), Expression('second result')),
+      ];
+      final builder = Case();
+      for (final (condition, result) in branches) {
+        builder.when(condition, then: result);
+      }
+
+      final expression = builder.orElse(const Expression('fallback'));
+
+      expect(
+        expression.toString(),
+        'CASE WHEN first condition THEN first result '
+        'WHEN second condition THEN second result ELSE fallback END',
+      );
+    },
+  );
+
+  test(
+    'Given a completed searched CASE expression, '
+    'when another branch is added to its builder, '
+    'then the completed expression is unchanged.',
+    () {
+      final builder = Case()
+        ..when(
+          const Expression('first condition'),
+          then: const Expression('first result'),
+        );
+      final expression = builder.orElse(const Expression('fallback'));
+
+      builder.when(
+        const Expression('second condition'),
+        then: const Expression('second result'),
+      );
+
+      expect(
+        expression.toString(),
+        'CASE WHEN first condition THEN first result ELSE fallback END',
+      );
+    },
+  );
+
+  test(
     'Given a CASE expression with a selector and condition column, '
     'when referenced columns are retrieved, '
     'then the columns are returned in SQL order.',
