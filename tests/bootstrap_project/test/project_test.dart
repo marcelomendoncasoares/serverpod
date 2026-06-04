@@ -1020,7 +1020,7 @@ void main() async {
 
     late Process createProcess;
 
-    setUp(() async {
+    setUpAll(() async {
       createProcess = await startServerpodCli(
         [
           'create',
@@ -1037,41 +1037,114 @@ void main() async {
       assert((await createProcess.exitCode) == 0);
     });
 
-    tearDown(() async {
+    tearDownAll(() async {
       createProcess.kill();
     });
 
-    test(
-      'when building the server Dockerfile then the image is built successfully',
-      () async {
-        // Temporarily remove the `enableWasmHeaders` parameter from server.dart
-        // because it has not been published yet and the Dockerfile won't have
-        // access to the local override. Once published, we can remove this.
-        final serverFile = File(path.join(commandRoot, 'lib', 'server.dart'));
-        final serverSource = serverFile.readAsStringSync();
-        const wasmHeaders = 'enableWasmHeaders: false,';
-        serverFile.writeAsStringSync(serverSource.replaceAll(wasmHeaders, ''));
+    group(
+      'when building the server Dockerfile',
+      () {
+        late Process dockerBuildProcess;
+        late String imageTag;
+        late String serverDir;
 
-        final dockerBuildProcess = await startProcess(
-          'docker',
-          [
-            'build',
-            '-f',
-            path.join('${projectName}_server', 'Dockerfile'),
-            '.',
-          ],
-          workingDirectory: path.join(tempPath, projectName),
-        );
+        setUpAll(() async {
+          // Temporarily remove the `enableWasmHeaders` parameter from server.dart
+          // because it has not been published yet and the Dockerfile won't have
+          // access to the local override. Once published, we can remove this.
+          final serverFile = File(path.join(commandRoot, 'lib', 'server.dart'));
+          final serverSource = serverFile.readAsStringSync();
+          const wasmHeaders = 'enableWasmHeaders: false,';
+          serverFile.writeAsStringSync(
+            serverSource.replaceAll(wasmHeaders, ''),
+          );
 
-        addTearDown(() async {
-          await dockerBuildProcess.kill();
+          final serverDirName = '${projectName}_server';
+
+          imageTag = '$projectName:test';
+          dockerBuildProcess = await startProcess(
+            'docker',
+            [
+              'build',
+              '-f',
+              path.join(serverDirName, 'Dockerfile'),
+              '.',
+              '-t',
+              imageTag,
+            ],
+            workingDirectory: path.join(tempPath, projectName),
+          );
+
+          serverDir = path.join(tempPath, projectName, serverDirName);
+
+          // Start the database for the run test.
+          await runProcess(
+            'docker-compose',
+            ['up', '-d'],
+            workingDirectory: serverDir,
+          );
         });
 
-        expect(
-          await dockerBuildProcess.exitCode,
-          0,
-          reason: 'Failed to build the generated server Docker image.',
-        );
+        tearDownAll(() async {
+          await dockerBuildProcess.kill();
+          await runProcess('docker', ['image', 'rm', imageTag]);
+
+          await runProcess(
+            'docker-compose',
+            ['down', '-v'],
+            workingDirectory: serverDir,
+          );
+        });
+
+        test('then the image is built successfully', () async {
+          expect(
+            await dockerBuildProcess.exitCode,
+            0,
+            reason: 'Failed to build the generated server Docker image.',
+          );
+        });
+
+        test('then the image can be run successfully', () async {
+          expect(await dockerBuildProcess.exitCode, 0);
+
+          final dockerRunProcess = await startProcess(
+            'docker',
+            [
+              'run',
+              '-p',
+              '8080:8080',
+              '-p',
+              '8081:8081',
+              '-p',
+              '8082:8082',
+              imageTag,
+            ],
+          );
+
+          addTearDown(() async {
+            await dockerRunProcess.kill();
+          });
+
+          var serverStarted = false;
+          for (int retries = 0; retries < 60; retries++) {
+            try {
+              var response = await http.get(Uri.parse('http://localhost:8080'));
+              serverStarted = response.statusCode == HttpStatus.ok;
+              break;
+            } catch (e) {
+              print(e);
+            }
+
+            print('failed to get response from server, retrying...');
+            await Future.delayed(Duration(seconds: 1));
+          }
+
+          expect(
+            serverStarted,
+            isTrue,
+            reason: 'Failed to get 200 response from server.',
+          );
+        });
       },
       skip: Platform.isWindows
           ? 'Windows does not support Docker builds in GitHub Actions.'
