@@ -544,6 +544,9 @@ class SerializableModelIndexDefinition {
   /// The parameters of the index, if any. Used for Vector indexes.
   final Map<String, String>? parameters;
 
+  /// When true, the index is omitted from client-side database schemas.
+  final bool serverOnly;
+
   /// Create a new [SerializableModelIndexDefinition].
   SerializableModelIndexDefinition({
     required this.name,
@@ -553,6 +556,7 @@ class SerializableModelIndexDefinition {
     this.ginOperatorClass,
     this.vectorDistanceFunction,
     this.parameters,
+    this.serverOnly = false,
   });
 
   /// Whether the index is of GIN type.
@@ -571,6 +575,7 @@ class SerializableModelIndexDefinition {
       ginOperatorClass: ginOperatorClass,
       vectorDistanceFunction: vectorDistanceFunction,
       parameters: parameters,
+      serverOnly: serverOnly,
     );
   }
 }

@@ -933,6 +933,14 @@ class Restrictions {
     return fieldIndexesWithUnique.any((index) => index.fields.length == 1);
   }
 
+  List<SourceSpanSeverityException> validateIndexServerOnlyKey(
+    String parentNodeName,
+    dynamic content,
+    SourceSpan? span,
+  ) {
+    return [];
+  }
+
   List<SourceSpanSeverityException> validateIndexUniqueKey(
     String parentNodeName,
     dynamic content,

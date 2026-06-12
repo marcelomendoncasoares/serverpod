@@ -689,6 +689,7 @@ class ModelParser {
         indexFieldsTypes,
       );
       var parameters = _parseParametersKey(nodeDocument);
+      var serverOnly = _parseIndexServerOnly(nodeDocument);
 
       return SerializableModelIndexDefinition(
         name: indexName,
@@ -698,6 +699,7 @@ class ModelParser {
         ginOperatorClass: operatorClass,
         vectorDistanceFunction: distanceFunction,
         parameters: parameters,
+        serverOnly: serverOnly,
       );
     });
 
@@ -753,6 +755,12 @@ class ModelParser {
 
   static bool _parseUniqueKey(YamlMap documentContents) {
     var node = documentContents.nodes[Keyword.unique];
+    var nodeValue = node?.value;
+    return nodeValue is bool ? nodeValue : false;
+  }
+
+  static bool _parseIndexServerOnly(YamlMap documentContents) {
+    var node = documentContents.nodes[Keyword.serverOnly];
     var nodeValue = node?.value;
     return nodeValue is bool ? nodeValue : false;
   }

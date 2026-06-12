@@ -42,38 +42,13 @@ DatabaseDefinition createDatabaseDefinitionFromModels(
           foreignKeys: _createForeignKeys(classDefinition),
           indexes: [
             for (var index in classDefinition.indexesIncludingInherited)
-              IndexDefinition(
-                indexName: index.name,
-                elements: [
-                  for (var field in index.fields)
-                    IndexElementDefinition(
-                      type: IndexElementDefinitionType.column,
-                      definition: field,
-                    ),
-                ],
-                type: index.type,
-                isUnique: index.unique,
-                isPrimary: false,
-                ginOperatorClass: index.isGinIndex
-                    ? index.ginOperatorClass
-                    : null,
-                vectorDistanceFunction: index.isVectorIndex
-                    ? index.vectorDistanceFunction ?? VectorDistanceFunction.l2
-                    : null,
-                vectorColumnType: index.isVectorIndex
-                    ? ColumnType.values.firstWhere(
-                        (type) =>
-                            type.name ==
-                            classDefinition.fields
-                                .firstWhere(
-                                  (f) => index.fields.contains(f.name),
-                                )
-                                .type
-                                .databaseTypeEnum,
-                      )
-                    : null,
-                parameters: index.parameters,
-              ),
+              if (_createIndexDefinition(
+                    index,
+                    classDefinition,
+                    serverCode: serverCode,
+                  )
+                  case final indexDefinition?)
+                indexDefinition,
           ],
           managed: classDefinition.manageMigration,
         ),
@@ -99,6 +74,80 @@ DatabaseDefinition createDatabaseDefinitionFromModels(
         )
         .toList(),
   );
+}
+
+IndexDefinition? _createIndexDefinition(
+  SerializableModelIndexDefinition index,
+  ModelClassDefinition classDefinition, {
+  required bool serverCode,
+}) {
+  if (!serverCode && index.serverOnly) {
+    return null;
+  }
+
+  final indexFields = _projectIndexFieldsForDatabase(
+    index,
+    classDefinition,
+    serverCode: serverCode,
+  );
+  if (indexFields.isEmpty) {
+    return null;
+  }
+
+  return IndexDefinition(
+    indexName: index.name,
+    elements: [
+      for (var field in indexFields)
+        IndexElementDefinition(
+          type: IndexElementDefinitionType.column,
+          definition: field,
+        ),
+    ],
+    type: index.type,
+    isUnique: index.unique,
+    isPrimary: false,
+    ginOperatorClass: index.isGinIndex ? index.ginOperatorClass : null,
+    vectorDistanceFunction: index.isVectorIndex
+        ? index.vectorDistanceFunction ?? VectorDistanceFunction.l2
+        : null,
+    vectorColumnType: index.isVectorIndex
+        ? ColumnType.values.firstWhere(
+            (type) =>
+                type.name ==
+                classDefinition.fieldsIncludingInherited
+                    .firstWhere(
+                      (field) => indexFields.contains(field.columnName),
+                    )
+                    .type
+                    .databaseTypeEnum,
+          )
+        : null,
+    parameters: index.parameters,
+  );
+}
+
+List<String> _projectIndexFieldsForDatabase(
+  SerializableModelIndexDefinition index,
+  ModelClassDefinition classDefinition, {
+  required bool serverCode,
+}) {
+  if (serverCode) {
+    return index.fields;
+  }
+
+  final fieldsByColumnName = {
+    for (var field in classDefinition.fieldsIncludingInherited)
+      field.columnName: field,
+  };
+
+  return [
+    for (var columnName in index.fields)
+      if (fieldsByColumnName[columnName]?.shouldSerializeFieldForDatabase(
+            false,
+          ) ??
+          false)
+        columnName,
+  ];
 }
 
 List<ForeignKeyDefinition> _createForeignKeys(
