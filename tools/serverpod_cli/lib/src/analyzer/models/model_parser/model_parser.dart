@@ -689,7 +689,7 @@ class ModelParser {
         indexFieldsTypes,
       );
       var parameters = _parseParametersKey(nodeDocument);
-      var serverOnly = _parseIndexServerOnly(nodeDocument);
+      var database = _parseIndexDatabase(nodeDocument);
 
       return SerializableModelIndexDefinition(
         name: indexName,
@@ -699,7 +699,7 @@ class ModelParser {
         ginOperatorClass: operatorClass,
         vectorDistanceFunction: distanceFunction,
         parameters: parameters,
-        serverOnly: serverOnly,
+        database: database,
       );
     });
 
@@ -759,10 +759,15 @@ class ModelParser {
     return nodeValue is bool ? nodeValue : false;
   }
 
-  static bool _parseIndexServerOnly(YamlMap documentContents) {
-    var node = documentContents.nodes[Keyword.serverOnly];
-    var nodeValue = node?.value;
-    return nodeValue is bool ? nodeValue : false;
+  static ModelDatabaseDefinition _parseIndexDatabase(YamlMap documentContents) {
+    var database = documentContents.nodes[Keyword.database]?.value;
+    if (database is! String) return ModelDatabaseDefinition.all;
+
+    return convertToEnum(
+      value: database,
+      enumDefault: ModelDatabaseDefinition.all,
+      enumValues: ModelDatabaseDefinition.values,
+    );
   }
 
   static GinOperatorClass? _parseOperatorClass(

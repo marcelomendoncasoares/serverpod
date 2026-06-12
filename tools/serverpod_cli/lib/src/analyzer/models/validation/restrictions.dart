@@ -933,11 +933,33 @@ class Restrictions {
     return fieldIndexesWithUnique.any((index) => index.fields.length == 1);
   }
 
-  List<SourceSpanSeverityException> validateIndexServerOnlyKey(
+  List<SourceSpanSeverityException> validateIndexDatabaseKey(
     String parentNodeName,
     dynamic content,
     SourceSpan? span,
   ) {
+    return [];
+  }
+
+  List<SourceSpanSeverityException> validateIndexDatabase(
+    String parentNodeName,
+    dynamic content,
+    SourceSpan? span,
+  ) {
+    var database = ModelDatabaseDefinition.values
+        .where((e) => e.name == content)
+        .firstOrNull;
+
+    if (database == null) {
+      return [
+        SourceSpanSeverityException(
+          'The "database" property must be one of: '
+          '${ModelDatabaseDefinition.values.map((e) => e.name).join(', ')}.',
+          span,
+        ),
+      ];
+    }
+
     return [];
   }
 

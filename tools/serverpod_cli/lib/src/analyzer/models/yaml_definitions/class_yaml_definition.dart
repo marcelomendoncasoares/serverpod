@@ -260,9 +260,9 @@ class ClassYamlDefinition {
                 valueRestriction: BooleanValueRestriction().validate,
               ),
               ValidateNode(
-                Keyword.serverOnly,
-                keyRestriction: restrictions.validateIndexServerOnlyKey,
-                valueRestriction: BooleanValueRestriction().validate,
+                Keyword.database,
+                keyRestriction: restrictions.validateIndexDatabaseKey,
+                valueRestriction: restrictions.validateIndexDatabase,
               ),
               ValidateNode(
                 Keyword.operatorClass,

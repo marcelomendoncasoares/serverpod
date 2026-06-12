@@ -544,8 +544,8 @@ class SerializableModelIndexDefinition {
   /// The parameters of the index, if any. Used for Vector indexes.
   final Map<String, String>? parameters;
 
-  /// When true, the index is omitted from client-side database schemas.
-  final bool serverOnly;
+  /// The side that should include this index in the database schema.
+  final ModelDatabaseDefinition database;
 
   /// Create a new [SerializableModelIndexDefinition].
   SerializableModelIndexDefinition({
@@ -556,7 +556,7 @@ class SerializableModelIndexDefinition {
     this.ginOperatorClass,
     this.vectorDistanceFunction,
     this.parameters,
-    this.serverOnly = false,
+    this.database = ModelDatabaseDefinition.all,
   });
 
   /// Whether the index is of GIN type.
@@ -564,6 +564,16 @@ class SerializableModelIndexDefinition {
 
   /// Whether the index is of vector type.
   bool get isVectorIndex => VectorIndexType.values.any((e) => e.name == type);
+
+  /// Returns true if this index should be included in the database schema
+  /// for the specified side.
+  bool shouldIncludeInDatabase(bool serverCode) {
+    return switch (database) {
+      ModelDatabaseDefinition.server => serverCode,
+      ModelDatabaseDefinition.client => !serverCode,
+      ModelDatabaseDefinition.all => true,
+    };
+  }
 
   /// Copy the index with a new name that is prefixed with [prefix].
   SerializableModelIndexDefinition copyWithPrefix(String prefix) {
@@ -575,7 +585,7 @@ class SerializableModelIndexDefinition {
       ginOperatorClass: ginOperatorClass,
       vectorDistanceFunction: vectorDistanceFunction,
       parameters: parameters,
-      serverOnly: serverOnly,
+      database: database,
     );
   }
 }

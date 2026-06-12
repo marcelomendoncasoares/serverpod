@@ -61,7 +61,7 @@ void main() {
                 type: 'btree',
                 unique: false,
                 fields: ['name'],
-                serverOnly: true,
+                database: ModelDatabaseDefinition.server,
               ),
             ])
             .build();
@@ -144,9 +144,9 @@ void main() {
   );
 
   test(
-    'Given a model yaml with serverOnly on an index, '
+    'Given a model yaml with database on an index, '
     'when parsing the model definition, '
-    'then the index serverOnly flag is set.',
+    'then the index database scope is set.',
     () {
       final models = [
         ModelSourceBuilder().withYaml('''
@@ -157,7 +157,7 @@ void main() {
             name: String
           indexes:
             internal_idx:
-              serverOnly: true
+              database: server
               fields: name
         ''').build(),
       ];
@@ -172,7 +172,7 @@ void main() {
       final model = definitions.single as ModelClassDefinition;
       final index = model.indexes.single;
 
-      expect(index.serverOnly, isTrue);
+      expect(index.database, ModelDatabaseDefinition.server);
     },
   );
 }

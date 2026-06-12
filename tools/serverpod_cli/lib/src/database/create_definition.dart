@@ -81,7 +81,7 @@ IndexDefinition? _createIndexDefinition(
   ModelClassDefinition classDefinition, {
   required bool serverCode,
 }) {
-  if (!serverCode && index.serverOnly) {
+  if (!index.shouldIncludeInDatabase(serverCode)) {
     return null;
   }
 
