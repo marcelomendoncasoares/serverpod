@@ -1,0 +1,8 @@
+### A table protected with row-level security, used to verify that rows are only
+### visible to the authenticated user that owns them (matched on `ownerId`).
+class: SecuredRecord
+table: secured_record
+secure: userIdentifier=ownerId
+fields:
+  ownerId: UuidValue
+  name: String
