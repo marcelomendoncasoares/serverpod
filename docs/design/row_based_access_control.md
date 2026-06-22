@@ -15,7 +15,7 @@ PostgreSQL's native **Row-Level Security (RLS)**: policies are generated as part
 of database migrations, and Serverpod seeds a per-transaction session variable
 (`SET LOCAL serverpod.user_id = …`) into the transaction so the policies resolve
 against the authenticated user. Developers query secured tables through a
-dedicated, user-scoped transaction (`session.db.transactionForUser(...)`); the
+dedicated, user-scoped transaction (`session.transactionForUser(...)`); the
 framework supplies the identity, never the developer.
 
 ```yaml
@@ -200,7 +200,7 @@ as a role with `BYPASSRLS` (see [Privileged sessions](#privileged-and-internal-s
 
 **Design decision:** secured tables are queried **only** inside an explicit,
 user-scoped transaction opened with a dedicated method —
-`session.db.transactionForUser(...)` — that the developer passes to the operation.
+`session.transactionForUser(...)` — that the developer passes to the operation.
 The framework does **not** open transactions automatically, and does **not** seed
 the auth context onto the plain `transaction()` primitive:
 
@@ -216,7 +216,7 @@ auditable**, and lets the call fail loud instead of silently empty:
 
 ```dart
 // Developer code — user-scoped transaction for operations on secured tables.
-await session.db.transactionForUser((tx) async {
+await session.transactionForUser((tx) async {
   // The framework seeded `SET LOCAL serverpod.user_id` on `tx` from
   // session.authenticated, so RLS resolves to the current user.
   return Channel.db.find(session, transaction: tx);
@@ -354,8 +354,8 @@ Sequenced so each phase compiles and is independently testable.
 1. Add `ServerpodAuthContext extends RuntimeParameters` (and a builder on
    `RuntimeParametersBuilder`) in
    [runtime_parameters.dart](../../packages/serverpod_database/lib/src/concepts/runtime_parameters.dart).
-2. Add a dedicated `transactionForUser` to the session database API that opens a
-   transaction and seeds
+2. Add a dedicated `transactionForUser` method to the `Session` class that opens
+   a transaction and seeds
    `ServerpodAuthContext(userId: session.authenticated!.userIdentifier)` onto it
    via `Transaction.setRuntimeParameters`. It derives the identity from
    `session.authenticated` and throws if the session is unauthenticated. The plain
@@ -422,7 +422,7 @@ silently insecure.
   Developers open a transaction and pass it to operations on secured tables.
 - **Dedicated `transactionForUser` — resolved.** Rather than auto-seeding the auth
   context onto the plain `transaction()` (ambient, invisible at the call site),
-  user scoping is opted into explicitly via `session.db.transactionForUser(...)`.
+  user scoping is opted into explicitly via `session.transactionForUser(...)`.
   It derives the user from `session.authenticated`, throws if unauthenticated, and
   keeps `transaction()` as the unscoped primitive for system/`BYPASSRLS` paths.
   Chosen for explicitness, auditability, and a loud (not silently-empty) failure
