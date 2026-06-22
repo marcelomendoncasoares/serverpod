@@ -28,6 +28,7 @@ class ModelClassDefinitionBuilder {
   List<InheritanceDefinition> _childClasses;
   InheritanceDefinition? _extendsClass;
   String? _sharedPackageName;
+  List<RowSecurityCondition> _securityConditions;
 
   ModelClassDefinitionBuilder()
     : _fileName = 'example',
@@ -43,7 +44,8 @@ class ModelClassDefinitionBuilder {
       _indexes = [],
       _childClasses = [],
       _isSealed = false,
-      _isImmutable = false;
+      _isImmutable = false,
+      _securityConditions = const [];
 
   ModelClassDefinition build() {
     if (_tableName != null) {
@@ -78,6 +80,7 @@ class ModelClassDefinitionBuilder {
       isSealed: _isSealed,
       isImmutable: _isImmutable,
       sharedPackageName: _sharedPackageName,
+      securityConditions: _securityConditions,
       type: TypeDefinitionBuilder()
           .withClassName(_className)
           .withUrl(_sharedPackageName)
@@ -112,6 +115,13 @@ class ModelClassDefinitionBuilder {
 
   ModelClassDefinitionBuilder withTableName(String? tableName) {
     _tableName = tableName;
+    return this;
+  }
+
+  ModelClassDefinitionBuilder withSecurityConditions(
+    List<RowSecurityCondition> securityConditions,
+  ) {
+    _securityConditions = securityConditions;
     return this;
   }
 
