@@ -15,7 +15,9 @@ fields:
   addForeignKeys: List<ForeignKeyDefinition>
   deleteForeignKeys: List<String>
 
-  addRowSecurityPolicies: List<RowSecurityPolicyDefinition>
-  deleteRowSecurityPolicies: List<String>
+  ### Nullable so that migration files created before row-level security was
+  ### introduced deserialize without error (treated as an empty list).
+  addRowSecurityPolicies: List<RowSecurityPolicyDefinition>?
+  deleteRowSecurityPolicies: List<String>?
 
   warnings: List<DatabaseMigrationWarning>

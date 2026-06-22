@@ -446,8 +446,14 @@ TableMigration? generateTableMigration(
     addIndexes: addIndexes,
     deleteForeignKeys: deleteForeignKeys,
     addForeignKeys: addForeignKeys,
-    addRowSecurityPolicies: addRowSecurityPolicies,
-    deleteRowSecurityPolicies: deleteRowSecurityPolicies,
+    // Null rather than empty keeps migration files for non-secured tables
+    // unchanged from before row-level security was introduced.
+    addRowSecurityPolicies: addRowSecurityPolicies.isEmpty
+        ? null
+        : addRowSecurityPolicies,
+    deleteRowSecurityPolicies: deleteRowSecurityPolicies.isEmpty
+        ? null
+        : deleteRowSecurityPolicies,
     warnings: warnings,
   );
 }

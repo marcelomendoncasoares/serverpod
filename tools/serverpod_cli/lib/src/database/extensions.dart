@@ -100,8 +100,8 @@ extension TableDiffComparisons on TableMigration {
       deleteIndexes.isEmpty &&
       addForeignKeys.isEmpty &&
       deleteForeignKeys.isEmpty &&
-      addRowSecurityPolicies.isEmpty &&
-      deleteRowSecurityPolicies.isEmpty;
+      (addRowSecurityPolicies?.isEmpty ?? true) &&
+      (deleteRowSecurityPolicies?.isEmpty ?? true);
 }
 
 extension TableDefinitionExtension on TableDefinition {

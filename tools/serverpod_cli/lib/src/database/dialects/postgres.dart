@@ -557,7 +557,8 @@ extension PostgresTableMigrationPgSqlGenerator on TableMigration {
     var out = '';
 
     // Drop row security policies (before dropping columns they may reference)
-    for (var deletePolicy in deleteRowSecurityPolicies) {
+    var deletePolicies = deleteRowSecurityPolicies ?? const [];
+    for (var deletePolicy in deletePolicies) {
       out += 'DROP POLICY IF EXISTS "$deletePolicy" ON "$name";\n';
     }
 
@@ -608,16 +609,17 @@ extension PostgresTableMigrationPgSqlGenerator on TableMigration {
     }
 
     // Add row security policies (after the columns they reference exist)
-    if (addRowSecurityPolicies.isNotEmpty) {
+    var addPolicies = addRowSecurityPolicies ?? const [];
+    if (addPolicies.isNotEmpty) {
       out += _enableRowLevelSecuritySql(name);
-      for (var policy in addRowSecurityPolicies) {
+      for (var policy in addPolicies) {
         out += policy.toPgSql(tableName: name);
       }
     }
 
     // Disable row-level security when the last policy was removed.
     var remainingPolicies = targetTable.rowSecurityPolicies ?? const [];
-    if (deleteRowSecurityPolicies.isNotEmpty && remainingPolicies.isEmpty) {
+    if (deletePolicies.isNotEmpty && remainingPolicies.isEmpty) {
       out += _disableRowLevelSecuritySql(name);
     }
 
