@@ -37,6 +37,7 @@ export 'package:serverpod_database/serverpod_database.dart'
         MigrationVersionSql,
         Protocol,
         RepairMigration,
+        RowSecurityPolicyDefinition,
         TableDefinition,
         TableMigration,
         VectorDistanceFunction;

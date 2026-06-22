@@ -58,6 +58,26 @@ class MapRuntimeParameters extends RuntimeParameters {
   Map<String, dynamic> options;
 }
 
+/// Runtime parameters that expose the authenticated user's identity to the
+/// database for the current transaction, so that PostgreSQL row-level security
+/// policies can resolve against it.
+///
+/// Sets `serverpod.user_id` with `SET LOCAL`, which generated row security
+/// policies compare against via `current_setting('serverpod.user_id', true)`.
+class ServerpodAuthContext extends RuntimeParameters {
+  /// The authenticated user's identifier (a UUID), exposed as
+  /// `serverpod.user_id`.
+  final String userId;
+
+  /// Creates a new [ServerpodAuthContext] for the given [userId].
+  const ServerpodAuthContext({required this.userId});
+
+  @override
+  Map<String, dynamic> get options => <String, dynamic>{
+    'serverpod.user_id': userId,
+  };
+}
+
 /// Query options for the HNSW index.
 class HnswIndexQueryOptions extends RuntimeParameters {
   /// The ef search parameter for HNSW index. Default is 40.
