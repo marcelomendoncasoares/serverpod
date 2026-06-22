@@ -75,6 +75,7 @@ DatabaseDefinition createDatabaseDefinitionFromModels(
                 parameters: index.parameters,
               ),
           ],
+          rowSecurityPolicies: _createRowSecurityPolicies(classDefinition),
           managed: classDefinition.manageMigration,
         ),
   ];
@@ -99,6 +100,38 @@ DatabaseDefinition createDatabaseDefinitionFromModels(
         )
         .toList(),
   );
+}
+
+/// Creates the row-level security policies for a model from its `secure`
+/// conditions, or null when the model is not secured.
+List<RowSecurityPolicyDefinition>? _createRowSecurityPolicies(
+  ModelClassDefinition classDefinition,
+) {
+  var conditions = classDefinition.securityConditions;
+  if (conditions.isEmpty) return null;
+
+  var tableName = classDefinition.tableName!;
+  var policies = <RowSecurityPolicyDefinition>[];
+  for (var condition in conditions) {
+    var field = classDefinition.fieldsIncludingInherited
+        .where((field) => field.name == condition.fieldName)
+        .firstOrNull;
+    if (field == null) continue;
+
+    var columnName = field.columnName;
+    policies.add(
+      RowSecurityPolicyDefinition(
+        name: '${tableName}_${columnName}_rls',
+        column: columnName,
+        sessionVariable: condition.authField.sessionVariable,
+        castType: switch (condition.authField) {
+          RowSecurityAuthField.userIdentifier => 'uuid',
+        },
+      ),
+    );
+  }
+
+  return policies.isEmpty ? null : policies;
 }
 
 List<ForeignKeyDefinition> _createForeignKeys(
