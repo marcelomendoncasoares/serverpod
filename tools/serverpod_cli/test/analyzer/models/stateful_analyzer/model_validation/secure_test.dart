@@ -1,4 +1,3 @@
-import 'package:serverpod_cli/analyzer.dart';
 import 'package:serverpod_cli/src/analyzer/models/definitions.dart';
 import 'package:serverpod_cli/src/analyzer/models/stateful_analyzer.dart';
 import 'package:serverpod_cli/src/generator/code_generation_collector.dart';
@@ -10,168 +9,249 @@ import '../../../../test_util/builders/model_source_builder.dart';
 void main() {
   var config = GeneratorConfigBuilder().build();
 
-  ModelClassDefinition? validate(
-    String yaml,
-    CodeGenerationCollector collector,
-  ) {
-    var models = [ModelSourceBuilder().withYaml(yaml).build()];
-    var analyzer = StatefulAnalyzer(config, models, onErrorsCollector(collector));
-    var definitions = analyzer.validateAll();
-    return definitions.firstOrNull as ModelClassDefinition?;
-  }
+  test(
+    'Given a class without a secure property, '
+    'when validating, '
+    'then no row security conditions are defined.',
+    () {
+      var models = [
+        ModelSourceBuilder().withYaml('''
+        class: Example
+        table: example
+        fields:
+          author: UuidValue
+        ''').build(),
+      ];
 
-  test('Given a class without a secure property then securityConditions is empty.', () {
-    var collector = CodeGenerationCollector();
-    var definition = validate(
-      '''
-      class: Example
-      table: example
-      fields:
-        author: UuidValue
-      ''',
-      collector,
-    );
+      var collector = CodeGenerationCollector();
+      var analyzer = StatefulAnalyzer(
+        config,
+        models,
+        onErrorsCollector(collector),
+      );
+      var definitions = analyzer.validateAll();
+      var definition = definitions.first as ModelClassDefinition;
 
-    expect(collector.errors, isEmpty);
-    expect(definition?.securityConditions, isEmpty);
-  });
+      expect(collector.errors, isEmpty);
+      expect(definition.securityConditions, isEmpty);
+    },
+  );
 
-  test('Given a class with secure matching a UuidValue field then the condition is parsed without errors.', () {
-    var collector = CodeGenerationCollector();
-    var definition = validate(
-      '''
-      class: Example
-      table: example
-      secure: userIdentifier=author
-      fields:
-        author: UuidValue
-      ''',
-      collector,
-    );
+  test(
+    'Given a class with secure matching a UuidValue field, '
+    'when validating, '
+    'then the row security condition is accepted.',
+    () {
+      var models = [
+        ModelSourceBuilder().withYaml('''
+        class: Example
+        table: example
+        secure: userIdentifier=author
+        fields:
+          author: UuidValue
+        ''').build(),
+      ];
 
-    expect(collector.errors, isEmpty, reason: 'Expected no errors.');
-    expect(definition?.securityConditions, hasLength(1));
-    expect(
-      definition?.securityConditions.first.authField,
-      RowSecurityAuthField.userIdentifier,
-    );
-    expect(definition?.securityConditions.first.fieldName, 'author');
-  });
+      var collector = CodeGenerationCollector();
+      var analyzer = StatefulAnalyzer(
+        config,
+        models,
+        onErrorsCollector(collector),
+      );
+      var definitions = analyzer.validateAll();
+      var definition = definitions.first as ModelClassDefinition;
 
-  test('Given a class with multiple secure conditions then all are parsed.', () {
-    var collector = CodeGenerationCollector();
-    var definition = validate(
-      '''
-      class: Example
-      table: example
-      secure: userIdentifier=author, userIdentifier=owner
-      fields:
-        author: UuidValue
-        owner: UuidValue
-      ''',
-      collector,
-    );
+      expect(collector.errors, isEmpty, reason: 'Expected no errors.');
+      expect(definition.securityConditions, hasLength(1));
+      expect(
+        definition.securityConditions.first.authField,
+        RowSecurityAuthField.userIdentifier,
+      );
+      expect(definition.securityConditions.first.fieldName, 'author');
+    },
+  );
 
-    expect(collector.errors, isEmpty, reason: 'Expected no errors.');
-    expect(definition?.securityConditions, hasLength(2));
-  });
+  test(
+    'Given a class with multiple secure conditions, '
+    'when validating, '
+    'then all row security conditions are accepted.',
+    () {
+      var models = [
+        ModelSourceBuilder().withYaml('''
+        class: Example
+        table: example
+        secure: userIdentifier=author, userIdentifier=owner
+        fields:
+          author: UuidValue
+          owner: UuidValue
+        ''').build(),
+      ];
 
-  test('Given a secure property without a table then an error is reported.', () {
-    var collector = CodeGenerationCollector();
-    validate(
-      '''
-      class: Example
-      secure: userIdentifier=author
-      fields:
-        author: UuidValue
-      ''',
-      collector,
-    );
+      var collector = CodeGenerationCollector();
+      var analyzer = StatefulAnalyzer(
+        config,
+        models,
+        onErrorsCollector(collector),
+      );
+      var definitions = analyzer.validateAll();
+      var definition = definitions.first as ModelClassDefinition;
 
-    expect(collector.errors, isNotEmpty);
-    expect(
-      collector.errors.first.message,
-      contains('can only be used on classes with a "table" property'),
-    );
-  });
+      expect(collector.errors, isEmpty, reason: 'Expected no errors.');
+      expect(definition.securityConditions, hasLength(2));
+    },
+  );
 
-  test('Given a secure property referencing a non-existent field then an error is reported.', () {
-    var collector = CodeGenerationCollector();
-    validate(
-      '''
-      class: Example
-      table: example
-      secure: userIdentifier=missing
-      fields:
-        author: UuidValue
-      ''',
-      collector,
-    );
+  test(
+    'Given a secure property without a table, '
+    'when validating, '
+    'then an error is reported.',
+    () {
+      var models = [
+        ModelSourceBuilder().withYaml('''
+        class: Example
+        secure: userIdentifier=author
+        fields:
+          author: UuidValue
+        ''').build(),
+      ];
 
-    expect(collector.errors, isNotEmpty);
-    expect(
-      collector.errors.first.message,
-      contains('does not exist on this model'),
-    );
-  });
+      var collector = CodeGenerationCollector();
+      var analyzer = StatefulAnalyzer(
+        config,
+        models,
+        onErrorsCollector(collector),
+      );
+      analyzer.validateAll();
 
-  test('Given a secure property matching a non-UUID field then an error is reported.', () {
-    var collector = CodeGenerationCollector();
-    validate(
-      '''
-      class: Example
-      table: example
-      secure: userIdentifier=author
-      fields:
-        author: int
-      ''',
-      collector,
-    );
+      expect(collector.errors, isNotEmpty);
+      expect(
+        collector.errors.first.message,
+        contains('can only be used on classes with a "table" property'),
+      );
+    },
+  );
 
-    expect(collector.errors, isNotEmpty);
-    expect(
-      collector.errors.first.message,
-      contains('must be of type "UuidValue"'),
-    );
-  });
+  test(
+    'Given a secure property referencing a non-existent field, '
+    'when validating, '
+    'then an error is reported.',
+    () {
+      var models = [
+        ModelSourceBuilder().withYaml('''
+        class: Example
+        table: example
+        secure: userIdentifier=missing
+        fields:
+          author: UuidValue
+        ''').build(),
+      ];
 
-  test('Given a secure property using the unsupported scope field then an error is reported.', () {
-    var collector = CodeGenerationCollector();
-    validate(
-      '''
-      class: Example
-      table: example
-      secure: scope=admin
-      fields:
-        author: UuidValue
-      ''',
-      collector,
-    );
+      var collector = CodeGenerationCollector();
+      var analyzer = StatefulAnalyzer(
+        config,
+        models,
+        onErrorsCollector(collector),
+      );
+      analyzer.validateAll();
 
-    expect(collector.errors, isNotEmpty);
-    expect(
-      collector.errors.first.message,
-      contains('"scope" authentication field is not yet supported'),
-    );
-  });
+      expect(collector.errors, isNotEmpty);
+      expect(
+        collector.errors.first.message,
+        contains('does not exist on this model'),
+      );
+    },
+  );
 
-  test('Given a malformed secure condition then an error is reported.', () {
-    var collector = CodeGenerationCollector();
-    validate(
-      '''
-      class: Example
-      table: example
-      secure: userIdentifier
-      fields:
-        author: UuidValue
-      ''',
-      collector,
-    );
+  test(
+    'Given a secure property matching a non-UUID field, '
+    'when validating, '
+    'then an error is reported.',
+    () {
+      var models = [
+        ModelSourceBuilder().withYaml('''
+        class: Example
+        table: example
+        secure: userIdentifier=author
+        fields:
+          author: int
+        ''').build(),
+      ];
 
-    expect(collector.errors, isNotEmpty);
-    expect(
-      collector.errors.first.message,
-      contains('Expected the format "authField=fieldName"'),
-    );
-  });
+      var collector = CodeGenerationCollector();
+      var analyzer = StatefulAnalyzer(
+        config,
+        models,
+        onErrorsCollector(collector),
+      );
+      analyzer.validateAll();
+
+      expect(collector.errors, isNotEmpty);
+      expect(
+        collector.errors.first.message,
+        contains('must be of type "UuidValue"'),
+      );
+    },
+  );
+
+  test(
+    'Given a secure property using the unsupported scope field, '
+    'when validating, '
+    'then an error is reported.',
+    () {
+      var models = [
+        ModelSourceBuilder().withYaml('''
+        class: Example
+        table: example
+        secure: scope=admin
+        fields:
+          author: UuidValue
+        ''').build(),
+      ];
+
+      var collector = CodeGenerationCollector();
+      var analyzer = StatefulAnalyzer(
+        config,
+        models,
+        onErrorsCollector(collector),
+      );
+      analyzer.validateAll();
+
+      expect(collector.errors, isNotEmpty);
+      expect(
+        collector.errors.first.message,
+        contains('"scope" authentication field is not yet supported'),
+      );
+    },
+  );
+
+  test(
+    'Given a malformed secure condition, '
+    'when validating, '
+    'then an error is reported.',
+    () {
+      var models = [
+        ModelSourceBuilder().withYaml('''
+        class: Example
+        table: example
+        secure: userIdentifier
+        fields:
+          author: UuidValue
+        ''').build(),
+      ];
+
+      var collector = CodeGenerationCollector();
+      var analyzer = StatefulAnalyzer(
+        config,
+        models,
+        onErrorsCollector(collector),
+      );
+      analyzer.validateAll();
+
+      expect(collector.errors, isNotEmpty);
+      expect(
+        collector.errors.first.message,
+        contains('Expected the format "authField=fieldName"'),
+      );
+    },
+  );
 }

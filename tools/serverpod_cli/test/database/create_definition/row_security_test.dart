@@ -27,13 +27,21 @@ void main() {
       ])
       .build();
 
-  group('Given a model converted to a database definition', () {
-    test('then an unsecured table has null rowSecurityPolicies.', () {
+  test(
+    'Given a model without row security, '
+    'when converted to a database definition, '
+    'then the table has no row security policies.',
+    () {
       var table = fromModel(unsecuredModel()).tables.single;
       expect(table.rowSecurityPolicies, isNull);
-    });
+    },
+  );
 
-    test('then a secured table has a row security policy for the field.', () {
+  test(
+    'Given a model with row security, '
+    'when converted to a database definition, '
+    'then the table has a row security policy for the secured field.',
+    () {
       var table = fromModel(securedModel()).tables.single;
       expect(table.rowSecurityPolicies, hasLength(1));
       var policy = table.rowSecurityPolicies!.single;
@@ -41,28 +49,48 @@ void main() {
       expect(policy.column, 'author');
       expect(policy.sessionVariable, 'serverpod.user_id');
       expect(policy.castType, 'uuid');
-    });
-  });
+    },
+  );
 
-  group('Given the PostgreSQL schema SQL for a secured table', () {
+  group('Given a secured model, ', () {
     late String sql;
+
     setUp(() => sql = fromModel(securedModel()).toPgSql(installedModules: []));
 
-    test('then row level security is enabled and forced.', () {
-      expect(sql, contains('ALTER TABLE "channel" ENABLE ROW LEVEL SECURITY;'));
-      expect(sql, contains('ALTER TABLE "channel" FORCE ROW LEVEL SECURITY;'));
-    });
+    test(
+      'when PostgreSQL schema SQL is generated, '
+      'then row level security is enabled and forced.',
+      () {
+        expect(
+          sql,
+          contains('ALTER TABLE "channel" ENABLE ROW LEVEL SECURITY;'),
+        );
+        expect(
+          sql,
+          contains('ALTER TABLE "channel" FORCE ROW LEVEL SECURITY;'),
+        );
+      },
+    );
 
-    test('then a policy comparing the column to the session variable is created.', () {
-      expect(sql, contains('CREATE POLICY "channel_author_rls" ON "channel"'));
-      expect(
-        sql,
-        contains('"author" = current_setting(\'serverpod.user_id\', true)::uuid'),
-      );
-    });
+    test(
+      'when PostgreSQL schema SQL is generated, '
+      'then a policy comparing the column to the session variable is created.',
+      () {
+        expect(
+          sql,
+          contains('CREATE POLICY "channel_author_rls" ON "channel"'),
+        );
+        expect(
+          sql,
+          contains(
+            '"author" = current_setting(\'serverpod.user_id\', true)::uuid',
+          ),
+        );
+      },
+    );
   });
 
-  group('Given a migration', () {
+  group('Given a database migration, ', () {
     String migrationSql({
       required DatabaseDefinition source,
       required DatabaseDefinition target,
@@ -78,35 +106,53 @@ void main() {
       );
     }
 
-    test('adding security enables RLS and creates the policy.', () {
-      var sql = migrationSql(
-        source: fromModel(unsecuredModel()),
-        target: fromModel(securedModel()),
-      );
-      expect(sql, contains('ENABLE ROW LEVEL SECURITY'));
-      expect(sql, contains('CREATE POLICY "channel_author_rls"'));
-    });
+    test(
+      'when security is added to a model, '
+      'then RLS is enabled and the policy is created.',
+      () {
+        var sql = migrationSql(
+          source: fromModel(unsecuredModel()),
+          target: fromModel(securedModel()),
+        );
+        expect(sql, contains('ENABLE ROW LEVEL SECURITY'));
+        expect(sql, contains('CREATE POLICY "channel_author_rls"'));
+      },
+    );
 
-    test('removing security drops the policy and disables RLS.', () {
-      var sql = migrationSql(
-        source: fromModel(securedModel()),
-        target: fromModel(unsecuredModel()),
-      );
-      expect(sql, contains('DROP POLICY IF EXISTS "channel_author_rls" ON "channel";'));
-      expect(sql, contains('DISABLE ROW LEVEL SECURITY'));
-    });
+    test(
+      'when security is removed from a model, '
+      'then the policy is dropped and RLS is disabled.',
+      () {
+        var sql = migrationSql(
+          source: fromModel(securedModel()),
+          target: fromModel(unsecuredModel()),
+        );
+        expect(
+          sql,
+          contains('DROP POLICY IF EXISTS "channel_author_rls" ON "channel";'),
+        );
+        expect(sql, contains('DISABLE ROW LEVEL SECURITY'));
+      },
+    );
 
-    test('no security change produces no migration.', () {
-      var migration = generateDatabaseMigration(
-        databaseSource: fromModel(securedModel()),
-        databaseTarget: fromModel(securedModel()),
-      );
-      expect(migration.isEmpty, isTrue);
-    });
+    test(
+      'when security is unchanged, '
+      'then no migration is produced.',
+      () {
+        var migration = generateDatabaseMigration(
+          databaseSource: fromModel(securedModel()),
+          databaseTarget: fromModel(securedModel()),
+        );
+        expect(migration.isEmpty, isTrue);
+      },
+    );
   });
 
-  group('Given the SQLite dialect', () {
-    test('then row security policies are stripped and a warning is logged.', () {
+  test(
+    'Given a secured model and the SQLite dialect, '
+    'when the database definition is adapted, '
+    'then row security policies are stripped and a warning is logged.',
+    () {
       var warnings = <String>[];
       var filtered = fromModel(securedModel()).forDialect(
         DatabaseDialect.sqlite,
@@ -119,6 +165,6 @@ void main() {
         warnings.join('\n'),
         contains('Row-level security is not supported'),
       );
-    });
-  });
+    },
+  );
 }
