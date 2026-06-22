@@ -186,6 +186,13 @@ final class ModelClassDefinition extends ClassDefinition {
 
   final bool manageMigration;
 
+  /// The row-level security conditions declared with the `secure` keyword.
+  ///
+  /// Each condition restricts row access to rows where a model field matches a
+  /// value from the request's `AuthenticationInfo`. Empty when the model is not
+  /// secured.
+  final List<RowSecurityCondition> securityConditions;
+
   /// If set to true the class is immutable.
   final bool isImmutable;
 
@@ -210,6 +217,7 @@ final class ModelClassDefinition extends ClassDefinition {
     this.tableName,
     this.serializationDataType,
     this.indexes = const [],
+    this.securityConditions = const [],
     super.subDirParts,
     super.documentation,
     super.sharedPackageName,
@@ -577,6 +585,37 @@ enum ModelDatabaseDefinition {
   server,
   client,
   all,
+}
+
+/// The authentication field referenced on the left-hand side of a `secure`
+/// condition.
+enum RowSecurityAuthField {
+  /// Matches `AuthenticationInfo.userIdentifier` (always a UUID).
+  userIdentifier;
+
+  /// The session variable name used by the generated PostgreSQL policy and set
+  /// at runtime with `SET LOCAL`.
+  String get sessionVariable => switch (this) {
+    RowSecurityAuthField.userIdentifier => 'serverpod.user_id',
+  };
+}
+
+/// A single condition declared with the `secure` keyword, restricting row
+/// access based on a match between an [AuthenticationInfo] field and a model
+/// field.
+class RowSecurityCondition {
+  /// The authentication field to match (currently always
+  /// [RowSecurityAuthField.userIdentifier]).
+  final RowSecurityAuthField authField;
+
+  /// The name of the model field that must match the [authField] value.
+  final String fieldName;
+
+  /// Create a new [RowSecurityCondition].
+  const RowSecurityCondition({
+    required this.authField,
+    required this.fieldName,
+  });
 }
 
 /// The definition of an index for a file, that is also stored in the database.

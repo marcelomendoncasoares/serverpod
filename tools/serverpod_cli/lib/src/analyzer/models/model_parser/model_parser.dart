@@ -2,6 +2,7 @@ import 'package:serverpod_cli/src/analyzer/models/converter/converter.dart';
 import 'package:serverpod_cli/src/analyzer/models/definitions.dart';
 import 'package:serverpod_cli/src/analyzer/models/serialization_data_type.dart';
 import 'package:serverpod_cli/src/analyzer/models/utils/quote_utils.dart';
+import 'package:serverpod_cli/src/analyzer/models/utils/row_security_parser.dart';
 import 'package:serverpod_cli/src/analyzer/models/validation/keywords.dart';
 import 'package:serverpod_cli/src/config/config.dart';
 import 'package:serverpod_cli/src/generator/types.dart';
@@ -33,6 +34,7 @@ class ModelParser {
 
     var tableName = _parseTableName(documentContents);
     var database = _parseDatabase(documentContents);
+    var securityConditions = _parseSecurityConditions(documentContents);
     var serializationDataType = _parseSerializationDataType(documentContents);
 
     return _initializeFromClassFields(
@@ -66,6 +68,7 @@ class ModelParser {
               fileName: outFileName,
               fields: fields,
               indexes: indexes,
+              securityConditions: securityConditions,
               subDirParts: protocolSource.subDirPathParts,
               documentation: classDocumentation,
               serverOnly: serverOnly,
@@ -302,6 +305,17 @@ class ModelParser {
     if (tableName is! String) return null;
 
     return tableName;
+  }
+
+  static List<RowSecurityCondition> _parseSecurityConditions(
+    YamlMap documentContents,
+  ) {
+    var secure = documentContents.nodes[Keyword.secure]?.value;
+    if (secure is! String) return const [];
+
+    // Only syntactically valid conditions are kept here; semantic and syntax
+    // errors are surfaced to the user by the model restrictions.
+    return RowSecurityParser.parse(secure).conditions;
   }
 
   static ModelDatabaseDefinition _parseDatabase(YamlMap documentContents) {

@@ -3,6 +3,7 @@ import 'package:serverpod_cli/src/analyzer/code_analysis_collector.dart';
 import 'package:serverpod_cli/src/analyzer/models/checker/analyze_checker.dart';
 import 'package:serverpod_cli/src/analyzer/models/converter/converter.dart';
 import 'package:serverpod_cli/src/analyzer/models/definitions.dart';
+import 'package:serverpod_cli/src/analyzer/models/utils/row_security_parser.dart';
 import 'package:serverpod_cli/src/analyzer/models/validation/keywords.dart';
 import 'package:serverpod_cli/src/analyzer/models/validation/restrictions/default.dart';
 import 'package:serverpod_cli/src/analyzer/models/validation/restrictions/scope.dart';
@@ -321,6 +322,90 @@ class Restrictions {
           span,
         ),
       );
+    }
+
+    return errors;
+  }
+
+  List<SourceSpanSeverityException> validateSecureKey(
+    String parentNodeName,
+    String _,
+    SourceSpan? span,
+  ) {
+    if (documentDefinition?.isSharedModel ?? false) {
+      return [
+        SourceSpanSeverityException(
+          'The "secure" property is not allowed in shared packages.',
+          span,
+        ),
+      ];
+    }
+
+    var definition = documentDefinition;
+    if (definition is ModelClassDefinition && definition.tableName == null) {
+      return [
+        SourceSpanSeverityException(
+          'The "secure" property can only be used on classes with a "table" '
+          'property.',
+          span,
+        ),
+      ];
+    }
+
+    return [];
+  }
+
+  List<SourceSpanSeverityException> validateSecure(
+    String parentNodeName,
+    dynamic content,
+    SourceSpan? span,
+  ) {
+    if (content is! String) {
+      return [
+        SourceSpanSeverityException(
+          'The "secure" property must be a string, '
+          'e.g. "userIdentifier=fieldName".',
+          span,
+        ),
+      ];
+    }
+
+    var result = RowSecurityParser.parse(content);
+
+    var errors = [
+      for (var error in result.errors)
+        SourceSpanSeverityException(error, span),
+    ];
+
+    var definition = documentDefinition;
+    if (definition is! ModelClassDefinition) return errors;
+
+    for (var condition in result.conditions) {
+      var field = definition.fieldsIncludingInherited
+          .where((field) => field.name == condition.fieldName)
+          .firstOrNull;
+
+      if (field == null) {
+        errors.add(
+          SourceSpanSeverityException(
+            'The field "${condition.fieldName}" referenced in "secure" does '
+            'not exist on this model.',
+            span,
+          ),
+        );
+        continue;
+      }
+
+      if (condition.authField == RowSecurityAuthField.userIdentifier &&
+          field.type.className != 'UuidValue') {
+        errors.add(
+          SourceSpanSeverityException(
+            'The field "${condition.fieldName}" must be of type "UuidValue" to '
+            'match "userIdentifier" in "secure", but is "${field.type.className}".',
+            span,
+          ),
+        );
+      }
     }
 
     return errors;

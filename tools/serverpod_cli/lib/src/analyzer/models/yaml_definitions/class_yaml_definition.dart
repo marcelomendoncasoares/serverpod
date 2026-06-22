@@ -49,6 +49,11 @@ class ClassYamlDefinition {
         },
       ),
       ValidateNode(
+        Keyword.secure,
+        keyRestriction: restrictions.validateSecureKey,
+        valueRestriction: restrictions.validateSecure,
+      ),
+      ValidateNode(
         Keyword.serializationDataType,
         valueRestriction: EnumValueRestriction(
           enums: SerializationDataType.values,
