@@ -24,6 +24,7 @@ abstract class TableDefinition implements _i1.SerializableModel {
     required this.columns,
     required this.foreignKeys,
     required this.indexes,
+    this.rowSecurityPolicies,
     this.managed,
   });
 
@@ -36,6 +37,7 @@ abstract class TableDefinition implements _i1.SerializableModel {
     required List<_i2.ColumnDefinition> columns,
     required List<_i2.ForeignKeyDefinition> foreignKeys,
     required List<_i2.IndexDefinition> indexes,
+    List<_i2.RowSecurityPolicyDefinition>? rowSecurityPolicies,
     bool? managed,
   }) = _TableDefinitionImpl;
 
@@ -55,6 +57,11 @@ abstract class TableDefinition implements _i1.SerializableModel {
       indexes: _i2.Protocol().deserialize<List<_i2.IndexDefinition>>(
         jsonSerialization['indexes'],
       ),
+      rowSecurityPolicies: jsonSerialization['rowSecurityPolicies'] == null
+          ? null
+          : _i2.Protocol().deserialize<List<_i2.RowSecurityPolicyDefinition>>(
+              jsonSerialization['rowSecurityPolicies'],
+            ),
       managed: jsonSerialization['managed'] == null
           ? null
           : _i1.BoolJsonExtension.fromJson(jsonSerialization['managed']),
@@ -86,6 +93,11 @@ abstract class TableDefinition implements _i1.SerializableModel {
   /// All the indexes of this table.
   List<_i2.IndexDefinition> indexes;
 
+  /// The row-level security policies of this table. A non-empty list means row
+  /// level security is enabled (and forced) on the table. Null, if this is
+  /// unknown (e.g. when analyzing an older database).
+  List<_i2.RowSecurityPolicyDefinition>? rowSecurityPolicies;
+
   /// Indicates if the table should be managed by Serverpod.
   /// Null, if this is unknown.
   bool? managed;
@@ -102,6 +114,7 @@ abstract class TableDefinition implements _i1.SerializableModel {
     List<_i2.ColumnDefinition>? columns,
     List<_i2.ForeignKeyDefinition>? foreignKeys,
     List<_i2.IndexDefinition>? indexes,
+    List<_i2.RowSecurityPolicyDefinition>? rowSecurityPolicies,
     bool? managed,
   });
   @override
@@ -116,6 +129,10 @@ abstract class TableDefinition implements _i1.SerializableModel {
       'columns': columns.toJson(valueToJson: (v) => v.toJson()),
       'foreignKeys': foreignKeys.toJson(valueToJson: (v) => v.toJson()),
       'indexes': indexes.toJson(valueToJson: (v) => v.toJson()),
+      if (rowSecurityPolicies != null)
+        'rowSecurityPolicies': rowSecurityPolicies?.toJson(
+          valueToJson: (v) => v.toJson(),
+        ),
       if (managed != null) 'managed': managed,
     };
   }
@@ -138,6 +155,7 @@ class _TableDefinitionImpl extends TableDefinition {
     required List<_i2.ColumnDefinition> columns,
     required List<_i2.ForeignKeyDefinition> foreignKeys,
     required List<_i2.IndexDefinition> indexes,
+    List<_i2.RowSecurityPolicyDefinition>? rowSecurityPolicies,
     bool? managed,
   }) : super._(
          name: name,
@@ -148,6 +166,7 @@ class _TableDefinitionImpl extends TableDefinition {
          columns: columns,
          foreignKeys: foreignKeys,
          indexes: indexes,
+         rowSecurityPolicies: rowSecurityPolicies,
          managed: managed,
        );
 
@@ -164,6 +183,7 @@ class _TableDefinitionImpl extends TableDefinition {
     List<_i2.ColumnDefinition>? columns,
     List<_i2.ForeignKeyDefinition>? foreignKeys,
     List<_i2.IndexDefinition>? indexes,
+    Object? rowSecurityPolicies = _Undefined,
     Object? managed = _Undefined,
   }) {
     return TableDefinition(
@@ -176,6 +196,10 @@ class _TableDefinitionImpl extends TableDefinition {
       foreignKeys:
           foreignKeys ?? this.foreignKeys.map((e0) => e0.copyWith()).toList(),
       indexes: indexes ?? this.indexes.map((e0) => e0.copyWith()).toList(),
+      rowSecurityPolicies:
+          rowSecurityPolicies is List<_i2.RowSecurityPolicyDefinition>?
+          ? rowSecurityPolicies
+          : this.rowSecurityPolicies?.map((e0) => e0.copyWith()).toList(),
       managed: managed is bool? ? managed : this.managed,
     );
   }

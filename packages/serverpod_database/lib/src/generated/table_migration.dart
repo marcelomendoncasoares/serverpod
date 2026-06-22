@@ -26,6 +26,8 @@ abstract class TableMigration implements _i1.SerializableModel {
     required this.deleteIndexes,
     required this.addForeignKeys,
     required this.deleteForeignKeys,
+    required this.addRowSecurityPolicies,
+    required this.deleteRowSecurityPolicies,
     required this.warnings,
   });
 
@@ -41,6 +43,8 @@ abstract class TableMigration implements _i1.SerializableModel {
     required List<String> deleteIndexes,
     required List<_i2.ForeignKeyDefinition> addForeignKeys,
     required List<String> deleteForeignKeys,
+    required List<_i2.RowSecurityPolicyDefinition> addRowSecurityPolicies,
+    required List<String> deleteRowSecurityPolicies,
     required List<_i2.DatabaseMigrationWarning> warnings,
   }) = _TableMigrationImpl;
 
@@ -72,6 +76,13 @@ abstract class TableMigration implements _i1.SerializableModel {
       deleteForeignKeys: _i2.Protocol().deserialize<List<String>>(
         jsonSerialization['deleteForeignKeys'],
       ),
+      addRowSecurityPolicies: _i2.Protocol()
+          .deserialize<List<_i2.RowSecurityPolicyDefinition>>(
+            jsonSerialization['addRowSecurityPolicies'],
+          ),
+      deleteRowSecurityPolicies: _i2.Protocol().deserialize<List<String>>(
+        jsonSerialization['deleteRowSecurityPolicies'],
+      ),
       warnings: _i2.Protocol().deserialize<List<_i2.DatabaseMigrationWarning>>(
         jsonSerialization['warnings'],
       ),
@@ -100,6 +111,10 @@ abstract class TableMigration implements _i1.SerializableModel {
 
   List<String> deleteForeignKeys;
 
+  List<_i2.RowSecurityPolicyDefinition> addRowSecurityPolicies;
+
+  List<String> deleteRowSecurityPolicies;
+
   List<_i2.DatabaseMigrationWarning> warnings;
 
   /// Returns a shallow copy of this [TableMigration]
@@ -117,6 +132,8 @@ abstract class TableMigration implements _i1.SerializableModel {
     List<String>? deleteIndexes,
     List<_i2.ForeignKeyDefinition>? addForeignKeys,
     List<String>? deleteForeignKeys,
+    List<_i2.RowSecurityPolicyDefinition>? addRowSecurityPolicies,
+    List<String>? deleteRowSecurityPolicies,
     List<_i2.DatabaseMigrationWarning>? warnings,
   });
   @override
@@ -134,6 +151,10 @@ abstract class TableMigration implements _i1.SerializableModel {
       'deleteIndexes': deleteIndexes.toJson(),
       'addForeignKeys': addForeignKeys.toJson(valueToJson: (v) => v.toJson()),
       'deleteForeignKeys': deleteForeignKeys.toJson(),
+      'addRowSecurityPolicies': addRowSecurityPolicies.toJson(
+        valueToJson: (v) => v.toJson(),
+      ),
+      'deleteRowSecurityPolicies': deleteRowSecurityPolicies.toJson(),
       'warnings': warnings.toJson(valueToJson: (v) => v.toJson()),
     };
   }
@@ -159,6 +180,8 @@ class _TableMigrationImpl extends TableMigration {
     required List<String> deleteIndexes,
     required List<_i2.ForeignKeyDefinition> addForeignKeys,
     required List<String> deleteForeignKeys,
+    required List<_i2.RowSecurityPolicyDefinition> addRowSecurityPolicies,
+    required List<String> deleteRowSecurityPolicies,
     required List<_i2.DatabaseMigrationWarning> warnings,
   }) : super._(
          name: name,
@@ -172,6 +195,8 @@ class _TableMigrationImpl extends TableMigration {
          deleteIndexes: deleteIndexes,
          addForeignKeys: addForeignKeys,
          deleteForeignKeys: deleteForeignKeys,
+         addRowSecurityPolicies: addRowSecurityPolicies,
+         deleteRowSecurityPolicies: deleteRowSecurityPolicies,
          warnings: warnings,
        );
 
@@ -191,6 +216,8 @@ class _TableMigrationImpl extends TableMigration {
     List<String>? deleteIndexes,
     List<_i2.ForeignKeyDefinition>? addForeignKeys,
     List<String>? deleteForeignKeys,
+    List<_i2.RowSecurityPolicyDefinition>? addRowSecurityPolicies,
+    List<String>? deleteRowSecurityPolicies,
     List<_i2.DatabaseMigrationWarning>? warnings,
   }) {
     return TableMigration(
@@ -214,6 +241,12 @@ class _TableMigrationImpl extends TableMigration {
           this.addForeignKeys.map((e0) => e0.copyWith()).toList(),
       deleteForeignKeys:
           deleteForeignKeys ?? this.deleteForeignKeys.map((e0) => e0).toList(),
+      addRowSecurityPolicies:
+          addRowSecurityPolicies ??
+          this.addRowSecurityPolicies.map((e0) => e0.copyWith()).toList(),
+      deleteRowSecurityPolicies:
+          deleteRowSecurityPolicies ??
+          this.deleteRowSecurityPolicies.map((e0) => e0).toList(),
       warnings: warnings ?? this.warnings.map((e0) => e0.copyWith()).toList(),
     );
   }

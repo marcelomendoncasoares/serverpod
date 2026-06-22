@@ -1,0 +1,17 @@
+### The definition of a (desired) row-level security policy in the database.
+###
+### A policy restricts access to rows of a table to those where [column] matches
+### a session variable that Serverpod sets per transaction from the
+### authenticated user.
+class: RowSecurityPolicyDefinition
+fields:
+  ### The user defined name of the policy.
+  name: String
+  ### The column that is matched against the [sessionVariable].
+  column: String
+  ### The PostgreSQL session variable (set with `SET LOCAL`) the [column] is
+  ### matched against, e.g. `serverpod.user_id`.
+  sessionVariable: String
+  ### The type the [sessionVariable] is cast to before being compared with the
+  ### [column], e.g. `uuid`. If null, the value is compared as text.
+  castType: String?

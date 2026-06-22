@@ -15,4 +15,7 @@ fields:
   addForeignKeys: List<ForeignKeyDefinition>
   deleteForeignKeys: List<String>
 
+  addRowSecurityPolicies: List<RowSecurityPolicyDefinition>
+  deleteRowSecurityPolicies: List<String>
+
   warnings: List<DatabaseMigrationWarning>
