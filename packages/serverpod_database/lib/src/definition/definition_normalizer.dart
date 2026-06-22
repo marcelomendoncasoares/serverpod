@@ -41,6 +41,7 @@ TableDefinition _normalizeTable(TableDefinition table) {
     columns: table.columns.map(_normalizeColumn).toList(),
     foreignKeys: table.foreignKeys,
     indexes: table.indexes.where((idx) => !idx.isPrimary).toList(),
+    rowSecurityPolicies: table.rowSecurityPolicies,
     managed: table.managed,
   );
 }

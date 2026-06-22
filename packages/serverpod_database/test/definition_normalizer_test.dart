@@ -40,6 +40,45 @@ void main() {
     expect(identical(result, def), isTrue);
   });
 
+  test('Given a v1 definition with row security policies '
+      'when normalized '
+      'then the policies are preserved.', () {
+    var def = DatabaseDefinition(
+      moduleName: moduleName,
+      tables: [
+        TableDefinition(
+          name: 'channel',
+          schema: 'public',
+          columns: [
+            ColumnDefinition(
+              name: defaultPrimaryKeyName,
+              columnType: ColumnType.integer,
+              isNullable: false,
+            ),
+          ],
+          foreignKeys: [],
+          indexes: [],
+          rowSecurityPolicies: [
+            RowSecurityPolicyDefinition(
+              name: 'channel_author_rls',
+              column: 'author',
+              sessionVariable: 'serverpod.user_id',
+              castType: 'uuid',
+            ),
+          ],
+        ),
+      ],
+      installedModules: installedModules,
+      migrationApiVersion: migrationApiVersion,
+    );
+
+    var result = normalizeDefinitionToV2(def);
+
+    var table = result.tables.single;
+    expect(table.rowSecurityPolicies, hasLength(1));
+    expect(table.rowSecurityPolicies!.single.name, 'channel_author_rls');
+  });
+
   test('Given a v1 definition '
       'when normalized '
       'then the schemaVersion is set to 2.', () {
@@ -680,6 +719,8 @@ void main() {
             deleteIndexes: [],
             addForeignKeys: [],
             deleteForeignKeys: [],
+            addRowSecurityPolicies: [],
+            deleteRowSecurityPolicies: [],
             warnings: [],
           ),
         ),
@@ -751,6 +792,8 @@ void main() {
               deleteIndexes: [],
               addForeignKeys: [],
               deleteForeignKeys: [],
+              addRowSecurityPolicies: [],
+              deleteRowSecurityPolicies: [],
               warnings: [],
             ),
           ),
@@ -823,6 +866,8 @@ void main() {
               deleteIndexes: [],
               addForeignKeys: [],
               deleteForeignKeys: [],
+              addRowSecurityPolicies: [],
+              deleteRowSecurityPolicies: [],
               warnings: [],
             ),
           ),
