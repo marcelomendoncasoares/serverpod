@@ -3,12 +3,21 @@ import '../../serverpod_database.dart';
 /// Restrictions on the database definition for the current dialect.
 class DatabaseDefinitionRestrictions {
   /// Creates a new [DatabaseDefinitionRestrictions] for the current dialect.
-  const DatabaseDefinitionRestrictions({this.supportedIndexTypes});
+  const DatabaseDefinitionRestrictions({
+    this.supportedIndexTypes,
+    this.supportsRowLevelSecurity = true,
+  });
 
   /// List of supported index types for the current dialect.
   ///
   /// If null, all index types are supported (default).
   final List<String>? supportedIndexTypes;
+
+  /// Whether the dialect supports row-level security policies.
+  ///
+  /// Defaults to true. When false, row security policies are stripped from the
+  /// generated SQL (with a warning), as the dialect cannot enforce them.
+  final bool supportsRowLevelSecurity;
 }
 
 /// Extensions on [DatabaseDefinitionRestrictions] to adapt the database
@@ -42,17 +51,45 @@ extension TableDefinitionRestrictionsEx on List<TableDefinition> {
     final restrictions = provider.definitionRestrictions;
     final supportedIndexTypes = restrictions.supportedIndexTypes;
 
-    if (supportedIndexTypes == null) {
-      return this;
+    var tables = this;
+
+    // Strip row-level security policies on dialects that cannot enforce them.
+    if (!restrictions.supportsRowLevelSecurity) {
+      final securedTables = tables
+          .where((t) => t.rowSecurityPolicies?.isNotEmpty ?? false)
+          .toList();
+
+      if (securedTables.isNotEmpty) {
+        logWarnings?.call(
+          'Row-level security is not supported by the database dialect '
+          '"${dialect.name}" and will not be enforced for the following '
+          'tables:\n'
+          '${securedTables.map((t) => '  • ${t.name}').join('\n')}\n',
+        );
+
+        tables = [
+          for (var t in tables)
+            (t.rowSecurityPolicies?.isNotEmpty ?? false)
+                ? t.copyWith(rowSecurityPolicies: null)
+                : t,
+        ];
+      }
     }
 
-    final unsupportedIndexes = map(
-      (t) => t.indexes
-          .where((i) => !supportedIndexTypes.contains(i.type))
-          .toList(),
-    ).expand((t) => t).toList();
+    if (supportedIndexTypes == null) {
+      return tables;
+    }
 
-    if (unsupportedIndexes.isEmpty) return this;
+    final unsupportedIndexes = tables
+        .map(
+          (t) => t.indexes
+              .where((i) => !supportedIndexTypes.contains(i.type))
+              .toList(),
+        )
+        .expand((t) => t)
+        .toList();
+
+    if (unsupportedIndexes.isEmpty) return tables;
 
     logWarnings?.call(
       'The following indexes will be skipped due to unsupported types by the '
@@ -61,7 +98,7 @@ extension TableDefinitionRestrictionsEx on List<TableDefinition> {
     );
 
     return [
-      for (var t in this)
+      for (var t in tables)
         t.copyWith(
           indexes: t.indexes
               .where((i) => supportedIndexTypes.contains(i.type))

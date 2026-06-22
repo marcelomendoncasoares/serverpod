@@ -383,6 +383,40 @@ TableMigration? generateTableMigration(
     }
   }
 
+  // Find added, modified and deleted row security policies. A modified policy
+  // (same name, different definition) is both deleted and re-added.
+  var srcPolicies = srcTable.rowSecurityPolicies ?? const [];
+  var dstPolicies = dstTable.rowSecurityPolicies ?? const [];
+
+  bool policiesLike(
+    RowSecurityPolicyDefinition a,
+    RowSecurityPolicyDefinition b,
+  ) =>
+      a.name == b.name &&
+      a.column == b.column &&
+      a.sessionVariable == b.sessionVariable &&
+      a.castType == b.castType;
+
+  var addRowSecurityPolicies = <RowSecurityPolicyDefinition>[];
+  for (var dstPolicy in dstPolicies) {
+    var srcPolicy = srcPolicies
+        .where((p) => p.name == dstPolicy.name)
+        .firstOrNull;
+    if (srcPolicy == null || !policiesLike(srcPolicy, dstPolicy)) {
+      addRowSecurityPolicies.add(dstPolicy);
+    }
+  }
+
+  var deleteRowSecurityPolicies = <String>[];
+  for (var srcPolicy in srcPolicies) {
+    var dstPolicy = dstPolicies
+        .where((p) => p.name == srcPolicy.name)
+        .firstOrNull;
+    if (dstPolicy == null || !policiesLike(srcPolicy, dstPolicy)) {
+      deleteRowSecurityPolicies.add(srcPolicy.name);
+    }
+  }
+
   // Check that all added columns can be created in a modification of the table
   for (var column in addColumns) {
     if (!column.canBeCreatedInTableMigration) {
@@ -412,6 +446,8 @@ TableMigration? generateTableMigration(
     addIndexes: addIndexes,
     deleteForeignKeys: deleteForeignKeys,
     addForeignKeys: addForeignKeys,
+    addRowSecurityPolicies: addRowSecurityPolicies,
+    deleteRowSecurityPolicies: deleteRowSecurityPolicies,
     warnings: warnings,
   );
 }

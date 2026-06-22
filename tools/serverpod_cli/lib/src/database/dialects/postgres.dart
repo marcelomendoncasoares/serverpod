@@ -147,6 +147,16 @@ extension PostgresTableDefinitionPgSqlGeneration on TableDefinition {
       }
     }
 
+    var policies = rowSecurityPolicies;
+    if (policies != null && policies.isNotEmpty) {
+      out += '\n';
+      out += '-- Row-level security\n';
+      out += _enableRowLevelSecuritySql(name);
+      for (var policy in policies) {
+        out += policy.toPgSql(tableName: name);
+      }
+    }
+
     out += '\n';
 
     return out;
@@ -322,6 +332,29 @@ extension GinIndexOperatorClass on GinOperatorClass {
   }
 }
 
+extension PostgresRowSecurityPolicyPgSqlGeneration
+    on RowSecurityPolicyDefinition {
+  String toPgSql({required String tableName}) {
+    var cast = castType != null ? '::$castType' : '';
+    return 'CREATE POLICY "$name" ON "$tableName"\n'
+        '    USING ("$column" = current_setting(\'$sessionVariable\', true)$cast);\n';
+  }
+}
+
+/// Enables and forces row-level security on a table. Forcing ensures the table
+/// owner is also subject to the policies. Enabling an already-enabled table is a
+/// no-op, so this is safe to emit on every migration that adds a policy.
+String _enableRowLevelSecuritySql(String tableName) {
+  return 'ALTER TABLE "$tableName" ENABLE ROW LEVEL SECURITY;\n'
+      'ALTER TABLE "$tableName" FORCE ROW LEVEL SECURITY;\n';
+}
+
+/// Disables row-level security on a table, used when the last policy is removed.
+String _disableRowLevelSecuritySql(String tableName) {
+  return 'ALTER TABLE "$tableName" NO FORCE ROW LEVEL SECURITY;\n'
+      'ALTER TABLE "$tableName" DISABLE ROW LEVEL SECURITY;\n';
+}
+
 extension PostgresForeignKeyDefinitionPgSqlGeneration on ForeignKeyDefinition {
   String toPgSql({
     required String tableName,
@@ -490,7 +523,7 @@ extension PostgresMigrationActionPgSqlGeneration on DatabaseMigrationAction {
         out += '-- ACTION ALTER TABLE\n';
         out += '--\n';
         out += alterTable!.toPgSql(
-          databaseDefinition.findTableNamed(alterTable!.name)!.columns,
+          databaseDefinition.findTableNamed(alterTable!.name)!,
         );
         break;
     }
@@ -519,8 +552,14 @@ extension PostgresMigrationActionPgSqlGeneration on DatabaseMigrationAction {
 }
 
 extension PostgresTableMigrationPgSqlGenerator on TableMigration {
-  String toPgSql(List<ColumnDefinition> targetColumns) {
+  String toPgSql(TableDefinition targetTable) {
+    var targetColumns = targetTable.columns;
     var out = '';
+
+    // Drop row security policies (before dropping columns they may reference)
+    for (var deletePolicy in deleteRowSecurityPolicies) {
+      out += 'DROP POLICY IF EXISTS "$deletePolicy" ON "$name";\n';
+    }
 
     // Drop indexes
     for (var deleteIndex in deleteIndexes) {
@@ -566,6 +605,20 @@ extension PostgresTableMigrationPgSqlGenerator on TableMigration {
     // Add indexes
     for (var addIndex in addIndexes) {
       out += addIndex.toPgSql(tableName: name);
+    }
+
+    // Add row security policies (after the columns they reference exist)
+    if (addRowSecurityPolicies.isNotEmpty) {
+      out += _enableRowLevelSecuritySql(name);
+      for (var policy in addRowSecurityPolicies) {
+        out += policy.toPgSql(tableName: name);
+      }
+    }
+
+    // Disable row-level security when the last policy was removed.
+    var remainingPolicies = targetTable.rowSecurityPolicies ?? const [];
+    if (deleteRowSecurityPolicies.isNotEmpty && remainingPolicies.isEmpty) {
+      out += _disableRowLevelSecuritySql(name);
     }
 
     return out;

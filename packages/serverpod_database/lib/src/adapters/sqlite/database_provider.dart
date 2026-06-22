@@ -18,6 +18,7 @@ class SqliteDatabaseProvider implements DatabaseProvider {
   DatabaseDefinitionRestrictions get definitionRestrictions =>
       const DatabaseDefinitionRestrictions(
         supportedIndexTypes: ['btree'],
+        supportsRowLevelSecurity: false,
       );
 
   @override
