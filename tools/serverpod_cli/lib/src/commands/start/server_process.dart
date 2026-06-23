@@ -34,6 +34,7 @@ class ServerProcess {
   /// the file instead of parsing stdout. IDEs use this path in their
   /// `vmServiceInfoFile` launch configuration to auto-attach.
   final String? _vmServiceInfoFile;
+  final Map<String, String>? _environment;
 
   Process? _process;
   StreamSubscription? _sigtermSub;
@@ -58,6 +59,7 @@ class ServerProcess {
     String? dartExecutable,
     bool enableVmService = false,
     String? vmServiceInfoFile,
+    Map<String, String>? environment,
     IOSink? stdoutSink,
     IOSink? stderrSink,
   }) : _serverDir = serverDir,
@@ -65,6 +67,7 @@ class ServerProcess {
        _dartExecutable = dartExecutable ?? p.join(getSdkPath(), 'bin', 'dart'),
        _enableVmService = enableVmService,
        _vmServiceInfoFile = vmServiceInfoFile,
+       _environment = environment,
        _stdout = stdoutSink ?? stdout,
        _stderr = stderrSink ?? stderr;
 
@@ -124,6 +127,8 @@ class ServerProcess {
       _dartExecutable,
       args,
       workingDirectory: _serverDir,
+      environment: _environment,
+      includeParentEnvironment: true,
     );
     _process = process;
 

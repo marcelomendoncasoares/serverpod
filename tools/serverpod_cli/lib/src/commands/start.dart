@@ -14,6 +14,7 @@ import 'package:serverpod_cli/src/commands/start/file_watcher.dart';
 import 'package:serverpod_cli/src/commands/start/flutter_app_manager.dart';
 import 'package:serverpod_cli/src/commands/start/flutter_dependency_tracker.dart';
 import 'package:serverpod_cli/src/commands/start/flutter_process.dart';
+import 'package:serverpod_cli/src/commands/start/free_port.dart';
 import 'package:serverpod_cli/src/commands/start/kernel_compiler.dart';
 import 'package:serverpod_cli/src/commands/start/mcp_server.dart';
 import 'package:serverpod_cli/src/commands/start/mcp_socket.dart';
@@ -348,11 +349,12 @@ List<String> _withApplyMigrations(List<String> serverArgs) {
 Future<void> _applyMigrationsForSession({
   required String serverDir,
   required String runMode,
+  int? insightsPortOverride,
 }) async {
   final client = ConfigInfo(
     runMode,
     serverDir: serverDir,
-  ).createServiceClient();
+  ).createServiceClient(insightsPortOverride: insightsPortOverride);
   try {
     await client.insights.applyMigrations(
       applyRepairMigration: true,
@@ -594,6 +596,51 @@ Future<WatchLoopSetupResult> _setupWatchLoop({
   // IDE-facing Flutter VM-service proxies. Bound now so info files exist at
   // session start regardless of whether `--flutter` was passed.
   final runMode = runModeFromServerArgs(serverArgs.value);
+
+  // Dynamic port mode: `apiServer.port: 0` in config triggers free-port
+  // assignment for all three servers for the lifetime of this session.
+  Map<String, String>? podEnv;
+  int? resolvedInsightsPort;
+  final configOverridePaths = <String>[];
+  try {
+    final runtimeConfig = ConfigInfo(runMode, serverDir: serverDir);
+    if (runtimeConfig.config.apiServer.port == 0) {
+      final ports = await findFreePorts(3);
+      final apiPort = ports[0];
+      resolvedInsightsPort = ports[1];
+      final webPort = ports[2];
+      podEnv = {
+        ServerpodEnv.apiPort.envVariable: '$apiPort',
+        ServerpodEnv.apiPublicPort.envVariable: '$apiPort',
+        ServerpodEnv.insightsPort.envVariable: '$resolvedInsightsPort',
+        ServerpodEnv.insightsPublicPort.envVariable: '$resolvedInsightsPort',
+        ServerpodEnv.webPort.envVariable: '$webPort',
+        ServerpodEnv.webPublicPort.envVariable: '$webPort',
+      };
+      log.info(
+        'Server will listen on http://localhost:$apiPort '
+        '(insights $resolvedInsightsPort, web $webPort)',
+      );
+      if (flutterApps.isNotEmpty) {
+        final apiUrl = 'http://localhost:$apiPort';
+        for (final app in flutterApps) {
+          final overridePath = p.join(
+            p.joinAll(app.pathParts),
+            'assets',
+            'config_override.json',
+          );
+          await Directory(p.dirname(overridePath)).create(recursive: true);
+          await File(overridePath).writeAsString(
+            jsonEncode({'apiUrl': apiUrl}),
+          );
+          configOverridePaths.add(overridePath);
+        }
+      }
+    }
+  } catch (_) {
+    // Missing or invalid config: not dynamic mode.
+  }
+
   final flutterManager = FlutterAppManager(
     apps: flutterApps,
     serverpodToolDir: serverpodToolDir,
@@ -621,6 +668,7 @@ Future<WatchLoopSetupResult> _setupWatchLoop({
       dartExecutable: dartExecutable,
       enableVmService: true,
       vmServiceInfoFile: podInfoFile,
+      environment: podEnv,
       stdoutSink: serverStdoutSink,
       stderrSink: serverStderrSink,
     );
@@ -685,6 +733,7 @@ Future<WatchLoopSetupResult> _setupWatchLoop({
     applyMigrationsAction: () => _applyMigrationsForSession(
       serverDir: serverDir,
       runMode: runMode,
+      insightsPortOverride: resolvedInsightsPort,
     ),
   );
 
@@ -724,6 +773,7 @@ Future<WatchLoopSetupResult> _setupWatchLoop({
           }) => _createRepairMigrationForMcp(
             config,
             runMode: runMode,
+            insightsPortOverride: resolvedInsightsPort,
             tag: tag,
             force: force,
             targetMigrationVersion: targetMigrationVersion,
@@ -789,6 +839,7 @@ Future<WatchLoopSetupResult> _setupWatchLoop({
       closeAnalyzers: closeAnalyzers,
       stopDocker: startedDocker ? () => _stopDockerServices(serverDir) : null,
       vmServiceInfoFile: vmServiceInfoFile,
+      configOverridePaths: configOverridePaths,
     ),
   );
 }
@@ -1442,6 +1493,7 @@ Future<void> _runCreateRepairMigrationForTui(
 Future<CreateMigrationMcpResult> _createRepairMigrationForMcp(
   GeneratorConfig config, {
   required String runMode,
+  int? insightsPortOverride,
   String? tag,
   bool force = false,
   String? targetMigrationVersion,
@@ -1452,6 +1504,7 @@ Future<CreateMigrationMcpResult> _createRepairMigrationForMcp(
       config: config,
       tag: tag,
       runMode: runMode,
+      insightsPortOverride: insightsPortOverride,
       force: force,
       targetMigrationVersion: targetMigrationVersion,
     );

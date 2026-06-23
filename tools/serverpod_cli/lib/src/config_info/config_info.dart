@@ -17,7 +17,7 @@ class ConfigInfo {
     );
   }
 
-  Client createServiceClient() {
+  Client createServiceClient({int? insightsPortOverride}) {
     var keyManager = ServiceAuthKeyProvider('CLI', config);
 
     var insightsServer = config.insightsServer;
@@ -25,9 +25,11 @@ class ConfigInfo {
       throw StateError('Insights server not configured.');
     }
 
+    final port = insightsPortOverride ?? insightsServer.publicPort;
+
     return Client(
       '${insightsServer.publicScheme}://'
-      '${insightsServer.publicHost}:${insightsServer.port}/',
+      '${insightsServer.publicHost}:$port/',
     )..authKeyProvider = keyManager;
   }
 }

@@ -7,6 +7,9 @@
 # facing ports.
 
 # Configuration for the main API server.
+# Set `port: 0` to have `serverpod start` pick free ports for the API,
+# Insights, and web servers and forward the API URL to the Flutter app via
+# `assets/config_override.json`.
 apiServer:
   port: 8080
   publicHost: localhost

@@ -45,6 +45,51 @@ class _NullIOSink implements IOSink {
   void writeln([Object? object = '']) {}
 }
 
+class _CollectingIOSink implements IOSink {
+  _CollectingIOSink(this._lines);
+
+  final List<String> _lines;
+
+  @override
+  Encoding encoding = utf8;
+
+  @override
+  void add(List<int> data) {
+    _lines.add(utf8.decode(data));
+  }
+
+  @override
+  void addError(Object error, [StackTrace? stackTrace]) {}
+
+  @override
+  Future addStream(Stream<List<int>> stream) => stream.drain();
+
+  @override
+  Future close() async {}
+
+  @override
+  Future get done => Future.value();
+
+  @override
+  Future flush() async {}
+
+  @override
+  void write(Object? object) {
+    _lines.add(object.toString());
+  }
+
+  @override
+  void writeAll(Iterable objects, [String separator = '']) {}
+
+  @override
+  void writeCharCode(int charCode) {}
+
+  @override
+  void writeln([Object? object = '']) {
+    _lines.add('$object\n');
+  }
+}
+
 void main() {
   setUpAll(() {
     initializeLogger();
@@ -87,6 +132,47 @@ void main() {
         final exitCode = await serverProcess.exitCode;
         expect(exitCode, 0);
         expect(serverProcess.isRunning, isFalse);
+      },
+    );
+  });
+
+  group('Given a ServerProcess with a custom environment,', () {
+    late Directory tempDir;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp(
+        'server_process_env_test_',
+      );
+      await _createMinimalDartProject(tempDir.path);
+      await File('${tempDir.path}/bin/main.dart').writeAsString('''
+import 'dart:io';
+void main() {
+  stdout.writeln(Platform.environment['SERVERPOD_TEST_ENV'] ?? '');
+}
+''');
+    });
+
+    tearDown(() async {
+      await tempDir.delete(recursive: true);
+    });
+
+    test(
+      'when started, '
+      'then the child process receives the passed environment.',
+      () async {
+        final output = <String>[];
+        final serverProcess = ServerProcess(
+          serverDir: tempDir.path,
+          serverArgs: [],
+          environment: const {'SERVERPOD_TEST_ENV': 'passed-through'},
+          stdoutSink: _CollectingIOSink(output),
+          stderrSink: _NullIOSink(),
+        );
+
+        await serverProcess.start();
+        await serverProcess.exitCode;
+
+        expect(output.join(), contains('passed-through'));
       },
     );
   });

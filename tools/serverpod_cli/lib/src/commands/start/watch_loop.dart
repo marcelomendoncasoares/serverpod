@@ -43,6 +43,7 @@ class WatchLoopContext {
   final Future<void> Function() closeAnalyzers;
   final Future<void> Function()? stopDocker;
   final String vmServiceInfoFile;
+  final List<String> configOverridePaths;
   bool _disposed = false;
 
   WatchLoopContext({
@@ -54,6 +55,7 @@ class WatchLoopContext {
     required this.closeAnalyzers,
     required this.stopDocker,
     required this.vmServiceInfoFile,
+    this.configOverridePaths = const [],
   });
 
   /// Whether [dispose] has been called.
@@ -69,6 +71,9 @@ class WatchLoopContext {
     await proxy()?.close();
     await flutterManager.dispose();
     await File(vmServiceInfoFile).deleteIfExists();
+    for (final path in configOverridePaths) {
+      await File(path).deleteIfExists();
+    }
     await stopDocker?.call();
   }
 }

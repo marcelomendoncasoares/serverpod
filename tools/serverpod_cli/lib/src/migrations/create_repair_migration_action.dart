@@ -42,6 +42,7 @@ Future<File?> createRepairMigrationAction({
   String? tag,
   bool force = false,
   String? targetMigrationVersion,
+  int? insightsPortOverride,
 }) async {
   if (!config.isFeatureEnabled(ServerpodFeature.database)) {
     throw const RepairMigrationException(
@@ -70,5 +71,6 @@ Future<File?> createRepairMigrationAction({
     runMode: runMode,
     dialect: config.databaseDialect,
     targetMigrationVersion: targetMigrationVersion,
+    insightsPortOverride: insightsPortOverride,
   );
 }

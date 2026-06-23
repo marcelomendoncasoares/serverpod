@@ -45,3 +45,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Written by `serverpod start` when using dynamic ports (`apiServer.port: 0`).
+assets/config_override.json
+

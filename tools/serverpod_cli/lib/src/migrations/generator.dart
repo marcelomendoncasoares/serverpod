@@ -200,6 +200,7 @@ class MigrationGenerator {
     required String runMode,
     required DatabaseDialect dialect,
     String? targetMigrationVersion,
+    int? insightsPortOverride,
   }) async {
     var migrationVersion =
         targetMigrationVersion ??
@@ -224,7 +225,7 @@ class MigrationGenerator {
     var client = ConfigInfo(
       runMode,
       serverDir: path.normalize(path.absolute(directory.path)),
-    ).createServiceClient();
+    ).createServiceClient(insightsPortOverride: insightsPortOverride);
     DatabaseDefinition liveDatabase;
     try {
       liveDatabase = normalizeDefinitionToV2(
