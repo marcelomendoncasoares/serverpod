@@ -15,7 +15,7 @@ PostgreSQL's native **Row-Level Security (RLS)**: policies are generated as part
 of database migrations, and Serverpod seeds a per-transaction session variable
 (`SET LOCAL serverpod.user_id = …`) into the transaction so the policies resolve
 against the authenticated user. Developers query secured tables through a
-dedicated, user-scoped transaction (`session.transactionForUser(...)`); the
+dedicated, user-scoped transaction (`session.db.transactionForUser(...)`); the
 framework supplies the identity, never the developer.
 
 ```yaml
@@ -167,7 +167,7 @@ Parsed representation — a new value object, e.g. `RowSecurityCondition { AuthF
 `userIdentifier` is always a UUID, so the matched model field is a UUID column
 (`UuidValue`). The session variable is written as text and the policy casts it
 back to `uuid` for the comparison:
-`"author" = current_setting('serverpod.user_id', true)::uuid`. An unset variable
+`"author" = NULLIF(current_setting('serverpod.user_id', true), '')::uuid`. An unset variable
 yields `NULL::uuid` → no match (safe). Validation should require the matched field
 to be a UUID column and produce a clear error otherwise.
 
@@ -180,7 +180,7 @@ ALTER TABLE "channel" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "channel" FORCE ROW LEVEL SECURITY;  -- so table owner is also bound
 
 CREATE POLICY "channel_rls_userIdentifier_author" ON "channel"
-  USING ("author" = current_setting('serverpod.user_id', true)::uuid);
+  USING ("author" = NULLIF(current_setting('serverpod.user_id', true), '')::uuid);
 ```
 
 At runtime, before any query in a request touches the database, Serverpod sets
@@ -200,7 +200,7 @@ as a role with `BYPASSRLS` (see [Privileged sessions](#privileged-and-internal-s
 
 **Design decision:** secured tables are queried **only** inside an explicit,
 user-scoped transaction opened with a dedicated method —
-`session.transactionForUser(...)` — that the developer passes to the operation.
+`session.db.transactionForUser(...)` — that the developer passes to the operation.
 The framework does **not** open transactions automatically, and does **not** seed
 the auth context onto the plain `transaction()` primitive:
 
@@ -216,7 +216,7 @@ auditable**, and lets the call fail loud instead of silently empty:
 
 ```dart
 // Developer code — user-scoped transaction for operations on secured tables.
-await session.transactionForUser((tx) async {
+await session.db.transactionForUser((tx) async {
   // The framework seeded `SET LOCAL serverpod.user_id` on `tx` from
   // session.authenticated, so RLS resolves to the current user.
   return Channel.db.find(session, transaction: tx);
@@ -225,26 +225,40 @@ await session.transactionForUser((tx) async {
 
 Semantics:
 
-- **Identity is derived from the session**, never passed as a parameter:
-  `transactionForUser` reads `session.authenticated.userIdentifier`. No `userId`
-  argument in the common path — an explicit id would be an impersonation footgun.
-  (An advanced `actingAs`-style overload gated for system/bypass use can be added
-  later if a real need appears.)
-- **Throws a clear error when the session is not authenticated**, rather than
-  opening an unscoped transaction that silently returns zero rows from secured
-  tables.
+- **Identity comes from the session, never a parameter.** `Session` exposes the
+  settings as `transactionForUserSettings`
+  (`{'serverpod.user_id': authenticated.userIdentifier}` when authenticated, else
+  `null`); `transactionForUser` applies them. No `userId` argument in the common
+  path — an explicit id would be an impersonation footgun. (An advanced
+  `actingAs`-style overload gated for system/bypass use can be added later.)
+- **Throws a clear error when the session provides no settings** (for example,
+  when it is not authenticated), rather than opening an unscoped transaction that
+  silently returns zero rows from secured tables.
 - **Plain `transaction()` stays the unscoped primitive** — no auth context. It is
   used by system/admin code and the `BYPASSRLS` paths. Touching a secured table
-  inside a plain `transaction()` (or with no transaction at all) leaves
-  `current_setting(...)` `NULL`, so it matches no rows — a safe default, and the
-  explicit method name makes the "wrong transaction" mistake discoverable. A
-  runtime warning when a secured table is read outside a user-scoped transaction
-  is recommended to shorten that debugging loop.
+  inside a plain `transaction()` (or with no transaction at all) leaves the
+  session variable unset, so the policy matches no rows — a safe default. The
+  policy wraps the value in `NULLIF(current_setting(...), '')` so that an unset or
+  empty variable resolves to `NULL` rather than failing the `::uuid` cast on a
+  pooled connection where the placeholder has already been registered.
 
-The framework's only job is to **seed the auth context into the `transactionForUser`
-transaction**: it issues `SET LOCAL serverpod.user_id = …` on it (via
-`Transaction.setRuntimeParameters` and the `RuntimeParameters` subclass below). The
-developer never writes the `SET LOCAL` themselves; they only choose the right
+The mechanism is a **generic passthrough**, so `serverpod_database` stays unaware
+of authentication:
+
+- `DatabaseSession` exposes `Map<String, String>? get transactionForUserSettings`.
+  `Session` is the only auth-aware piece, populating it from
+  `authenticated.userIdentifier`; this lives in the `serverpod` package.
+- `Database.transactionForUser` is an **extension** over `transaction()` and
+  `transactionForUserSettings`. It opens a transaction, applies the settings as
+  `SET LOCAL` runtime parameters (`MapRuntimeParameters` +
+  `Transaction.setRuntimeParameters`), runs the developer's function, and throws a
+  `StateError` if the session provides none. Being an extension rather than an
+  instance method, database wrappers — such as the test rollback proxy that
+  `implements Database` — get the correct behavior through their own
+  `transaction()` without reimplementing it; they only provide the
+  `transactionForUserSettings` getter.
+
+The developer never writes the `SET LOCAL` themselves; they only choose the right
 transaction method.
 
 This also sidesteps the pooled-connection problem. `SET LOCAL` lives only for the
@@ -253,25 +267,6 @@ current transaction, and Serverpod uses a pooled connection — so a non-`LOCAL`
 connection. Because the context is only ever set `LOCAL` on an explicit
 transaction, it is bound to, and torn down with, that transaction; nothing persists
 on the pooled connection.
-
-The `RuntimeParameters` subclass the framework seeds onto the transaction:
-
-```dart
-class ServerpodAuthContext extends RuntimeParameters {
-  ServerpodAuthContext({required this.userId, this.scopes});
-  final String userId;       // AuthenticationInfo.userIdentifier (UUID)
-  final List<String>? scopes;
-
-  @override
-  Map<String, dynamic> get options => {
-    'serverpod.user_id': userId,
-    if (scopes != null) 'serverpod.scopes': scopes!.join(','),
-  };
-}
-```
-
-(`RuntimeParameters.buildStatements(isLocal: true)` already produces
-`SET LOCAL serverpod.user_id = '123';` and quotes the value via `ValueEncoder`.)
 
 The context is set once on the outermost transaction; nested transactions /
 savepoints inherit it. Developer ergonomics — needing `transactionForUser` to read
@@ -351,19 +346,21 @@ Sequenced so each phase compiles and is independently testable.
 
 ### Phase 5 — Runtime injection
 
-1. Add `ServerpodAuthContext extends RuntimeParameters` (and a builder on
-   `RuntimeParametersBuilder`) in
-   [runtime_parameters.dart](../../packages/serverpod_database/lib/src/concepts/runtime_parameters.dart).
-2. Add a dedicated `transactionForUser` method to the `Session` class that opens
-   a transaction and seeds
-   `ServerpodAuthContext(userId: session.authenticated!.userIdentifier)` onto it
-   via `Transaction.setRuntimeParameters`. It derives the identity from
-   `session.authenticated` and throws if the session is unauthenticated. The plain
-   `transaction()` primitive is left unscoped, and the framework does **not** open
-   transactions automatically (see
+1. Add `Map<String, String>? get transactionForUserSettings` to the
+   `DatabaseSession` interface
+   ([database_session.dart](../../packages/serverpod_database/lib/src/interface/database_session.dart));
+   the non-auth implementors return `null`.
+2. Implement the getter on `Session`
+   ([session.dart](../../packages/serverpod/lib/src/server/session.dart)),
+   returning `{'serverpod.user_id': authenticated.userIdentifier}` when
+   authenticated, else `null`.
+3. Add `transactionForUser` as an **extension** on `Database`
+   ([database.dart](../../packages/serverpod_database/lib/src/database.dart)) that
+   opens a transaction, applies `transactionForUserSettings` as `SET LOCAL`
+   parameters (`MapRuntimeParameters` + `Transaction.setRuntimeParameters`), and
+   throws when none are present. The plain `transaction()` primitive stays
+   unscoped, and the framework does **not** open transactions automatically (see
    [Runtime injection](#runtime-injection--a-dedicated-transactionforuser)).
-3. Optionally emit a runtime warning when a secured table is read outside a
-   user-scoped transaction, to shorten the "got zero rows" debugging loop.
 4. Ensure internal/maintenance sessions (future calls, migrations, health
    checks) bypass RLS by connecting as a dedicated `BYPASSRLS` role (see
    [Privileged sessions](#privileged-and-internal-sessions)).
@@ -422,7 +419,7 @@ silently insecure.
   Developers open a transaction and pass it to operations on secured tables.
 - **Dedicated `transactionForUser` — resolved.** Rather than auto-seeding the auth
   context onto the plain `transaction()` (ambient, invisible at the call site),
-  user scoping is opted into explicitly via `session.transactionForUser(...)`.
+  user scoping is opted into explicitly via `session.db.transactionForUser(...)`.
   It derives the user from `session.authenticated`, throws if unauthenticated, and
   keeps `transaction()` as the unscoped primitive for system/`BYPASSRLS` paths.
   Chosen for explicitness, auditability, and a loud (not silently-empty) failure
@@ -431,7 +428,7 @@ silently insecure.
   transaction are acceptable for the first iteration and can be optimized later.
 - **Identity type — resolved.** `userIdentifier` is always a UUID, so the matched
   field is a UUID column. The policy casts the session variable back to `uuid`
-  (`... = current_setting('serverpod.user_id', true)::uuid`); validation requires
+  (`... = NULLIF(current_setting('serverpod.user_id', true), '')::uuid`); validation requires
   the matched field to be a UUID column.
 - **Keyword naming — resolved.** Use `userIdentifier` as the public keyword token
   (matches the runtime field, always a UUID). No `userId` alias.
