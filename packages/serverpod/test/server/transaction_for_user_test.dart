@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod/src/generated/protocol.dart' as internal;
-import 'package:serverpod_database/serverpod_database.dart';
 import 'package:test/test.dart';
 
 import 'test_helpers/empty_endpoints.dart';
@@ -15,77 +14,10 @@ final portZeroConfig = ServerConfig(
   publicPort: 0,
 );
 
-class _CapturingDatabase implements Database {
-  _CapturingDatabase(this.inner);
-
-  final Database inner;
-  ServerpodAuthContext? capturedAuthContext;
-
-  @override
-  DatabaseAnalyzer get analyzer => inner.analyzer;
-
-  @override
-  DatabaseDialect get dialect => inner.dialect;
-
-  @override
-  DatabaseSerializationManager get serializationManager =>
-      inner.serializationManager;
-
-  @override
-  Future<bool> testConnection() => inner.testConnection();
-
-  @override
-  Future<R> transaction<R>(
-    TransactionFunction<R> transactionFunction, {
-    TransactionSettings? settings,
-  }) {
-    return inner.transaction((transaction) async {
-      var capturingTransaction = _CapturingTransaction(
-        transaction,
-        (context) => capturedAuthContext = context,
-      );
-      return transactionFunction(capturingTransaction);
-    }, settings: settings);
-  }
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-class _CapturingTransaction implements Transaction {
-  _CapturingTransaction(this.inner, this.onAuthContext);
-
-  final Transaction inner;
-  final void Function(ServerpodAuthContext context) onAuthContext;
-
-  @override
-  Future<void> cancel() => inner.cancel();
-
-  @override
-  Future<Savepoint> createSavepoint() => inner.createSavepoint();
-
-  @override
-  Map<String, dynamic> get runtimeParameters => inner.runtimeParameters;
-
-  @override
-  Future<void> setRuntimeParameters(
-    RuntimeParametersListBuilder builder,
-  ) async {
-    var parameters = builder(RuntimeParametersBuilder());
-    for (var parameter in parameters) {
-      if (parameter is ServerpodAuthContext) {
-        onAuthContext(parameter);
-      }
-    }
-    return inner.setRuntimeParameters(builder);
-  }
-}
-
 void main() {
   late Directory tempDir;
   late String databasePath;
   late Serverpod pod;
-  late _CapturingDatabase capturingDatabase;
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('transaction_for_user_');
@@ -100,10 +32,6 @@ void main() {
         webServer: portZeroConfig,
         database: SqliteDatabaseConfig(filePath: databasePath),
       ),
-      databaseInterceptor: (session, inner) {
-        capturingDatabase = _CapturingDatabase(inner);
-        return capturingDatabase;
-      },
     );
   });
 
@@ -122,18 +50,20 @@ void main() {
     });
 
     test(
-      'when transactionForUser is called, '
+      'when transactionForUserSettings is read, '
+      'then it is null.',
+      () {
+        expect(session.transactionForUserSettings, isNull);
+      },
+    );
+
+    test(
+      'when db.transactionForUser is called, '
       'then a StateError is thrown.',
       () {
         expect(
-          () => session.transactionForUser((_) async => null),
-          throwsA(
-            isA<StateError>().having(
-              (error) => error.message,
-              'message',
-              contains('requires an authenticated session'),
-            ),
-          ),
+          () => session.db.transactionForUser((_) async => null),
+          throwsA(isA<StateError>()),
         );
       },
     );
@@ -155,20 +85,35 @@ void main() {
     });
 
     test(
-      'when transactionForUser is called, '
-      'then the authenticated user id is set as a runtime parameter.',
-      () async {
-        await session.transactionForUser((_) async => null);
-
-        expect(capturingDatabase.capturedAuthContext?.userId, userId);
+      'when transactionForUserSettings is read, '
+      'then it exposes the user id as serverpod.user_id.',
+      () {
+        expect(
+          session.transactionForUserSettings,
+          {'serverpod.user_id': userId},
+        );
       },
     );
 
     test(
-      'when transactionForUser is called, '
+      'when db.transactionForUser is called, '
+      'then the user settings are applied as runtime parameters.',
+      () async {
+        var runtimeParameters = await session.db.transactionForUser(
+          (transaction) async => transaction.runtimeParameters,
+        );
+
+        expect(runtimeParameters['serverpod.user_id'], userId);
+      },
+    );
+
+    test(
+      'when db.transactionForUser is called, '
       'then the transaction function result is returned.',
       () async {
-        var result = await session.transactionForUser((_) async => 'done');
+        var result = await session.db.transactionForUser(
+          (_) async => 'done',
+        );
 
         expect(result, 'done');
       },

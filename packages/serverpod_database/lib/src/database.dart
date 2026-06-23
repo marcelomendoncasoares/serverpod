@@ -611,10 +611,56 @@ class Database {
     );
   }
 
+  /// The runtime parameters applied with `SET LOCAL` by [transactionForUser],
+  /// sourced from the [DatabaseSession]. Null when the session provides none
+  /// (for example, when it is not authenticated).
+  Map<String, String>? get transactionForUserSettings =>
+      _session.transactionForUserSettings;
+
   /// Tests the database connection.
   /// Returns true if the connection is working.
   /// Throws an exception if the connection is not working.
   Future<bool> testConnection() {
     return _databaseConnection.testConnection();
+  }
+}
+
+/// Adds user-scoped transactions to [Database].
+extension DatabaseTransactionForUser on Database {
+  /// Executes a [Transaction] scoped to the session's user.
+  ///
+  /// The session's [transactionForUserSettings] are applied as `SET LOCAL`
+  /// runtime parameters for the duration of the transaction, so that row-level
+  /// security policies on secured tables resolve against them. Pass the provided
+  /// [Transaction] to all database operations on secured tables.
+  ///
+  /// Throws a [StateError] if the session provides no settings (for example,
+  /// when it is not authenticated).
+  ///
+  /// Implemented as an extension over [transaction] and
+  /// [transactionForUserSettings] so that database wrappers (such as the test
+  /// rollback proxy) get the correct behavior without reimplementing it.
+  Future<R> transactionForUser<R>(
+    TransactionFunction<R> transactionFunction, {
+    TransactionSettings? settings,
+  }) {
+    var userSettings = transactionForUserSettings;
+    if (userSettings == null || userSettings.isEmpty) {
+      throw StateError(
+        'transactionForUser requires the session to provide '
+        'transactionForUserSettings (for example, an authenticated user), but '
+        'none were available.',
+      );
+    }
+
+    return transaction<R>(
+      (transaction) async {
+        await transaction.setRuntimeParameters(
+          (_) => [MapRuntimeParameters(userSettings)],
+        );
+        return transactionFunction(transaction);
+      },
+      settings: settings,
+    );
   }
 }

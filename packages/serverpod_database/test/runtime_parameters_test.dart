@@ -5,31 +5,6 @@ import 'package:test/test.dart';
 void main() {
   ValueEncoder.set(const PostgresValueEncoder());
 
-  group('Given a ServerpodAuthContext with a user id, ', () {
-    test(
-      'when options is accessed, '
-      'then the user id is exposed as serverpod.user_id.',
-      () {
-        var context = const ServerpodAuthContext(userId: 'user-123');
-        expect(context.options, {'serverpod.user_id': 'user-123'});
-      },
-    );
-
-    test(
-      'when build is called with isLocal true, '
-      'then a SET LOCAL statement is produced.',
-      () {
-        var context = const ServerpodAuthContext(
-          userId: '123e4567-e89b-12d3-a456-426614174000',
-        );
-        expect(
-          context.build(isLocal: true),
-          "SET LOCAL serverpod.user_id = '123e4567-e89b-12d3-a456-426614174000';",
-        );
-      },
-    );
-  });
-
   group('Given a comprehensive RuntimeParameters implementation', () {
     test(
       'when build is called with all parameter types then correct SQL statements are returned.',

@@ -30,4 +30,13 @@ abstract interface class DatabaseSession {
 
   /// Optional function to log a warning during the execution of a query.
   LogWarningFunction? get logWarning;
+
+  /// Runtime parameters applied with `SET LOCAL` for the duration of a
+  /// [Database.transactionForUser] call.
+  ///
+  /// Each entry is set as a database session variable (read back with
+  /// `current_setting`) so that, for example, PostgreSQL row-level security
+  /// policies can resolve against the authenticated user. Null when the session
+  /// carries no such context (for example, when it is not authenticated).
+  Map<String, String>? get transactionForUserSettings;
 }

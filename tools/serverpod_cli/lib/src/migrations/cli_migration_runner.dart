@@ -160,4 +160,7 @@ class _CliDatabaseSession implements DatabaseSession {
 
   @override
   LogWarningFunction? get logWarning => null;
+
+  @override
+  Map<String, String>? get transactionForUserSettings => null;
 }

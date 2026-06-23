@@ -94,37 +94,21 @@ abstract class Session implements DatabaseSession {
     return database;
   }
 
-  /// Runs [transactionFunction] inside a database transaction scoped to the
-  /// authenticated user.
+  /// The runtime parameters applied with `SET LOCAL` by
+  /// [Database.transactionForUser].
   ///
-  /// The authenticated user's identity is derived from [authenticated] and set
-  /// on the transaction with `SET LOCAL serverpod.user_id`, so that PostgreSQL
-  /// row-level security policies on secured tables (declared with the `secure`
-  /// model keyword) resolve against the current user. Pass the provided
-  /// [Transaction] to all database operations on secured tables.
+  /// For an authenticated session this exposes the user's identifier as
+  /// `serverpod.user_id`, so that PostgreSQL row-level security policies on
+  /// secured tables (declared with the `secure` model keyword) resolve against
+  /// the current user. Null when the session is not authenticated.
   ///
-  /// Throws a [StateError] if the session is not authenticated.
-  Future<R> transactionForUser<R>(
-    TransactionFunction<R> transactionFunction, {
-    TransactionSettings? settings,
-  }) {
-    var authInfo = authenticated;
-    if (authInfo == null) {
-      throw StateError(
-        'transactionForUser requires an authenticated session, but the '
-        'session is not authenticated.',
-      );
-    }
-
-    return db.transaction<R>(
-      (transaction) async {
-        await transaction.setRuntimeParameters(
-          (_) => [ServerpodAuthContext(userId: authInfo.userIdentifier)],
-        );
-        return transactionFunction(transaction);
-      },
-      settings: settings,
-    );
+  /// The `serverpod.user_id` key must match the session variable referenced by
+  /// the generated row security policies.
+  @override
+  Map<String, String>? get transactionForUserSettings {
+    var authInfo = _authenticated;
+    if (authInfo == null) return null;
+    return {'serverpod.user_id': authInfo.userIdentifier};
   }
 
   /// Provides access to all caches used by the server.

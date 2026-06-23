@@ -79,6 +79,9 @@ class ClientDatabaseSession implements DatabaseSession {
   @override
   LogWarningFunction? get logWarning => null;
 
+  @override
+  Map<String, String>? get transactionForUserSettings => null;
+
   /// Closes the underlying SQLite database.
   Future<void> close() => _poolManager.stop();
 }

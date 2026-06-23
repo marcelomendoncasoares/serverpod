@@ -33,6 +33,10 @@ class TestDatabaseProxy implements Database {
       _db.serializationManager;
 
   @override
+  Map<String, String>? get transactionForUserSettings =>
+      _db.transactionForUserSettings;
+
+  @override
   Future<int> count<T extends TableRow>({
     Expression? where,
     int? limit,
