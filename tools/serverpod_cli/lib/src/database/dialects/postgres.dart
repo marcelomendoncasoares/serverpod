@@ -335,9 +335,14 @@ extension GinIndexOperatorClass on GinOperatorClass {
 extension PostgresRowSecurityPolicyPgSqlGeneration
     on RowSecurityPolicyDefinition {
   String toPgSql({required String tableName}) {
-    var cast = castType != null ? '::$castType' : '';
+    // `NULLIF(..., '')` guards against an empty-string value. Once a custom
+    // session variable has been set on a connection, PostgreSQL returns '' (not
+    // NULL) for it on later queries that do not set it; without this guard the
+    // cast would fail (e.g. ''::uuid) instead of simply matching no rows.
+    var value = "NULLIF(current_setting('$sessionVariable', true), '')";
+    if (castType != null) value += '::$castType';
     return 'CREATE POLICY "$name" ON "$tableName"\n'
-        '    USING ("$column" = current_setting(\'$sessionVariable\', true)$cast);\n';
+        '    USING ("$column" = $value);\n';
   }
 }
 

@@ -83,7 +83,8 @@ void main() {
         expect(
           sql,
           contains(
-            '"author" = current_setting(\'serverpod.user_id\', true)::uuid',
+            '"author" = '
+            'NULLIF(current_setting(\'serverpod.user_id\', true), \'\')::uuid',
           ),
         );
       },

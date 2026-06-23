@@ -13,7 +13,7 @@ CREATE TABLE "secured_record" (
 ALTER TABLE "secured_record" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "secured_record" FORCE ROW LEVEL SECURITY;
 CREATE POLICY "secured_record_ownerId_rls" ON "secured_record"
-    USING ("ownerId" = current_setting('serverpod.user_id', true)::uuid);
+    USING ("ownerId" = NULLIF(current_setting('serverpod.user_id', true), '')::uuid);
 
 
 --
