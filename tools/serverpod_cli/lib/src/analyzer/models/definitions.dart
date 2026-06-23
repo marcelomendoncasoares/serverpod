@@ -596,7 +596,8 @@ enum RowSecurityAuthField {
   /// The session variable name used by the generated PostgreSQL policy and set
   /// at runtime with `SET LOCAL`.
   String get sessionVariable => switch (this) {
-    RowSecurityAuthField.userIdentifier => 'serverpod.user_id',
+    RowSecurityAuthField.userIdentifier =>
+      RowSecurityConstants.userIdParameter,
   };
 }
 

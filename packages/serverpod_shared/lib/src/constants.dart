@@ -11,6 +11,16 @@ abstract class DatabaseConstants {
   static const pgsqlMaxNameLimitation = 63;
 }
 
+/// Constants for row-level security shared between the code generator (which
+/// writes the database policies) and the runtime (which sets the values).
+abstract class RowSecurityConstants {
+  /// The PostgreSQL session variable that carries the authenticated user's
+  /// identifier. Set with `SET LOCAL` at runtime and read by generated row
+  /// security policies via `current_setting`. The generator and the runtime must
+  /// use the same name, so it lives here as a single source of truth.
+  static const userIdParameter = 'serverpod.user_id';
+}
+
 /// Migration constants used by the serverpod framework.
 abstract class MigrationConstants {
   /// Module name in database under which repair migrations are stored.

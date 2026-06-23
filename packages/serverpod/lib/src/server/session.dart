@@ -8,6 +8,7 @@ import 'package:serverpod/src/server/features.dart';
 import 'package:serverpod/src/server/log_manager/session_log_manager.dart';
 import 'package:serverpod/src/server/serverpod.dart';
 import 'package:serverpod_shared/log.dart' as shared show log, LogConvenience;
+import 'package:serverpod_shared/serverpod_shared.dart' show RowSecurityConstants;
 
 import '../cache/caches.dart';
 
@@ -97,18 +98,16 @@ abstract class Session implements DatabaseSession {
   /// The runtime parameters applied with `SET LOCAL` by
   /// [Database.transactionForUser].
   ///
-  /// For an authenticated session this exposes the user's identifier as
-  /// `serverpod.user_id`, so that PostgreSQL row-level security policies on
-  /// secured tables (declared with the `secure` model keyword) resolve against
-  /// the current user. Null when the session is not authenticated.
-  ///
-  /// The `serverpod.user_id` key must match the session variable referenced by
-  /// the generated row security policies.
+  /// For an authenticated session this exposes the user's identifier under the
+  /// shared [RowSecurityConstants.userIdParameter] key, so that PostgreSQL row
+  /// level security policies on secured tables (declared with the `secure` model
+  /// keyword) resolve against the current user. Null when the session is not
+  /// authenticated.
   @override
   Map<String, String>? get transactionForUserSettings {
     var authInfo = _authenticated;
     if (authInfo == null) return null;
-    return {'serverpod.user_id': authInfo.userIdentifier};
+    return {RowSecurityConstants.userIdParameter: authInfo.userIdentifier};
   }
 
   /// Provides access to all caches used by the server.

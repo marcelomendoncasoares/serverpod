@@ -247,7 +247,10 @@ of authentication:
 
 - `DatabaseSession` exposes `Map<String, String>? get transactionForUserSettings`.
   `Session` is the only auth-aware piece, populating it from
-  `authenticated.userIdentifier`; this lives in the `serverpod` package.
+  `authenticated.userIdentifier`; this lives in the `serverpod` package. The
+  variable name is the shared `RowSecurityConstants.userIdParameter` (in
+  `serverpod_shared`), the single source of truth used by both the policy
+  generator and the runtime so they cannot drift.
 - `Database.transactionForUser` is an **extension** over `transaction()` and
   `transactionForUserSettings`. It opens a transaction, applies the settings as
   `SET LOCAL` runtime parameters (`MapRuntimeParameters` +
