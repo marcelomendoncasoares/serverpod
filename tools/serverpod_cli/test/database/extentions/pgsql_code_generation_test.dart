@@ -1064,4 +1064,57 @@ END
       );
     },
   );
+
+  group('Given a table definition secured with row level security', () {
+    var models = [
+      ModelClassDefinitionBuilder()
+          .withTableName('channel')
+          .withSimpleField('author', 'UuidValue')
+          .withSecurityConditions([
+            const RowSecurityCondition(
+              authField: RowSecurityAuthField.userIdentifier,
+              fieldName: 'author',
+            ),
+          ])
+          .build(),
+    ];
+
+    var databaseDefinition = createDatabaseDefinitionFromModels(
+      models,
+      'example',
+      [],
+    );
+    var sql = databaseDefinition.toPgSql(installedModules: []);
+
+    test(
+      'then row level security is enabled and forced on the table.',
+      () {
+        expect(
+          sql,
+          contains('ALTER TABLE "channel" ENABLE ROW LEVEL SECURITY;'),
+        );
+        expect(
+          sql,
+          contains('ALTER TABLE "channel" FORCE ROW LEVEL SECURITY;'),
+        );
+      },
+    );
+
+    test(
+      'then a policy comparing the column to the session variable is created.',
+      () {
+        expect(
+          sql,
+          contains('CREATE POLICY "channel_author_rls" ON "channel"'),
+        );
+        expect(
+          sql,
+          contains(
+            '"author" = '
+            'NULLIF(current_setting(\'serverpod.user_id\', true), \'\')::uuid',
+          ),
+        );
+      },
+    );
+  });
 }

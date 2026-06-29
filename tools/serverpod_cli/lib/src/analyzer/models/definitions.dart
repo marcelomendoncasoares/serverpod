@@ -599,6 +599,12 @@ enum RowSecurityAuthField {
     RowSecurityAuthField.userIdentifier =>
       RowSecurityConstants.userIdParameter,
   };
+
+  /// The SQL type the session variable is cast to before being compared with
+  /// the matched column, or null to compare as text.
+  String? get castType => switch (this) {
+    RowSecurityAuthField.userIdentifier => 'uuid',
+  };
 }
 
 /// A single condition declared with the `secure` keyword, restricting row

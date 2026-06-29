@@ -53,4 +53,45 @@ void main() {
       );
     },
   );
+
+  test(
+    'Given a table definition with row security policies, '
+    'when converting the list of tables to the SQLite dialect, '
+    'then the policies are stripped and a warning is logged.',
+    () {
+      String? loggedMessage;
+      var tables = [
+        TableDefinition(
+          name: 'secured_record',
+          schema: 'public',
+          columns: [
+            ColumnDefinition(
+              name: 'id',
+              columnType: ColumnType.integer,
+              isNullable: false,
+              dartType: 'int',
+            ),
+          ],
+          foreignKeys: [],
+          indexes: [],
+          rowSecurityPolicies: [
+            RowSecurityPolicyDefinition(
+              name: 'secured_record_ownerId_rls',
+              column: 'ownerId',
+              sessionVariable: 'serverpod.user_id',
+              castType: 'uuid',
+            ),
+          ],
+        ),
+      ];
+
+      var result = tables.forDialect(
+        DatabaseDialect.sqlite,
+        logWarnings: (msg) => loggedMessage = msg,
+      );
+
+      expect(result.single.rowSecurityPolicies, anyOf(isNull, isEmpty));
+      expect(loggedMessage, contains('Row-level security is not supported'));
+    },
+  );
 }

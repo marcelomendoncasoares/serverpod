@@ -13,6 +13,7 @@ class TableDefinitionBuilder {
   List<ColumnDefinition> _columns;
   List<ForeignKeyDefinition> _foreignKeys;
   List<IndexDefinition> _indexes;
+  List<RowSecurityPolicyDefinition>? _rowSecurityPolicies;
   bool? _managed;
 
   TableDefinitionBuilder()
@@ -28,6 +29,7 @@ class TableDefinitionBuilder {
       _indexes = [
         IndexDefinitionBuilder().withIdIndex('example').build(),
       ],
+      _rowSecurityPolicies = null,
       _managed = true;
 
   TableDefinition build() {
@@ -39,6 +41,7 @@ class TableDefinitionBuilder {
       columns: _columns,
       foreignKeys: _foreignKeys,
       indexes: _indexes,
+      rowSecurityPolicies: _rowSecurityPolicies,
       managed: _managed,
     );
   }
@@ -110,6 +113,13 @@ class TableDefinitionBuilder {
 
   TableDefinitionBuilder withIndexes(List<IndexDefinition> indexes) {
     _indexes = indexes;
+    return this;
+  }
+
+  TableDefinitionBuilder withRowSecurityPolicies(
+    List<RowSecurityPolicyDefinition>? rowSecurityPolicies,
+  ) {
+    _rowSecurityPolicies = rowSecurityPolicies;
     return this;
   }
 

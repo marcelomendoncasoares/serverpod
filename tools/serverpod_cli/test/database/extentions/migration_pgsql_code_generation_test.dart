@@ -1291,4 +1291,82 @@ fields:
       },
     );
   });
+
+  group('Row level security in migrations', () {
+    var policy = RowSecurityPolicyDefinition(
+      name: 'channel_author_rls',
+      column: 'author',
+      sessionVariable: 'serverpod.user_id',
+      castType: 'uuid',
+    );
+
+    var unsecuredDefinition = DatabaseDefinitionBuilder()
+        .withDefaultModules()
+        .withTable(
+          TableDefinitionBuilder().withName('channel').build(),
+        )
+        .build();
+
+    var securedDefinition = DatabaseDefinitionBuilder()
+        .withDefaultModules()
+        .withTable(
+          TableDefinitionBuilder()
+              .withName('channel')
+              .withRowSecurityPolicies([policy])
+              .build(),
+        )
+        .build();
+
+    test(
+      'Given a migration that secures a table, '
+      'then row level security is enabled and the policy is created.',
+      () {
+        var psql = generateDatabaseMigration(
+          databaseSource: unsecuredDefinition,
+          databaseTarget: securedDefinition,
+        ).toPgSql(
+          databaseDefinition: securedDefinition,
+          installedModules: [],
+          removedModules: [],
+        );
+
+        expect(psql, contains('ENABLE ROW LEVEL SECURITY'));
+        expect(psql, contains('CREATE POLICY "channel_author_rls"'));
+      },
+    );
+
+    test(
+      'Given a migration that unsecures a table, '
+      'then the policy is dropped and row level security is disabled.',
+      () {
+        var psql = generateDatabaseMigration(
+          databaseSource: securedDefinition,
+          databaseTarget: unsecuredDefinition,
+        ).toPgSql(
+          databaseDefinition: unsecuredDefinition,
+          installedModules: [],
+          removedModules: [],
+        );
+
+        expect(
+          psql,
+          contains('DROP POLICY IF EXISTS "channel_author_rls" ON "channel";'),
+        );
+        expect(psql, contains('DISABLE ROW LEVEL SECURITY'));
+      },
+    );
+
+    test(
+      'Given a migration with unchanged row level security, '
+      'then no migration is produced.',
+      () {
+        var migration = generateDatabaseMigration(
+          databaseSource: securedDefinition,
+          databaseTarget: securedDefinition,
+        );
+
+        expect(migration.isEmpty, isTrue);
+      },
+    );
+  });
 }

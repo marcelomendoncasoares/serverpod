@@ -124,9 +124,7 @@ List<RowSecurityPolicyDefinition>? _createRowSecurityPolicies(
         name: '${tableName}_${columnName}_rls',
         column: columnName,
         sessionVariable: condition.authField.sessionVariable,
-        castType: switch (condition.authField) {
-          RowSecurityAuthField.userIdentifier => 'uuid',
-        },
+        castType: condition.authField.castType,
       ),
     );
   }
