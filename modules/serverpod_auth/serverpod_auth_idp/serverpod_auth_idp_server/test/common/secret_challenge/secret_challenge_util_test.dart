@@ -11,7 +11,7 @@ const _verificationCode = '123456';
 
 void main() {
   withServerpod(
-    'Given SecretChallengeUtil, ',
+    'SecretChallengeUtil',
     rollbackDatabase: RollbackDatabase.disabled,
     testGroupTagsOverride: TestTags.concurrencyOneTestTags,
     (final sessionBuilder, final endpoints) {
@@ -116,6 +116,7 @@ void main() {
       }
 
       test(
+        'Given a plaintext verification code, '
         'when creating a challenge, '
         'then it stores a hash that validates the verification code.',
         () async {
@@ -139,232 +140,312 @@ void main() {
         },
       );
 
-      test(
-        'when verifying a request and completing it with the returned token, '
-        'then the request is returned.',
-        () async {
-          final request = await createRequest();
+      group('Given a valid challenge request, ', () {
+        late _TestChallengeRequest request;
 
-          final completionToken = await session.db.transaction(
-            (final transaction) => challengeUtil.verifyChallenge(
-              session,
-              requestId: request.id,
-              verificationCode: _verificationCode,
-              transaction: transaction,
-            ),
-          );
+        setUp(() async {
+          request = await createRequest();
+        });
 
-          final result = session.db.transaction(
-            (final transaction) => challengeUtil.completeChallenge(
-              session,
-              completionToken: completionToken,
-              transaction: transaction,
-            ),
-          );
-
-          expect(request.completionChallenge, isNotNull);
-          await expectLater(result, completion(same(request)));
-        },
-      );
-
-      test(
-        'when verifying a request with an invalid verification code, '
-        'then it throws an invalid verification code exception.',
-        () async {
-          final request = await createRequest();
-
-          final result = session.db.transaction(
-            (final transaction) => challengeUtil.verifyChallenge(
-              session,
-              requestId: request.id,
-              verificationCode: 'invalid-code',
-              transaction: transaction,
-            ),
-          );
-
-          await expectLater(
-            result,
-            throwsA(isA<ChallengeInvalidVerificationCodeException>()),
-          );
-          expect(request.completionChallenge, isNull);
-        },
-      );
-
-      test(
-        'when verifying an expired request with a valid verification code, '
-        'then it records the expiration and throws an expired exception.',
-        () async {
-          final request = await createRequest(
-            lifetime: const Duration(minutes: -1),
-          );
-
-          final result = session.db.transaction(
-            (final transaction) => challengeUtil.verifyChallenge(
-              session,
-              requestId: request.id,
-              verificationCode: _verificationCode,
-              transaction: transaction,
-            ),
-          );
-
-          await expectLater(
-            result,
-            throwsA(isA<ChallengeExpiredException>()),
-          );
-          expect(expiredRequestIds, [request.id]);
-          expect(request.completionChallenge, isNull);
-        },
-      );
-
-      test(
-        'when verifying an already used request, '
-        'then it throws an already used exception.',
-        () async {
-          final request = await createRequest(isAlreadyUsed: true);
-
-          final result = session.db.transaction(
-            (final transaction) => challengeUtil.verifyChallenge(
-              session,
-              requestId: request.id,
-              verificationCode: _verificationCode,
-              transaction: transaction,
-            ),
-          );
-
-          await expectLater(
-            result,
-            throwsA(isA<ChallengeAlreadyUsedException>()),
-          );
-        },
-      );
-
-      test(
-        'when verifying an unknown request, '
-        'then it throws a request not found exception.',
-        () async {
-          final result = session.db.transaction(
-            (final transaction) => challengeUtil.verifyChallenge(
-              session,
-              requestId: const Uuid().v4obj(),
-              verificationCode: _verificationCode,
-              transaction: transaction,
-            ),
-          );
-
-          await expectLater(
-            result,
-            throwsA(isA<ChallengeRequestNotFoundException>()),
-          );
-        },
-      );
-
-      test(
-        'when verifying a request after the rate limit is exceeded, '
-        'then it throws a rate limit exception.',
-        () async {
-          final request = await createRequest();
-          verificationRateLimiter.hasTooManyAttemptsResult = true;
-
-          final result = session.db.transaction(
-            (final transaction) => challengeUtil.verifyChallenge(
-              session,
-              requestId: request.id,
-              verificationCode: _verificationCode,
-              transaction: transaction,
-            ),
-          );
-
-          await expectLater(
-            result,
-            throwsA(isA<ChallengeRateLimitExceededException>()),
-          );
-          expect(verificationRateLimiter.nonces, [request.id]);
-        },
-      );
-
-      test(
-        'when completing a request with an invalid token, '
-        'then it throws an invalid completion token exception.',
-        () async {
-          final result = session.db.transaction(
-            (final transaction) => challengeUtil.completeChallenge(
-              session,
-              completionToken: 'not-base64',
-              transaction: transaction,
-            ),
-          );
-
-          await expectLater(
-            result,
-            throwsA(isA<ChallengeInvalidCompletionTokenException>()),
-          );
-        },
-      );
-
-      test(
-        'when completing a request before it has been verified, '
-        'then it throws a not verified exception.',
-        () async {
-          final request = await createRequest();
-
-          final result = session.db.transaction(
-            (final transaction) => challengeUtil.completeChallenge(
-              session,
-              completionToken: _completionTokenFor(
-                request.id,
-                verificationCode: 'unlinked-token',
+        test(
+          'when verifying the request and completing it with the returned token, '
+          'then the request is returned.',
+          () async {
+            final completionToken = await session.db.transaction(
+              (final transaction) => challengeUtil.verifyChallenge(
+                session,
+                requestId: request.id,
+                verificationCode: _verificationCode,
+                transaction: transaction,
               ),
-              transaction: transaction,
-            ),
-          );
+            );
 
-          await expectLater(
-            result,
-            throwsA(isA<ChallengeNotVerifiedException>()),
-          );
-        },
-      );
-
-      test(
-        'when completing a verified request with a different token, '
-        'then it throws an invalid verification code exception.',
-        () async {
-          final request = await createRequest();
-
-          await session.db.transaction(
-            (final transaction) => challengeUtil.verifyChallenge(
-              session,
-              requestId: request.id,
-              verificationCode: _verificationCode,
-              transaction: transaction,
-            ),
-          );
-
-          final result = session.db.transaction(
-            (final transaction) => challengeUtil.completeChallenge(
-              session,
-              completionToken: _completionTokenFor(
-                request.id,
-                verificationCode: 'different-token',
+            final result = session.db.transaction(
+              (final transaction) => challengeUtil.completeChallenge(
+                session,
+                completionToken: completionToken,
+                transaction: transaction,
               ),
-              transaction: transaction,
-            ),
-          );
+            );
 
-          await expectLater(
-            result,
-            throwsA(isA<ChallengeInvalidVerificationCodeException>()),
+            expect(request.completionChallenge, isNotNull);
+            await expectLater(result, completion(same(request)));
+          },
+        );
+      });
+
+      group('Given a challenge request and an invalid verification code, ', () {
+        late _TestChallengeRequest request;
+        late String invalidVerificationCode;
+
+        setUp(() async {
+          request = await createRequest();
+          invalidVerificationCode = 'invalid-code';
+        });
+
+        test(
+          'when verifying the request, '
+          'then it throws an invalid verification code exception.',
+          () async {
+            final result = session.db.transaction(
+              (final transaction) => challengeUtil.verifyChallenge(
+                session,
+                requestId: request.id,
+                verificationCode: invalidVerificationCode,
+                transaction: transaction,
+              ),
+            );
+
+            await expectLater(
+              result,
+              throwsA(isA<ChallengeInvalidVerificationCodeException>()),
+            );
+            expect(request.completionChallenge, isNull);
+          },
+        );
+      });
+
+      group(
+        'Given an expired challenge request and a valid verification code, ',
+        () {
+          late _TestChallengeRequest request;
+          late String validVerificationCode;
+
+          setUp(() async {
+            validVerificationCode = _verificationCode;
+            request = await createRequest(
+              lifetime: const Duration(minutes: -1),
+            );
+          });
+
+          test(
+            'when verifying the request, '
+            'then it records the expiration and throws an expired exception.',
+            () async {
+              final result = session.db.transaction(
+                (final transaction) => challengeUtil.verifyChallenge(
+                  session,
+                  requestId: request.id,
+                  verificationCode: validVerificationCode,
+                  transaction: transaction,
+                ),
+              );
+
+              await expectLater(
+                result,
+                throwsA(isA<ChallengeExpiredException>()),
+              );
+              expect(expiredRequestIds, [request.id]);
+              expect(request.completionChallenge, isNull);
+            },
           );
         },
       );
 
-      test(
-        'when completing an expired verified request, '
-        'then it records the expiration and throws an expired exception.',
-        () async {
-          final request = await createRequest();
+      group('Given an already used challenge request, ', () {
+        late _TestChallengeRequest request;
 
-          final completionToken = await session.db.transaction(
+        setUp(() async {
+          request = await createRequest(isAlreadyUsed: true);
+        });
+
+        test(
+          'when verifying the request, '
+          'then it throws an already used exception.',
+          () async {
+            final result = session.db.transaction(
+              (final transaction) => challengeUtil.verifyChallenge(
+                session,
+                requestId: request.id,
+                verificationCode: _verificationCode,
+                transaction: transaction,
+              ),
+            );
+
+            await expectLater(
+              result,
+              throwsA(isA<ChallengeAlreadyUsedException>()),
+            );
+          },
+        );
+      });
+
+      group('Given no matching challenge request, ', () {
+        late UuidValue unknownRequestId;
+
+        setUp(() {
+          unknownRequestId = const Uuid().v4obj();
+        });
+
+        test(
+          'when verifying the request, '
+          'then it throws a request not found exception.',
+          () async {
+            final result = session.db.transaction(
+              (final transaction) => challengeUtil.verifyChallenge(
+                session,
+                requestId: unknownRequestId,
+                verificationCode: _verificationCode,
+                transaction: transaction,
+              ),
+            );
+
+            await expectLater(
+              result,
+              throwsA(isA<ChallengeRequestNotFoundException>()),
+            );
+          },
+        );
+      });
+
+      group(
+        'Given a challenge request after the verification rate limit is exceeded, ',
+        () {
+          late _TestChallengeRequest request;
+
+          setUp(() async {
+            request = await createRequest();
+            verificationRateLimiter.hasTooManyAttemptsResult = true;
+          });
+
+          test(
+            'when verifying the request, '
+            'then it throws a rate limit exception.',
+            () async {
+              final result = session.db.transaction(
+                (final transaction) => challengeUtil.verifyChallenge(
+                  session,
+                  requestId: request.id,
+                  verificationCode: _verificationCode,
+                  transaction: transaction,
+                ),
+              );
+
+              await expectLater(
+                result,
+                throwsA(isA<ChallengeRateLimitExceededException>()),
+              );
+              expect(verificationRateLimiter.nonces, [request.id]);
+            },
+          );
+        },
+      );
+
+      group('Given an invalid completion token, ', () {
+        late String invalidCompletionToken;
+
+        setUp(() {
+          invalidCompletionToken = 'not-base64';
+        });
+
+        test(
+          'when completing a challenge, '
+          'then it throws an invalid completion token exception.',
+          () async {
+            final result = session.db.transaction(
+              (final transaction) => challengeUtil.completeChallenge(
+                session,
+                completionToken: invalidCompletionToken,
+                transaction: transaction,
+              ),
+            );
+
+            await expectLater(
+              result,
+              throwsA(isA<ChallengeInvalidCompletionTokenException>()),
+            );
+          },
+        );
+      });
+
+      group(
+        'Given a challenge request without a linked completion challenge, ',
+        () {
+          late _TestChallengeRequest request;
+          late String completionToken;
+
+          setUp(() async {
+            request = await createRequest();
+            completionToken = _completionTokenFor(
+              request.id,
+              verificationCode: 'unlinked-token',
+            );
+          });
+
+          test(
+            'when completing the request, '
+            'then it throws a not verified exception.',
+            () async {
+              final result = session.db.transaction(
+                (final transaction) => challengeUtil.completeChallenge(
+                  session,
+                  completionToken: completionToken,
+                  transaction: transaction,
+                ),
+              );
+
+              await expectLater(
+                result,
+                throwsA(isA<ChallengeNotVerifiedException>()),
+              );
+            },
+          );
+        },
+      );
+
+      group(
+        'Given a verified challenge request and a different completion token, ',
+        () {
+          late _TestChallengeRequest request;
+          late String differentCompletionToken;
+
+          setUp(() async {
+            request = await createRequest();
+
+            await session.db.transaction(
+              (final transaction) => challengeUtil.verifyChallenge(
+                session,
+                requestId: request.id,
+                verificationCode: _verificationCode,
+                transaction: transaction,
+              ),
+            );
+
+            differentCompletionToken = _completionTokenFor(
+              request.id,
+              verificationCode: 'different-token',
+            );
+          });
+
+          test(
+            'when completing the request, '
+            'then it throws an invalid verification code exception.',
+            () async {
+              final result = session.db.transaction(
+                (final transaction) => challengeUtil.completeChallenge(
+                  session,
+                  completionToken: differentCompletionToken,
+                  transaction: transaction,
+                ),
+              );
+
+              await expectLater(
+                result,
+                throwsA(isA<ChallengeInvalidVerificationCodeException>()),
+              );
+            },
+          );
+        },
+      );
+
+      group('Given an expired verified challenge request, ', () {
+        late _TestChallengeRequest request;
+        late String completionToken;
+
+        setUp(() async {
+          request = await createRequest();
+
+          completionToken = await session.db.transaction(
             (final transaction) => challengeUtil.verifyChallenge(
               session,
               requestId: request.id,
@@ -375,52 +456,68 @@ void main() {
           request.expiresAt = DateTime.now().subtract(
             const Duration(minutes: 1),
           );
+        });
 
-          final result = session.db.transaction(
-            (final transaction) => challengeUtil.completeChallenge(
-              session,
-              completionToken: completionToken,
-              transaction: transaction,
-            ),
+        test(
+          'when completing the request, '
+          'then it records the expiration and throws an expired exception.',
+          () async {
+            final result = session.db.transaction(
+              (final transaction) => challengeUtil.completeChallenge(
+                session,
+                completionToken: completionToken,
+                transaction: transaction,
+              ),
+            );
+
+            await expectLater(
+              result,
+              throwsA(isA<ChallengeExpiredException>()),
+            );
+            expect(expiredRequestIds, [request.id]);
+          },
+        );
+      });
+
+      group(
+        'Given a verified challenge request after the completion rate limit is exceeded, ',
+        () {
+          late _TestChallengeRequest request;
+          late String completionToken;
+
+          setUp(() async {
+            request = await createRequest();
+
+            completionToken = await session.db.transaction(
+              (final transaction) => challengeUtil.verifyChallenge(
+                session,
+                requestId: request.id,
+                verificationCode: _verificationCode,
+                transaction: transaction,
+              ),
+            );
+            completionRateLimiter.hasTooManyAttemptsResult = true;
+          });
+
+          test(
+            'when completing the request, '
+            'then it throws a rate limit exception.',
+            () async {
+              final result = session.db.transaction(
+                (final transaction) => challengeUtil.completeChallenge(
+                  session,
+                  completionToken: completionToken,
+                  transaction: transaction,
+                ),
+              );
+
+              await expectLater(
+                result,
+                throwsA(isA<ChallengeRateLimitExceededException>()),
+              );
+              expect(completionRateLimiter.nonces, [request.id]);
+            },
           );
-
-          await expectLater(
-            result,
-            throwsA(isA<ChallengeExpiredException>()),
-          );
-          expect(expiredRequestIds, [request.id]);
-        },
-      );
-
-      test(
-        'when completing a request after the rate limit is exceeded, '
-        'then it throws a rate limit exception.',
-        () async {
-          final request = await createRequest();
-
-          final completionToken = await session.db.transaction(
-            (final transaction) => challengeUtil.verifyChallenge(
-              session,
-              requestId: request.id,
-              verificationCode: _verificationCode,
-              transaction: transaction,
-            ),
-          );
-          completionRateLimiter.hasTooManyAttemptsResult = true;
-
-          final result = session.db.transaction(
-            (final transaction) => challengeUtil.completeChallenge(
-              session,
-              completionToken: completionToken,
-              transaction: transaction,
-            ),
-          );
-
-          await expectLater(
-            result,
-            throwsA(isA<ChallengeRateLimitExceededException>()),
-          );
-          expect(completionRateLimiter.nonces, [request.id]);
         },
       );
     },
