@@ -7,8 +7,7 @@ import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart';
 /// or other methods. Please refer to the documentation to see supported
 /// methods. Session information is stored in the storage implementation provided
 /// to the session manager.
-class ClientAuthSessionManager
-    implements RefresherClientAuthKeyProvider, CookieAuthKeyProvider {
+class ClientAuthSessionManager implements RefresherClientAuthKeyProvider {
   /// The auth module's caller.
   Caller? _caller;
 
@@ -17,12 +16,6 @@ class ClientAuthSessionManager
 
   /// The secure storage to keep user authentication info.
   final ClientAuthSuccessStorage storage;
-
-  /// Whether this client authenticates via an `HttpOnly` cookie.
-  ///
-  /// When true the client sends no auth header and signals cookie mode.
-  /// The server issues/clears the cookie.
-  final bool cookieAuth;
 
   /// Optional callback that is invoked when the auth info changes.
   /// The new auth info is passed as a parameter to the callback.
@@ -41,9 +34,6 @@ class ClientAuthSessionManager
     /// The storage to keep user authentication info. This is required for
     /// the platform-agnostic session manager.
     required this.storage,
-
-    /// Authenticate via an `HttpOnly` cookie.
-    this.cookieAuth = false,
 
     /// Optional callback that is invoked when the auth info changes.
     /// The new auth info value is passed as a parameter to the callback.
@@ -94,6 +84,7 @@ class ClientAuthSessionManager
           // required for web if another tab has rotated the refresh token,
           // since the storage is shared between tabs.
           invalidateCachedAuthInfo: _resetCachedAuthInfo,
+          usesCookieAuth: () => _usesCookieAuth,
           refreshEndpoint: caller.client
               .getEndpointOfType<EndpointRefreshJwtTokens>(),
         );
@@ -111,31 +102,14 @@ class ClientAuthSessionManager
     return authKeyProvider;
   }
 
-  @override
-  bool get usesCookies => cookieAuth;
-
-  void _ensureCookieModeSupported() {
-    if (!cookieAuth) return;
-    final strategy = authInfo?.authStrategy;
-    if (strategy != null &&
-        AuthStrategy.fromJson(strategy) == AuthStrategy.jwt) {
-      throw StateError(
-        'cookieAuth is not supported with the JWT auth strategy. '
-        'Use the opaque session (SAS) strategy for cookie-based web auth. ',
-      );
-    }
-  }
+  bool get _usesCookieAuth => _caller?.client.cookieAuth ?? false;
 
   @override
-  Future<String?> get authHeaderValue async {
-    if (!cookieAuth) return authKeyProviderDelegate?.authHeaderValue;
-    _ensureCookieModeSupported();
-    return null;
-  }
+  Future<String?> get authHeaderValue async =>
+      authKeyProviderDelegate?.authHeaderValue;
 
   @override
   Future<RefreshAuthKeyResult> refreshAuthKey({bool force = false}) async {
-    _ensureCookieModeSupported();
     final authKeyProvider = authKeyProviderDelegate;
     if (authKeyProvider is! RefresherClientAuthKeyProvider) {
       return RefreshAuthKeyResult.skipped;
@@ -189,22 +163,38 @@ class ClientAuthSessionManager
 
   /// Updates the signed in user on the storage and for open connections.
   Future<void> updateSignedInUser(AuthSuccess? authInfo) async {
-    if (cookieAuth && authInfo != null && authInfo.token.isNotEmpty) {
-      // In cookie mode the server issues the token as an `HttpOnly` cookie and
-      // returns an empty `token` in the body. A non-empty token here means the
-      // server did not issue a cookie. Refuse to persist it and fail loudly so
-      // the misconfiguration surfaces.
+    final persistedAuthInfo = _usesCookieAuth && authInfo != null
+        ? _validateAndSanitizeCookieAuthInfo(authInfo)
+        : authInfo;
+    await storage.set(persistedAuthInfo);
+    _authInfo = authInfo;
+    onAuthInfoChanged?.call(_authInfo);
+    // ignore: deprecated_member_use
+    await caller.client.updateStreamingConnectionAuthenticationKey();
+  }
+
+  AuthSuccess _validateAndSanitizeCookieAuthInfo(AuthSuccess authInfo) {
+    final authStrategy = AuthStrategy.fromJson(authInfo.authStrategy);
+
+    if (authStrategy == AuthStrategy.session && authInfo.token.isNotEmpty) {
       throw StateError(
         'cookieAuth is enabled but the server returned the auth token in the '
         'response body instead of an HttpOnly cookie. Configure `authCookie` '
         'on the server, or run the client in header mode (cookieAuth: false).',
       );
     }
-    await storage.set(authInfo);
-    _authInfo = authInfo;
-    onAuthInfoChanged?.call(_authInfo);
-    // ignore: deprecated_member_use
-    await caller.client.updateStreamingConnectionAuthenticationKey();
+
+    if (authStrategy == AuthStrategy.jwt &&
+        (authInfo.refreshToken?.isNotEmpty ?? false)) {
+      throw StateError(
+        'cookieAuth is enabled but the server returned the JWT refresh token in '
+        'the response body instead of an HttpOnly cookie. Configure '
+        '`authCookie` on the server, or run the client in header mode '
+        '(cookieAuth: false).',
+      );
+    }
+
+    return authInfo.copyWith(token: '', refreshToken: null);
   }
 
   /// Verifies the current sign in status of the user with the server and
