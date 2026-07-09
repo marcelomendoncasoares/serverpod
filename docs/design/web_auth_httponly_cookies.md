@@ -32,8 +32,8 @@ Delivered in phases:
   implemented: response-output API, cookie config, server cookie read (HTTP and
   the modern WebSocket handshake), credentialed CORS, sign-in/out cookie
   issuance, and the web client wiring.
-- Phase 2 (JWT access-in-memory + refresh cookie) and Phase 3 (cross-subdomain
-  `Domain` + optional CSRF token) are not yet started.
+- Phase 2 (JWT access-in-memory + refresh cookie) is implemented.
+- Phase 3 (optional CSRF token guidance for `SameSite=None`) is not yet started.
 
 ## Motivation
 
@@ -57,8 +57,11 @@ client persists `AuthSuccess` via a pluggable `KeyValueStorage`
 (`serverpod_auth_core_client/.../storage/key_value_client_auth_success_storage.dart`).
 Native clients use OS secure storage; on web there is no secure backing store, so
 for header-mode clients it lands in JS-readable storage. A cookie-mode web client
-(`ClientAuthSessionManager(cookieAuth: true)`) returns a null `authHeaderValue`
-and relies on the browser-held httpOnly cookie instead, so no token reaches JS.
+sets `client.cookieAuth = true` immediately after construction. SAS cookie-mode
+clients return no auth header and rely on the browser-held httpOnly auth cookie.
+JWT cookie-mode clients keep the access token in memory, persist a blank token
+and no refresh token, and rely on the browser-held httpOnly refresh cookie to
+restore access after reload.
 
 ### Transport
 
@@ -93,8 +96,9 @@ Sign-in returns the token via `AuthSuccess` (`token`, optional `refreshToken`,
 (`server_side_sessions_token.dart`: `sas` prefix + session UUID + secret) and JWT
 access/refresh (`jwt/jwt.dart`). For a cookie-mode request the SAS sign-in
 (`server_side_sessions.dart`) writes the token as a `Set-Cookie` and returns an
-empty `token` in the body, so it never reaches JS. JWT issuance is unchanged
-(Phase 2).
+empty `token` in the body, so it never reaches JS. JWT issuance writes the
+refresh token as a separate `Set-Cookie`, returns `refreshToken: null`, and keeps
+the access token in the body so the SPA can hold it in memory only.
 
 ### Response building
 
@@ -136,7 +140,7 @@ rearchitecture; changes to the auth providers (email, OAuth, passkeys).
 +----------------------+---------------------------------+---------------------------------+
 | Strategy             | Access / session token          | Refresh token                   |
 +======================+=================================+=================================+
-| JWT (Phase 2)        | In memory (re-minted on load)   | HttpOnly Secure SameSite cookie |
+| JWT                  | In memory (re-minted on load)   | HttpOnly Secure SameSite cookie |
 | Opaque session (SAS) | HttpOnly Secure SameSite cookie | n/a (server-side session)       |
 +----------------------+---------------------------------+---------------------------------+
 ```
@@ -148,16 +152,19 @@ cookie and the server returns a fresh access token in the body.
 ### Server flow
 
 - Sign-in / refresh: set the cookie via `session.setResponseCookie` (the
-  `writeWebAuthCookie` helper) with `httpOnly: true`, `secure`, `sameSite`,
-  `domain` and `path` from `WebAuthCookieConfig`, and a `maxAge` derived from the
-  token's expiry (a session cookie when the expiry is absent or non-positive). For
-  JWT, also return the access token in the body (Phase 2).
+  `writeWebAuthCookie` / `writeWebAuthRefreshCookie` helpers) with
+  `httpOnly: true`, `secure`, `sameSite`, `domain` and `path` from
+  `WebAuthCookieConfig`, and a `maxAge` derived from the token's expiry or refresh
+  lifetime (a session cookie when the expiry is absent or non-positive). For JWT,
+  return the access token in the body and omit the refresh token from the body in
+  cookie mode.
 - Authenticated request: after the `Authorization`-header check, fall back to the
   configured cookie from `request.headers.cookie` (gated on the marker header and
   the `Origin` check). Token format is unchanged, so the existing
   `AuthenticationHandler` is reused.
-- Logout: `clearWebAuthCookie` emits a `Set-Cookie` with `maxAge: 0`; for SAS
-  also destroy the server-side session.
+- Logout: `clearWebAuthCookie` emits `Set-Cookie` clears with `maxAge: 0` for
+  both the main auth cookie and JWT refresh cookie; for SAS also destroy the
+  server-side session.
 
 ### WebSocket / streaming
 
@@ -171,11 +178,31 @@ message. The Phase 0 `Origin` check covers CSWSH.
 - Credentialed requests (`withCredentials` on the browser `http` client) so the
   browser sends and stores the cookie, plus the `x-serverpod-auth-mode: cookie`
   marker header on every call.
-- A `CookieAuthKeyProvider` capability interface (`auth_key_provider.dart`): a
-  provider that reports `usesCookies == true` makes the client send the marker /
-  credentialed request and attach no `Authorization` header. The auth-core
-  `ClientAuthSessionManager` implements it behind a `cookieAuth` flag and returns
-  a null `authHeaderValue` in that mode.
+- Cookie transport is a client-level flag (`ServerpodClientShared.cookieAuth`),
+  not an auth-provider capability. Set it immediately after constructing the web
+  client, before any call. The setter throws on the dart:io client because that
+  transport has no browser cookie jar. `ClientAuthKeyProvider.authHeaderValue`
+  remains responsible only for producing an optional Authorization header: SAS
+  cookie mode naturally yields no header, while JWT cookie mode can send an
+  in-memory access-token header and browser cookie credentials at the same time.
+- The marker is sent on every request while `cookieAuth` is true, including
+  `@unauthenticatedClientCall` calls. This is required for sign-in and JWT
+  refresh, which are unauthenticated endpoint calls but still need credentialed
+  cookie transport. The server only reads the main auth cookie as an
+  authentication fallback when no Authorization header is present; the refresh
+  cookie is read only by the JWT refresh endpoint. The refresh cookie is also
+  `Path`-scoped to that endpoint's route (discovered from the endpoint dispatch
+  at runtime, since the concrete endpoint is named by the application), so even
+  though every request is credentialed, the browser attaches the refresh token
+  only to refresh calls. Because a prefix-stripping reverse proxy makes the
+  browser-visible path differ from what the server sees, cookie-mode clients
+  also declare their base path (the path component of the client `host`) via
+  the `x-serverpod-base-path` header, and the server uses it as the route's
+  base; a cookie `Path` is not a security boundary and only affects the
+  sender's own cookie scope, so the client-supplied value is safe to use after
+  a format check. When the header is absent (older client) the configured
+  `authCookie.path` is the base, and when the endpoint route cannot be
+  resolved unambiguously the cookie falls back to `authCookie.path` entirely.
 - CORS: when `authCookie` is set, the server echoes a specific
   `Access-Control-Allow-Origin` (the request `Origin` when it is in
   `allowedOrigins`) plus `Access-Control-Allow-Credentials: true` and
@@ -296,8 +323,8 @@ What shipped:
 | HTTP auth read      | Cookie fallback (marker + Origin gated)          | done      |
 | WS handshake read   | Cookie fallback on modern /v1/websocket          | done      |
 | Sign-in/out issue   | Set/clear cookie in auth-core SAS sessions       | done      |
-| Web client creds    | withCredentials + marker header                  | done      |
-| Web auth provider   | CookieAuthKeyProvider + ClientAuthSessionManager | done      |
+| Web client creds    | client.cookieAuth + withCredentials + marker     | done      |
+| Web auth manager    | ClientAuthSessionManager cookie-safe persistence | done      |
 | CORS credentials    | Allow-Credentials + specific-origin echo + Vary  | done      |
 | Unit tests          | auth_cookie / response_output / config tests     | done      |
 | Integration test    | Web sign-in -> cookie -> authed call -> sign-out | pending   |
@@ -305,18 +332,18 @@ What shipped:
 +---------------------+--------------------------------------------------+-----------+
 ```
 
-Design divergence to note: the web auth provider was implemented as a
-`CookieAuthKeyProvider` capability interface plus a `cookieAuth` flag on the
-existing `ClientAuthSessionManager`, rather than a separate
-`CookieClientAuthKeyProvider` class as first sketched. The manager still uses the
-pluggable storage but returns a null `authHeaderValue` in cookie mode. This keeps
-one session-manager type for header and cookie clients instead of forking it.
+Design divergence to note: cookie transport is now configured on the client
+(`ServerpodClientShared.cookieAuth`) rather than via an auth-provider capability
+interface. This keeps credential production (`authHeaderValue`) separate from
+transport so JWT can send an access-token Authorization header and browser cookie
+credentials together.
 
 Config (server `config/<run-mode>.yaml`, or `SERVERPOD_*` env vars):
 
 ```
 authCookie:
   name: serverpod_auth   # default
+  refreshName:           # defaults to <name>_refresh
   domain:                # host-only by default; set .example.com to share
   path: /                # default
   secure: true           # default; set false only for http://localhost
@@ -328,20 +355,50 @@ allowedOrigins:
 `authCookie` requires a non-empty `allowedOrigins` (it backs the CSWSH guard and
 credentialed CORS, which cannot use the wildcard origin); the config constructor
 throws otherwise. Env equivalents: `SERVERPOD_AUTH_COOKIE_NAME`,
-`SERVERPOD_AUTH_COOKIE_DOMAIN`, `SERVERPOD_AUTH_COOKIE_PATH`,
-`SERVERPOD_AUTH_COOKIE_SECURE`, `SERVERPOD_AUTH_COOKIE_SAME_SITE`,
-`SERVERPOD_ALLOWED_ORIGINS`.
+`SERVERPOD_AUTH_COOKIE_REFRESH_NAME`, `SERVERPOD_AUTH_COOKIE_DOMAIN`,
+`SERVERPOD_AUTH_COOKIE_PATH`, `SERVERPOD_AUTH_COOKIE_SECURE`,
+`SERVERPOD_AUTH_COOKIE_SAME_SITE`, `SERVERPOD_ALLOWED_ORIGINS`.
 
 Remaining for Phase 1: an end-to-end integration test (web sign-in sets the
 cookie; a call authenticates via the cookie; sign-out clears it; native header
 path unchanged) and a web-auth user guide plus sample.
 
-### Phase 2: JWT (access-in-memory + refresh cookie)
+### Phase 2: JWT (access-in-memory + refresh cookie) (implemented)
 
 Access token in memory, refresh token in an httpOnly cookie with server-side
 rotation (refresh token never transits JS). On load the SPA calls a refresh
 endpoint; the browser sends the refresh cookie and the server returns a fresh
 access token in the body. Reuses the Phase 1 primitive and config.
+
+What shipped:
+
+- `authCookie.refreshName` / `SERVERPOD_AUTH_COOKIE_REFRESH_NAME`, defaulting to
+  `<name>_refresh`, configures the JWT refresh cookie name. It is validated with
+  the same cookie-name rules as `authCookie.name` and must be different from it.
+- JWT issuance writes the refresh token into the refresh cookie for cookie-mode
+  requests and returns `AuthSuccess.refreshToken: null`; the access token remains
+  in the body.
+- The refresh cookie's `Path` is scoped to the registered
+  `RefreshJwtTokensEndpoint`'s route, resolved dynamically from the endpoint
+  dispatch (`jwtRefreshCookiePath`); it falls back to `authCookie.path` when no
+  or multiple concrete refresh endpoints are registered. Sign-out clears the
+  refresh cookie with the same resolved path, which browsers require for
+  removal.
+- The route's base comes from the `x-serverpod-base-path` header
+  (`webBasePathHeaderName`) that cookie-mode clients send on every request,
+  carrying the path component of the client's `host`. This keeps the scoping
+  correct behind a prefix-stripping reverse proxy, which the server cannot see
+  through; the value is format-validated and falls back to `authCookie.path`
+  when absent or malformed. Both cookie-auth headers are force-included in the
+  CORS `Access-Control-Allow-Headers` whenever `authCookie` is enabled.
+- `refreshAccessToken` remains wire-compatible for old clients that pass
+  `refreshToken` explicitly, and additionally falls back to the refresh cookie
+  when called from a cookie-mode web client.
+- Refresh-token rotation writes the rotated refresh token back to the refresh
+  cookie and omits it from the body in cookie mode.
+- The auth-core client stores no JS-readable token material in cookie mode:
+  persisted `AuthSuccess` has `token: ''` and `refreshToken: null`, while the
+  in-memory JWT access token is kept for Authorization headers until reload.
 
 ### Phase 3: cross-subdomain + optional CSRF token + guidance
 
@@ -353,8 +410,9 @@ remaining: optional double-submit CSRF token for `SameSite=None`; BFF guidance.
 1. How a request opts into cookie mode: resolved. The client runs in `cookieAuth`
    mode and sends `x-serverpod-auth-mode: cookie`; the server enables it via the
    `authCookie` config section. Native clients keep body/header tokens.
-2. Whether to keep returning `AuthSuccess.token` in the body in cookie mode:
-   resolved. Omitted (empty `token`) for cookie clients, kept for header clients.
+2. Whether to keep returning token fields in the body in cookie mode: resolved.
+   SAS omits the session token (`token: ''`). JWT returns the access token for
+   in-memory use but omits the refresh token (`refreshToken: null`).
 3. SameSite default (`Lax`) and exposing `Strict` / `None`: resolved
    (`CookieSameSite` enum, default `lax`; `none` validated to require `secure`).
 4. Cookie `Domain` default: resolved. Host-only by default; cross-subdomain via
