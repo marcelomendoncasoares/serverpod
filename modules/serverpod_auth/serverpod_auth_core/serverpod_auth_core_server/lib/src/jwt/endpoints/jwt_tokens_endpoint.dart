@@ -2,6 +2,7 @@ import 'package:serverpod/serverpod.dart';
 
 import '../../common/business/auth_services.dart';
 import '../jwt.dart';
+import '../util/jwt_refresh_cookie_path.dart';
 
 /// Endpoint for JWT tokens management.
 abstract class RefreshJwtTokensEndpoint extends Endpoint {
@@ -61,6 +62,7 @@ abstract class RefreshJwtTokensEndpoint extends Endpoint {
     session.writeWebAuthRefreshCookie(
       rotatedRefreshToken,
       maxAgeSeconds: maxAgeSeconds > 0 ? maxAgeSeconds : null,
+      path: jwtRefreshCookiePath(session),
     );
     return authSuccess.copyWith(refreshToken: null);
   }

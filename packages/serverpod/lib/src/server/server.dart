@@ -297,28 +297,37 @@ class Server implements RouterInjectable {
               for (final h in httpOptionsResponseHeaders.entries) {
                 mh[h.key] = h.value;
               }
-              // Cookie-auth web clients send the marker header on every request,
-              // so a cross-origin preflight must allow-list it or the browser
-              // blocks the request before it reaches the server.
+              // Cookie-auth web clients send the marker and base-path headers
+              // on every request, so a cross-origin preflight must allow-list
+              // them or the browser blocks the request before it reaches the
+              // server.
               //
-              // The default OPTIONS headers include it,
+              // The default OPTIONS headers include them,
               // but a custom httpOptionsResponseHeaders may not.
               //
-              // Ensure it is present whenever cookie auth is enabled so
+              // Ensure they are present whenever cookie auth is enabled so
               // the feature can't be silently disabled by a header override.
               if (serverpod.config.authCookie != null) {
+                const cookieAuthHeaders = [
+                  webAuthModeHeaderName,
+                  webBasePathHeaderName,
+                ];
                 final allow = mh.accessControlAllowHeaders;
                 if (allow == null) {
                   mh.accessControlAllowHeaders =
                       AccessControlAllowHeadersHeader.headers(
-                        const [webAuthModeHeaderName],
+                        cookieAuthHeaders,
                       );
-                } else if (!allow.isWildcard &&
-                    !allow.headers.contains(webAuthModeHeaderName)) {
-                  mh.accessControlAllowHeaders =
-                      AccessControlAllowHeadersHeader.headers(
-                        [...allow.headers, webAuthModeHeaderName],
-                      );
+                } else if (!allow.isWildcard) {
+                  final missing = cookieAuthHeaders.where(
+                    (h) => !allow.headers.contains(h),
+                  );
+                  if (missing.isNotEmpty) {
+                    mh.accessControlAllowHeaders =
+                        AccessControlAllowHeadersHeader.headers(
+                          [...allow.headers, ...missing],
+                        );
+                  }
                 }
               }
             })

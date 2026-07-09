@@ -54,6 +54,7 @@ class ServerpodClientRequestDelegateImpl
             headers: {
               'authorization': ?authenticationValue,
               if (cookieAuth) webAuthModeHeaderName: webAuthModeCookie,
+              if (cookieAuth) webBasePathHeaderName: cookieAuthBasePath,
             },
           )
           .timeout(connectionTimeout);

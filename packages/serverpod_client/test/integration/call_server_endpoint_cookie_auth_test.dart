@@ -19,6 +19,7 @@ void main() {
   late int requestCount;
   late List<String?> receivedAuthModeMarkers;
   late List<String?> receivedAuthHeaders;
+  late List<String?> receivedBasePaths;
 
   group('Given a cookie-auth client on a transport without a cookie jar', () {
     test(
@@ -43,6 +44,7 @@ void main() {
       requestCount = 0;
       receivedAuthModeMarkers = [];
       receivedAuthHeaders = [];
+      receivedBasePaths = [];
 
       closeServer = await TestHttpServer.startServer(
         httpRequestHandler: (request) async {
@@ -51,6 +53,9 @@ void main() {
             request.headers[webAuthModeHeaderName]?.firstOrNull,
           );
           receivedAuthHeaders.add(request.headers.authorization?.headerValue);
+          receivedBasePaths.add(
+            request.headers[webBasePathHeaderName]?.firstOrNull,
+          );
           return Response.ok(body: Body.fromString('"ok"'));
         },
         onConnected: (host) => httpHost = host,
@@ -122,6 +127,38 @@ void main() {
       },
     );
 
+    test(
+      'when the client host is at the domain root '
+      'then the declared base path is "/".',
+      () async {
+        client = TestServerpodClient(
+          host: httpHost,
+          authKeyProvider: TestNonRefresherAuthKeyProvider(null),
+          requestDelegate: _CookieCapableRequestDelegate(),
+        )..cookieAuth = true;
+
+        await client.callServerEndpoint<String>('test', 'method', {});
+
+        expect(receivedBasePaths, ['/']);
+      },
+    );
+
+    test(
+      'when the client host has a URL prefix (reverse proxy) '
+      'then the prefix is declared as the base path.',
+      () async {
+        client = TestServerpodClient(
+          host: httpHost.replace(path: '/api/'),
+          authKeyProvider: TestNonRefresherAuthKeyProvider(null),
+          requestDelegate: _CookieCapableRequestDelegate(),
+        )..cookieAuth = true;
+
+        // The test server serves every path, so the prefixed call succeeds.
+        await client.callServerEndpoint<String>('test', 'method', {});
+
+        expect(receivedBasePaths, ['/api']);
+      },
+    );
   });
 }
 
@@ -143,6 +180,7 @@ class _CookieCapableRequestDelegate extends ServerpodClientRequestDelegate {
       headers: {
         'authorization': ?authenticationValue,
         if (cookieAuth) webAuthModeHeaderName: webAuthModeCookie,
+        if (cookieAuth) webBasePathHeaderName: cookieAuthBasePath,
       },
     );
 

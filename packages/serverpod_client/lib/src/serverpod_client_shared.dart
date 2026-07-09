@@ -72,6 +72,12 @@ abstract class ServerpodClientRequestDelegate {
   /// Whether requests should use browser-managed cookie auth transport.
   bool cookieAuth = false;
 
+  /// The browser-visible base path of the server, declared to the server on
+  /// cookie-auth requests (via [webBasePathHeaderName]) so it can scope the
+  /// refresh cookie `Path` correctly behind a prefix-stripping reverse proxy.
+  /// Derived from the client's host; `/` when the server is at the root.
+  String cookieAuthBasePath = '/';
+
   /// Closes the connection to the server.
   /// This delegate should not be used after calling this.
   void close();
@@ -225,6 +231,15 @@ abstract class ServerpodClientShared extends EndpointCaller {
       );
     }
     _requestDelegate.cookieAuth = value;
+    _requestDelegate.cookieAuthBasePath = _hostBasePath;
+  }
+
+  /// The path component of [host] without a trailing slash (`/` at the root),
+  /// i.e. the browser-visible base path under which the server's endpoints
+  /// live.
+  String get _hostBasePath {
+    var path = Uri.parse(host).path.replaceFirst(RegExp(r'/+$'), '');
+    return path.isEmpty ? '/' : path;
   }
 
   /// Creates a new ServerpodClientShared.

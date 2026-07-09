@@ -13,15 +13,12 @@ void main() {
 
   group('Given a cookie-mode JWT session,', () {
     late _FakeJwt jwt;
+    late _TestRefreshJwtTokensEndpoint refreshEndpoint;
     late _FakeSession session;
     late UuidValue authUserId;
 
     setUp(() {
       authUserId = const Uuid().v4obj();
-      session = _FakeSession(
-        config: _serverpodConfig(),
-        request: _request(marker: true),
-      );
       jwt = _FakeJwt(
         config: jwtConfig,
         createTokensResult: _authSuccess(
@@ -34,6 +31,12 @@ void main() {
           token: 'rotated-access-token',
           refreshToken: 'rotated-refresh-token',
         ),
+      );
+      refreshEndpoint = _TestRefreshJwtTokensEndpoint(jwt);
+      session = _FakeSession(
+        config: _serverpodConfig(),
+        request: _request(marker: true),
+        refreshEndpoint: refreshEndpoint,
       );
     });
 
@@ -58,6 +61,56 @@ void main() {
           session.responseCookies.single.maxAge,
           jwtConfig.refreshTokenLifetime.inSeconds,
         );
+        // Path-scoped to the registered refresh endpoint's route, so the
+        // browser only attaches the refresh token there.
+        expect(session.responseCookies.single.path?.toString(), '/jwtRefresh');
+      },
+    );
+
+    test(
+      'when JwtTokenManager issues a token for a client behind a URL prefix '
+      '(declared via the base-path header), then the refresh cookie path '
+      'includes the prefix.',
+      () async {
+        session = _FakeSession(
+          config: _serverpodConfig(),
+          request: _request(marker: true, basePath: '/api'),
+          refreshEndpoint: refreshEndpoint,
+        );
+        final tokenManager = JwtTokenManager(config: jwtConfig, jwt: jwt);
+
+        await tokenManager.issueToken(
+          session,
+          authUserId: authUserId,
+          method: 'test',
+        );
+
+        expect(
+          session.responseCookies.single.path?.toString(),
+          '/api/jwtRefresh',
+        );
+      },
+    );
+
+    test(
+      'when JwtTokenManager issues a token on a server without a registered '
+      'refresh endpoint, then the refresh cookie falls back to the configured '
+      'path.',
+      () async {
+        session = _FakeSession(
+          config: _serverpodConfig(),
+          request: _request(marker: true),
+          refreshEndpoint: null,
+        );
+        final tokenManager = JwtTokenManager(config: jwtConfig, jwt: jwt);
+
+        await tokenManager.issueToken(
+          session,
+          authUserId: authUserId,
+          method: 'test',
+        );
+
+        expect(session.responseCookies.single.path?.toString(), '/');
       },
     );
 
@@ -71,10 +124,10 @@ void main() {
             marker: true,
             cookieHeader: 'auth_refresh=refresh-token',
           ),
+          refreshEndpoint: refreshEndpoint,
         );
-        final endpoint = _TestRefreshJwtTokensEndpoint(jwt);
 
-        final authSuccess = await endpoint.refreshAccessToken(session);
+        final authSuccess = await refreshEndpoint.refreshAccessToken(session);
 
         expect(jwt.receivedRefreshTokens, ['refresh-token']);
         expect(authSuccess.token, 'rotated-access-token');
@@ -82,6 +135,7 @@ void main() {
         expect(session.responseCookies, hasLength(1));
         expect(session.responseCookies.single.name, 'auth_refresh');
         expect(session.responseCookies.single.value, 'rotated-refresh-token');
+        expect(session.responseCookies.single.path?.toString(), '/jwtRefresh');
       },
     );
 
@@ -159,6 +213,7 @@ ServerpodConfig _serverpodConfig() {
 Request _request({
   required final bool marker,
   final String? cookieHeader,
+  final String? basePath,
 }) {
   return RequestInternal.create(
     Method.post,
@@ -171,6 +226,9 @@ Request _request({
       if (cookieHeader != null) {
         headers['cookie'] = [cookieHeader];
       }
+      if (basePath != null) {
+        headers[webBasePathHeaderName] = [basePath];
+      }
     }),
   );
 }
@@ -179,9 +237,12 @@ class _FakeSession implements Session {
   _FakeSession({
     required final ServerpodConfig config,
     required this.request,
-  }) : _serverpod = _FakeServerpod(config);
+    final Endpoint? refreshEndpoint,
+  }) : _serverpod = _FakeServerpod(config),
+       _server = _FakeServer(refreshEndpoint);
 
   final _FakeServerpod _serverpod;
+  final _FakeServer _server;
 
   final responseCookies = <SetCookie>[];
 
@@ -192,6 +253,9 @@ class _FakeSession implements Session {
   Serverpod get serverpod => _serverpod;
 
   @override
+  Server get server => _server;
+
+  @override
   void setResponseCookie(final SetCookie cookie) {
     responseCookies.add(cookie);
   }
@@ -200,6 +264,34 @@ class _FakeSession implements Session {
   dynamic noSuchMethod(final Invocation invocation) => throw UnimplementedError(
     '${invocation.memberName} is not implemented in _FakeSession',
   );
+}
+
+class _FakeServer implements Server {
+  _FakeServer(final Endpoint? refreshEndpoint)
+    : endpoints = _FakeEndpoints(refreshEndpoint);
+
+  @override
+  final EndpointDispatch endpoints;
+
+  @override
+  dynamic noSuchMethod(final Invocation invocation) => throw UnimplementedError(
+    '${invocation.memberName} is not implemented in _FakeServer',
+  );
+}
+
+class _FakeEndpoints extends EndpointDispatch {
+  _FakeEndpoints(final Endpoint? refreshEndpoint) {
+    if (refreshEndpoint != null) {
+      connectors['jwtRefresh'] = EndpointConnector(
+        name: 'jwtRefresh',
+        endpoint: refreshEndpoint,
+        methodConnectors: {},
+      );
+    }
+  }
+
+  @override
+  void initializeEndpoints(final Server server) {}
 }
 
 class _FakeServerpod implements Serverpod {

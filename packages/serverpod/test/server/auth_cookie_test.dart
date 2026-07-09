@@ -8,7 +8,8 @@ import 'package:serverpod/serverpod.dart'
         WebAuthCookieBuilder,
         WebAuthCookieSession,
         webAuthModeCookie,
-        webAuthModeHeaderName;
+        webAuthModeHeaderName,
+        webBasePathHeaderName;
 import 'package:serverpod_shared/serverpod_shared.dart'
     show CookieSameSite, WebAuthCookieConfig;
 import 'package:test/test.dart';
@@ -72,6 +73,22 @@ void main() {
       expect(cookie.httpOnly, isTrue);
     });
 
+    test(
+      'when a path override is given then set and clear refresh cookies use '
+      'it instead of the configured path.',
+      () {
+        var setCookie = config.buildSetRefreshCookieHeader(
+          'refresh123',
+          path: '/jwtRefresh',
+        );
+        var clearCookie = config.buildClearRefreshCookieHeader(
+          path: '/jwtRefresh',
+        );
+
+        expect(setCookie.path?.toString(), '/jwtRefresh');
+        expect(clearCookie.path?.toString(), '/jwtRefresh');
+      },
+    );
   });
 
   group('Given a SameSite mapping', () {
@@ -262,12 +279,62 @@ void main() {
       },
     );
 
+    test(
+      'when the client declares a base path '
+      'then it is returned normalized without a trailing slash.',
+      () {
+        final session = _FakeSession(
+          config: serverpodConfig,
+          request: _request(marker: true, basePath: '/api/'),
+        );
+
+        expect(session.webAuthBasePath, '/api');
+      },
+    );
+
+    test(
+      'when the client declares the root base path '
+      'then it is returned as-is.',
+      () {
+        final session = _FakeSession(
+          config: serverpodConfig,
+          request: _request(marker: true, basePath: '/'),
+        );
+
+        expect(session.webAuthBasePath, '/');
+      },
+    );
+
+    test(
+      'when the declared base path is malformed or the marker is missing '
+      'then no base path is returned.',
+      () {
+        for (final basePath in ['api', '/a;b', '/a b', '/${'a' * 300}']) {
+          final session = _FakeSession(
+            config: serverpodConfig,
+            request: _request(marker: true, basePath: basePath),
+          );
+          expect(
+            session.webAuthBasePath,
+            isNull,
+            reason: 'basePath "$basePath" should be rejected',
+          );
+        }
+
+        final noMarker = _FakeSession(
+          config: serverpodConfig,
+          request: _request(marker: false, basePath: '/api'),
+        );
+        expect(noMarker.webAuthBasePath, isNull);
+      },
+    );
   });
 }
 
 Request _request({
   required bool marker,
   String? cookieHeader,
+  String? basePath,
 }) {
   return RequestInternal.create(
     Method.get,
@@ -279,6 +346,9 @@ Request _request({
       }
       if (cookieHeader != null) {
         headers['cookie'] = [cookieHeader];
+      }
+      if (basePath != null) {
+        headers[webBasePathHeaderName] = [basePath];
       }
     }),
   );

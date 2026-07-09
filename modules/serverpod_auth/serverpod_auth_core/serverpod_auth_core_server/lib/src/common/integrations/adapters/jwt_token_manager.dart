@@ -5,6 +5,7 @@ import '../../../auth_user/auth_user.dart';
 import '../../../generated/common/models/auth_strategy.dart';
 import '../../../jwt/business/jwt.dart';
 import '../../../jwt/business/jwt_config.dart';
+import '../../../jwt/util/jwt_refresh_cookie_path.dart';
 import '../token_manager.dart';
 
 /// Token manager adapter for [Jwt].
@@ -58,6 +59,7 @@ class JwtTokenManager implements TokenManager {
     session.writeWebAuthRefreshCookie(
       refreshToken,
       maxAgeSeconds: maxAgeSeconds > 0 ? maxAgeSeconds : null,
+      path: jwtRefreshCookiePath(session),
     );
     return authSuccess.copyWith(refreshToken: null);
   }

@@ -18,6 +18,17 @@ const webAuthModeHeaderName = 'x-serverpod-auth-mode';
 /// The [webAuthModeHeaderName] value that selects cookie-based web auth.
 const webAuthModeCookie = 'cookie';
 
+/// The request header a cookie-mode web client sets to declare the
+/// browser-visible base path of the server: the path component of the client's
+/// `host`, e.g. `/api` behind a prefix-stripping reverse proxy, or `/`.
+///
+/// The server cannot see a proxy-stripped prefix itself, but needs it to scope
+/// the JWT refresh cookie's `Path` to the browser-visible route of the refresh
+/// endpoint. A cookie `Path` is not a security boundary and the value only
+/// affects the scope of the sender's own cookie, so it is safe to take from
+/// the client.
+const webBasePathHeaderName = 'x-serverpod-base-path';
+
 /// Regexp for a string adhering to the RFC 4648 base64 encoding alphabet.
 const _base64RegExpStr = r'[a-zA-Z0-9+/]*=*';
 

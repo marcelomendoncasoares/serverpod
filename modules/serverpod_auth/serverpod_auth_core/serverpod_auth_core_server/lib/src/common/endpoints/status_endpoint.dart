@@ -1,4 +1,5 @@
 import 'package:serverpod/serverpod.dart';
+import '../../jwt/util/jwt_refresh_cookie_path.dart';
 import '../business/auth_services.dart';
 import '../integrations/token_manager.dart';
 
@@ -42,7 +43,9 @@ class StatusEndpoint extends Endpoint {
     final Session session,
     final Future<void> Function() revokeTokens,
   ) async {
-    session.clearWebAuthCookie();
+    session.clearWebAuthCookie(
+      refreshCookiePath: jwtRefreshCookiePath(session),
+    );
     await revokeTokens();
   }
 }
