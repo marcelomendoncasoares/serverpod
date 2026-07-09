@@ -19,14 +19,20 @@ class JwtTokenManager implements TokenManager {
   /// The [Jwt] instance.
   final Jwt jwt;
 
+  final JwtConfig _config;
+
   /// Creates a new [JwtTokenManager] instance.
   JwtTokenManager({
     required final JwtConfig config,
     final AuthUsers authUsers = const AuthUsers(),
-  }) : jwt = Jwt(
-         config: config,
-         authUsers: authUsers,
-       );
+    final Jwt? jwt,
+  }) : _config = config,
+       jwt =
+           jwt ??
+           Jwt(
+             config: config,
+             authUsers: authUsers,
+           );
 
   @override
   Future<AuthSuccess> issueToken(
@@ -36,13 +42,24 @@ class JwtTokenManager implements TokenManager {
     final Set<Scope>? scopes,
     final Transaction? transaction,
   }) async {
-    return jwt.createTokens(
+    final authSuccess = await jwt.createTokens(
       session,
       authUserId: authUserId,
       method: method,
       scopes: scopes,
       transaction: transaction,
     );
+    if (!session.isWebAuthCookieRequest) return authSuccess;
+
+    final refreshToken = authSuccess.refreshToken;
+    if (refreshToken == null) return authSuccess;
+
+    final maxAgeSeconds = _config.refreshTokenLifetime.inSeconds;
+    session.writeWebAuthRefreshCookie(
+      refreshToken,
+      maxAgeSeconds: maxAgeSeconds > 0 ? maxAgeSeconds : null,
+    );
+    return authSuccess.copyWith(refreshToken: null);
   }
 
   @override
