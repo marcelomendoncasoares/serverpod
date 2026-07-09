@@ -3,6 +3,7 @@
 })
 library;
 
+import 'package:http/http.dart' as http;
 import 'package:relic/relic.dart';
 import 'package:serverpod_client/serverpod_client.dart';
 import 'package:test/test.dart';
@@ -20,6 +21,24 @@ void main() {
   late List<String?> receivedAuthHeaders;
 
   group('Given a cookie-auth client on a transport without a cookie jar', () {
+    test(
+      'when cookie auth is enabled '
+      'then it fails loudly at configuration time.',
+      () {
+        client = TestServerpodClient(
+          host: Uri.parse('http://localhost:8080'),
+        );
+
+        expect(
+          () => client.cookieAuth = true,
+          throwsA(isA<UnsupportedError>()),
+        );
+        expect(client.cookieAuth, isFalse);
+      },
+    );
+  });
+
+  group('Given a cookie-auth client on a cookie-capable transport', () {
     setUp(() async {
       requestCount = 0;
       receivedAuthModeMarkers = [];
@@ -36,32 +55,38 @@ void main() {
         },
         onConnected: (host) => httpHost = host,
       );
-
-      client = TestServerpodClient(
-        host: httpHost,
-        authKeyProvider: TestCookieAuthKeyProvider(),
-      );
     });
 
     tearDown(() async => await closeServer());
 
     test(
-      'when an authenticated call is made '
-      'then it fails loudly because the transport cannot carry the auth cookie.',
+      'when an authenticated SAS-style call is made '
+      'then the marker is sent without an Authorization header.',
       () async {
-        await expectLater(
-          client.callServerEndpoint<String>('test', 'method', {}),
-          throwsA(isA<StateError>()),
-        );
+        client = TestServerpodClient(
+          host: httpHost,
+          authKeyProvider: TestNonRefresherAuthKeyProvider(null),
+          requestDelegate: _CookieCapableRequestDelegate(),
+        )..cookieAuth = true;
 
-        expect(requestCount, 0);
+        await client.callServerEndpoint<String>('test', 'method', {});
+
+        expect(requestCount, 1);
+        expect(receivedAuthModeMarkers, [webAuthModeCookie]);
+        expect(receivedAuthHeaders, [null]);
       },
     );
 
     test(
       'when an unauthenticated call is made '
-      'then cookie mode is suppressed: no marker, no Authorization header, and the call succeeds.',
+      'then the marker is still sent without an Authorization header.',
       () async {
+        client = TestServerpodClient(
+          host: httpHost,
+          authKeyProvider: TestNonRefresherAuthKeyProvider(null),
+          requestDelegate: _CookieCapableRequestDelegate(),
+        )..cookieAuth = true;
+
         await client.callServerEndpoint<String>(
           'test',
           'method',
@@ -70,9 +95,66 @@ void main() {
         );
 
         expect(requestCount, 1);
-        expect(receivedAuthModeMarkers, [null]);
+        expect(receivedAuthModeMarkers, [webAuthModeCookie]);
         expect(receivedAuthHeaders, [null]);
       },
     );
+
+    test(
+      'when an authenticated JWT-style call is made '
+      'then the marker and Authorization header are both sent.',
+      () async {
+        client = TestServerpodClient(
+          host: httpHost,
+          authKeyProvider: TestNonRefresherAuthKeyProvider(
+            wrapAsBearerAuthHeaderValue('access-token'),
+          ),
+          requestDelegate: _CookieCapableRequestDelegate(),
+        )..cookieAuth = true;
+
+        await client.callServerEndpoint<String>('test', 'method', {});
+
+        expect(requestCount, 1);
+        expect(receivedAuthModeMarkers, [webAuthModeCookie]);
+        expect(receivedAuthHeaders, [
+          wrapAsBearerAuthHeaderValue('access-token'),
+        ]);
+      },
+    );
+
   });
+}
+
+class _CookieCapableRequestDelegate extends ServerpodClientRequestDelegate {
+  final _httpClient = http.Client();
+
+  @override
+  bool get supportsCookieAuth => true;
+
+  @override
+  Future<String> serverRequest<T>(
+    Uri url, {
+    required String body,
+    String? authenticationValue,
+  }) async {
+    final response = await _httpClient.post(
+      url,
+      body: body,
+      headers: {
+        'authorization': ?authenticationValue,
+        if (cookieAuth) webAuthModeHeaderName: webAuthModeCookie,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw ServerpodClientException(response.body, response.statusCode);
+    }
+
+    return response.body;
+  }
+
+  @override
+  void close() {
+    _httpClient.close();
+  }
 }

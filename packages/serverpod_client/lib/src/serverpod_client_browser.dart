@@ -31,25 +31,29 @@ class ServerpodClientRequestDelegateImpl
   bool get supportsCookieAuth => true;
 
   @override
+  set cookieAuth(bool value) {
+    super.cookieAuth = value;
+    if (value) {
+      // Send auth cookies with requests and accept Set-Cookie responses.
+      var client = _httpClient;
+      if (client is BrowserClient) client.withCredentials = true;
+    }
+  }
+
+  @override
   Future<String> serverRequest<T>(
     Uri url, {
     required String body,
     String? authenticationValue,
-    bool useCookieAuth = false,
   }) async {
     try {
-      if (useCookieAuth) {
-        // Send the auth cookie with the request and accept Set-Cookie back.
-        var client = _httpClient;
-        if (client is BrowserClient) client.withCredentials = true;
-      }
       var response = await _httpClient
           .post(
             url,
             body: body,
             headers: {
               'authorization': ?authenticationValue,
-              if (useCookieAuth) webAuthModeHeaderName: webAuthModeCookie,
+              if (cookieAuth) webAuthModeHeaderName: webAuthModeCookie,
             },
           )
           .timeout(connectionTimeout);

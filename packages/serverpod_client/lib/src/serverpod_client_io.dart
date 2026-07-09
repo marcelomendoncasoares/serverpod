@@ -55,7 +55,6 @@ class ServerpodClientRequestDelegateImpl
     Uri url, {
     required String body,
     String? authenticationValue,
-    bool useCookieAuth = false,
   }) async {
     try {
       final response = await _httpClient
@@ -65,7 +64,6 @@ class ServerpodClientRequestDelegateImpl
             headers: {
               HttpHeaders.contentTypeHeader: ContentType.json.toString(),
               HttpHeaders.authorizationHeader: ?authenticationValue,
-              if (useCookieAuth) webAuthModeHeaderName: webAuthModeCookie,
             },
           )
           .timeout(connectionTimeout);

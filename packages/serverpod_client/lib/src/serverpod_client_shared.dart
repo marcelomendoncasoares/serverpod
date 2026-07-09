@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
 import 'package:serverpod_client/serverpod_client.dart';
 import 'package:serverpod_client/src/client_method_stream_manager.dart';
 import 'package:serverpod_client/src/method_stream/method_stream_connection_details.dart';
@@ -59,19 +60,17 @@ class MethodCallContext {
 /// is available.
 abstract class ServerpodClientRequestDelegate {
   /// Performs the actual request to the server and returns the response data.
-  ///
-  /// When [useCookieAuth] is true the request authenticates via an `HttpOnly`
-  /// cookie: it sends the cookie-mode marker header and (on web) makes a
-  /// credentialed request, instead of relying on [authenticationValue].
   Future<String> serverRequest<T>(
     Uri url, {
     required String body,
     String? authenticationValue,
-    bool useCookieAuth = false,
   });
 
   /// Whether the transport can carry an `HttpOnly` auth cookie.
   bool get supportsCookieAuth => false;
+
+  /// Whether requests should use browser-managed cookie auth transport.
+  bool cookieAuth = false;
 
   /// Closes the connection to the server.
   /// This delegate should not be used after calling this.
@@ -210,6 +209,24 @@ abstract class ServerpodClientShared extends EndpointCaller {
   /// unauthenticated.
   ClientAuthKeyProvider? authKeyProvider;
 
+  /// Whether the client should use browser-managed cookie auth transport.
+  ///
+  /// Set this immediately after constructing the client, before making any
+  /// calls. Cookie auth is only supported by browser clients.
+  bool get cookieAuth => _requestDelegate.cookieAuth;
+
+  set cookieAuth(bool value) {
+    if (value && !_requestDelegate.supportsCookieAuth) {
+      throw UnsupportedError(
+        'Cookie-based web auth is only supported by browser clients. '
+        'The dart:io client cannot store or resend HttpOnly cookies. '
+        'Set cookieAuth only on web clients, immediately after constructing '
+        'the client and before making any calls.',
+      );
+    }
+    _requestDelegate.cookieAuth = value;
+  }
+
   /// Creates a new ServerpodClientShared.
   ServerpodClientShared(
     String host,
@@ -225,6 +242,7 @@ abstract class ServerpodClientShared extends EndpointCaller {
     this.onSucceededCall,
     bool? disconnectStreamsOnLostInternetConnection,
     http.Client? httpClientOverride,
+    @visibleForTesting ServerpodClientRequestDelegate? requestDelegate,
   }) : host = host.endsWith('/') ? host : '$host/',
        connectionTimeout = connectionTimeout ?? const Duration(seconds: 20),
        streamingConnectionTimeout =
@@ -233,12 +251,14 @@ abstract class ServerpodClientShared extends EndpointCaller {
       this.host.startsWith('http://') || this.host.startsWith('https://'),
       'host must include protocol, eg: https://example.com/',
     );
-    _requestDelegate = ServerpodClientRequestDelegateImpl(
-      connectionTimeout: this.connectionTimeout,
-      serializationManager: serializationManager,
-      securityContext: securityContext,
-      httpClientOverride: httpClientOverride,
-    );
+    _requestDelegate =
+        requestDelegate ??
+        ServerpodClientRequestDelegateImpl(
+          connectionTimeout: this.connectionTimeout,
+          serializationManager: serializationManager,
+          securityContext: securityContext,
+          httpClientOverride: httpClientOverride,
+        );
     disconnectStreamsOnLostInternetConnection ??= false;
     _disconnectMethodStreamsOnLostInternetConnection =
         disconnectStreamsOnLostInternetConnection;
@@ -562,17 +582,7 @@ abstract class ServerpodClientShared extends EndpointCaller {
 
     try {
       var provider = authKeyProvider;
-      var useCookieAuth =
-          authenticated &&
-          provider is CookieAuthKeyProvider &&
-          provider.usesCookies;
-      if (useCookieAuth && !_requestDelegate.supportsCookieAuth) {
-        throw StateError(
-          'Cookie-based web auth is only supported on the web (browser) platform. '
-          'Run native clients in header mode (cookieAuth: false).',
-        );
-      }
-      var authenticationValue = authenticated && !useCookieAuth
+      var authenticationValue = authenticated
           ? await provider?.authHeaderValue
           : null;
       var body = formatArgs(args);
@@ -584,7 +594,6 @@ abstract class ServerpodClientShared extends EndpointCaller {
         url,
         body: body,
         authenticationValue: authenticationValue,
-        useCookieAuth: useCookieAuth,
       );
 
       T result;
