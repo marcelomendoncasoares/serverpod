@@ -57,7 +57,7 @@ extension RequestExtension on Request {
   /// valid cookie at all (all treated as absent rather than failing the
   /// request).
   ///
-  /// relic's `Cookie` parser skips individual malformed cookies, so an
+  /// Relic's `Cookie` parser skips individual malformed cookies, so an
   /// unrelated bad cookie does not hide a well-formed one. It only throws when
   /// no cookie in the header is usable; that is caught here and treated as
   /// absent.
