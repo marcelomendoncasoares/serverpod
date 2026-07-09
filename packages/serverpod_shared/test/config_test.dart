@@ -2229,6 +2229,7 @@ allowedOrigins:
 $apiServerConfig
 authCookie:
   name: my_auth
+  refreshName: my_auth_refresh
   domain: .example.com
   path: /app
   secure: false
@@ -2238,6 +2239,7 @@ authCookie:
 
       var cookie = config.authCookie!;
       expect(cookie.name, 'my_auth');
+      expect(cookie.refreshName, 'my_auth_refresh');
       expect(cookie.domain, '.example.com');
       expect(cookie.path, '/app');
       expect(cookie.secure, isFalse);
@@ -2258,10 +2260,27 @@ authCookie:
 
       var cookie = config.authCookie!;
       expect(cookie.name, WebAuthCookieConfig.defaultName);
+      expect(cookie.refreshName, '${WebAuthCookieConfig.defaultName}_refresh');
       expect(cookie.domain, '.example.com');
       expect(cookie.path, '/');
       expect(cookie.secure, isTrue);
       expect(cookie.sameSite, CookieSameSite.lax);
+    });
+
+    test('when only name is set then refreshName is derived from it.', () {
+      var config = ServerpodConfig.loadFromMap(
+        runMode,
+        serverId,
+        passwords,
+        loadYaml('''
+$apiServerConfig
+authCookie:
+  name: custom_auth
+'''),
+      );
+
+      expect(config.authCookie!.name, 'custom_auth');
+      expect(config.authCookie!.refreshName, 'custom_auth_refresh');
     });
 
     test('when set via environment variables then they are parsed.', () {
@@ -2272,6 +2291,7 @@ authCookie:
         loadYaml(apiServerConfig),
         environment: {
           'SERVERPOD_AUTH_COOKIE_NAME': 'env_auth',
+          'SERVERPOD_AUTH_COOKIE_REFRESH_NAME': 'env_refresh',
           'SERVERPOD_AUTH_COOKIE_SECURE': 'false',
           'SERVERPOD_AUTH_COOKIE_SAME_SITE': 'strict',
         },
@@ -2279,6 +2299,7 @@ authCookie:
 
       var cookie = config.authCookie!;
       expect(cookie.name, 'env_auth');
+      expect(cookie.refreshName, 'env_refresh');
       expect(cookie.secure, isFalse);
       expect(cookie.sameSite, CookieSameSite.strict);
     });
@@ -2395,11 +2416,49 @@ authCookie:
 $apiServerConfig
 authCookie:
   name: yaml_auth
+  refreshName: yaml_refresh
 '''),
-        environment: {'SERVERPOD_AUTH_COOKIE_NAME': 'env_auth'},
+        environment: {
+          'SERVERPOD_AUTH_COOKIE_NAME': 'env_auth',
+          'SERVERPOD_AUTH_COOKIE_REFRESH_NAME': 'env_refresh',
+        },
       );
 
       expect(config.authCookie!.name, 'env_auth');
+      expect(config.authCookie!.refreshName, 'env_refresh');
+    });
+
+    test('when refreshName matches name then it throws.', () {
+      expect(
+        () => ServerpodConfig.loadFromMap(
+          runMode,
+          serverId,
+          passwords,
+          loadYaml('''
+$apiServerConfig
+authCookie:
+  name: same_auth
+  refreshName: same_auth
+'''),
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('when refreshName is not a valid cookie name then it throws.', () {
+      expect(
+        () => ServerpodConfig.loadFromMap(
+          runMode,
+          serverId,
+          passwords,
+          loadYaml('''
+$apiServerConfig
+authCookie:
+  refreshName: "bad refresh"
+'''),
+        ),
+        throwsArgumentError,
+      );
     });
 
     test('when sameSite is not a string then it throws.', () {

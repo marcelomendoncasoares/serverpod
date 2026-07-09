@@ -989,6 +989,9 @@ class WebAuthCookieConfig {
   /// The name of the cookie.
   final String name;
 
+  /// The name of the refresh cookie used by JWT cookie-mode auth.
+  final String refreshName;
+
   /// The domain the cookie applies to. Null (the default) makes it host-only;
   /// set a registrable domain (e.g. `.example.com`) to share across subdomains.
   final String? domain;
@@ -1009,20 +1012,27 @@ class WebAuthCookieConfig {
   /// Creates a new [WebAuthCookieConfig].
   const WebAuthCookieConfig({
     this.name = defaultName,
+    String? refreshName,
     this.domain,
     this.path = '/',
     this.secure = true,
     this.sameSite = CookieSameSite.lax,
-  });
+  }) : refreshName = refreshName ?? '${name}_refresh';
 
   factory WebAuthCookieConfig._fromJson(Map json) {
+    final name =
+        _parseOptionalString(
+          json[ServerpodEnv.authCookieName.configKey],
+          ServerpodEnv.authCookieName.configKey,
+        ) ??
+        defaultName;
+
     return WebAuthCookieConfig(
-      name:
-          _parseOptionalString(
-            json[ServerpodEnv.authCookieName.configKey],
-            ServerpodEnv.authCookieName.configKey,
-          ) ??
-          defaultName,
+      name: name,
+      refreshName: _parseOptionalString(
+        json[ServerpodEnv.authCookieRefreshName.configKey],
+        ServerpodEnv.authCookieRefreshName.configKey,
+      ),
       domain: _parseOptionalString(
         json[ServerpodEnv.authCookieDomain.configKey],
         ServerpodEnv.authCookieDomain.configKey,
@@ -1104,6 +1114,19 @@ class WebAuthCookieConfig {
   /// sign-in. This is a cheap, dependency-free pre-check; relic performs the
   /// authoritative parse when the `Set-Cookie` header is built.
   void _validate() {
+    _validateCookieName(name, ServerpodEnv.authCookieName.configKey);
+    _validateCookieName(
+      refreshName,
+      ServerpodEnv.authCookieRefreshName.configKey,
+    );
+    if (refreshName == name) {
+      throw ArgumentError.value(
+        refreshName,
+        ServerpodEnv.authCookieRefreshName.configKey,
+        'Must be different from authCookie.name',
+      );
+    }
+
     final domain = this.domain;
     if (domain != null) {
       // A cookie Domain is a bare host (RFC 6265 5.2.3): no scheme, port, path
@@ -1129,10 +1152,22 @@ class WebAuthCookieConfig {
     }
   }
 
+  void _validateCookieName(String name, String configKey) {
+    if (name.isEmpty ||
+        RegExp(r'[\x00-\x20\x7f()<>@,;:\\"/\[\]?={}]+').hasMatch(name)) {
+      throw ArgumentError.value(
+        name,
+        configKey,
+        'Expected a valid RFC 6265 cookie name',
+      );
+    }
+  }
+
   @override
   String toString() {
     var output = StringBuffer()
       ..writeln('auth cookie name: $name')
+      ..writeln('auth cookie refresh name: $refreshName')
       ..writeln('auth cookie domain: ${domain ?? '(host-only)'}')
       ..writeln('auth cookie path: $path')
       ..writeln('auth cookie secure: $secure')
@@ -1440,6 +1475,7 @@ Map? _buildAuthCookieConfigMap(Map configMap, Map<String, String> environment) {
   // divergent error types.
   return _buildConfigMap(authCookieConfig, environment, [
     (ServerpodEnv.authCookieName, null),
+    (ServerpodEnv.authCookieRefreshName, null),
     (ServerpodEnv.authCookieDomain, null),
     (ServerpodEnv.authCookiePath, null),
     (ServerpodEnv.authCookieSecure, null),

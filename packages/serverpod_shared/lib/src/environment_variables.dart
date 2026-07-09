@@ -208,6 +208,9 @@ enum ServerpodEnv {
   /// The name of the web authentication cookie.
   authCookieName,
 
+  /// The name of the web authentication refresh cookie.
+  authCookieRefreshName,
+
   /// The domain of the web authentication cookie.
   authCookieDomain,
 
@@ -277,6 +280,7 @@ enum ServerpodEnv {
       (ServerpodEnv.websocketPingInterval) => 'websocketPingInterval',
       (ServerpodEnv.allowedOrigins) => 'allowedOrigins',
       (ServerpodEnv.authCookieName) => 'name',
+      (ServerpodEnv.authCookieRefreshName) => 'refreshName',
       (ServerpodEnv.authCookieDomain) => 'domain',
       (ServerpodEnv.authCookiePath) => 'path',
       (ServerpodEnv.authCookieSecure) => 'secure',
@@ -354,6 +358,8 @@ enum ServerpodEnv {
         'SERVERPOD_WEBSOCKET_PING_INTERVAL',
       (ServerpodEnv.allowedOrigins) => 'SERVERPOD_ALLOWED_ORIGINS',
       (ServerpodEnv.authCookieName) => 'SERVERPOD_AUTH_COOKIE_NAME',
+      (ServerpodEnv.authCookieRefreshName) =>
+        'SERVERPOD_AUTH_COOKIE_REFRESH_NAME',
       (ServerpodEnv.authCookieDomain) => 'SERVERPOD_AUTH_COOKIE_DOMAIN',
       (ServerpodEnv.authCookiePath) => 'SERVERPOD_AUTH_COOKIE_PATH',
       (ServerpodEnv.authCookieSecure) => 'SERVERPOD_AUTH_COOKIE_SECURE',
