@@ -1,5 +1,6 @@
 import 'package:relic/relic.dart';
 import 'package:serverpod/src/server/session.dart';
+import 'package:serverpod/src/util/request_extension.dart';
 import 'package:serverpod_serialization/serverpod_serialization.dart'
     show webAuthModeHeaderName, webAuthModeCookie;
 import 'package:serverpod_shared/serverpod_shared.dart';
@@ -36,6 +37,30 @@ extension WebAuthCookieSession on Session {
     return true;
   }
 
+  /// If [isWebAuthCookieRequest], writes [refreshToken] as the JWT refresh
+  /// cookie and returns true. Otherwise returns false and the caller should
+  /// return the refresh token in the response body as usual.
+  bool writeWebAuthRefreshCookie(
+    String refreshToken, {
+    int? maxAgeSeconds,
+  }) {
+    if (!isWebAuthCookieRequest) return false;
+    setResponseCookie(
+      serverpod.config.authCookie!.buildSetRefreshCookieHeader(
+        refreshToken,
+        maxAgeSeconds: maxAgeSeconds,
+      ),
+    );
+    return true;
+  }
+
+  /// Reads the JWT refresh token from the refresh cookie for cookie-mode
+  /// requests, or null when cookie mode is not active or the cookie is absent.
+  String? readWebAuthRefreshCookie() {
+    if (!isWebAuthCookieRequest) return null;
+    return request?.getCookieValue(serverpod.config.authCookie!.refreshName);
+  }
+
   /// Clears the auth cookie for cookie-mode requests (a no-op otherwise).
   ///
   /// Gated on [isWebAuthCookieRequest] just like [writeWebAuthCookie], so the
@@ -46,6 +71,9 @@ extension WebAuthCookieSession on Session {
   void clearWebAuthCookie() {
     if (!isWebAuthCookieRequest) return;
     setResponseCookie(serverpod.config.authCookie!.buildClearCookieHeader());
+    setResponseCookie(
+      serverpod.config.authCookie!.buildClearRefreshCookieHeader(),
+    );
   }
 }
 
@@ -59,14 +87,24 @@ extension WebAuthCookieBuilder on WebAuthCookieConfig {
   /// [maxAgeSeconds] is given it sets the cookie lifetime; omit it for a
   /// session cookie (cleared when the browser closes).
   SetCookie buildSetCookieHeader(String token, {int? maxAgeSeconds}) =>
-      _build(token, maxAge: maxAgeSeconds);
+      _build(name, token, maxAge: maxAgeSeconds);
 
   /// A `Set-Cookie` that expires (removes) the auth cookie on the client. The
   /// attributes match those used to set it, which browsers require to remove a
   /// cookie.
-  SetCookie buildClearCookieHeader() => _build('', maxAge: 0);
+  SetCookie buildClearCookieHeader() => _build(name, '', maxAge: 0);
 
-  SetCookie _build(String value, {int? maxAge}) {
+  /// A `Set-Cookie` that stores [refreshToken] as the JWT refresh cookie.
+  SetCookie buildSetRefreshCookieHeader(
+    String refreshToken, {
+    int? maxAgeSeconds,
+  }) => _build(refreshName, refreshToken, maxAge: maxAgeSeconds);
+
+  /// A `Set-Cookie` that expires (removes) the JWT refresh cookie.
+  SetCookie buildClearRefreshCookieHeader() =>
+      _build(refreshName, '', maxAge: 0);
+
+  SetCookie _build(String name, String value, {int? maxAge}) {
     final domain = this.domain;
     // SetCookie validates name, value, domain and path, throwing
     // FormatException on bad input: it rejects a Domain with a port (RFC 6265

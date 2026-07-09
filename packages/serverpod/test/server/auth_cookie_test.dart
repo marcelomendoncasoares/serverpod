@@ -1,6 +1,16 @@
 import 'package:relic/relic.dart';
-import 'package:serverpod/src/server/auth_cookie.dart';
-import 'package:serverpod_shared/serverpod_shared.dart';
+import 'package:serverpod/serverpod.dart'
+    show
+        ServerConfig,
+        Serverpod,
+        ServerpodConfig,
+        Session,
+        WebAuthCookieBuilder,
+        WebAuthCookieSession,
+        webAuthModeCookie,
+        webAuthModeHeaderName;
+import 'package:serverpod_shared/serverpod_shared.dart'
+    show CookieSameSite, WebAuthCookieConfig;
 import 'package:test/test.dart';
 
 void main() {
@@ -21,6 +31,25 @@ void main() {
       expect(cookie.domain, isNull);
     });
 
+    test(
+      'when building a refresh set-cookie header then it uses the refresh name.',
+      () {
+        var cookie = config.buildSetRefreshCookieHeader(
+          'refresh123',
+          maxAgeSeconds: 7200,
+        );
+
+        expect(cookie.name, '${WebAuthCookieConfig.defaultName}_refresh');
+        expect(cookie.value, 'refresh123');
+        expect(cookie.httpOnly, isTrue);
+        expect(cookie.secure, isTrue);
+        expect(cookie.sameSite, SameSite.lax);
+        expect(cookie.maxAge, 7200);
+        expect(cookie.path?.toString(), '/');
+        expect(cookie.domain, isNull);
+      },
+    );
+
     test('when no maxAge is given then it is a session cookie.', () {
       var cookie = config.buildSetCookieHeader('abc123');
       expect(cookie.maxAge, isNull);
@@ -33,6 +62,16 @@ void main() {
       expect(cookie.maxAge, 0);
       expect(cookie.httpOnly, isTrue);
     });
+
+    test('when building a refresh clear-cookie header then value is empty and '
+        'maxAge is 0.', () {
+      var cookie = config.buildClearRefreshCookieHeader();
+      expect(cookie.name, '${WebAuthCookieConfig.defaultName}_refresh');
+      expect(cookie.value, '');
+      expect(cookie.maxAge, 0);
+      expect(cookie.httpOnly, isTrue);
+    });
+
   });
 
   group('Given a SameSite mapping', () {
@@ -100,6 +139,7 @@ void main() {
     test('when built then secure/path/name are taken from the config.', () {
       var cookie = const WebAuthCookieConfig(
         name: 'my_auth',
+        refreshName: 'my_refresh',
         path: '/app',
         secure: false,
         sameSite: CookieSameSite.strict,
@@ -111,4 +151,174 @@ void main() {
       expect(cookie.sameSite, SameSite.strict);
     });
   });
+
+  group('Given a web-auth-cookie session', () {
+    late ServerpodConfig serverpodConfig;
+
+    setUp(() {
+      serverpodConfig = ServerpodConfig(
+        apiServer: ServerConfig(
+          port: 8080,
+          publicHost: 'localhost',
+          publicPort: 8080,
+          publicScheme: 'http',
+        ),
+        allowedOrigins: const ['https://app.example.com'],
+        authCookie: const WebAuthCookieConfig(
+          name: 'auth',
+          refreshName: 'auth_refresh',
+        ),
+      );
+    });
+
+    test(
+      'when writing a refresh cookie for a cookie-mode request '
+      'then the refresh cookie is queued.',
+      () {
+        final session = _FakeSession(
+          config: serverpodConfig,
+          request: _request(marker: true),
+        );
+
+        final wasWritten = session.writeWebAuthRefreshCookie(
+          'refresh-token',
+          maxAgeSeconds: 60,
+        );
+
+        expect(wasWritten, isTrue);
+        expect(session.responseCookies, hasLength(1));
+        expect(session.responseCookies.single.name, 'auth_refresh');
+        expect(session.responseCookies.single.value, 'refresh-token');
+        expect(session.responseCookies.single.maxAge, 60);
+      },
+    );
+
+    test(
+      'when writing a refresh cookie without cookie mode '
+      'then no refresh cookie is queued.',
+      () {
+        final session = _FakeSession(
+          config: serverpodConfig,
+          request: _request(marker: false),
+        );
+
+        final wasWritten = session.writeWebAuthRefreshCookie('refresh-token');
+
+        expect(wasWritten, isFalse);
+        expect(session.responseCookies, isEmpty);
+      },
+    );
+
+    test(
+      'when reading a refresh cookie for a cookie-mode request '
+      'then the refresh cookie value is returned.',
+      () {
+        final session = _FakeSession(
+          config: serverpodConfig,
+          request: _request(
+            marker: true,
+            cookieHeader: 'auth_refresh=refresh-token',
+          ),
+        );
+
+        expect(session.readWebAuthRefreshCookie(), 'refresh-token');
+      },
+    );
+
+    test(
+      'when reading duplicate refresh cookies for a cookie-mode request '
+      'then no refresh cookie value is returned.',
+      () {
+        final session = _FakeSession(
+          config: serverpodConfig,
+          request: _request(
+            marker: true,
+            cookieHeader: 'auth_refresh=one; auth_refresh=two',
+          ),
+        );
+
+        expect(session.readWebAuthRefreshCookie(), isNull);
+      },
+    );
+
+    test(
+      'when clearing web auth cookies for a cookie-mode request '
+      'then both auth cookies are cleared.',
+      () {
+        final session = _FakeSession(
+          config: serverpodConfig,
+          request: _request(marker: true),
+        );
+
+        session.clearWebAuthCookie();
+
+        expect(session.responseCookies, hasLength(2));
+        expect(session.responseCookies.map((c) => c.name), [
+          'auth',
+          'auth_refresh',
+        ]);
+        expect(session.responseCookies.map((c) => c.value), ['', '']);
+        expect(session.responseCookies.map((c) => c.maxAge), [0, 0]);
+      },
+    );
+
+  });
+}
+
+Request _request({
+  required bool marker,
+  String? cookieHeader,
+}) {
+  return RequestInternal.create(
+    Method.get,
+    Uri.parse('http://localhost/test'),
+    Object(),
+    headers: Headers.build((headers) {
+      if (marker) {
+        headers[webAuthModeHeaderName] = [webAuthModeCookie];
+      }
+      if (cookieHeader != null) {
+        headers['cookie'] = [cookieHeader];
+      }
+    }),
+  );
+}
+
+class _FakeSession implements Session {
+  _FakeSession({
+    required ServerpodConfig config,
+    required this.request,
+  }) : _serverpod = _FakeServerpod(config);
+
+  final _FakeServerpod _serverpod;
+
+  final responseCookies = <SetCookie>[];
+
+  @override
+  final Request? request;
+
+  @override
+  Serverpod get serverpod => _serverpod;
+
+  @override
+  void setResponseCookie(SetCookie cookie) {
+    responseCookies.add(cookie);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError(
+    '${invocation.memberName} is not implemented in _FakeSession',
+  );
+}
+
+class _FakeServerpod implements Serverpod {
+  _FakeServerpod(this.config);
+
+  @override
+  final ServerpodConfig config;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError(
+    '${invocation.memberName} is not implemented in _FakeServerpod',
+  );
 }
