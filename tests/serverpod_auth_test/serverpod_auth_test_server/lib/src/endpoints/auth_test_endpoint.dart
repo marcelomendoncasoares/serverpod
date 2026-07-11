@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_idp_server/core.dart';
+
+import '../generated/protocol.dart';
+import 'jwt_refresh_endpoint.dart';
 
 /// Endpoint for testing authentication.
 class AuthTestEndpoint extends Endpoint {
@@ -8,6 +13,21 @@ class AuthTestEndpoint extends Endpoint {
           .serverSideSessions;
 
   late final Jwt jwt = AuthServices.getTokenManager<JwtTokenManager>().jwt;
+
+  @override
+  Future<void> streamOpened(final StreamingSession session) async {
+    final userIdentifier = session.authenticated?.userIdentifier;
+    // ignore: deprecated_member_use
+    await sendStreamMessage(
+      session,
+      UserData(
+        authUserId: userIdentifier == null
+            ? UuidValue.nil
+            : UuidValue.fromString(userIdentifier),
+        displayName: userIdentifier ?? 'anonymous',
+      ),
+    );
+  }
 
   /// Creates a new test user.
   Future<UuidValue> createTestUser(final Session session) async {
@@ -44,7 +64,7 @@ class AuthTestEndpoint extends Endpoint {
     final Session session,
     final UuidValue authUserId,
   ) async {
-    return jwt.createTokens(
+    return AuthServices.getTokenManager<JwtTokenManager>().issueToken(
       session,
       authUserId: authUserId,
       method: 'test',
@@ -92,4 +112,37 @@ class AuthTestEndpoint extends Endpoint {
     final userId = session.authenticated;
     return userId?.authUserId == authUserId;
   }
+
+  @unauthenticatedClientCall
+  Future<bool> checkSessionUnauthenticated(final Session session) async {
+    return session.isUserSignedIn;
+  }
+
+  @unauthenticatedClientCall
+  Stream<bool> checkSessionUnauthenticatedStream(
+    final Session session,
+  ) async* {
+    yield session.isUserSignedIn;
+  }
+
+  Stream<String?> openPublicUserStream(final Session session) async* {
+    yield session.authenticated?.userIdentifier;
+    await Completer<void>().future;
+  }
+
+  Future<void> resetJwtRefreshConcurrency(final Session session) async {
+    JwtRefreshEndpoint.resetConcurrencyTracking();
+  }
+
+  Future<int> getMaxConcurrentJwtRefreshes(final Session session) async {
+    return JwtRefreshEndpoint.maxConcurrentRefreshes;
+  }
+}
+
+class UnauthenticatedRequireLoginAuthTestEndpoint extends Endpoint {
+  @override
+  bool get requireLogin => true;
+
+  @unauthenticatedClientCall
+  Future<void> call(final Session session) async {}
 }

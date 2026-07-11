@@ -187,6 +187,48 @@ void main() {
         expect(sessionManager.authInfo, isNull);
       },
     );
+
+    group(
+      'when the signed-in identity changes from one SAS user to another',
+      () {
+        setUp(() async {
+          await sessionManager.updateSignedInUser(
+            _authSuccess(
+              authUserId: UuidValue.fromString(
+                'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+              ),
+              authStrategy: AuthStrategy.session.name,
+              token: '',
+            ),
+          );
+          client.resetStreamingCloseCallCounts();
+
+          await sessionManager.updateSignedInUser(
+            _authSuccess(
+              authUserId: UuidValue.fromString(
+                'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+              ),
+              authStrategy: AuthStrategy.session.name,
+              token: '',
+            ),
+          );
+        });
+
+        test(
+          'then modern method streaming connections are closed.',
+          () {
+            expect(client.closeStreamingMethodConnectionsCallCount, 1);
+          },
+        );
+
+        test(
+          'then the legacy streaming connection is closed.',
+          () {
+            expect(client.closeStreamingConnectionCallCount, 1);
+          },
+        );
+      },
+    );
   });
 
   group('Given a JWT auth key provider in cookie mode', () {
@@ -457,13 +499,16 @@ class _InMemoryKeyValueStorage implements KeyValueStorage {
 }
 
 AuthSuccess _authSuccess({
+  UuidValue? authUserId,
   required String authStrategy,
   required String token,
   String? refreshToken,
   DateTime? tokenExpiresAt,
 }) {
   return AuthSuccess(
-    authUserId: UuidValue.fromString('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+    authUserId:
+        authUserId ??
+        UuidValue.fromString('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
     authStrategy: authStrategy,
     token: token,
     tokenExpiresAt: tokenExpiresAt,
@@ -476,6 +521,8 @@ class _TestSerializationManager extends SerializationManager {}
 
 class _TestServerpodClient extends ServerpodClientShared {
   var updateStreamingAuthenticationKeyCallCount = 0;
+  var closeStreamingMethodConnectionsCallCount = 0;
+  var closeStreamingConnectionCallCount = 0;
 
   _TestServerpodClient({
     required ServerpodClientRequestDelegate requestDelegate,
@@ -496,6 +543,23 @@ class _TestServerpodClient extends ServerpodClientShared {
   @override
   Future<void> updateStreamingConnectionAuthenticationKey() async {
     updateStreamingAuthenticationKeyCallCount++;
+  }
+
+  @override
+  Future<void> closeStreamingMethodConnections({
+    Object? exception = const WebSocketClosedException(),
+  }) async {
+    closeStreamingMethodConnectionsCallCount++;
+  }
+
+  @override
+  Future<void> closeStreamingConnection() async {
+    closeStreamingConnectionCallCount++;
+  }
+
+  void resetStreamingCloseCallCounts() {
+    closeStreamingMethodConnectionsCallCount = 0;
+    closeStreamingConnectionCallCount = 0;
   }
 }
 

@@ -6,6 +6,7 @@ import 'package:serverpod_test_server/test_util/config.dart';
 import 'package:serverpod_test_server/test_util/test_key_manager.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
+import 'package:web_socket/web_socket.dart';
 
 void main() {
   group(
@@ -44,9 +45,8 @@ void main() {
       test('when calling an authorized endpoint method with old style auth key '
           'then it is rejected', () async {
         // The `auth` request parameter (formerly read from the URL / query
-        // string) is no longer accepted, so even a valid key supplied this way
-        // does not authenticate the request: the login-required endpoint
-        // rejects it like any unauthenticated call.
+        // string) is intentionally no longer accepted. A valid key supplied
+        // this way must not authenticate the request.
         var response = await http.post(
           Uri.parse('${serverUrl}echoRequest'),
           body: jsonEncode({
@@ -71,6 +71,48 @@ void main() {
         expect(response.statusCode, 401);
         expect(response.body, '');
       });
+
+      test(
+        'when opening a legacy WebSocket with the old query auth key '
+        'then the streaming session remains anonymous',
+        () async {
+          final webSocketUri = Uri.parse(serverUrl).replace(
+            scheme: 'ws',
+            path: '/websocket',
+            queryParameters: {'auth': authKey},
+          );
+          final webSocket = await WebSocket.connect(webSocketUri);
+          addTearDown(webSocket.close);
+
+          webSocket.sendText(
+            SerializationManager.encode({
+              'endpoint': 'sessionAuthenticationStreaming',
+              'object': {
+                'className': client.serializationManager.getClassNameForObject(
+                  SimpleData(num: 0),
+                ),
+                'data': SimpleData(num: 0),
+              },
+            }),
+          );
+
+          final response = await webSocket.events
+              .where((event) => event is TextDataReceived)
+              .cast<TextDataReceived>()
+              .map((event) => jsonDecode(event.text) as Map<String, dynamic>)
+              .firstWhere(
+                (message) =>
+                    message['endpoint'] == 'sessionAuthenticationStreaming',
+              );
+          final responseObject =
+              client.serializationManager.deserializeByClassName(
+                    response['object'] as Map<String, dynamic>,
+                  )
+                  as SimpleData;
+
+          expect(responseObject.num, 0);
+        },
+      );
     },
   );
 }

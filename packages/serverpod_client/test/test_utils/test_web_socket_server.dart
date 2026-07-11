@@ -16,10 +16,12 @@ abstract class TestWebSocketServer {
   static Future<CloseServerCallback> startServer({
     required void Function(RelicWebSocket webSocket) webSocketHandler,
     void Function(Uri webSocketHost)? onConnected,
+    void Function(Uri requestUri)? onRequest,
   }) async {
     var server = await _startServer(
       onConnected,
       webSocketHandler,
+      onRequest,
     );
 
     return server.close;
@@ -28,8 +30,10 @@ abstract class TestWebSocketServer {
   static Future<RelicServer> _startServer(
     void Function(Uri webSocketHost)? onConnected,
     void Function(RelicWebSocket webSocket) webSocketHandler,
+    void Function(Uri requestUri)? onRequest,
   ) async {
     FutureOr<Result> requestHandler(Request req) async {
+      onRequest?.call(req.url);
       return WebSocketUpgrade(webSocketHandler);
     }
 

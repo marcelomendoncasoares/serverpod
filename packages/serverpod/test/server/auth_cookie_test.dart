@@ -243,6 +243,42 @@ void main() {
     );
 
     test(
+      'when reading a refresh cookie for a cookie-transport-only request '
+      'then the refresh cookie value is returned.',
+      () {
+        final session = _FakeSession(
+          config: serverpodConfig,
+          request: _request(
+            marker: true,
+            authMode: 'cookie-transport',
+            cookieHeader: 'auth_refresh=refresh-token',
+          ),
+        );
+
+        expect(session.readWebAuthRefreshCookie(), 'refresh-token');
+      },
+    );
+
+    test(
+      'when writing a refresh cookie for a cookie-transport-only request '
+      'then the refresh cookie is queued.',
+      () {
+        final session = _FakeSession(
+          config: serverpodConfig,
+          request: _request(
+            marker: true,
+            authMode: 'cookie-transport',
+          ),
+        );
+
+        final wasWritten = session.writeWebAuthRefreshCookie('refresh-token');
+
+        expect(wasWritten, isTrue);
+        expect(session.responseCookies.single.name, 'auth_refresh');
+      },
+    );
+
+    test(
       'when reading duplicate refresh cookies for a cookie-mode request '
       'then no refresh cookie value is returned.',
       () {
@@ -333,6 +369,7 @@ void main() {
 
 Request _request({
   required bool marker,
+  String authMode = webAuthModeCookie,
   String? cookieHeader,
   String? basePath,
 }) {
@@ -342,7 +379,7 @@ Request _request({
     Object(),
     headers: Headers.build((headers) {
       if (marker) {
-        headers[webAuthModeHeaderName] = [webAuthModeCookie];
+        headers[webAuthModeHeaderName] = [authMode];
       }
       if (cookieHeader != null) {
         headers['cookie'] = [cookieHeader];
