@@ -197,6 +197,33 @@ class TypeDefinition {
   bool get isJsonbSerialized =>
       serializationDataType == SerializationDataType.jsonb;
 
+  /// The type that represents this field in the database.
+  ///
+  /// For a custom class this is the type its `toJson()` serializes to, so the
+  /// column logic treats a custom class serializing to `DateTime` exactly like
+  /// a field declared as `DateTime`.
+  TypeDefinition get databaseTypeDefinition {
+    if (customClass && customClassSerializationType != null) {
+      return TypeDefinition(
+        className: customClassSerializationType!.className,
+        nullable: customClassSerializationType!.nullable,
+        generics: customClassSerializationType!.generics,
+        url: customClassSerializationType!.url,
+        dartType: customClassSerializationType!.dartType,
+        customClass: false,
+        serializationDataType: serializationDataType,
+        enumDefinition: customClassSerializationType!.enumDefinition,
+        projectModelDefinition:
+            customClassSerializationType!.projectModelDefinition,
+        sourcePath: customClassSerializationType!.sourcePath,
+        packageRoot: customClassSerializationType!.packageRoot,
+        recordFieldName: customClassSerializationType!.recordFieldName,
+        vectorDimension: customClassSerializationType!.vectorDimension,
+      );
+    }
+    return this;
+  }
+
   bool get isSerializableDartType => ![
     ValueType.record,
     ValueType.isEnum,
@@ -252,6 +279,28 @@ class TypeDefinition {
   static TypeDefinition uuid = TypeDefinition(
     className: 'UuidValue',
     nullable: false,
+  );
+
+  /// Returns a copy of this [TypeDefinition] for use on a model field.
+  ///
+  /// Extra classes from the generator config are shared across all references.
+  /// Field-level properties such as [serializationDataType] must be resolved on a
+  /// per-field copy so that different fields using the same custom class can
+  /// specify different serialization settings.
+  TypeDefinition get forFieldReference => TypeDefinition(
+    className: className,
+    url: url,
+    nullable: nullable,
+    customClass: customClass,
+    dartType: dartType,
+    generics: generics,
+    customClassSerializationType: customClassSerializationType,
+    sourcePath: sourcePath,
+    packageRoot: packageRoot,
+    enumDefinition: enumDefinition,
+    projectModelDefinition: projectModelDefinition,
+    recordFieldName: recordFieldName,
+    vectorDimension: vectorDimension,
   );
 
   /// Get this [TypeDefinition], but nullable.
@@ -511,11 +560,9 @@ class TypeDefinition {
   }
 
   /// Get the pgsql type that represents this [TypeDefinition] in the database.
-  String get databaseType {
-    if (customClass && customClassSerializationType != null) {
-      return customClassSerializationType!.databaseType;
-    }
+  String get databaseType => databaseTypeDefinition._databaseType;
 
+  String get _databaseType {
     var enumSerialization = enumDefinition?.serialized;
     if (enumSerialization != null && isEnumType) {
       switch (enumSerialization) {
@@ -556,7 +603,9 @@ class TypeDefinition {
   }
 
   /// Get the [Column] extending class name representing this [TypeDefinition].
-  String get columnType {
+  String get columnType => databaseTypeDefinition._columnType;
+
+  String get _columnType {
     if (isEnumType) return 'ColumnEnum';
     if (className == 'int') return 'ColumnInt';
     if (className == 'double') return 'ColumnDouble';
@@ -1078,7 +1127,8 @@ TypeDefinition parseType(
   );
 
   if (extraClass != null) {
-    return isNullable ? extraClass.asNullable : extraClass;
+    var fieldType = extraClass.forFieldReference;
+    return isNullable ? fieldType.asNullable : fieldType;
   }
 
   return TypeDefinition.mixedUrlAndClassName(

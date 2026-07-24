@@ -2392,6 +2392,12 @@ class SerializableModelLibraryGenerator {
               config: config,
             );
 
+            final usesScalarCustomClassColumn =
+                field.type.customClass &&
+                !field.type.isColumnSerializable &&
+                !field.type.isColumnStructured;
+            final databaseFieldType = field.type.databaseTypeDefinition;
+
             // For records, the second type parameter should be Map<String, dynamic>?
             var secondTypeParam = field.type.isRecordType
                 ? TypeReference(
@@ -2402,6 +2408,27 @@ class SerializableModelLibraryGenerator {
                         refer('dynamic'),
                       ])
                       ..isNullable = true,
+                  )
+                : usesScalarCustomClassColumn
+                ? databaseFieldType.reference(
+                    serverCode,
+                    nullable: false,
+                    subDirParts: classDefinition.subDirParts,
+                    config: config,
+                  )
+                : field.type.reference(
+                    serverCode,
+                    nullable: false,
+                    subDirParts: classDefinition.subDirParts,
+                    config: config,
+                  );
+
+            final columnValueColumnType = usesScalarCustomClassColumn
+                ? databaseFieldType.reference(
+                    serverCode,
+                    nullable: false,
+                    subDirParts: classDefinition.subDirParts,
+                    config: config,
                   )
                 : field.type.reference(
                     serverCode,
@@ -2417,12 +2444,7 @@ class SerializableModelLibraryGenerator {
                   ..symbol = 'ColumnValue'
                   ..url = _databaseRuntimeUrl
                   ..types.addAll([
-                    field.type.reference(
-                      serverCode,
-                      nullable: false,
-                      subDirParts: classDefinition.subDirParts,
-                      config: config,
-                    ),
+                    columnValueColumnType,
                     secondTypeParam,
                   ]),
               )
@@ -2448,6 +2470,14 @@ class SerializableModelLibraryGenerator {
                 protocolRef.call([]).property(mapRecordToJsonFuncName).call([
                   refer('value'),
                 ]),
+              ]).code;
+            } else if (usesScalarCustomClassColumn) {
+              final toJsonExpression = field.type.nullable
+                  ? refer('value').nullSafeProperty('toJson').call([])
+                  : refer('value').property('toJson').call([]);
+              m.body = refer('ColumnValue', _databaseRuntimeUrl).call([
+                refer('table').property(createFieldName(serverCode, field)),
+                toJsonExpression,
               ]).code;
             } else {
               m.body = refer('ColumnValue', _databaseRuntimeUrl).call([
