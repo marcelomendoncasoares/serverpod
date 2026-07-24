@@ -9,6 +9,14 @@ experimental_features:
 shared_packages:
   - ../serverpod_test_sqlite_shared
 
+extraClasses:
+  - package:serverpod_test_shared/serverpod_test_shared.dart:CustomClass
+  - package:serverpod_test_shared/serverpod_test_shared.dart:CustomClass2
+  - package:serverpod_test_shared/serverpod_test_shared.dart:IntCustomClass
+  - package:serverpod_test_shared/serverpod_test_shared.dart:DoubleCustomClass
+  - package:serverpod_test_shared/serverpod_test_shared.dart:BoolCustomClass
+  - package:serverpod_test_shared/serverpod_test_shared.dart:DateTimeCustomClass
+
 modules:
   serverpod_auth_core:
     nickname: auth

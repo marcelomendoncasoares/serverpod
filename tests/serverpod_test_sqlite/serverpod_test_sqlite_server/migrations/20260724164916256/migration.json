@@ -1,0 +1,104 @@
+{
+  "__className__": "serverpod.DatabaseMigration",
+  "actions": [
+    {
+      "__className__": "serverpod.DatabaseMigrationAction",
+      "type": "createTable",
+      "createTable": {
+        "__className__": "serverpod.TableDefinition",
+        "name": "custom_class_roundtrip_table",
+        "dartName": "CustomClassRoundtripTable",
+        "module": "serverpod_test_sqlite",
+        "schema": "public",
+        "columns": [
+          {
+            "__className__": "serverpod.ColumnDefinition",
+            "name": "id",
+            "fieldName": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "serial",
+            "dartType": "int?"
+          },
+          {
+            "__className__": "serverpod.ColumnDefinition",
+            "name": "intData",
+            "fieldName": "intData",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "package:serverpod_test_shared/serverpod_test_shared.dart:IntCustomClass"
+          },
+          {
+            "__className__": "serverpod.ColumnDefinition",
+            "name": "doubleData",
+            "fieldName": "doubleData",
+            "columnType": 3,
+            "isNullable": false,
+            "dartType": "package:serverpod_test_shared/serverpod_test_shared.dart:DoubleCustomClass"
+          },
+          {
+            "__className__": "serverpod.ColumnDefinition",
+            "name": "stringData",
+            "fieldName": "stringData",
+            "columnType": 0,
+            "isNullable": false,
+            "dartType": "package:serverpod_test_shared/serverpod_test_shared.dart:CustomClass"
+          },
+          {
+            "__className__": "serverpod.ColumnDefinition",
+            "name": "boolData",
+            "fieldName": "boolData",
+            "columnType": 1,
+            "isNullable": false,
+            "dartType": "package:serverpod_test_shared/serverpod_test_shared.dart:BoolCustomClass"
+          },
+          {
+            "__className__": "serverpod.ColumnDefinition",
+            "name": "dateTimeData",
+            "fieldName": "dateTimeData",
+            "columnType": 4,
+            "isNullable": false,
+            "dartType": "package:serverpod_test_shared/serverpod_test_shared.dart:DateTimeCustomClass"
+          },
+          {
+            "__className__": "serverpod.ColumnDefinition",
+            "name": "mapData",
+            "fieldName": "mapData",
+            "columnType": 8,
+            "isNullable": false,
+            "dartType": "package:serverpod_test_shared/serverpod_test_shared.dart:CustomClass2"
+          },
+          {
+            "__className__": "serverpod.ColumnDefinition",
+            "name": "jsonbMapData",
+            "fieldName": "jsonbMapData",
+            "columnType": 14,
+            "isNullable": false,
+            "dartType": "package:serverpod_test_shared/serverpod_test_shared.dart:CustomClass2"
+          },
+          {
+            "__className__": "serverpod.ColumnDefinition",
+            "name": "nullableIntData",
+            "fieldName": "nullableIntData",
+            "columnType": 6,
+            "isNullable": true,
+            "dartType": "package:serverpod_test_shared/serverpod_test_shared.dart:IntCustomClass?"
+          },
+          {
+            "__className__": "serverpod.ColumnDefinition",
+            "name": "nullableMapData",
+            "fieldName": "nullableMapData",
+            "columnType": 8,
+            "isNullable": true,
+            "dartType": "package:serverpod_test_shared/serverpod_test_shared.dart:CustomClass2?"
+          }
+        ],
+        "foreignKeys": [],
+        "indexes": [],
+        "managed": true
+      }
+    }
+  ],
+  "warnings": [],
+  "migrationApiVersion": 1
+}

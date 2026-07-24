@@ -16,6 +16,10 @@ modules:
 extraClasses:
   - package:serverpod_test_shared/serverpod_test_shared.dart:CustomClass
   - package:serverpod_test_shared/serverpod_test_shared.dart:CustomClass2
+  - package:serverpod_test_shared/serverpod_test_shared.dart:IntCustomClass
+  - package:serverpod_test_shared/serverpod_test_shared.dart:DoubleCustomClass
+  - package:serverpod_test_shared/serverpod_test_shared.dart:BoolCustomClass
+  - package:serverpod_test_shared/serverpod_test_shared.dart:DateTimeCustomClass
   - package:serverpod_test_shared/serverpod_test_shared.dart:CustomClassWithoutProtocolSerialization
   - package:serverpod_test_shared/serverpod_test_shared.dart:CustomClassWithProtocolSerialization
   - package:serverpod_test_shared/serverpod_test_shared.dart:CustomClassWithProtocolSerializationMethod

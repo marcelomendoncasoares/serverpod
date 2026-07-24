@@ -11,6 +11,68 @@ class CustomClass implements SerializableModel {
   factory CustomClass.fromJson(dynamic data) {
     return CustomClass(data);
   }
+
+  CustomClass copyWith() => this;
+}
+
+class IntCustomClass implements SerializableModel {
+  final int value;
+
+  IntCustomClass(this.value);
+
+  @override
+  int toJson() => value;
+
+  factory IntCustomClass.fromJson(dynamic data) {
+    return IntCustomClass(data as int);
+  }
+
+  IntCustomClass copyWith() => this;
+}
+
+class DoubleCustomClass implements SerializableModel {
+  final double value;
+
+  DoubleCustomClass(this.value);
+
+  @override
+  double toJson() => value;
+
+  factory DoubleCustomClass.fromJson(dynamic data) {
+    return DoubleCustomClass((data as num).toDouble());
+  }
+
+  DoubleCustomClass copyWith() => this;
+}
+
+class BoolCustomClass implements SerializableModel {
+  final bool value;
+
+  BoolCustomClass(this.value);
+
+  @override
+  bool toJson() => value;
+
+  factory BoolCustomClass.fromJson(dynamic data) {
+    return BoolCustomClass(data as bool);
+  }
+
+  BoolCustomClass copyWith() => this;
+}
+
+class DateTimeCustomClass implements SerializableModel {
+  final DateTime value;
+
+  DateTimeCustomClass(this.value);
+
+  @override
+  DateTime toJson() => value;
+
+  factory DateTimeCustomClass.fromJson(dynamic data) {
+    return DateTimeCustomClass(DateTimeJsonExtension.fromJson(data));
+  }
+
+  DateTimeCustomClass copyWith() => this;
 }
 
 class CustomClass2 {
@@ -23,6 +85,8 @@ class CustomClass2 {
   }
 
   dynamic toJson() => {'text': value};
+
+  CustomClass2 copyWith() => this;
 }
 
 class CustomClassWithoutProtocolSerialization {

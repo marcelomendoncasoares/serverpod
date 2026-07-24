@@ -1,0 +1,12 @@
+class: CustomClassRoundtripTable
+table: custom_class_roundtrip_table
+fields:
+  intData: IntCustomClass
+  doubleData: DoubleCustomClass
+  stringData: CustomClass
+  boolData: BoolCustomClass
+  dateTimeData: DateTimeCustomClass
+  mapData: CustomClass2, serializationDataType=json
+  jsonbMapData: CustomClass2, serializationDataType=jsonb
+  nullableIntData: IntCustomClass?
+  nullableMapData: CustomClass2?, serializationDataType=json
