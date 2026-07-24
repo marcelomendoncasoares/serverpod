@@ -169,29 +169,19 @@ class CustomClassAnalyzer {
       }
 
       for (var extraClass in classesInFile) {
-        var validationErrors = _validateCustomClass(
+        var validationResult = _validateCustomClass(
           extraClass,
           library.element,
         );
-        collector.addErrors(validationErrors);
+        collector.addErrors(validationResult.errors);
 
-        if (CodeAnalysisCollector.containsSevereErrors(validationErrors)) {
+        if (CodeAnalysisCollector.containsSevereErrors(validationResult.errors)) {
           continue;
         }
 
-        var element = library.element.exportNamespace.get2(
-          extraClass.className,
-        );
-
-        if (element is ClassElement) {
-          var toJson = element.lookUpMethod(
-            name: 'toJson',
-            library: library.element,
-          );
-          if (toJson != null) {
-            serializationTypes[extraClass.className] =
-                TypeDefinition.fromDartType(toJson.returnType);
-          }
+        if (validationResult.serializationType != null) {
+          serializationTypes[extraClass.className] =
+              validationResult.serializationType;
         }
       }
 
@@ -255,20 +245,22 @@ class CustomClassAnalyzer {
     return errorMessages;
   }
 
-  List<SourceSpanSeverityException> _validateCustomClass(
+  CustomClassMethodValidationResult _validateCustomClass(
     TypeDefinition extraClass,
     LibraryElement library,
   ) {
     final element = library.exportNamespace.get2(extraClass.className);
 
     if (element is! ClassElement) {
-      return [
-        SourceSpanSeverityException(
-          'Custom class "${extraClass.className}" was not found in the library "${extraClass.sourcePath}".',
-          null,
-          severity: SourceSpanSeverity.error,
-        ),
-      ];
+      return CustomClassMethodValidationResult(
+        errors: [
+          SourceSpanSeverityException(
+            'Custom class "${extraClass.className}" was not found in the library "${extraClass.sourcePath}".',
+            null,
+            severity: SourceSpanSeverity.error,
+          ),
+        ],
+      );
     }
 
     return CustomClassMethodAnalyzer.validate(

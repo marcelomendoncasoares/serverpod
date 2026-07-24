@@ -5,23 +5,46 @@ import 'package:serverpod_cli/src/generator/types.dart';
 
 import '../../../util/type_validators.dart';
 
+class CustomClassMethodValidationResult {
+  final List<SourceSpanSeverityException> errors;
+  final TypeDefinition? serializationType;
+
+  const CustomClassMethodValidationResult({
+    required this.errors,
+    this.serializationType,
+  });
+}
+
+class _ToJsonValidationResult {
+  final SourceSpanSeverityException? error;
+  final TypeDefinition? serializationType;
+
+  const _ToJsonValidationResult({this.error, this.serializationType});
+}
+
 abstract class CustomClassMethodAnalyzer {
   /// Validates that the [InterfaceElement] Class implements the
   /// required methods for a Serverpod custom class.
-  static List<SourceSpanSeverityException> validate(
+  static CustomClassMethodValidationResult validate(
     InterfaceElement element,
     TypeDefinition extraClass,
     LibraryElement library,
   ) {
-    final errors = <SourceSpanSeverityException?>[
-      _validateToJson(element, extraClass, library),
-      _validateFromJson(element, extraClass),
+    final toJsonResult = _validateToJson(element, extraClass, library);
+    final fromJsonError = _validateFromJson(element, extraClass);
+
+    final errors = <SourceSpanSeverityException>[
+      ?toJsonResult.error,
+      ?fromJsonError,
     ];
 
-    return errors.whereType<SourceSpanSeverityException>().toList();
+    return CustomClassMethodValidationResult(
+      errors: errors,
+      serializationType: toJsonResult.serializationType,
+    );
   }
 
-  static SourceSpanSeverityException? _validateToJson(
+  static _ToJsonValidationResult _validateToJson(
     InterfaceElement element,
     TypeDefinition extraClass,
     LibraryElement library,
@@ -29,28 +52,34 @@ abstract class CustomClassMethodAnalyzer {
     final toJson = element.lookUpMethod(name: 'toJson', library: library);
 
     if (toJson == null) {
-      return SourceSpanSeverityException(
-        'Custom class "${extraClass.className}" is missing a "toJson()" method.',
-        element.span,
-        severity: SourceSpanSeverity.error,
+      return _ToJsonValidationResult(
+        error: SourceSpanSeverityException(
+          'Custom class "${extraClass.className}" is missing a "toJson()" method.',
+          element.span,
+          severity: SourceSpanSeverity.error,
+        ),
       );
     }
 
     if (toJson.isStatic) {
-      return SourceSpanSeverityException(
-        'The "toJson()" method in "${extraClass.className}" must be an instance method.',
-        toJson.span,
-        severity: SourceSpanSeverity.error,
+      return _ToJsonValidationResult(
+        error: SourceSpanSeverityException(
+          'The "toJson()" method in "${extraClass.className}" must be an instance method.',
+          toJson.span,
+          severity: SourceSpanSeverity.error,
+        ),
       );
     }
 
     final returnType = toJson.returnType;
 
     if (returnType.isDartAsyncFuture || returnType.isDartAsyncStream) {
-      return SourceSpanSeverityException(
-        'The "toJson()" method in "${extraClass.className}" must be synchronous.',
-        toJson.span,
-        severity: SourceSpanSeverity.error,
+      return _ToJsonValidationResult(
+        error: SourceSpanSeverityException(
+          'The "toJson()" method in "${extraClass.className}" must be synchronous.',
+          toJson.span,
+          severity: SourceSpanSeverity.error,
+        ),
       );
     }
 
@@ -58,18 +87,22 @@ abstract class CustomClassMethodAnalyzer {
     try {
       typeDefinition = TypeDefinition.fromDartType(returnType);
     } on FromDartTypeClassNameException catch (e) {
-      return SourceSpanSeverityException(
-        'The type "${e.type}" is not a supported "toJson()" return type.',
-        toJson.span,
-        severity: SourceSpanSeverity.error,
+      return _ToJsonValidationResult(
+        error: SourceSpanSeverityException(
+          'The type "${e.type}" is not a supported "toJson()" return type.',
+          toJson.span,
+          severity: SourceSpanSeverity.error,
+        ),
       );
     }
 
     if (typeDefinition.isVoidType) {
-      return SourceSpanSeverityException(
-        'The "toJson()" method in "${extraClass.className}" cannot return void.',
-        toJson.span,
-        severity: SourceSpanSeverity.error,
+      return _ToJsonValidationResult(
+        error: SourceSpanSeverityException(
+          'The "toJson()" method in "${extraClass.className}" cannot return void.',
+          toJson.span,
+          severity: SourceSpanSeverity.error,
+        ),
       );
     }
 
@@ -79,15 +112,17 @@ abstract class CustomClassMethodAnalyzer {
         allowSerializableGenerics: true,
       ),
     )) {
-      return SourceSpanSeverityException(
-        'The type "${typeDefinition.className}" is not a supported '
-        '"toJson()" return type.',
-        toJson.span,
-        severity: SourceSpanSeverity.error,
+      return _ToJsonValidationResult(
+        error: SourceSpanSeverityException(
+          'The type "${typeDefinition.className}" is not a supported '
+          '"toJson()" return type.',
+          toJson.span,
+          severity: SourceSpanSeverity.error,
+        ),
       );
     }
 
-    return null;
+    return _ToJsonValidationResult(serializationType: typeDefinition);
   }
 
   static SourceSpanSeverityException? _validateFromJson(
