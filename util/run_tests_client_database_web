@@ -30,15 +30,91 @@ set -e
 
 ROOT="$(pwd)"
 
+# Both runners kill the Chromium they spawn from in-process cleanup only - see
+# package:test's browser.dart `close()`, a SIGTERM sent by the still-running Dart
+# process. Ctrl-C is therefore clean, but a runner that dies without getting
+# there (SIGKILL from an agent/IDE command timeout, a `kill -9` on an apparently
+# hung run, a CI step timeout) orphans the whole Chromium tree: it reparents to
+# PID 1 and stays there for good, holding a few hundred MB apiece.
+# tools/serverpod_cli/lib/src/commands/start/flutter_process.dart describes the
+# same failure mode for the browser `flutter run` opens.
+#
+# So the browser is not left to the runner: each test command below is started in
+# a process group of its own and the whole group is signalled on the way out,
+# which reaches the browser whether or not the runner was still alive to clean up
+# after itself.
+RUNNER_PGID=""
+
+# The runners also scatter directories over the system temp dir (dart_test_*,
+# flutter_tools.*, flutter_test.*, flutter_web_platform.*, plus the browser's
+# user-data dir) and leak them when killed. Giving this run its own TMPDIR keeps
+# them all under one root, so cleanup drops exactly this run's leftovers and
+# never a concurrent run's.
+RUN_TMP="$(mktemp -d)"
+export TMPDIR="$RUN_TMP"
+
+# Tears down whatever is left of the current test command's process group. A
+# no-op when there is nothing to kill, and safe to call more than once.
+reapRunner() {
+    if [ -n "$RUNNER_PGID" ] && kill -0 -- "-$RUNNER_PGID" 2>/dev/null; then
+        kill -TERM -- "-$RUNNER_PGID" 2>/dev/null || true
+        sleep 1
+        kill -KILL -- "-$RUNNER_PGID" 2>/dev/null || true
+    fi
+    RUNNER_PGID=""
+}
+
+cleanup() {
+    local status=$?
+    reapRunner
+    rm -rf "$RUN_TMP" 2>/dev/null || true
+    # Re-exit with the status we were entered with, so cleaning up can never turn
+    # a failing test run into a passing one.
+    trap - EXIT INT TERM HUP
+    exit "$status"
+}
+# HUP as well as INT/TERM: the test command runs in a session of its own (below),
+# so a closed terminal reaches this script and nothing else.
+trap cleanup EXIT INT TERM HUP
+
+# Runs a test command in a process group of its own, reaps that group once the
+# command is done (or gone), and returns the command's exit status.
+runInOwnProcessGroup() {
+    local pid pgid self_pgid status=0
+
+    if command -v setsid >/dev/null 2>&1; then
+        setsid "$@" &
+    else
+        # No setsid (macOS ships none): bash's job control puts each background
+        # job in a process group of its own, which is all that is needed here.
+        set -m
+        "$@" &
+        set +m
+    fi
+    pid=$!
+
+    pgid="$(ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ')"
+    self_pgid="$(ps -o pgid= -p $$ 2>/dev/null | tr -d ' ')"
+    # Only remember a group that is not ours - signalling our own would take this
+    # script, and the shell that started it, down with the browser.
+    if [ -n "$pgid" ] && [ "$pgid" != "$self_pgid" ]; then
+        RUNNER_PGID="$pgid"
+    fi
+
+    wait "$pid" || status=$?
+    reapRunner
+    return "$status"
+}
+
 util/setup_sqlite_web_assets
 
 echo "### Running the Flutter web client database test"
 cd "$ROOT/tests/serverpod_test_sqlite/serverpod_test_sqlite_flutter"
-flutter test --platform chrome --reporter=failures-only
+runInOwnProcessGroup flutter test --platform chrome --reporter=failures-only
 
 # Only the CRUD battery: the rest of the suite covers ORM semantics that are not
 # platform specific and already run on the VM. The assets are in place for every
 # test directory, so any other one can be pointed at a browser when needed.
 echo "### Running the client CRUD battery in the browser"
 cd "$ROOT/tests/serverpod_test_sqlite/serverpod_test_sqlite_client"
-dart test -p chrome test/crud --reporter=failures-only
+runInOwnProcessGroup dart test -p chrome test/crud --reporter=failures-only
