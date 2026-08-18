@@ -150,7 +150,7 @@ class ProtocolFeatureAnalyzer {
     if (protocolDefinition.futureCalls.isNotEmpty) {
       tally.count('future_call', protocolDefinition.futureCalls.length);
     }
-    if (protocolDefinition.models.hasHostClientDatabaseTables) {
+    if (protocolDefinition.models.hasClientDatabaseTables) {
       tally.flag('client_database');
     }
 

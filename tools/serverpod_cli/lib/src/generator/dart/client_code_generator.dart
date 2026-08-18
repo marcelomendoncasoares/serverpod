@@ -77,7 +77,7 @@ class DartClientCodeGenerator extends CodeGenerator {
           .generateClientEndpointCalls()
           .generateCode(formatter: GeneratedDartFormatters.of(clientPath)),
     };
-    if (protocolDefinition.models.hasHostClientDatabaseTables &&
+    if (protocolDefinition.models.hasClientDatabaseTables &&
         config.type != PackageType.module) {
       files[p.joinAll([
         ...config.clientPackagePathParts,

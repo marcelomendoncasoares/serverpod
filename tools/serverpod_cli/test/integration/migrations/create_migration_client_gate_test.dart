@@ -8,12 +8,10 @@ import 'package:test/test.dart';
 
 import '../../test_util/builders/generator_config_builder.dart';
 
-/// `createMigrationAction` only generates a client migration when the host
-/// project owns client-side database tables. Shared-package and module tables
-/// are merged into the client schema but do not, on their own, enable a client
-/// migration. These tests drive the real action against on-disk projects to
-/// lock that: a project whose only client tables come from a shared package
-/// produces no client migration, while a host client table does.
+/// `createMigrationAction` generates a client migration when the host project
+/// owns client-side database tables, including tables declared in a shared
+/// package it owns. Tables from dependent modules are merged into the client
+/// schema but do not, on their own, enable a client migration.
 void main() {
   const projectName = 'example_project';
 
@@ -121,9 +119,9 @@ fields:
       Directory(path.normalize(path.joinAll(config.clientPackagePathParts)));
 
   test(
-    'Given a project whose only client database table comes from a shared package, '
+    'Given a project whose only client database table comes from a shared package it owns, '
     'when creating a migration,'
-    'then no client migration is generated.',
+    'then a client migration is generated.',
     () async {
       writeSharedTableModel();
 
@@ -137,22 +135,22 @@ fields:
 
       expect(
         result,
-        isA<CreateMigrationCreated>(),
+        isA<CreateMigrationServerClientCreated>(),
         reason:
-            'the server migration is created (proving the shared table was '
-            'processed) as a server-only result, not a server + client one',
+            'a shared-package client table owned by the project should '
+            'produce both a server and a client migration',
+      );
+
+      var clientMigrations = clientMigrationsDirectory(builtConfig);
+      expect(
+        clientMigrations.existsSync(),
+        isTrue,
+        reason: 'a client migration directory should be written',
       );
       expect(
-        result,
-        isNot(isA<CreateMigrationServerClientCreated>()),
-        reason:
-            'no client migration should be produced alongside the server '
-            'migration',
-      );
-      expect(
-        clientMigrationsDirectory(builtConfig).existsSync(),
-        isFalse,
-        reason: 'no client migration directory should be written',
+        clientMigrations.listSync().whereType<Directory>(),
+        isNotEmpty,
+        reason: 'a client migration version directory should be written',
       );
     },
   );

@@ -334,16 +334,24 @@ void main() {
   );
 
   group(
-    'Given only a shared-package client database table, '
+    'Given only a shared-package client database table owned by the project, '
     'when generating protocol files,',
     () {
+      const sharedPackageName = 'example_shared';
+      var sharedAwareConfig = GeneratorConfigBuilder()
+          .withName(projectName)
+          .withSharedModelsSourcePathsParts({
+            sharedPackageName: ['..', sharedPackageName],
+          })
+          .build();
+
       var models = [
         ModelClassDefinitionBuilder()
             .withClassName('SharedTableRecord')
             .withFileName('shared_table_record')
             .withTableName('shared_table_record')
             .withDatabase(ModelDatabaseDefinition.all)
-            .withSharedPackageName('example_shared')
+            .withSharedPackageName(sharedPackageName)
             .build(),
       ];
 
@@ -355,17 +363,107 @@ void main() {
 
       var codeMap = generator.generateProtocolCode(
         protocolDefinition: protocolDefinition,
-        config: config,
+        config: sharedAwareConfig,
       );
 
       test(
-        'then the protocol.dart does not extend the database serialization manager.',
+        'then the protocol.dart extends the database serialization manager.',
         () {
           expect(
             codeMap[expectedFileName],
-            isNot(contains('DatabaseSerializationManager')),
+            contains('DatabaseSerializationManager'),
           );
-          expect(codeMap[expectedFileName], contains('SerializationManager'));
+        },
+      );
+
+      test(
+        'then targetTableDefinitions merges table definitions from the shared package protocol through DatabaseSerializationManager.',
+        () {
+          var protocol = codeMap[expectedFileName]!;
+          expect(
+            protocol,
+            matches(
+              RegExp(
+                r'\.\.\._i(\d+)\.Protocol\(\) is _i(\d+)\.DatabaseSerializationManager\n'
+                r'        \? \(_i\1\.Protocol\(\) as _i\2\.DatabaseSerializationManager\)\n'
+                r'              \.getTargetTableDefinitions\(\)\n'
+                r'        : \[\],',
+              ),
+            ),
+          );
+        },
+      );
+
+      test(
+        'then the client.dart wires the generated migration registry into createSession.',
+        () {
+          expect(
+            codeMap[expectedClientFileName],
+            contains('clientMigrations: MigrationRegistry.migrations'),
+          );
+          expect(
+            codeMap[expectedClientFileName],
+            contains(
+              'package:example_project_client/migrations/migration_registry.dart',
+            ),
+          );
+        },
+      );
+
+      test(
+        'then the migration registry placeholder file is created.',
+        () {
+          expect(codeMap[expectedMigrationRegistryFileName], isNotNull);
+          expect(
+            codeMap[expectedMigrationRegistryFileName],
+            contains('class MigrationRegistry'),
+          );
+        },
+      );
+    },
+  );
+
+  group(
+    'Given a module that owns only a shared-package client database table, '
+    'when generating protocol files,',
+    () {
+      const sharedPackageName = 'example_shared';
+      var moduleConfig = GeneratorConfigBuilder()
+          .withName(projectName)
+          .withPackageType(PackageType.module)
+          .withSharedModelsSourcePathsParts({
+            sharedPackageName: ['..', sharedPackageName],
+          })
+          .build();
+
+      var models = [
+        ModelClassDefinitionBuilder()
+            .withClassName('SharedTableRecord')
+            .withFileName('shared_table_record')
+            .withTableName('shared_table_record')
+            .withDatabase(ModelDatabaseDefinition.all)
+            .withSharedPackageName(sharedPackageName)
+            .build(),
+      ];
+
+      var protocolDefinition = ProtocolDefinition(
+        endpoints: [],
+        models: models,
+        futureCalls: [],
+      );
+
+      var codeMap = generator.generateProtocolCode(
+        protocolDefinition: protocolDefinition,
+        config: moduleConfig,
+      );
+
+      test(
+        'then the protocol.dart extends the database serialization manager.',
+        () {
+          expect(
+            codeMap[expectedFileName],
+            contains('DatabaseSerializationManager'),
+          );
         },
       );
 

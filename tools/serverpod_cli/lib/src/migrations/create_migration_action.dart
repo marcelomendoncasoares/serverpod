@@ -239,7 +239,7 @@ Future<CreateMigrationOutcome?> _prepareClientMigration({
   required String precomputedVersion,
   required String projectName,
 }) async {
-  if (!context.modelDefinitions.hasHostClientDatabaseTables) return null;
+  if (!context.modelDefinitions.hasClientDatabaseTables) return null;
 
   // Client migrations are Dart code and must follow the project's formatting.
   await GeneratedDartFormatters.resolve(config);

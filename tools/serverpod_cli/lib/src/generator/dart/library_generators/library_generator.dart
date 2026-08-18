@@ -116,9 +116,7 @@ class LibraryGenerator {
         serverCode ||
         (sharedPackage
             ? hasDatabaseTablesForCurrentSide
-            : protocolDefinition.models.hasHostClientDatabaseTables ||
-                  (config.type == PackageType.module &&
-                      protocolDefinition.models.hasSharedClientDatabaseTables));
+            : protocolDefinition.models.hasClientDatabaseTables);
 
     protocol
       ..name = 'Protocol'
@@ -1037,7 +1035,7 @@ return deserializeByClassName(value);
     var library = LibraryBuilder();
 
     var hasClientDatabaseTables =
-        protocolDefinition.models.hasHostClientDatabaseTables;
+        protocolDefinition.models.hasClientDatabaseTables;
 
     if (hasClientDatabaseTables && config.type != PackageType.module) {
       library.directives.addAll([
