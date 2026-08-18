@@ -4,441 +4,665 @@ import 'package:serverpod_cli/src/analyzer/models/stateful_analyzer.dart';
 import 'package:serverpod_cli/src/database/create_definition.dart';
 import 'package:serverpod_cli/src/generator/code_generation_collector.dart';
 import 'package:serverpod_cli/src/generator/types.dart';
+import 'package:serverpod_service_client/serverpod_service_client.dart';
 import 'package:test/test.dart';
 
 import '../../../../../test_util/builders/generator_config_builder.dart';
 import '../../../../../test_util/builders/model_source_builder.dart';
 
 void main() {
-  final mapSerializationType = TypeDefinition(
-    className: 'dynamic',
-    nullable: false,
-  );
-
-  final customClassBySerializationType = {
-    'int': TypeDefinition(
+  group('Given an IntCustomClass table field,', () {
+    var extraClass = _extraClass(
       className: 'IntCustomClass',
-      nullable: false,
-      url: 'package:serverpod_test_shared/serverpod_test_shared.dart',
-      customClass: true,
-      customClassSerializationType: TypeDefinition.int,
-    ),
-    'double': TypeDefinition(
-      className: 'DoubleCustomClass',
-      nullable: false,
-      url: 'package:serverpod_test_shared/serverpod_test_shared.dart',
-      customClass: true,
-      customClassSerializationType: TypeDefinition(
-        className: 'double',
-        nullable: false,
-      ),
-    ),
-    'String': TypeDefinition(
-      className: 'CustomClass',
-      nullable: false,
-      url: 'package:serverpod_test_shared/serverpod_test_shared.dart',
-      customClass: true,
-      customClassSerializationType: TypeDefinition(
-        className: 'String',
-        nullable: false,
-      ),
-    ),
-    'bool': TypeDefinition(
-      className: 'BoolCustomClass',
-      nullable: false,
-      url: 'package:serverpod_test_shared/serverpod_test_shared.dart',
-      customClass: true,
-      customClassSerializationType: TypeDefinition(
-        className: 'bool',
-        nullable: false,
-      ),
-    ),
-    'DateTime': TypeDefinition(
-      className: 'DateTimeCustomClass',
-      nullable: false,
-      url: 'package:serverpod_test_shared/serverpod_test_shared.dart',
-      customClass: true,
-      customClassSerializationType: TypeDefinition(
-        className: 'DateTime',
-        nullable: false,
-      ),
-    ),
-    'Map': TypeDefinition(
-      className: 'CustomClass2',
-      nullable: false,
-      url: 'package:serverpod_test_shared/serverpod_test_shared.dart',
-      customClass: true,
-      customClassSerializationType: mapSerializationType,
-    ),
-  };
+      serializationType: TypeDefinition.int,
+    );
+    var fieldName = 'intData';
+    var fieldYaml = 'intData: IntCustomClass';
 
-  final declaredTypeCases = <({
-    String fieldType,
-    String? serializationDataType,
-    String databaseType,
-    String columnType,
-  })>[
-    (
-      fieldType: 'int',
-      serializationDataType: null,
-      databaseType: 'bigint',
-      columnType: 'ColumnInt',
-    ),
-    (
-      fieldType: 'double',
-      serializationDataType: null,
-      databaseType: 'double precision',
-      columnType: 'ColumnDouble',
-    ),
-    (
-      fieldType: 'String',
-      serializationDataType: null,
-      databaseType: 'text',
-      columnType: 'ColumnString',
-    ),
-    (
-      fieldType: 'bool',
-      serializationDataType: null,
-      databaseType: 'boolean',
-      columnType: 'ColumnBool',
-    ),
-    (
-      fieldType: 'DateTime',
-      serializationDataType: null,
-      databaseType: 'timestamp without time zone',
-      columnType: 'ColumnDateTime',
-    ),
-    (
-      fieldType: 'Map<String, String>',
-      serializationDataType: 'json',
-      databaseType: 'json',
-      columnType: 'ColumnSerializable',
-    ),
-    (
-      fieldType: 'Map<String, String>',
-      serializationDataType: 'jsonb',
-      databaseType: 'jsonb',
-      columnType: 'ColumnStructured',
-    ),
-    (
-      fieldType: 'int?',
-      serializationDataType: null,
-      databaseType: 'bigint',
-      columnType: 'ColumnInt',
-    ),
-    (
-      fieldType: 'Map<String, String>?',
-      serializationDataType: 'json',
-      databaseType: 'json',
-      columnType: 'ColumnSerializable',
-    ),
-  ];
+    group('when the model is validated,', () {
+      late CodeGenerationCollector collector;
+      late SerializableModelFieldDefinition field;
 
-  final customClassFieldCases = <({
-    String fieldName,
-    String customClassName,
-    String serializationKey,
-    String? serializationDataType,
-  })>[
-    (
-      fieldName: 'intData',
-      customClassName: 'IntCustomClass',
-      serializationKey: 'int',
-      serializationDataType: null,
-    ),
-    (
-      fieldName: 'doubleData',
-      customClassName: 'DoubleCustomClass',
-      serializationKey: 'double',
-      serializationDataType: null,
-    ),
-    (
-      fieldName: 'stringData',
-      customClassName: 'CustomClass',
-      serializationKey: 'String',
-      serializationDataType: null,
-    ),
-    (
-      fieldName: 'boolData',
-      customClassName: 'BoolCustomClass',
-      serializationKey: 'bool',
-      serializationDataType: null,
-    ),
-    (
-      fieldName: 'dateTimeData',
-      customClassName: 'DateTimeCustomClass',
-      serializationKey: 'DateTime',
-      serializationDataType: null,
-    ),
-    (
-      fieldName: 'mapData',
-      customClassName: 'CustomClass2',
-      serializationKey: 'Map',
-      serializationDataType: 'json',
-    ),
-    (
-      fieldName: 'jsonbMapData',
-      customClassName: 'CustomClass2',
-      serializationKey: 'Map',
-      serializationDataType: 'jsonb',
-    ),
-    (
-      fieldName: 'nullableIntData',
-      customClassName: 'IntCustomClass',
-      serializationKey: 'int',
-      serializationDataType: null,
-    ),
-    (
-      fieldName: 'nullableMapData',
-      customClassName: 'CustomClass2',
-      serializationKey: 'Map',
-      serializationDataType: 'json',
-    ),
-  ];
-
-  group('custom class database column resolution', () {
-    for (final declaredCase in declaredTypeCases) {
-      final serializationSuffix = declaredCase.serializationDataType == null
-          ? ''
-          : ', serializationDataType=${declaredCase.serializationDataType}';
-
-      test(
-        'declared ${declaredCase.fieldType}$serializationSuffix resolves to '
-        '(${declaredCase.databaseType}, ${declaredCase.columnType})',
-        () {
-          final config = GeneratorConfigBuilder().build();
-          final models = [
-            ModelSourceBuilder().withYaml('''
-class: Example
-table: example
-fields:
-  data: ${declaredCase.fieldType}$serializationSuffix
-''').build(),
-          ];
-
-          final collector = CodeGenerationCollector();
-          final analyzer = StatefulAnalyzer(
-            config,
-            models,
-            onErrorsCollector(collector),
-          );
-
-          final definitions = analyzer.validateAll();
-          expect(collector.errors, isEmpty);
-
-          final definition = definitions.first as ModelClassDefinition;
-          final field = definition.fields.firstWhere((f) => f.name == 'data');
-
-          expect(field.type.databaseType, declaredCase.databaseType);
-          expect(field.type.columnType, declaredCase.columnType);
-        },
-      );
-    }
-
-    for (final customCase in customClassFieldCases) {
-      final isNullable = customCase.fieldName.startsWith('nullable');
-      final declaredCase = declaredTypeCases.firstWhere((declaredCase) {
-        if (customCase.serializationKey == 'Map') {
-          return declaredCase.serializationDataType ==
-                  customCase.serializationDataType &&
-              declaredCase.fieldType.contains('?') == isNullable;
-        }
-        return declaredCase.fieldType ==
-            (isNullable
-                ? '${customCase.serializationKey}?'
-                : customCase.serializationKey);
+      setUp(() {
+        var analysis = _analyzeTableField(
+          extraClass: extraClass,
+          fieldName: fieldName,
+          fieldYaml: fieldYaml,
+        );
+        collector = analysis.collector;
+        field = analysis.field;
       });
 
-      final fieldType = customCase.serializationDataType == null
-          ? '${customCase.customClassName}${isNullable ? '?' : ''}'
-          : '${customCase.customClassName}${isNullable ? '?' : ''}, '
-              'serializationDataType=${customCase.serializationDataType}';
-
-      test(
-        'custom class $fieldType matches declared ${declaredCase.fieldType}',
-        () {
-          final config = GeneratorConfigBuilder()
-              .withExtraClasses(customClassBySerializationType.values.toList())
-              .build();
-          final models = [
-            ModelSourceBuilder().withYaml('''
-class: Example
-table: example
-fields:
-  ${customCase.fieldName}: $fieldType
-''').build(),
-          ];
-
-          final collector = CodeGenerationCollector();
-          final analyzer = StatefulAnalyzer(
-            config,
-            models,
-            onErrorsCollector(collector),
-          );
-
-          final definitions = analyzer.validateAll();
-          expect(collector.errors, isEmpty);
-
-          final definition = definitions.first as ModelClassDefinition;
-          final field = definition.fields.firstWhere(
-            (f) => f.name == customCase.fieldName,
-          );
-
-          expect(field.type.databaseType, declaredCase.databaseType);
-          expect(field.type.columnType, declaredCase.columnType);
-          expect(field.type.className, customCase.customClassName);
-          expect(field.type.customClass, isTrue);
-        },
-      );
-    }
-
-    for (final customCase in customClassFieldCases) {
-      final isNullable = customCase.fieldName.startsWith('nullable');
-      final declaredCase = declaredTypeCases.firstWhere((declaredCase) {
-        if (customCase.serializationKey == 'Map') {
-          return declaredCase.serializationDataType ==
-                  customCase.serializationDataType &&
-              declaredCase.fieldType.contains('?') == isNullable;
-        }
-        return declaredCase.fieldType ==
-            (isNullable
-                ? '${customCase.serializationKey}?'
-                : customCase.serializationKey);
+      test('then no errors are reported.', () {
+        expect(collector.errors, isEmpty);
       });
 
-      final fieldType = customCase.serializationDataType == null
-          ? '${customCase.customClassName}${isNullable ? '?' : ''}'
-          : '${customCase.customClassName}${isNullable ? '?' : ''}, '
-              'serializationDataType=${customCase.serializationDataType}';
+      test('then the database type is bigint.', () {
+        expect(field.type.databaseType, 'bigint');
+      });
 
-      test(
-        'custom class $fieldType column is '
-        '${isNullable ? 'nullable' : 'non-nullable'} in migration DDL',
-        () {
-          final config = GeneratorConfigBuilder()
-              .withExtraClasses(customClassBySerializationType.values.toList())
-              .build();
-          final models = [
-            ModelSourceBuilder().withYaml('''
-class: Example
-table: example
-fields:
-  ${customCase.fieldName}: $fieldType
-''').build(),
-          ];
+      test('then the column type is ColumnInt.', () {
+        expect(field.type.columnType, 'ColumnInt');
+      });
 
-          final collector = CodeGenerationCollector();
-          final analyzer = StatefulAnalyzer(
-            config,
-            models,
-            onErrorsCollector(collector),
-          );
+      test('then the field type is IntCustomClass.', () {
+        expect(field.type.className, 'IntCustomClass');
+        expect(field.type.customClass, isTrue);
+      });
+    });
 
-          final definitions = analyzer.validateAll();
-          expect(collector.errors, isEmpty);
+    group('when creating the database definition,', () {
+      late ColumnDefinition column;
 
-          final modelDefinition = definitions.first as ModelClassDefinition;
-          final field = modelDefinition.fields.firstWhere(
-            (f) => f.name == customCase.fieldName,
-          );
+      setUp(() {
+        column = _columnFromDatabaseDefinition(
+          extraClass: extraClass,
+          fieldName: fieldName,
+          fieldYaml: fieldYaml,
+        );
+      });
 
-          final definition = createDatabaseDefinitionFromModels(
-            definitions,
-            'example',
-            [],
-          );
-          final column = definition.tables.single.columns.firstWhere(
-            (c) => c.fieldName == customCase.fieldName,
-          );
+      test('then the column is non-nullable.', () {
+        expect(column.isNullable, isFalse);
+      });
 
-          expect(field.type.databaseType, declaredCase.databaseType);
-          expect(column.columnType.name, field.type.databaseTypeEnum);
-          expect(column.isNullable, isNullable);
-        },
-      );
-    }
+      test('then the column type is bigint.', () {
+        expect(column.columnType.name, 'bigint');
+      });
+    });
   });
 
-  test(
-    'Given scalar custom class field with serializationDataType, '
-    'then validation rejects it with a sensible message',
+  group('Given a DoubleCustomClass table field,', () {
+    var extraClass = _extraClass(
+      className: 'DoubleCustomClass',
+      serializationType: TypeDefinition(className: 'double', nullable: false),
+    );
+    var fieldName = 'doubleData';
+    var fieldYaml = 'doubleData: DoubleCustomClass';
+
+    group('when the model is validated,', () {
+      late CodeGenerationCollector collector;
+      late SerializableModelFieldDefinition field;
+
+      setUp(() {
+        var analysis = _analyzeTableField(
+          extraClass: extraClass,
+          fieldName: fieldName,
+          fieldYaml: fieldYaml,
+        );
+        collector = analysis.collector;
+        field = analysis.field;
+      });
+
+      test('then no errors are reported.', () {
+        expect(collector.errors, isEmpty);
+      });
+
+      test('then the database type is double precision.', () {
+        expect(field.type.databaseType, 'double precision');
+      });
+
+      test('then the column type is ColumnDouble.', () {
+        expect(field.type.columnType, 'ColumnDouble');
+      });
+    });
+
+    group('when creating the database definition,', () {
+      late ColumnDefinition column;
+
+      setUp(() {
+        column = _columnFromDatabaseDefinition(
+          extraClass: extraClass,
+          fieldName: fieldName,
+          fieldYaml: fieldYaml,
+        );
+      });
+
+      test('then the column is non-nullable.', () {
+        expect(column.isNullable, isFalse);
+      });
+
+      test('then the column type is doublePrecision.', () {
+        expect(column.columnType.name, 'doublePrecision');
+      });
+    });
+  });
+
+  group('Given a CustomClass table field that serializes as String,', () {
+    var extraClass = _extraClass(
+      className: 'CustomClass',
+      serializationType: TypeDefinition(className: 'String', nullable: false),
+    );
+    var fieldName = 'stringData';
+    var fieldYaml = 'stringData: CustomClass';
+
+    group('when the model is validated,', () {
+      late CodeGenerationCollector collector;
+      late SerializableModelFieldDefinition field;
+
+      setUp(() {
+        var analysis = _analyzeTableField(
+          extraClass: extraClass,
+          fieldName: fieldName,
+          fieldYaml: fieldYaml,
+        );
+        collector = analysis.collector;
+        field = analysis.field;
+      });
+
+      test('then no errors are reported.', () {
+        expect(collector.errors, isEmpty);
+      });
+
+      test('then the database type is text.', () {
+        expect(field.type.databaseType, 'text');
+      });
+
+      test('then the column type is ColumnString.', () {
+        expect(field.type.columnType, 'ColumnString');
+      });
+    });
+
+    group('when creating the database definition,', () {
+      late ColumnDefinition column;
+
+      setUp(() {
+        column = _columnFromDatabaseDefinition(
+          extraClass: extraClass,
+          fieldName: fieldName,
+          fieldYaml: fieldYaml,
+        );
+      });
+
+      test('then the column is non-nullable.', () {
+        expect(column.isNullable, isFalse);
+      });
+
+      test('then the column type is text.', () {
+        expect(column.columnType.name, 'text');
+      });
+    });
+  });
+
+  group('Given a BoolCustomClass table field,', () {
+    var extraClass = _extraClass(
+      className: 'BoolCustomClass',
+      serializationType: TypeDefinition(className: 'bool', nullable: false),
+    );
+    var fieldName = 'boolData';
+    var fieldYaml = 'boolData: BoolCustomClass';
+
+    group('when the model is validated,', () {
+      late CodeGenerationCollector collector;
+      late SerializableModelFieldDefinition field;
+
+      setUp(() {
+        var analysis = _analyzeTableField(
+          extraClass: extraClass,
+          fieldName: fieldName,
+          fieldYaml: fieldYaml,
+        );
+        collector = analysis.collector;
+        field = analysis.field;
+      });
+
+      test('then no errors are reported.', () {
+        expect(collector.errors, isEmpty);
+      });
+
+      test('then the database type is boolean.', () {
+        expect(field.type.databaseType, 'boolean');
+      });
+
+      test('then the column type is ColumnBool.', () {
+        expect(field.type.columnType, 'ColumnBool');
+      });
+    });
+
+    group('when creating the database definition,', () {
+      late ColumnDefinition column;
+
+      setUp(() {
+        column = _columnFromDatabaseDefinition(
+          extraClass: extraClass,
+          fieldName: fieldName,
+          fieldYaml: fieldYaml,
+        );
+      });
+
+      test('then the column is non-nullable.', () {
+        expect(column.isNullable, isFalse);
+      });
+
+      test('then the column type is boolean.', () {
+        expect(column.columnType.name, 'boolean');
+      });
+    });
+  });
+
+  group('Given a DateTimeCustomClass table field,', () {
+    var extraClass = _extraClass(
+      className: 'DateTimeCustomClass',
+      serializationType: TypeDefinition(className: 'DateTime', nullable: false),
+    );
+    var fieldName = 'dateTimeData';
+    var fieldYaml = 'dateTimeData: DateTimeCustomClass';
+
+    group('when the model is validated,', () {
+      late CodeGenerationCollector collector;
+      late SerializableModelFieldDefinition field;
+
+      setUp(() {
+        var analysis = _analyzeTableField(
+          extraClass: extraClass,
+          fieldName: fieldName,
+          fieldYaml: fieldYaml,
+        );
+        collector = analysis.collector;
+        field = analysis.field;
+      });
+
+      test('then no errors are reported.', () {
+        expect(collector.errors, isEmpty);
+      });
+
+      test('then the database type is timestamp without time zone.', () {
+        expect(field.type.databaseType, 'timestamp without time zone');
+      });
+
+      test('then the column type is ColumnDateTime.', () {
+        expect(field.type.columnType, 'ColumnDateTime');
+      });
+    });
+
+    group('when creating the database definition,', () {
+      late ColumnDefinition column;
+
+      setUp(() {
+        column = _columnFromDatabaseDefinition(
+          extraClass: extraClass,
+          fieldName: fieldName,
+          fieldYaml: fieldYaml,
+        );
+      });
+
+      test('then the column is non-nullable.', () {
+        expect(column.isNullable, isFalse);
+      });
+
+      test('then the column type is timestampWithoutTimeZone.', () {
+        expect(column.columnType.name, 'timestampWithoutTimeZone');
+      });
+    });
+  });
+
+  group(
+    'Given a CustomClass2 table field with serializationDataType json,',
     () {
-      final config = GeneratorConfigBuilder()
-          .withExtraClasses([customClassBySerializationType['int']!])
-          .build();
-      final models = [
-        ModelSourceBuilder().withYaml('''
+      var extraClass = _extraClass(
+        className: 'CustomClass2',
+        serializationType: TypeDefinition(
+          className: 'dynamic',
+          nullable: false,
+        ),
+      );
+      var fieldName = 'mapData';
+      var fieldYaml = 'mapData: CustomClass2, serializationDataType=json';
+
+      group('when the model is validated,', () {
+        late CodeGenerationCollector collector;
+        late SerializableModelFieldDefinition field;
+
+        setUp(() {
+          var analysis = _analyzeTableField(
+            extraClass: extraClass,
+            fieldName: fieldName,
+            fieldYaml: fieldYaml,
+          );
+          collector = analysis.collector;
+          field = analysis.field;
+        });
+
+        test('then no errors are reported.', () {
+          expect(collector.errors, isEmpty);
+        });
+
+        test('then the database type is json.', () {
+          expect(field.type.databaseType, 'json');
+        });
+
+        test('then the column type is ColumnSerializable.', () {
+          expect(field.type.columnType, 'ColumnSerializable');
+        });
+
+        test('then the serializationDataType is json.', () {
+          expect(field.type.serializationDataType, SerializationDataType.json);
+        });
+      });
+
+      group('when creating the database definition,', () {
+        late ColumnDefinition column;
+
+        setUp(() {
+          column = _columnFromDatabaseDefinition(
+            extraClass: extraClass,
+            fieldName: fieldName,
+            fieldYaml: fieldYaml,
+          );
+        });
+
+        test('then the column is non-nullable.', () {
+          expect(column.isNullable, isFalse);
+        });
+
+        test('then the column type is json.', () {
+          expect(column.columnType.name, 'json');
+        });
+      });
+    },
+  );
+
+  group(
+    'Given a CustomClass2 table field with serializationDataType jsonb,',
+    () {
+      var extraClass = _extraClass(
+        className: 'CustomClass2',
+        serializationType: TypeDefinition(
+          className: 'dynamic',
+          nullable: false,
+        ),
+      );
+      var fieldName = 'jsonbMapData';
+      var fieldYaml = 'jsonbMapData: CustomClass2, serializationDataType=jsonb';
+
+      group('when the model is validated,', () {
+        late CodeGenerationCollector collector;
+        late SerializableModelFieldDefinition field;
+
+        setUp(() {
+          var analysis = _analyzeTableField(
+            extraClass: extraClass,
+            fieldName: fieldName,
+            fieldYaml: fieldYaml,
+          );
+          collector = analysis.collector;
+          field = analysis.field;
+        });
+
+        test('then no errors are reported.', () {
+          expect(collector.errors, isEmpty);
+        });
+
+        test('then the database type is jsonb.', () {
+          expect(field.type.databaseType, 'jsonb');
+        });
+
+        test('then the column type is ColumnStructured.', () {
+          expect(field.type.columnType, 'ColumnStructured');
+        });
+
+        test('then the serializationDataType is jsonb.', () {
+          expect(field.type.serializationDataType, SerializationDataType.jsonb);
+        });
+      });
+
+      group('when creating the database definition,', () {
+        late ColumnDefinition column;
+
+        setUp(() {
+          column = _columnFromDatabaseDefinition(
+            extraClass: extraClass,
+            fieldName: fieldName,
+            fieldYaml: fieldYaml,
+          );
+        });
+
+        test('then the column is non-nullable.', () {
+          expect(column.isNullable, isFalse);
+        });
+
+        test('then the column type is jsonb.', () {
+          expect(column.columnType.name, 'jsonb');
+        });
+      });
+    },
+  );
+
+  group('Given a nullable IntCustomClass table field,', () {
+    var extraClass = _extraClass(
+      className: 'IntCustomClass',
+      serializationType: TypeDefinition.int,
+    );
+    var fieldName = 'nullableIntData';
+    var fieldYaml = 'nullableIntData: IntCustomClass?';
+
+    group('when the model is validated,', () {
+      late CodeGenerationCollector collector;
+      late SerializableModelFieldDefinition field;
+
+      setUp(() {
+        var analysis = _analyzeTableField(
+          extraClass: extraClass,
+          fieldName: fieldName,
+          fieldYaml: fieldYaml,
+        );
+        collector = analysis.collector;
+        field = analysis.field;
+      });
+
+      test('then no errors are reported.', () {
+        expect(collector.errors, isEmpty);
+      });
+
+      test('then the database type is bigint.', () {
+        expect(field.type.databaseType, 'bigint');
+      });
+
+      test('then the column type is ColumnInt.', () {
+        expect(field.type.columnType, 'ColumnInt');
+      });
+    });
+
+    group('when creating the database definition,', () {
+      late ColumnDefinition column;
+
+      setUp(() {
+        column = _columnFromDatabaseDefinition(
+          extraClass: extraClass,
+          fieldName: fieldName,
+          fieldYaml: fieldYaml,
+        );
+      });
+
+      test('then the column is nullable.', () {
+        expect(column.isNullable, isTrue);
+      });
+
+      test('then the column type is bigint.', () {
+        expect(column.columnType.name, 'bigint');
+      });
+    });
+  });
+
+  group(
+    'Given a nullable CustomClass2 table field with serializationDataType json,',
+    () {
+      var extraClass = _extraClass(
+        className: 'CustomClass2',
+        serializationType: TypeDefinition(
+          className: 'dynamic',
+          nullable: false,
+        ),
+      );
+      var fieldName = 'nullableMapData';
+      var fieldYaml =
+          'nullableMapData: CustomClass2?, serializationDataType=json';
+
+      group('when the model is validated,', () {
+        late CodeGenerationCollector collector;
+        late SerializableModelFieldDefinition field;
+
+        setUp(() {
+          var analysis = _analyzeTableField(
+            extraClass: extraClass,
+            fieldName: fieldName,
+            fieldYaml: fieldYaml,
+          );
+          collector = analysis.collector;
+          field = analysis.field;
+        });
+
+        test('then no errors are reported.', () {
+          expect(collector.errors, isEmpty);
+        });
+
+        test('then the database type is json.', () {
+          expect(field.type.databaseType, 'json');
+        });
+
+        test('then the column type is ColumnSerializable.', () {
+          expect(field.type.columnType, 'ColumnSerializable');
+        });
+      });
+
+      group('when creating the database definition,', () {
+        late ColumnDefinition column;
+
+        setUp(() {
+          column = _columnFromDatabaseDefinition(
+            extraClass: extraClass,
+            fieldName: fieldName,
+            fieldYaml: fieldYaml,
+          );
+        });
+
+        test('then the column is nullable.', () {
+          expect(column.isNullable, isTrue);
+        });
+
+        test('then the column type is json.', () {
+          expect(column.columnType.name, 'json');
+        });
+      });
+    },
+  );
+
+  group(
+    'Given an IntCustomClass table field with serializationDataType jsonb,',
+    () {
+      var extraClass = _extraClass(
+        className: 'IntCustomClass',
+        serializationType: TypeDefinition.int,
+      );
+
+      group('when the model is validated,', () {
+        late CodeGenerationCollector collector;
+
+        setUp(() {
+          var config = GeneratorConfigBuilder().withExtraClasses([
+            extraClass,
+          ]).build();
+          var models = [
+            ModelSourceBuilder().withYaml('''
 class: Example
 table: example
 fields:
   intData: IntCustomClass, serializationDataType=jsonb
 ''').build(),
-      ];
+          ];
 
-      final collector = CodeGenerationCollector();
-      final analyzer = StatefulAnalyzer(
-        config,
-        models,
-        onErrorsCollector(collector),
-      );
+          collector = CodeGenerationCollector();
+          StatefulAnalyzer(
+            config,
+            models,
+            onErrorsCollector(collector),
+          ).validateAll();
+        });
 
-      analyzer.validateAll();
-
-      expect(collector.errors, hasLength(1));
-      expect(
-        collector.errors.single.message,
-        contains('serializationDataType'),
-      );
-      expect(
-        collector.errors.single.message,
-        contains('serializable field types'),
-      );
+        test(
+          'then an error is reported that serializationDataType is only valid on serializable field types.',
+          () {
+            expect(collector.errors, hasLength(1));
+            expect(
+              collector.errors.single.message,
+              'The "serializationDataType" key is only valid on serializable '
+              'field types (e.g. lists, maps, serializable models or custom classes).',
+            );
+          },
+        );
+      });
     },
   );
+}
 
-  test(
-    'Given map custom class field with serializationDataType json, '
-    'then column type is ColumnSerializable and database type is json',
-    () {
-      final config = GeneratorConfigBuilder()
-          .withExtraClasses([customClassBySerializationType['Map']!])
-          .build();
-      final models = [
-        ModelSourceBuilder().withYaml('''
+TypeDefinition _extraClass({
+  required String className,
+  required TypeDefinition serializationType,
+}) {
+  return TypeDefinition(
+    className: className,
+    nullable: false,
+    url: 'package:serverpod_test_shared/serverpod_test_shared.dart',
+    customClass: true,
+    customClassSerializationType: serializationType,
+  );
+}
+
+({
+  CodeGenerationCollector collector,
+  SerializableModelFieldDefinition field,
+  List<SerializableModelDefinition> definitions,
+})
+_analyzeTableField({
+  required TypeDefinition extraClass,
+  required String fieldName,
+  required String fieldYaml,
+}) {
+  var config = GeneratorConfigBuilder().withExtraClasses([extraClass]).build();
+  var models = [
+    ModelSourceBuilder().withYaml('''
 class: Example
 table: example
 fields:
-  mapData: CustomClass2, serializationDataType=json
-  jsonbMapData: CustomClass2, serializationDataType=jsonb
+  $fieldYaml
 ''').build(),
-      ];
+  ];
 
-      final collector = CodeGenerationCollector();
-      final analyzer = StatefulAnalyzer(
-        config,
-        models,
-        onErrorsCollector(collector),
-      );
+  var collector = CodeGenerationCollector();
+  var definitions = StatefulAnalyzer(
+    config,
+    models,
+    onErrorsCollector(collector),
+  ).validateAll();
 
-      final definitions = analyzer.validateAll();
-      expect(collector.errors, isEmpty);
+  var definition = definitions.first as ModelClassDefinition;
 
-      final definition = definitions.first as ModelClassDefinition;
-      final mapField = definition.fields.firstWhere((f) => f.name == 'mapData');
-      final jsonbField = definition.fields.firstWhere(
-        (f) => f.name == 'jsonbMapData',
-      );
+  return (
+    collector: collector,
+    field: definition.fields.firstWhere((field) => field.name == fieldName),
+    definitions: definitions,
+  );
+}
 
-      expect(mapField.type.serializationDataType, SerializationDataType.json);
-      expect(mapField.type.databaseType, 'json');
-      expect(mapField.type.columnType, 'ColumnSerializable');
+ColumnDefinition _columnFromDatabaseDefinition({
+  required TypeDefinition extraClass,
+  required String fieldName,
+  required String fieldYaml,
+}) {
+  var analysis = _analyzeTableField(
+    extraClass: extraClass,
+    fieldName: fieldName,
+    fieldYaml: fieldYaml,
+  );
+  expect(analysis.collector.errors, isEmpty);
 
-      expect(
-        jsonbField.type.serializationDataType,
-        SerializationDataType.jsonb,
-      );
-      expect(jsonbField.type.databaseType, 'jsonb');
-      expect(jsonbField.type.columnType, 'ColumnStructured');
-    },
+  var databaseDefinition = createDatabaseDefinitionFromModels(
+    analysis.definitions,
+    'example',
+    [],
+  );
+
+  return databaseDefinition.tables.single.columns.firstWhere(
+    (column) => column.fieldName == fieldName,
   );
 }

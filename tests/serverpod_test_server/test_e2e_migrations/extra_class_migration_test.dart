@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 
 void main() {
   group(
-    'Given protocol model with String column and a target definition that changes it to CustomClass',
+    'Given a protocol model with a String column and a target definition that changes it to a CustomClass that serializes as String,',
     () {
       var tag = 'string-to-custom-class';
       var initialStateProtocols = {
@@ -25,6 +25,13 @@ fields:
 ''',
       };
 
+      setUp(() async {
+        await MigrationTestUtils.createInitialState(
+          migrationProtocols: [initialStateProtocols],
+          tag: tag,
+        );
+      });
+
       tearDown(() async {
         await MigrationTestUtils.migrationTestCleanup(
           resetSql: 'DROP TABLE IF EXISTS migrated_table;',
@@ -36,11 +43,6 @@ fields:
         'when applying the migration, '
         'then the column type remains text.',
         () async {
-          await MigrationTestUtils.createInitialState(
-            migrationProtocols: [initialStateProtocols],
-            tag: tag,
-          );
-
           var createMigrationExitCode =
               await MigrationTestUtils.createMigrationFromProtocols(
                 protocols: targetStateProtocols,
@@ -66,7 +68,7 @@ fields:
   );
 
   group(
-    'Given protocol model with Map column and a target definition that changes it to CustomClass2',
+    'Given a protocol model with a Map column and a target definition that changes it to a CustomClass2 that serializes as Map<String, dynamic>,',
     () {
       var tag = 'map-to-custom-class-2';
       var initialStateProtocols = {
@@ -86,6 +88,13 @@ fields:
 ''',
       };
 
+      setUp(() async {
+        await MigrationTestUtils.createInitialState(
+          migrationProtocols: [initialStateProtocols],
+          tag: tag,
+        );
+      });
+
       tearDown(() async {
         await MigrationTestUtils.migrationTestCleanup(
           resetSql: 'DROP TABLE IF EXISTS migrated_table;',
@@ -97,11 +106,6 @@ fields:
         'when applying the migration, '
         'then the column type remains json.',
         () async {
-          await MigrationTestUtils.createInitialState(
-            migrationProtocols: [initialStateProtocols],
-            tag: tag,
-          );
-
           var createMigrationExitCode =
               await MigrationTestUtils.createMigrationFromProtocols(
                 protocols: targetStateProtocols,
@@ -127,7 +131,7 @@ fields:
   );
 
   group(
-    'Given protocol model with Map column and a target definition that changes it to FreezedCustomClass',
+    'Given a protocol model with a Map column and a target definition that changes it to a FreezedCustomClass that serializes as Map<String, dynamic>,',
     () {
       var tag = 'map-to-freezed-custom-class';
       var initialStateProtocols = {
@@ -147,6 +151,13 @@ fields:
 ''',
       };
 
+      setUp(() async {
+        await MigrationTestUtils.createInitialState(
+          migrationProtocols: [initialStateProtocols],
+          tag: tag,
+        );
+      });
+
       tearDown(() async {
         await MigrationTestUtils.migrationTestCleanup(
           resetSql: 'DROP TABLE IF EXISTS migrated_table;',
@@ -158,11 +169,6 @@ fields:
         'when applying the migration, '
         'then the column type remains json.',
         () async {
-          await MigrationTestUtils.createInitialState(
-            migrationProtocols: [initialStateProtocols],
-            tag: tag,
-          );
-
           var createMigrationExitCode =
               await MigrationTestUtils.createMigrationFromProtocols(
                 protocols: targetStateProtocols,
