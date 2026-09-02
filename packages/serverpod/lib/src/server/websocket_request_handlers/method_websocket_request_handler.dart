@@ -17,12 +17,17 @@ import 'helpers/method_stream_manager.dart';
 class MethodWebsocketRequestHandler {
   /// Handles incoming websocket requests.
   /// Returns a [Future] that completes when the websocket is closed.
+  ///
+  /// [onManagerCreated] is invoked synchronously after the stream manager is
+  /// constructed, so the server can close open streams before tearing the
+  /// socket down.
   static Future<void> handleWebsocket(
     Server server,
     RelicWebSocket webSocket,
     Request request,
-    void Function() onClosed,
-  ) async {
+    void Function() onClosed, {
+    void Function(MethodStreamManager manager)? onManagerCreated,
+  }) async {
     var webSocketIntermediary = _WebSocketIntermediary(
       server: server,
       webSocket: webSocket,
@@ -33,6 +38,7 @@ class MethodWebsocketRequestHandler {
       webSocketIntermediary,
       server,
     );
+    onManagerCreated?.call(methodStreamManager);
 
     try {
       server.serverpod.logVerbose('Method websocket connection established.');

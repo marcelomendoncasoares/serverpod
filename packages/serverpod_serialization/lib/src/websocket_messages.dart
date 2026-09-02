@@ -259,6 +259,9 @@ enum CloseReason {
 
   /// The stream was closed because an error occurred.
   error,
+
+  /// The stream was closed because the server is shutting down.
+  shutdown,
   ;
 
   /// Try to parse a [CloseReason] from a string.

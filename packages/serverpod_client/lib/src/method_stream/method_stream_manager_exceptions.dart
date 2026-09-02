@@ -67,8 +67,16 @@ class OpenMethodStreamException extends MethodStreamException {
 /// Thrown if the connection is closed with an error.
 class ConnectionClosedException extends MethodStreamException {
   /// Creates a new [ConnectionClosedException].
-  const ConnectionClosedException()
-    : super('Method stream connection closed with an error');
+  const ConnectionClosedException([
+    super.message = 'Method stream connection closed with an error',
+  ]);
+}
+
+/// Thrown if a method stream is closed because the server is shutting down.
+class ServerShutdownException extends ConnectionClosedException {
+  /// Creates a new [ServerShutdownException].
+  const ServerShutdownException()
+    : super('Method stream closed because the server shut down');
 }
 
 /// Thrown if the method stream connection is idle for too long.

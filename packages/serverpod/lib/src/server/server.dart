@@ -12,6 +12,7 @@ import 'package:serverpod/src/server/health/health_routes.dart';
 import 'package:serverpod/src/server/response_output.dart';
 import 'package:serverpod/src/server/serverpod.dart';
 import 'package:serverpod/src/server/session.dart';
+import 'package:serverpod/src/server/websocket_request_handlers/helpers/method_stream_manager.dart';
 import 'package:serverpod/src/server/websocket_request_handlers/method_websocket_request_handler.dart';
 import 'package:serverpod_database/serverpod_database.dart';
 
@@ -20,9 +21,15 @@ import 'package:serverpod_database/serverpod_database.dart';
 class Server implements RouterInjectable {
   // Map of [WebSocket] connected to the server.
   // The key is a unique identifier for the connection.
-  // The value is a tuple of a [Future] that completes when the connection is
-  // closed and the [WebSocket] object.
-  final Map<String, (Future<void>, RelicWebSocket)> _webSockets = {};
+  final Map<
+    String,
+    ({
+      Future<void> done,
+      RelicWebSocket socket,
+      Future<void> Function() closeMethodStreams,
+    })
+  >
+  _webSockets = {};
 
   /// The [Serverpod] managing the server.
   final Serverpod serverpod;
@@ -157,7 +164,7 @@ class Server implements RouterInjectable {
     router
       ..get(
         '/v1/websocket',
-        _dispatchWebSocket(MethodWebsocketRequestHandler.handleWebsocket),
+        _dispatchWebSocket(),
       )
       ..anyOf(
         {Method.get, Method.options, Method.post},
@@ -419,15 +426,7 @@ class Server implements RouterInjectable {
     return await _handleEndpointCall(req.url, body, req);
   }
 
-  Handler _dispatchWebSocket(
-    Future<void> Function(
-      Server,
-      RelicWebSocket,
-      Request,
-      void Function(),
-    )
-    requestHandler,
-  ) {
+  Handler _dispatchWebSocket() {
     return (req) async {
       // Reject cross-site WebSocket handshakes when an origin allow-list is
       // configured. Only browsers send an `Origin` header; native, mobile and
@@ -446,14 +445,24 @@ class Server implements RouterInjectable {
         try {
           webSocket.pingInterval = serverpod.config.websocketPingInterval;
           var websocketKey = const Uuid().v4();
-          final handlerFuture = requestHandler(
+          late final MethodStreamManager methodStreamManager;
+          final handlerFuture = MethodWebsocketRequestHandler.handleWebsocket(
             this,
             webSocket,
             req,
             () => _webSockets.remove(websocketKey),
+            onManagerCreated: (manager) {
+              methodStreamManager = manager;
+            },
           );
 
-          _webSockets[websocketKey] = (handlerFuture, webSocket);
+          _webSockets[websocketKey] = (
+            done: handlerFuture,
+            socket: webSocket,
+            closeMethodStreams: () => methodStreamManager.closeAllStreams(
+              reason: CloseReason.shutdown,
+            ),
+          );
 
           await handlerFuture;
         } catch (e, stackTrace) {
@@ -647,17 +656,37 @@ class Server implements RouterInjectable {
   /// Shuts the server down.
   /// Returns a [Future] that completes when the server is shut down.
   Future<void> shutdown() async {
+    await _closeOpenMethodStreams();
     await _app.close();
     var webSockets = _webSockets.values.toList();
     List<Future<void>> webSocketCompletions = [];
-    for (var (webSocketCompletion, webSocket) in webSockets) {
-      webSocketCompletions.add(webSocketCompletion);
-      await webSocket.tryClose();
+    for (var connection in webSockets) {
+      webSocketCompletions.add(connection.done);
+      await connection.socket.tryClose();
     }
 
     // Wait for all WebSockets to close.
     await Future.wait(webSocketCompletions);
     _running = false;
+  }
+
+  Future<void> _closeOpenMethodStreams() async {
+    var connections = _webSockets.values.toList();
+    if (connections.isEmpty) return;
+
+    try {
+      await Future.wait(
+        [for (var connection in connections) connection.closeMethodStreams()],
+        eagerError: false,
+      );
+    } catch (e, stackTrace) {
+      await _reportFrameworkException(
+        e,
+        stackTrace,
+        message: 'Failed to close method streams during shutdown.',
+        operationType: OperationType.stream,
+      );
+    }
   }
 
   Future<void> _reportFrameworkException(

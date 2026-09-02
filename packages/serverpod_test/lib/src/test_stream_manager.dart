@@ -47,7 +47,7 @@ class TestStreamManager<OutputStreamType> {
             CloseReason? closeReason,
             MethodStreamCallContext context,
           ) {
-            if (closeReason == CloseReason.error) {
+            if (closeReason != null && closeReason != CloseReason.done) {
               outputStreamController.addError(
                 const ConnectionClosedException(),
               );

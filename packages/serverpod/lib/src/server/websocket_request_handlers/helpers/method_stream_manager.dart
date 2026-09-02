@@ -168,7 +168,18 @@ class MethodStreamManager {
 
   int get openOutputStreamCount => _outputStreamContexts.length;
 
-  Future<void> closeAllStreams() async {
+  /// Closes all open streams.
+  ///
+  /// When [reason] is given, connected clients are notified with
+  /// [CloseMethodStreamCommand] before the local controllers are torn down.
+  /// Omit [reason] when the WebSocket is already gone so no attempt is made
+  /// to send on a closed connection.
+  Future<void> closeAllStreams({CloseReason? reason}) async {
+    if (reason != null) {
+      await _closeAllStreamsAndNotify(reason);
+      return;
+    }
+
     var inputControllers = _inputStreamContexts.values
         .map((c) => c.controller)
         .toList();
@@ -195,6 +206,32 @@ class MethodStreamManager {
       ...closeSubscriptionFutures,
       _closeControllers(inputControllers),
     ]);
+  }
+
+  Future<void> _closeAllStreamsAndNotify(CloseReason reason) async {
+    var outboundEntries = _outputStreamContexts.entries.toList();
+    for (var entry in outboundEntries) {
+      _updateCloseReason(entry.key, reason);
+    }
+
+    await Future.wait([
+      for (var context in outboundEntries.map((entry) => entry.value))
+        _notifyAndCancelOutbound(context),
+    ]);
+
+    var leftoverInputs = _inputStreamContexts.values
+        .map((c) => c.controller)
+        .toList();
+    _inputStreamContexts.clear();
+    await _closeControllers(leftoverInputs);
+  }
+
+  Future<void> _notifyAndCancelOutbound(_OutputStreamContext context) async {
+    await context.controller.onCancel?.call();
+    await context.subscription.cancel().timeout(
+      _closeTimeout,
+      onTimeout: () async {},
+    );
   }
 
   Future<void> closeStream({
@@ -228,7 +265,7 @@ class MethodStreamManager {
         return;
       }
 
-      if (reason == CloseReason.error) {
+      if (reason != CloseReason.done) {
         context.controller.addError(
           const StreamClosedWithErrorException(),
         );

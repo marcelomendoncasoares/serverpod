@@ -427,6 +427,33 @@ void main() {
   );
 
   test(
+    'Given a close method stream command with shutdown reason, '
+    'when building websocket message from string, '
+    'then CloseMethodStreamCommand with shutdown reason is returned.',
+    () {
+      var message = CloseMethodStreamCommand.buildMessage(
+        connectionId: const Uuid().v4obj(),
+        endpoint: 'endpoint',
+        parameter: 'parameter',
+        method: 'method',
+        reason: CloseReason.shutdown,
+      );
+      var result = WebSocketMessage.fromJsonString(
+        message,
+        _TestSerializationManager(),
+      );
+      expect(
+        result,
+        isA<CloseMethodStreamCommand>().having(
+          (command) => command.reason,
+          'reason',
+          CloseReason.shutdown,
+        ),
+      );
+    },
+  );
+
+  test(
     'Given an invalid close method stream command json String that is missing mandatory connectionId field when building websocket message from string then UnknownMessageException is thrown having TypeError error type.',
     () {
       var connectionId = const Uuid().v4obj();

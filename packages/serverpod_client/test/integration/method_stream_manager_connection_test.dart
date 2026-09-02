@@ -404,6 +404,86 @@ void main() async {
     );
   });
 
+  group('Given a connected method stream, ', () {
+    late RelicWebSocket testWebSocket;
+    late OpenMethodStreamCommand openMethodStreamCommand;
+    late MethodStreamConnectionDetails streamConnectionDetails;
+    late Future<void> Function() closeServer;
+
+    setUp(() async {
+      var callbackUrlFuture = Completer<Uri>();
+      closeServer = await TestWebSocketServer.startServer(
+        webSocketHandler: (webSocket) {
+          testWebSocket = webSocket;
+          webSocket.textEvents.listen(
+            (event) {
+              var message = WebSocketMessage.fromJsonString(
+                event,
+                TestSerializationManager(),
+              );
+              if (message is PingCommand) {
+                webSocket.sendText(PongCommand.buildMessage());
+              } else if (message is OpenMethodStreamCommand) {
+                openMethodStreamCommand = message;
+                webSocket.sendText(
+                  OpenMethodStreamResponse.buildMessage(
+                    connectionId: message.connectionId,
+                    endpoint: message.endpoint,
+                    method: message.method,
+                    responseType: OpenMethodStreamResponseType.success,
+                  ),
+                );
+              }
+            },
+          );
+        },
+        onConnected: (host) {
+          callbackUrlFuture.complete(host);
+        },
+      );
+
+      var streamManager = ClientMethodStreamManager(
+        connectionTimeout: const Duration(milliseconds: 100),
+        webSocketHost: await callbackUrlFuture.future,
+        serializationManager: TestSerializationManager(),
+      );
+
+      streamConnectionDetails = MethodStreamConnectionDetailsBuilder().build();
+      await streamManager.openMethodStream(
+        streamConnectionDetails,
+      );
+    });
+
+    tearDown(() async => await closeServer());
+
+    test(
+      'when the server sends CloseMethodStreamCommand with shutdown reason, '
+      'then the output stream is closed with ServerShutdownException.',
+      () async {
+        var errorCompleter = Completer<Object>();
+        streamConnectionDetails.outputController.stream.listen(
+          (_) {},
+          onError: (e, _) => errorCompleter.complete(e),
+        );
+
+        testWebSocket.sendText(
+          CloseMethodStreamCommand.buildMessage(
+            endpoint: openMethodStreamCommand.endpoint,
+            connectionId: openMethodStreamCommand.connectionId,
+            method: openMethodStreamCommand.method,
+            reason: CloseReason.shutdown,
+          ),
+        );
+
+        await expectLater(errorCompleter.future, completes);
+        expect(
+          await errorCompleter.future,
+          isA<ServerShutdownException>(),
+        );
+      },
+    );
+  });
+
   group('Given single connected method stream', () {
     Completer<Uri> callbackUrlFuture;
     late Completer<CloseMethodStreamCommand> closeMethodStreamCommandCompleter;

@@ -408,11 +408,13 @@ final class ClientMethodStreamManager {
     // a close message to the server.
     inboundStreamContext.controller.onCancel = null;
 
-    if (reason == CloseReason.error &&
-        !inboundStreamContext.controller.isClosed) {
-      inboundStreamContext.controller.addError(
-        const ConnectionClosedException(),
-      );
+    final exception = switch (reason) {
+      CloseReason.done => null,
+      CloseReason.error => const ConnectionClosedException(),
+      CloseReason.shutdown => const ServerShutdownException(),
+    };
+    if (exception != null && !inboundStreamContext.controller.isClosed) {
+      inboundStreamContext.controller.addError(exception);
     }
 
     var cancelSubscriptionFutures = <Future>[];
