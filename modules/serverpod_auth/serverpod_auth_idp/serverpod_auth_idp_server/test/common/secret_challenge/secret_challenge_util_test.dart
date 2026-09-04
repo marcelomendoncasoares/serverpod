@@ -4,7 +4,6 @@ import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_idp_server/core.dart';
 import 'package:test/test.dart';
 
-import '../../test_tags.dart';
 import '../../test_tools/serverpod_test_tools.dart';
 
 const _verificationCode = '123456';
@@ -13,7 +12,6 @@ void main() {
   withServerpod(
     'SecretChallengeUtil',
     rollbackDatabase: RollbackDatabase.disabled,
-    testGroupTagsOverride: TestTags.concurrencyOneTestTags,
     (final sessionBuilder, final endpoints) {
       late Session session;
       late Argon2HashUtil hashUtil;
@@ -27,6 +25,8 @@ void main() {
       SecretChallengeUtil<_TestChallengeRequest> buildChallengeUtil({
         final RateLimitedRequestAttemptUtil<UuidValue>? verificationRateLimiter,
         final RateLimitedRequestAttemptUtil<UuidValue>? completionRateLimiter,
+        final LinkCompletionTokenCallback<_TestChallengeRequest>?
+        linkCompletionToken,
       }) {
         return SecretChallengeUtil<_TestChallengeRequest>(
           hashUtil: hashUtil,
@@ -48,6 +48,7 @@ void main() {
               expiredRequestIds.add(request.id);
             },
             linkCompletionToken:
+                linkCompletionToken ??
                 (
                   final session,
                   final request,
@@ -158,8 +159,25 @@ void main() {
         });
 
         test(
+          'when verifying the request, '
+          'then it links a completion challenge to the request.',
+          () async {
+            await session.db.transaction(
+              (final transaction) => challengeUtil.verifyChallenge(
+                session,
+                requestId: request.id,
+                verificationCode: _verificationCode,
+                transaction: transaction,
+              ),
+            );
+
+            expect(request.completionChallenge, isNotNull);
+          },
+        );
+
+        test(
           'when verifying the request and completing it with the returned token, '
-          'then the request is returned.',
+          'then it returns the request.',
           () async {
             final completionToken = await session.db.transaction(
               (final transaction) => challengeUtil.verifyChallenge(
@@ -178,8 +196,34 @@ void main() {
               ),
             );
 
-            expect(request.completionChallenge, isNotNull);
             await expectLater(result, completion(same(request)));
+          },
+        );
+
+        test(
+          'when verifying the request and completing it twice with the same '
+          'token, '
+          'then it returns the request both times.',
+          () async {
+            final completionToken = await session.db.transaction(
+              (final transaction) => challengeUtil.verifyChallenge(
+                session,
+                requestId: request.id,
+                verificationCode: _verificationCode,
+                transaction: transaction,
+              ),
+            );
+
+            Future<_TestChallengeRequest> complete() => session.db.transaction(
+              (final transaction) => challengeUtil.completeChallenge(
+                session,
+                completionToken: completionToken,
+                transaction: transaction,
+              ),
+            );
+
+            await expectLater(complete(), completion(same(request)));
+            await expectLater(complete(), completion(same(request)));
           },
         );
       });
@@ -741,6 +785,78 @@ void main() {
           );
         },
       );
+
+      group('Given a completion token with more than one code separator, ', () {
+        late String completionToken;
+
+        setUp(() {
+          completionToken = base64Encode(
+            utf8.encode('${const Uuid().v4obj()}:some:code'),
+          );
+        });
+
+        test(
+          'when completing a challenge, '
+          'then it throws an invalid completion token exception.',
+          () async {
+            final result = session.db.transaction(
+              (final transaction) => challengeUtil.completeChallenge(
+                session,
+                completionToken: completionToken,
+                transaction: transaction,
+              ),
+            );
+
+            await expectLater(
+              result,
+              throwsA(isA<ChallengeInvalidCompletionTokenException>()),
+            );
+          },
+        );
+      });
+
+      group(
+        'Given a challenge request whose completion challenge is already '
+        'linked, ',
+        () {
+          late _TestChallengeRequest request;
+
+          setUp(() async {
+            challengeUtil = buildChallengeUtil(
+              linkCompletionToken:
+                  (
+                    final session,
+                    final request,
+                    final completionChallenge, {
+                    required final Transaction? transaction,
+                  }) async {
+                    throw ChallengeAlreadyUsedException();
+                  },
+            );
+            request = await createRequest();
+          });
+
+          test(
+            'when verifying the request, '
+            'then it throws an already used exception.',
+            () async {
+              final result = session.db.transaction(
+                (final transaction) => challengeUtil.verifyChallenge(
+                  session,
+                  requestId: request.id,
+                  verificationCode: _verificationCode,
+                  transaction: transaction,
+                ),
+              );
+
+              await expectLater(
+                result,
+                throwsA(isA<ChallengeAlreadyUsedException>()),
+              );
+            },
+          );
+        },
+      );
     },
   );
 }
@@ -823,14 +939,16 @@ final class _FakeRateLimitedRequestAttemptUtil<T>
     final Session session, {
     required final T nonce,
     final Map<String, String>? extraData,
-  }) async {}
+  }) async {
+    throw UnsupportedError('The fake rate limiter only checks attempts.');
+  }
 
   @override
   Future<int> countAttempts(
     final Session session, {
     required final T nonce,
   }) async {
-    return nonces.where((final recordedNonce) => recordedNonce == nonce).length;
+    throw UnsupportedError('The fake rate limiter only checks attempts.');
   }
 
   @override
@@ -838,5 +956,7 @@ final class _FakeRateLimitedRequestAttemptUtil<T>
     final Session session, {
     required final T nonce,
     final Duration? olderThan,
-  }) async {}
+  }) async {
+    throw UnsupportedError('The fake rate limiter only checks attempts.');
+  }
 }

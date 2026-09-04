@@ -3,181 +3,215 @@ import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_idp_server/core.dart';
 import 'package:test/test.dart';
 
-import '../../test_tags.dart';
 import '../../test_tools/serverpod_test_tools.dart';
 
 const _testDomain = 'rate_limit_util_test';
+const _otherDomain = 'rate_limit_util_test_other_domain';
+const _testSource = 'verification';
+const _otherSource = 'other_source';
 
 void main() {
-  group('Given no maxAttempts and no timeframe, ', () {
-    test(
-      'when creating a rate limiting configuration, '
-      'then it throws an assertion error.',
-      () {
-        expect(
-          () => RateLimitedRequestAttemptConfig<String>(
-            domain: _testDomain,
-            source: 'verification',
-          ),
-          throwsA(isA<AssertionError>()),
-        );
-      },
-    );
-  });
+  test(
+    'Given no maxAttempts and no timeframe, '
+    'when creating a rate limiting configuration, '
+    'then it throws an assertion error.',
+    () {
+      expect(
+        () => RateLimitedRequestAttemptConfig<String>(
+          domain: _testDomain,
+          source: _testSource,
+        ),
+        throwsA(isA<AssertionError>()),
+      );
+    },
+  );
+
+  test(
+    'Given a rate limiting configuration for string nonces, '
+    'when encoding a nonce, '
+    'then it returns the nonce unchanged.',
+    () {
+      final config = RateLimitedRequestAttemptConfig<String>(
+        domain: _testDomain,
+        source: _testSource,
+        maxAttempts: 1,
+      );
+
+      expect(config.nonceToString('request'), 'request');
+    },
+  );
+
+  test(
+    'Given a rate limiting configuration for UUID nonces, '
+    'when encoding a nonce, '
+    'then it returns the identifier as a JSON encoded string.',
+    () {
+      final config = RateLimitedRequestAttemptConfig<UuidValue>(
+        domain: _testDomain,
+        source: _testSource,
+        maxAttempts: 1,
+      );
+      final requestId = const Uuid().v4obj();
+
+      expect(config.nonceToString(requestId), '"${requestId.uuid}"');
+    },
+  );
+
+  test(
+    'Given a rate limiting configuration with a custom nonce encoder, '
+    'when encoding a nonce, '
+    'then it returns the value produced by the custom encoder.',
+    () {
+      final config = RateLimitedRequestAttemptConfig<UuidValue>(
+        domain: _testDomain,
+        source: _testSource,
+        maxAttempts: 1,
+        nonceToString: (final nonce) => nonce.uuid,
+      );
+      final requestId = const Uuid().v4obj();
+
+      expect(config.nonceToString(requestId), requestId.uuid);
+    },
+  );
 
   withServerpod(
     'DatabaseRateLimitedRequestAttemptUtil',
     rollbackDatabase: RollbackDatabase.disabled,
-    testGroupTagsOverride: TestTags.concurrencyOneTestTags,
     (final sessionBuilder, final endpoints) {
       late Session session;
-      late DatabaseRateLimitedRequestAttemptUtil<String> rateLimitUtil;
       late List<String> rateLimitExceededNonces;
+
+      Future<void> recordRateLimitExceeded(
+        final Session session,
+        final String nonce,
+      ) async {
+        rateLimitExceededNonces.add(nonce);
+      }
+
+      DatabaseRateLimitedRequestAttemptUtil<String> buildRateLimitUtil({
+        final String domain = _testDomain,
+        final String source = _testSource,
+        final Map<String, String>? defaultExtraData,
+        final int? maxAttempts,
+        final Duration? timeframe,
+        final Future<void> Function(Session session, String nonce)?
+        onRateLimitExceeded,
+      }) {
+        return DatabaseRateLimitedRequestAttemptUtil<String>(
+          RateLimitedRequestAttemptConfig<String>(
+            domain: domain,
+            source: source,
+            defaultExtraData: defaultExtraData,
+            maxAttempts: maxAttempts,
+            timeframe: timeframe,
+            onRateLimitExceeded: onRateLimitExceeded,
+          ),
+        );
+      }
 
       setUp(() async {
         session = sessionBuilder.build();
         rateLimitExceededNonces = [];
-        rateLimitUtil = DatabaseRateLimitedRequestAttemptUtil<String>(
-          RateLimitedRequestAttemptConfig<String>(
-            domain: _testDomain,
-            source: 'verification',
-            defaultExtraData: const {
-              'client': 'mobile',
-              'shared': 'default',
-            },
-            maxAttempts: 2,
-            timeframe: const Duration(hours: 1),
-            onRateLimitExceeded: (final session, final nonce) async {
-              rateLimitExceededNonces.add(nonce);
-            },
-          ),
-        );
 
-        await _deleteRateLimitAttempts(session);
+        await _deleteTestAttempts(session);
       });
 
       tearDown(() async {
-        await _deleteRateLimitAttempts(session);
+        await _deleteTestAttempts(session);
       });
 
-      group('Given default metadata and request metadata for an attempt, ', () {
-        late Map<String, String> requestMetadata;
+      group('Given a rate limiter that allows two attempts, ', () {
+        late DatabaseRateLimitedRequestAttemptUtil<String> rateLimitUtil;
 
         setUp(() {
-          rateLimitUtil = DatabaseRateLimitedRequestAttemptUtil<String>(
-            RateLimitedRequestAttemptConfig<String>(
-              domain: _testDomain,
-              source: 'verification',
-              defaultExtraData: const {
-                'client': 'mobile',
-                'shared': 'default',
-              },
-              maxAttempts: 2,
-            ),
+          rateLimitUtil = buildRateLimitUtil(
+            maxAttempts: 2,
+            onRateLimitExceeded: recordRateLimitExceeded,
           );
-          requestMetadata = const {
-            'requestId': '123',
-            'shared': 'request',
-          };
         });
 
-        test(
-          'when recording the attempt, '
-          'then it stores the attempt with merged metadata.',
-          () async {
-            await rateLimitUtil.recordAttempt(
+        group('when checking the rate limit three times for one request, ', () {
+          late List<bool> rateLimited;
+
+          setUp(() async {
+            rateLimited = [
+              for (var attempt = 0; attempt < 3; attempt++)
+                await rateLimitUtil.hasTooManyAttempts(
+                  session,
+                  nonce: 'request',
+                ),
+            ];
+          });
+
+          test(
+            'then it allows the first two checks and rate limits the third.',
+            () {
+              expect(rateLimited, [false, false, true]);
+            },
+          );
+
+          test('then it only records the two allowed attempts.', () async {
+            final attemptCount = await rateLimitUtil.countAttempts(
               session,
-              nonce: 'request-a',
-              extraData: requestMetadata,
+              nonce: 'request',
             );
 
-            final attempts = await _findAttempts(
-              session,
-              source: 'verification',
-              nonce: 'request-a',
-            );
+            expect(attemptCount, 2);
+          });
 
-            expect(attempts, hasLength(1));
-            expect(attempts.single.domain, _testDomain);
-            expect(attempts.single.source, 'verification');
-            expect(attempts.single.nonce, 'request-a');
-            expect(attempts.single.extraData, {
-              'client': 'mobile',
-              'shared': 'request',
-              'requestId': '123',
+          test('then it reports the request to the rate limit callback.', () {
+            expect(rateLimitExceededNonces, ['request']);
+          });
+        });
+
+        group(
+          'when six concurrent sessions check the rate limit for one request, ',
+          () {
+            late List<bool> rateLimited;
+
+            setUp(() async {
+              rateLimited = await Future.wait([
+                for (var attempt = 0; attempt < 6; attempt++)
+                  rateLimitUtil.hasTooManyAttempts(
+                    sessionBuilder.build(),
+                    nonce: 'request',
+                  ),
+              ]);
+            });
+
+            test('then it allows exactly two of the checks.', () {
+              expect(
+                rateLimited.where((final limited) => !limited),
+                hasLength(2),
+              );
+            });
+
+            test('then it records exactly two attempts.', () async {
+              final attemptCount = await rateLimitUtil.countAttempts(
+                session,
+                nonce: 'request',
+              );
+
+              expect(attemptCount, 2);
             });
           },
         );
       });
 
       group(
-        'Given a request with no previous attempts and a two-attempt limit, ',
+        'Given a rate limit check happened inside a rolled-back caller '
+        'transaction, ',
         () {
-          late String requestNonce;
+          late DatabaseRateLimitedRequestAttemptUtil<String> rateLimitUtil;
 
           setUp(() async {
-            requestNonce = 'request-b';
-            rateLimitUtil = DatabaseRateLimitedRequestAttemptUtil<String>(
-              RateLimitedRequestAttemptConfig<String>(
-                domain: _testDomain,
-                source: 'verification',
-                maxAttempts: 2,
-                onRateLimitExceeded: (final session, final nonce) async {
-                  rateLimitExceededNonces.add(nonce);
-                },
-              ),
-            );
-            await rateLimitUtil.deleteAttempts(
-              session,
-              nonce: requestNonce,
-              olderThan: const Duration(microseconds: 0),
-            );
-          });
+            rateLimitUtil = buildRateLimitUtil(maxAttempts: 2);
 
-          test(
-            'when checking the rate limit three times, '
-            'then it allows two attempts and rate limits the third attempt.',
-            () async {
-              final firstAttemptLimited = await rateLimitUtil
-                  .hasTooManyAttempts(
-                    session,
-                    nonce: requestNonce,
-                  );
-              final secondAttemptLimited = await rateLimitUtil
-                  .hasTooManyAttempts(
-                    session,
-                    nonce: requestNonce,
-                  );
-              final thirdAttemptLimited = await rateLimitUtil
-                  .hasTooManyAttempts(
-                    session,
-                    nonce: requestNonce,
-                  );
-
-              final attemptCount = await rateLimitUtil.countAttempts(
-                session,
-                nonce: requestNonce,
-              );
-
-              expect(firstAttemptLimited, isFalse);
-              expect(secondAttemptLimited, isFalse);
-              expect(thirdAttemptLimited, isTrue);
-              expect(rateLimitExceededNonces, [requestNonce]);
-              expect(attemptCount, 2);
-            },
-          );
-        },
-      );
-
-      group(
-        'Given a rate limit check happened inside a rolled-back caller transaction, ',
-        () {
-          setUp(() async {
             try {
               await session.db.transaction((final transaction) async {
                 await rateLimitUtil.hasTooManyAttempts(
                   session,
-                  nonce: 'request-c',
+                  nonce: 'request',
                 );
 
                 throw _ExpectedRollbackException();
@@ -193,7 +227,7 @@ void main() {
             () async {
               final attemptCount = await rateLimitUtil.countAttempts(
                 session,
-                nonce: 'request-c',
+                nonce: 'request',
               );
 
               expect(attemptCount, 1);
@@ -202,270 +236,182 @@ void main() {
         },
       );
 
-      group(
-        'Given a request has one attempt outside the timeframe and one inside it, ',
-        () {
-          late DateTime now;
+      test(
+        'Given a rate limiter that allows one attempt and has no rate limit '
+        'callback, '
+        'when checking the rate limit twice for one request, '
+        'then the second check reports the request as rate limited.',
+        () async {
+          final rateLimitUtil = buildRateLimitUtil(maxAttempts: 1);
 
-          setUp(() async {
-            rateLimitUtil = DatabaseRateLimitedRequestAttemptUtil<String>(
-              RateLimitedRequestAttemptConfig<String>(
-                domain: _testDomain,
-                source: 'verification',
-                timeframe: const Duration(hours: 1),
-              ),
-            );
-            now = DateTime.utc(2026, 1, 1, 12);
-
-            await withClock(
-              Clock.fixed(now.subtract(const Duration(hours: 2))),
-              () => rateLimitUtil.recordAttempt(
-                session,
-                nonce: 'request-d',
-              ),
-            );
-
-            await withClock(
-              Clock.fixed(now),
-              () => rateLimitUtil.recordAttempt(
-                session,
-                nonce: 'request-d',
-              ),
-            );
-          });
-
-          test(
-            'when counting attempts for the request, '
-            'then it only counts attempts inside the timeframe.',
-            () async {
-              await withClock(Clock.fixed(now), () async {
-                final attemptCount = await rateLimitUtil.countAttempts(
-                  session,
-                  nonce: 'request-d',
-                );
-
-                expect(attemptCount, 1);
-              });
-            },
+          await rateLimitUtil.hasTooManyAttempts(session, nonce: 'request');
+          final rateLimited = await rateLimitUtil.hasTooManyAttempts(
+            session,
+            nonce: 'request',
           );
+
+          expect(rateLimited, isTrue);
         },
       );
 
       group(
-        'Given a request has old and new attempts and another request has an old attempt, ',
+        'Given a rate limiter with default extra data for every attempt, ',
         () {
-          late DateTime now;
+          late DatabaseRateLimitedRequestAttemptUtil<String> rateLimitUtil;
 
-          setUp(() async {
-            now = DateTime.utc(2026, 1, 1, 12);
-
-            await withClock(
-              Clock.fixed(now.subtract(const Duration(hours: 2))),
-              () async {
-                await rateLimitUtil.recordAttempt(
-                  session,
-                  nonce: 'request-e',
-                );
-                await rateLimitUtil.recordAttempt(
-                  session,
-                  nonce: 'other-request',
-                );
+          setUp(() {
+            rateLimitUtil = buildRateLimitUtil(
+              maxAttempts: 2,
+              defaultExtraData: const {
+                'client': 'mobile',
+                'shared': 'default',
               },
             );
-
-            await withClock(
-              Clock.fixed(now),
-              () => rateLimitUtil.recordAttempt(
-                session,
-                nonce: 'request-e',
-              ),
-            );
           });
 
           test(
-            'when deleting attempts for the request older than a duration, '
-            'then it keeps newer attempts and attempts for other requests.',
+            'when recording an attempt with request extra data, '
+            'then it stores the attempt with the request data merged over the '
+            'default data.',
             () async {
-              await withClock(Clock.fixed(now), () async {
-                final deletedAttempts = await rateLimitUtil.deleteAttempts(
-                  session,
-                  nonce: 'request-e',
-                  olderThan: const Duration(hours: 1),
-                );
+              await rateLimitUtil.recordAttempt(
+                session,
+                nonce: 'request',
+                extraData: const {
+                  'requestId': '123',
+                  'shared': 'request',
+                },
+              );
 
-                expect(deletedAttempts, 1);
+              final attempts = await _findAttempts(session, nonce: 'request');
+
+              expect(attempts, hasLength(1));
+              expect(attempts.single.domain, _testDomain);
+              expect(attempts.single.source, _testSource);
+              expect(attempts.single.nonce, 'request');
+              expect(attempts.single.extraData, {
+                'client': 'mobile',
+                'shared': 'request',
+                'requestId': '123',
               });
-
-              final targetAttempts = await _findAttempts(
-                session,
-                source: 'verification',
-                nonce: 'request-e',
-              );
-              final otherAttempts = await _findAttempts(
-                session,
-                source: 'verification',
-                nonce: 'other-request',
-              );
-
-              expect(targetAttempts, hasLength(1));
-              expect(otherAttempts, hasLength(1));
             },
           );
         },
       );
 
-      group('Given a rate limiter using UUID request identifiers, ', () {
-        late UuidValue uuidNonce;
-        late DatabaseRateLimitedRequestAttemptUtil<UuidValue> uuidRateLimitUtil;
+      test(
+        'Given a rate limiter without default extra data, '
+        'when recording an attempt without extra data, '
+        'then it stores the attempt with no extra data.',
+        () async {
+          final rateLimitUtil = buildRateLimitUtil(maxAttempts: 2);
+
+          await rateLimitUtil.recordAttempt(session, nonce: 'request');
+
+          final attempts = await _findAttempts(session, nonce: 'request');
+
+          expect(attempts, hasLength(1));
+          expect(attempts.single.extraData, isNull);
+        },
+      );
+
+      group('Given a rate limiter for UUID request identifiers, ', () {
+        late UuidValue requestId;
+        late DatabaseRateLimitedRequestAttemptUtil<UuidValue> rateLimitUtil;
 
         setUp(() {
-          uuidNonce = const Uuid().v4obj();
-          uuidRateLimitUtil = DatabaseRateLimitedRequestAttemptUtil<UuidValue>(
+          requestId = const Uuid().v4obj();
+          rateLimitUtil = DatabaseRateLimitedRequestAttemptUtil<UuidValue>(
             RateLimitedRequestAttemptConfig<UuidValue>(
               domain: _testDomain,
-              source: 'uuid_nonce',
+              source: _testSource,
               maxAttempts: 2,
             ),
           );
         });
 
         test(
-          'when recording an attempt for a UUID request identifier, '
+          'when recording an attempt, '
+          'then it stores the identifier as a JSON encoded nonce.',
+          () async {
+            await rateLimitUtil.recordAttempt(session, nonce: requestId);
+
+            final attempts = await _findAttempts(session);
+
+            expect(attempts, hasLength(1));
+            expect(attempts.single.nonce, '"${requestId.uuid}"');
+          },
+        );
+
+        test(
+          'when counting attempts after recording one, '
           'then it counts the attempt by the typed identifier.',
           () async {
-            await uuidRateLimitUtil.recordAttempt(session, nonce: uuidNonce);
+            await rateLimitUtil.recordAttempt(session, nonce: requestId);
 
-            final attemptCount = await uuidRateLimitUtil.countAttempts(
+            final attemptCount = await rateLimitUtil.countAttempts(
               session,
-              nonce: uuidNonce,
-            );
-            final attempts = await _findAttempts(
-              session,
-              source: 'uuid_nonce',
+              nonce: requestId,
             );
 
             expect(attemptCount, 1);
-            expect(attempts, hasLength(1));
-          },
-        );
-      });
-
-      group('Given a rate limiter with only a timeframe configured, ', () {
-        setUp(() {
-          rateLimitUtil = DatabaseRateLimitedRequestAttemptUtil<String>(
-            RateLimitedRequestAttemptConfig<String>(
-              domain: _testDomain,
-              source: 'verification',
-              timeframe: const Duration(hours: 1),
-              onRateLimitExceeded: (final session, final nonce) async {
-                rateLimitExceededNonces.add(nonce);
-              },
-            ),
-          );
-        });
-
-        test(
-          'when checking the rate limit repeatedly with extra data, '
-          'then it never rate limits and records every attempt with the extra data.',
-          () async {
-            for (var attempt = 0; attempt < 3; attempt++) {
-              final attemptLimited = await rateLimitUtil.hasTooManyAttempts(
-                session,
-                nonce: 'request-f',
-                extraData: const {'requestId': '123'},
-              );
-
-              expect(attemptLimited, isFalse);
-            }
-
-            final attempts = await _findAttempts(
-              session,
-              source: 'verification',
-              nonce: 'request-f',
-            );
-
-            expect(rateLimitExceededNonces, isEmpty);
-            expect(attempts, hasLength(3));
-            expect(
-              attempts.map((final attempt) => attempt.extraData),
-              everyElement({'requestId': '123'}),
-            );
           },
         );
       });
 
       group(
-        'Given a request that exhausted the attempt limit outside the timeframe, ',
+        'Given a rate limiter with a one-hour timeframe, '
+        'and a request with an attempt two hours ago and an attempt now, ',
         () {
           late DateTime now;
+          late DatabaseRateLimitedRequestAttemptUtil<String> rateLimitUtil;
 
           setUp(() async {
             now = DateTime.utc(2026, 1, 1, 12);
+            rateLimitUtil = buildRateLimitUtil(
+              timeframe: const Duration(hours: 1),
+            );
 
             await withClock(
               Clock.fixed(now.subtract(const Duration(hours: 2))),
-              () async {
-                await rateLimitUtil.recordAttempt(session, nonce: 'request-g');
-                await rateLimitUtil.recordAttempt(session, nonce: 'request-g');
-              },
+              () => rateLimitUtil.recordAttempt(session, nonce: 'request'),
+            );
+            await withClock(
+              Clock.fixed(now),
+              () => rateLimitUtil.recordAttempt(session, nonce: 'request'),
             );
           });
 
           test(
-            'when checking the rate limit inside a new timeframe, '
-            'then it allows the attempt.',
+            'when counting attempts for the request, '
+            'then it only counts the attempt inside the timeframe.',
             () async {
               await withClock(Clock.fixed(now), () async {
-                final attemptLimited = await rateLimitUtil.hasTooManyAttempts(
+                final attemptCount = await rateLimitUtil.countAttempts(
                   session,
-                  nonce: 'request-g',
+                  nonce: 'request',
                 );
 
-                expect(attemptLimited, isFalse);
-                expect(rateLimitExceededNonces, isEmpty);
+                expect(attemptCount, 1);
               });
             },
           );
-        },
-      );
-
-      group(
-        'Given a request with attempts older and newer than the configured timeframe, ',
-        () {
-          late DateTime now;
-
-          setUp(() async {
-            now = DateTime.utc(2026, 1, 1, 12);
-
-            await withClock(
-              Clock.fixed(now.subtract(const Duration(hours: 2))),
-              () => rateLimitUtil.recordAttempt(session, nonce: 'request-h'),
-            );
-
-            await withClock(
-              Clock.fixed(now),
-              () => rateLimitUtil.recordAttempt(session, nonce: 'request-h'),
-            );
-          });
 
           test(
-            'when deleting attempts without an explicit duration, '
-            'then it only deletes attempts older than the configured timeframe.',
+            'when deleting attempts for the request without an explicit '
+            'duration, '
+            'then it only deletes the attempt older than the timeframe.',
             () async {
               await withClock(Clock.fixed(now), () async {
                 final deletedAttempts = await rateLimitUtil.deleteAttempts(
                   session,
-                  nonce: 'request-h',
+                  nonce: 'request',
                 );
 
                 expect(deletedAttempts, 1);
               });
 
-              final attempts = await _findAttempts(
-                session,
-                source: 'verification',
-                nonce: 'request-h',
-              );
+              final attempts = await _findAttempts(session, nonce: 'request');
 
               expect(attempts, hasLength(1));
             },
@@ -474,106 +420,310 @@ void main() {
       );
 
       group(
-        'Given multiple requests with attempts and no timeframe configured, ',
+        'Given a request with an attempt two hours ago and an attempt now, '
+        'and another request with an attempt two hours ago, ',
         () {
           late DateTime now;
+          late DatabaseRateLimitedRequestAttemptUtil<String> rateLimitUtil;
 
           setUp(() async {
-            rateLimitUtil = DatabaseRateLimitedRequestAttemptUtil<String>(
-              RateLimitedRequestAttemptConfig<String>(
-                domain: _testDomain,
-                source: 'verification',
-                maxAttempts: 2,
-              ),
-            );
             now = DateTime.utc(2026, 1, 1, 12);
+            rateLimitUtil = buildRateLimitUtil(maxAttempts: 2);
 
             await withClock(
-              Clock.fixed(now.subtract(const Duration(minutes: 1))),
+              Clock.fixed(now.subtract(const Duration(hours: 2))),
               () async {
-                await rateLimitUtil.recordAttempt(session, nonce: 'request-i');
+                await rateLimitUtil.recordAttempt(session, nonce: 'request');
                 await rateLimitUtil.recordAttempt(
                   session,
                   nonce: 'other-request',
                 );
               },
             );
+            await withClock(
+              Clock.fixed(now),
+              () => rateLimitUtil.recordAttempt(session, nonce: 'request'),
+            );
           });
 
           test(
-            'when deleting attempts without a nonce, '
-            'then it deletes the past attempts of every request.',
+            'when deleting attempts for the request older than one hour, '
+            'then it keeps the newer attempt and the other request attempt.',
             () async {
               await withClock(Clock.fixed(now), () async {
                 final deletedAttempts = await rateLimitUtil.deleteAttempts(
                   session,
+                  nonce: 'request',
+                  olderThan: const Duration(hours: 1),
+                );
+
+                expect(deletedAttempts, 1);
+              });
+
+              final attempts = await _findAttempts(session, nonce: 'request');
+              final otherAttempts = await _findAttempts(
+                session,
+                nonce: 'other-request',
+              );
+
+              expect(attempts, hasLength(1));
+              expect(otherAttempts, hasLength(1));
+            },
+          );
+
+          test(
+            'when deleting attempts older than one hour without a nonce, '
+            'then it deletes the old attempt of every request.',
+            () async {
+              await withClock(Clock.fixed(now), () async {
+                final deletedAttempts = await rateLimitUtil.deleteAttempts(
+                  session,
+                  olderThan: const Duration(hours: 1),
                 );
 
                 expect(deletedAttempts, 2);
               });
 
-              final attempts = await _findAttempts(
-                session,
-                source: 'verification',
-              );
+              final attempts = await _findAttempts(session);
 
-              expect(attempts, isEmpty);
+              expect(attempts, hasLength(1));
+              expect(attempts.single.nonce, 'request');
             },
           );
         },
       );
 
       group(
-        'Given attempts recorded for the same nonce under a different source, ',
+        'Given a rate limiter that allows two attempts within one hour, '
+        'and a request that used both attempts two hours ago, ',
         () {
-          setUp(() async {
-            final otherSourceUtil =
-                DatabaseRateLimitedRequestAttemptUtil<String>(
-                  RateLimitedRequestAttemptConfig<String>(
-                    domain: _testDomain,
-                    source: 'other_source',
-                    maxAttempts: 2,
-                  ),
-                );
+          late DateTime now;
+          late DatabaseRateLimitedRequestAttemptUtil<String> rateLimitUtil;
 
-            await otherSourceUtil.recordAttempt(session, nonce: 'request-j');
-            await rateLimitUtil.recordAttempt(session, nonce: 'request-j');
+          setUp(() async {
+            now = DateTime.utc(2026, 1, 1, 12);
+            rateLimitUtil = buildRateLimitUtil(
+              maxAttempts: 2,
+              timeframe: const Duration(hours: 1),
+              onRateLimitExceeded: recordRateLimitExceeded,
+            );
+
+            await withClock(
+              Clock.fixed(now.subtract(const Duration(hours: 2))),
+              () async {
+                await rateLimitUtil.recordAttempt(session, nonce: 'request');
+                await rateLimitUtil.recordAttempt(session, nonce: 'request');
+              },
+            );
           });
 
           test(
-            'when counting attempts for the request, '
-            'then it does not count attempts from the other source.',
+            'when checking the rate limit now, '
+            'then it allows the attempt.',
             () async {
-              final attemptCount = await rateLimitUtil.countAttempts(
-                session,
-                nonce: 'request-j',
-              );
+              await withClock(Clock.fixed(now), () async {
+                final rateLimited = await rateLimitUtil.hasTooManyAttempts(
+                  session,
+                  nonce: 'request',
+                );
 
-              expect(attemptCount, 1);
+                expect(rateLimited, isFalse);
+                expect(rateLimitExceededNonces, isEmpty);
+              });
             },
           );
         },
       );
+
+      group('Given a rate limiter with only a one-hour timeframe, ', () {
+        late DatabaseRateLimitedRequestAttemptUtil<String> rateLimitUtil;
+
+        setUp(() {
+          rateLimitUtil = buildRateLimitUtil(
+            timeframe: const Duration(hours: 1),
+            onRateLimitExceeded: recordRateLimitExceeded,
+          );
+        });
+
+        group(
+          'when checking the rate limit three times for one request with extra '
+          'data, ',
+          () {
+            late List<bool> rateLimited;
+
+            setUp(() async {
+              rateLimited = [
+                for (var attempt = 0; attempt < 3; attempt++)
+                  await rateLimitUtil.hasTooManyAttempts(
+                    session,
+                    nonce: 'request',
+                    extraData: const {'requestId': '123'},
+                  ),
+              ];
+            });
+
+            test('then it never rate limits the request.', () {
+              expect(rateLimited, [false, false, false]);
+              expect(rateLimitExceededNonces, isEmpty);
+            });
+
+            test(
+              'then it records every attempt with the extra data.',
+              () async {
+                final attempts = await _findAttempts(session, nonce: 'request');
+
+                expect(attempts, hasLength(3));
+                expect(
+                  attempts.map((final attempt) => attempt.extraData),
+                  everyElement({'requestId': '123'}),
+                );
+              },
+            );
+          },
+        );
+      });
+
+      group('Given a request with an attempt under two sources, ', () {
+        late DateTime now;
+        late DatabaseRateLimitedRequestAttemptUtil<String> rateLimitUtil;
+
+        setUp(() async {
+          now = DateTime.utc(2026, 1, 1, 12);
+          rateLimitUtil = buildRateLimitUtil(maxAttempts: 2);
+          final otherSourceUtil = buildRateLimitUtil(
+            source: _otherSource,
+            maxAttempts: 2,
+          );
+
+          await withClock(
+            Clock.fixed(now.subtract(const Duration(minutes: 1))),
+            () async {
+              await rateLimitUtil.recordAttempt(session, nonce: 'request');
+              await otherSourceUtil.recordAttempt(session, nonce: 'request');
+            },
+          );
+        });
+
+        test(
+          'when counting attempts for the request, '
+          'then it does not count the attempt from the other source.',
+          () async {
+            final attemptCount = await rateLimitUtil.countAttempts(
+              session,
+              nonce: 'request',
+            );
+
+            expect(attemptCount, 1);
+          },
+        );
+
+        test(
+          'when deleting attempts for the request, '
+          'then it keeps the attempt from the other source.',
+          () async {
+            await withClock(Clock.fixed(now), () async {
+              final deletedAttempts = await rateLimitUtil.deleteAttempts(
+                session,
+                nonce: 'request',
+              );
+
+              expect(deletedAttempts, 1);
+            });
+
+            final attempts = await _findAttempts(session, nonce: 'request');
+            final otherSourceAttempts = await _findAttempts(
+              session,
+              source: _otherSource,
+              nonce: 'request',
+            );
+
+            expect(attempts, isEmpty);
+            expect(otherSourceAttempts, hasLength(1));
+          },
+        );
+      });
+
+      group('Given a request with an attempt under two domains, ', () {
+        late DateTime now;
+        late DatabaseRateLimitedRequestAttemptUtil<String> rateLimitUtil;
+
+        setUp(() async {
+          now = DateTime.utc(2026, 1, 1, 12);
+          rateLimitUtil = buildRateLimitUtil(maxAttempts: 2);
+          final otherDomainUtil = buildRateLimitUtil(
+            domain: _otherDomain,
+            maxAttempts: 2,
+          );
+
+          await withClock(
+            Clock.fixed(now.subtract(const Duration(minutes: 1))),
+            () async {
+              await rateLimitUtil.recordAttempt(session, nonce: 'request');
+              await otherDomainUtil.recordAttempt(session, nonce: 'request');
+            },
+          );
+        });
+
+        test(
+          'when counting attempts for the request, '
+          'then it does not count the attempt from the other domain.',
+          () async {
+            final attemptCount = await rateLimitUtil.countAttempts(
+              session,
+              nonce: 'request',
+            );
+
+            expect(attemptCount, 1);
+          },
+        );
+
+        test(
+          'when deleting attempts for the request, '
+          'then it keeps the attempt from the other domain.',
+          () async {
+            await withClock(Clock.fixed(now), () async {
+              final deletedAttempts = await rateLimitUtil.deleteAttempts(
+                session,
+                nonce: 'request',
+              );
+
+              expect(deletedAttempts, 1);
+            });
+
+            final attempts = await _findAttempts(session, nonce: 'request');
+            final otherDomainAttempts = await _findAttempts(
+              session,
+              domain: _otherDomain,
+              nonce: 'request',
+            );
+
+            expect(attempts, isEmpty);
+            expect(otherDomainAttempts, hasLength(1));
+          },
+        );
+      });
     },
   );
 }
 
-Future<void> _deleteRateLimitAttempts(final Session session) async {
+Future<void> _deleteTestAttempts(final Session session) async {
   await RateLimitedRequestAttempt.db.deleteWhere(
     session,
-    where: (final t) => t.domain.equals(_testDomain),
+    where: (final t) =>
+        t.domain.equals(_testDomain) | t.domain.equals(_otherDomain),
   );
 }
 
 Future<List<RateLimitedRequestAttempt>> _findAttempts(
   final Session session, {
-  required final String source,
+  final String domain = _testDomain,
+  final String source = _testSource,
   final String? nonce,
 }) async {
   return RateLimitedRequestAttempt.db.find(
     session,
     where: (final t) {
-      var expression = t.domain.equals(_testDomain) & t.source.equals(source);
+      var expression = t.domain.equals(domain) & t.source.equals(source);
 
       if (nonce != null) {
         expression &= t.nonce.equals(nonce);
