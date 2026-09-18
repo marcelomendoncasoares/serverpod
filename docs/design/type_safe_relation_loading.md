@@ -57,13 +57,15 @@ None of these types encode whether the relation was loaded. Unloaded access thro
 
 # Declaration contract
 
-| Model declaration | Public API | Unloaded access | Notes |
-|---|---|---|---|
-| `Company?, relation` | `Company? company` | `null` | Legacy required to-one |
-| `Company, relation` | `Company get/set company` | throws | Safe opt-in. Does not change FK nullability |
-| `Employee?, relation(optional)` | `Employee? get/set manager` | throws | Already the correct domain type. No `Employee, relation(optional)` form |
-| `List<Employee>?, relation` | `List<Employee>? reports` | `null` | Legacy to-many |
-| `List<Employee>, relation` | `List<Employee> get/set reports` | throws | Safe opt-in. Does not change the persisted schema |
+| Model declaration | Getter type | Setter type (mutable models) | Unloaded access | Notes |
+|---|---|---|---|---|
+| `Company?, relation` | `Company?` | `Company?` | `null` | Legacy required to-one |
+| `Company, relation` | `Company` | `Company` | throws | Safe opt-in. Does not change FK nullability |
+| `Employee?, relation(optional)` | `Employee?` | `Employee?` | throws | Already the correct domain type. No `Employee, relation(optional)` form |
+| `List<Employee>?, relation` | `List<Employee>?` | `List<Employee>?` | `null` | Legacy to-many |
+| `List<Employee>, relation` | `List<Employee>` | `List<Employee>` | throws | Safe opt-in. Does not change the persisted schema |
+
+Immutable models have no setters. Their write path is `copyWith`, with the same relation-state rules as the constructor/`copyWith` tables below.
 
 There is no meaningful domain-nullable collection. Once loaded, a list is either empty or contains rows, so `employee.reports.isEmpty` means loaded and empty.
 
@@ -86,7 +88,16 @@ That keeps constructors and `copyWith` typed. Undefined sentinels stay the omit/
 
 `null` is never a loading-state token. It is only a domain value, and only for optional to-one relations. Legacy required and to-many fields keep today’s `null`-means-unloaded behavior.
 
-Object-relation sentinels are generated with the target model so they remain valid across files and for sealed types. List sentinels are a generic subtype of `List<T>`. Application code omits arguments instead of naming these values.
+Sentinels are generated infrastructure, not application API. They must use a generator-reserved name that cannot collide with a model field: Dart forbids a static member whose name matches an instance member, and a field named `unloaded` or `undefined` is otherwise legal. Serverpod field names are camelCase identifiers, so a `$`-prefixed helper cannot clash:
+
+```dart
+$CompanyRelationSentinel.unloaded
+$CompanyRelationSentinel.undefined
+$UnloadedList<Employee>()
+$UndefinedList<Employee>()
+```
+
+Mark this API internal. Application code omits arguments instead of naming sentinels.
 
 This is valid Dart. Overriding `noSuchMethod` makes the compiler insert interface forwarders, so the sentinel does not reimplement every member:
 
@@ -121,29 +132,21 @@ class _UndefinedCompany extends UndefinedSentinel implements Company {
   const _UndefinedCompany();
 }
 
-class UnloadedList<T> extends UnloadedSentinel implements List<T> {
-  const UnloadedList();
+class $UnloadedList<T> extends UnloadedSentinel implements List<T> {
+  const $UnloadedList();
 }
 
-class UndefinedList<T> extends UndefinedSentinel implements List<T> {
-  const UndefinedList();
+class $UndefinedList<T> extends UndefinedSentinel implements List<T> {
+  const $UndefinedList();
 }
 
-abstract class Company {
-  factory Company({int? id, required String name}) = _CompanyImpl;
-
+class $CompanyRelationSentinel {
   static const Company unloaded = _UnloadedCompany();
   static const Company undefined = _UndefinedCompany();
-
-  int? id;
-  String name;
-
-  Company copyWith({int? id, String? name});
-  Map<String, dynamic> toJson();
 }
 ```
 
-`Company.unloaded` is a `Company`, so it is a legal default for a `Company` parameter. `Employee(company: null)` is a compile-time error.
+`$CompanyRelationSentinel.unloaded` is a `Company`, so it is a legal default for a `Company` parameter. `Employee(company: null)` is a compile-time error.
 
 One generator constraint: redirecting factories (`factory Employee(...) = _EmployeeImpl`) cannot declare default values. The public constructor must be a forwarding factory so the typed sentinel default can sit on the public signature:
 
@@ -151,9 +154,9 @@ One generator constraint: redirecting factories (`factory Employee(...) = _Emplo
 abstract class Employee {
   factory Employee({
     required String name,
-    Company company = Company.unloaded,
-    Employee? manager = Employee.unloaded,
-    List<Employee> reports = const UnloadedList<Employee>(),
+    Company company = $CompanyRelationSentinel.unloaded,
+    Employee? manager = $EmployeeRelationSentinel.unloaded,
+    List<Employee> reports = const $UnloadedList<Employee>(),
   }) {
     return _EmployeeImpl(
       name: name,
@@ -162,43 +165,68 @@ abstract class Employee {
       reports: reports,
     );
   }
-
-  static const Employee unloaded = _UnloadedEmployee();
-  static const Employee undefined = _UndefinedEmployee();
 }
 ```
 
 ---
 
+# Sentinel argument rules
+
+Because typed sentinels are values of the parameter type, generated code must define what happens if one is passed explicitly.
+
+| Surface | Unloaded sentinel | Undefined sentinel | Domain `null` | Domain value |
+|---|---|---|---|---|
+| Constructor / omit | Unloaded (same as omission) | `ArgumentError` | Optional only: `loaded(null)` | Loaded |
+| `copyWith` / omit | Restore unloaded (generated) | Preserve current state | Optional only: `loaded(null)` | Loaded |
+| Public setter | `ArgumentError` | `ArgumentError` | Optional only: `loaded(null)` | Loaded |
+
+Public relation setters accept only domain values. Any generated unloaded or undefined sentinel passed through a setter throws `ArgumentError`. That applies to required, optional, and to-many relations.
+
+`undefined` is only meaningful to `copyWith`. Constructors must reject it.
+
+Application code must not rely on naming either sentinel.
+
+---
+
 # Generated implementation
 
-All three safe/optional categories use the same backing-field pattern. Storage stays typed:
+Getters throw when the relation is unloaded. Public setters (mutable models only) reject every sentinel:
 
 ```dart
-Company _company = Company.unloaded;
-
 Company get company {
-  if (_company is UnloadedSentinel) {
+  if (_isUnloaded(_company)) {
     throw RelationNotLoadedException(
       model: 'Employee',
       relation: 'company',
     );
   }
 
-  return _company;
+  return _company as Company;
 }
 
 set company(Company value) {
+  if (value is UnloadedSentinel || value is UndefinedSentinel) {
+    throw ArgumentError.value(value, 'company');
+  }
   _company = value;
+}
+
+set manager(Employee? value) {
+  if (value is UnloadedSentinel || value is UndefinedSentinel) {
+    throw ArgumentError.value(value, 'manager');
+  }
+  _manager = value;
 }
 ```
 
-The public field types follow the declaration table. Assigning through a setter always marks the relation as loaded.
+`employee.reports = []` is loaded empty, not unloaded. `employee.manager = null` is `loaded(null)`, not unloaded. `employee.manager = $EmployeeRelationSentinel.unloaded` throws.
 
-- Safe required / to-many setters do not accept `null`. `employee.reports = []` is loaded empty, not unloaded. Because an unloaded sentinel is a subtype of the field type, generated setters should reject it rather than store it as a loaded value.
-- The optional setter is `Employee?`, so `employee.manager = null` is `loaded(null)`, not unloaded.
+The exact storage representation is not part of the contract. An unloaded state must never be observable as a domain `null` through a safe relation getter. Optional to-one relations must internally distinguish unloaded from `loaded(null)`. Required and to-many relations may encode unloaded as internal `null`, because `null` is not a domain value for those fields:
 
-The precise storage layout is not part of the contract, but unloaded state must not be encoded as `null`.
+```dart
+Company? _company; // null = unloaded is safe for required to-one
+List<Employee>? _reports; // null = unloaded is safe for to-many
+```
 
 ---
 
@@ -208,21 +236,24 @@ Safe and optional parameters default to a same-type unloaded sentinel, so omissi
 
 ```dart
 Employee({
-  Company company = Company.unloaded,
-  Employee? manager = Employee.unloaded,
-  List<Employee> reports = const UnloadedList<Employee>(),
+  Company company = $CompanyRelationSentinel.unloaded,
+  Employee? manager = $EmployeeRelationSentinel.unloaded,
+  List<Employee> reports = const $UnloadedList<Employee>(),
 });
 ```
 
 | Argument | Required to-one | Optional to-one | To-many |
 |---|---|---|---|
 | omitted / unloaded sentinel | unloaded | unloaded | unloaded |
+| undefined sentinel | `ArgumentError` | `ArgumentError` | `ArgumentError` |
 | `null` | compile-time error | `loaded(null)` | compile-time error |
 | domain value | `loaded(Company)` | `loaded(Employee)` | `loaded(list)`, including `[]` |
 
 `Employee(company: company)` and `Employee(reports: [])` are loaded. `Employee(manager: null)` is `loaded(null)`. `Employee(company: null)` and `Employee(reports: null)` do not compile.
 
-Legacy constructors are unchanged. ORM hydration uses the unloaded sentinel when a relation was not included in the query.
+For optional relations, omission meaning unloaded while `manager: null` means `loaded(null)` is intentional: absence of an argument means the relation was not populated; explicit `null` means it is known to have no value. That is a behavior change for manually constructed objects; see Migration.
+
+Legacy constructors are unchanged. ORM hydration uses the same unloaded representation the implementation uses internally.
 
 ---
 
@@ -232,19 +263,28 @@ Legacy constructors are unchanged. ORM hydration uses the unloaded sentinel when
 
 ```dart
 copyWith({
-  Company company = Company.undefined,
-  Employee? manager = Employee.undefined,
-  List<Employee> reports = const UndefinedList<Employee>(),
+  Company company = $CompanyRelationSentinel.undefined,
+  Employee? manager = $EmployeeRelationSentinel.undefined,
+  List<Employee> reports = const $UndefinedList<Employee>(),
 });
 ```
 
-Argument semantics are the constructor table, except omitted / undefined **keeps the current state** instead of becoming unloaded. Generated code may pass the unloaded sentinel to restore unloaded state.
+Omitted relations preserve their loaded/unloaded state and otherwise retain Serverpod's existing `copyWith` deep-copy semantics. Unloaded stays unloaded; `loaded(null)` stays `loaded(null)`; a loaded related model remains loaded and is copied according to existing `copyWith` behavior.
+
+| Argument | Result |
+|---|---|
+| omitted / undefined sentinel | Preserve current loading state; deep-copy if loaded |
+| unloaded sentinel | Restore unloaded (generated / internal) |
+| `null` | Optional only: `loaded(null)`. Invalid for required and to-many |
+| domain value | Loaded with that value (deep-copied per existing rules) |
 
 ```dart
 employee.copyWith();                 // preserves unloaded optional manager
 employee.copyWith(manager: null);    // loaded(null)
 employee.copyWith(reports: []);      // loaded empty
 ```
+
+Immutable models use this same `copyWith` contract; they have no relation setters.
 
 Legacy `copyWith` is unchanged. `Company?` and `List<Employee>?` legacy fields are not reinterpreted as safe relations.
 
@@ -309,7 +349,7 @@ The message may also tell the user to include the relation when querying. Legacy
 
 # Serialization
 
-Serialization must preserve loading state and inspect raw internal state, including unloaded sentinels.
+Serialization must preserve loading state and inspect raw internal state rather than throwing getters.
 
 | State | Wire |
 |---|---|
@@ -318,6 +358,11 @@ Serialization must preserve loading state and inspect raw internal state, includ
 | loaded value | field present with serialized value |
 
 An empty list serializes as a present empty collection, not as an omitted field. Deserializing an unloaded optional relation must not turn it into `loaded(null)`. The exact encoding is an implementation detail.
+
+Wire compatibility with existing Serverpod payloads is asymmetric. Today, generated serialization commonly omits nullable fields when they are null, so an old sender cannot distinguish “optional relation included and null” from “not included.”
+
+- **New sender → old receiver** degrades naturally: old code treats both an explicit `null` and an absent key as `null`.
+- **Old sender → new receiver** cannot reliably reconstruct `loaded(null)` versus `unloaded`. Implementation must pick a versioning constraint or a compatibility strategy for that direction; the new state model cannot recover information the old payload does not carry.
 
 ---
 
@@ -361,10 +406,32 @@ employee.manager == null;       // loaded and absent, or throws if unloaded
 for (final report in employee.reports) { ... }  // was employee.reports!
 ```
 
+Optional `relation(optional)` fields start throwing when accessed while unloaded. That is an intentional behavioral correction, including for manually constructed objects:
+
+```dart
+Employee(name: 'Ada');                 // manager is unloaded; employee.manager throws
+Employee(name: 'Ada', manager: null);  // manager is loaded(null); employee.manager == null
+```
+
+Previously both were indistinguishable `null`.
+
 ---
 
 # Resulting rule
 
 > **Use nullability to describe actual domain nullability. Where existing Serverpod syntax uses nullability solely to represent unloaded state, retain that syntax as a legacy mode and allow users to opt into the safer non-nullable form.**
 
-For optional to-one relations, `?` already represents real domain nullability, so the existing syntax becomes the safe contract directly. For safe and optional relations, unloaded state is a typed unloaded sentinel, not `null`.
+For optional to-one relations, `?` already represents real domain nullability, so the existing syntax becomes the safe contract directly.
+
+```text
+Legacy required T?       null = unloaded
+Safe required T          unloaded -> throws
+
+Optional T?              unloaded -> throws
+                         loaded(null) -> null
+                         loaded(T) -> T
+
+Legacy to-many List<T>?  null = unloaded
+Safe to-many List<T>     unloaded -> throws
+                         loaded empty -> []
+```
