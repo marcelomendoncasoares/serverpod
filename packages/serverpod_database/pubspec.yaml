@@ -22,7 +22,7 @@ dependencies:
   serverpod_serialization: 4.1.0-beta.1
   serverpod_shared: 4.1.0-beta.1
   sqlite3: ^3.3.1
-  sqlite_async: ^0.14.1
+  sqlite_async: ^0.14.4
   sqlparser: ^0.44.3
 
 dev_dependencies:
