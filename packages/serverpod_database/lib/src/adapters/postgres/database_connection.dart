@@ -799,17 +799,20 @@ class PostgresDatabaseConnection
       context: _resolveQueryContext(transaction),
     );
 
-    return result.map((row) {
-      return {
-        for (final entry in row.toColumnMap().entries)
-          // Serverpod serialization already knows the type of the target
-          // class, so we can remove `UndecodedBytes` here to avoid the
-          // dependency of serverpod_serialization on the `postgres` package.
-          entry.key: entry.value is pg.UndecodedBytes
-              ? (entry.value as pg.UndecodedBytes).bytes
-              : entry.value,
-      };
-    });
+    var columnNames = [
+      for (var (index, column) in result.schema.columns.indexed)
+        column.columnName ?? '[$index]',
+    ];
+
+    // Build the normalized map directly, without an intermediate column map.
+    // Keep single-pass consumers lazy so large reads do not retain extra maps.
+    return result.map(
+      (row) => {
+        for (var (index, value) in row.indexed)
+          // Serialization knows the target type without depending on postgres.
+          columnNames[index]: value is pg.UndecodedBytes ? value.bytes : value,
+      },
+    );
   }
 
   Future<pg.Session> _resolveQueryContext(Transaction? transaction) async {
@@ -831,6 +834,9 @@ class PostgresDatabaseConnection
       timeoutInSeconds: timeoutInSeconds,
       transaction: transaction,
     );
+
+    // Includes traverse these rows to collect relation ids before deserializing.
+    if (include != null) result = result.toList();
 
     var resolvedListRelations = await _queryIncludedLists(
       session,
@@ -967,11 +973,11 @@ class PostgresDatabaseConnection
             .withInclude(nestedInclude.include)
             .build();
 
-        var includeListResult = await _mappedResultsQuery(
+        var includeListResult = (await _mappedResultsQuery(
           session,
           query,
           transaction: transaction,
-        );
+        )).toList();
 
         var resolvedLists = await _queryIncludedLists(
           session,

@@ -44,6 +44,9 @@ Times are medians in milliseconds for the whole workload. Raw samples are in
 | Build insert fragments once | Build SQL for 1,000 rows with 4 KiB text | 97.330 | 54.007 | 1.80x faster CPU construction |
 | Build insert fragments once | Same batch with mixed explicit/generated IDs | 124.427 | 53.501 | 2.33x faster CPU construction |
 | Build insert fragments once | Insert 1,000 wide rows, no return | 179.028 | 136.752 | 23.6% lower elapsed time |
+| Direct result maps | Find 10,000 rows | 49.603 | 46.722 | Small, overlapping samples |
+| Direct result maps | Read 10,000 parents with a city and children | 317.936 | 295.041 | 7.2% lower median, overlapping samples |
+| Direct result maps | Update 10,000 rows with returning | 142.711 | 142.438 | No clear timing gain |
 
 Benchmark invocation from the repository root (choose one workload):
 
@@ -57,3 +60,10 @@ The harness creates and removes its own embedded PostgreSQL cluster. Database
 measurements retain default durability settings. No tests run concurrently with
 the timings. The large insert includes apostrophes and backslashes and checks
 that stored text round-trips unchanged.
+
+Result mapping now allocates one map instead of two per normalization and reuses
+maps during include traversal. An initial eager variant retained maps even for
+single-pass reads and measured 66.157 ms for the plain 10,000-row read; it was
+replaced with lazy mapping for single-pass consumers. Small timing changes are
+not evidence of a reliable end-to-end speedup, although the redundant map
+allocation and repeated include normalization are removed.
