@@ -375,6 +375,61 @@
           ]
         }
       ]
+    },
+    {
+      "change": "Batch PostgreSQL catalog analysis",
+      "before": [
+        {
+          "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+          "postgres": "PostgreSQL 16.13 on x86_64-pc-linux-gnu, compiled by clang version 21.1.0, 64-bit"
+        },
+        {
+          "case": "analyze_104_tables",
+          "median_ms": 532.453,
+          "samples_ms": [
+            603.811,
+            614.025,
+            574.321,
+            524.035,
+            567.671,
+            561.735,
+            532.453,
+            502.847,
+            510.168,
+            508.636,
+            504.282
+          ]
+        },
+        {
+          "catalog_queries": 313
+        }
+      ],
+      "after": [
+        {
+          "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+          "postgres": "PostgreSQL 16.13 on x86_64-pc-linux-gnu, compiled by clang version 21.1.0, 64-bit"
+        },
+        {
+          "case": "analyze_104_tables",
+          "median_ms": 26.208,
+          "samples_ms": [
+            30.953,
+            26.975,
+            29.02,
+            27.343,
+            25.534,
+            22.874,
+            23.651,
+            26.208,
+            22.941,
+            23.454,
+            27.468
+          ]
+        },
+        {
+          "catalog_queries": 4
+        }
+      ]
     }
   ]
 }

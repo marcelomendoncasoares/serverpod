@@ -22,51 +22,61 @@ class PostgresDatabaseAnalyzer extends DatabaseAnalyzer {
       // Get list of all tables and the schema they are in, excluding
       // tables that are owned by an extension (e.g. PostGIS spatial_ref_sys).
       '''
-SELECT t.schemaname, t.tablename
+SELECT t.schemaname, t.tablename, c.oid::bigint
 FROM pg_catalog.pg_tables t
+JOIN pg_namespace n ON n.nspname = t.schemaname
+JOIN pg_class c ON c.relnamespace = n.oid AND c.relname = t.tablename
 WHERE t.schemaname != 'pg_catalog' AND t.schemaname != 'information_schema'
 AND NOT EXISTS (
   SELECT 1
   FROM pg_depend d
-  JOIN pg_class c ON c.oid = d.objid
-  JOIN pg_namespace n ON n.oid = c.relnamespace
   WHERE d.deptype = 'e'
     AND d.classid = 'pg_class'::regclass
-    AND c.relname = t.tablename
-    AND n.nspname = t.schemaname
+    AND d.objid = c.oid
 );
 ''',
     );
 
-    return await Future.wait(
-      tableSchemas.map((tableSchema) async {
-        var schemaName = tableSchema.first;
-        var tableName = tableSchema.last;
+    if (tableSchemas.isEmpty) return [];
 
-        var columns = getColumnDefinitions(
-          schemaName: schemaName,
-          tableName: tableName,
-        );
+    // Bind the selected table identities once per catalog query. OIDs keep
+    // same-named tables in different schemas separate without quoting names.
+    var parameters = QueryParameters.positional([
+      tableSchemas.map((table) => table[2] as int).toList(),
+    ]);
+    var results = await Future.wait([
+      _queryColumns(r'c.oid = ANY($1::bigint[]::oid[])', parameters),
+      _queryForeignKeys(r't.oid = ANY($1::bigint[]::oid[])', parameters),
+      _queryIndexes(r't.oid = ANY($1::bigint[]::oid[])', parameters),
+    ]);
 
-        var foreignKeys = getForeignKeyDefinitions(
-          schemaName: schemaName,
-          tableName: tableName,
-        );
+    var columns = _groupDefinitions(results[0], _parseColumn);
+    var foreignKeys = _groupDefinitions(results[1], _parseForeignKey);
+    var indexes = _groupDefinitions(results[2], _parseIndex);
 
-        var indexes = getIndexDefinitions(
-          schemaName: schemaName,
-          tableName: tableName,
-        );
+    return [
+      for (var table in tableSchemas)
+        TableDefinition(
+          name: table[1] as String,
+          schema: table[0] as String,
+          columns: columns[table[2]] ?? [],
+          foreignKeys: foreignKeys[table[2]] ?? [],
+          indexes: indexes[table[2]] ?? [],
+        ),
+    ];
+  }
 
-        return TableDefinition(
-          name: tableName,
-          schema: schemaName,
-          columns: await columns,
-          foreignKeys: await foreignKeys,
-          indexes: await indexes,
-        );
-      }),
-    );
+  Map<int, List<T>> _groupDefinitions<T>(
+    DatabaseResult rows,
+    T Function(DatabaseResultRow) parse,
+  ) {
+    var definitions = <int, List<T>>{};
+
+    for (var row in rows) {
+      definitions.putIfAbsent(row.last as int, () => []).add(parse(row));
+    }
+
+    return definitions;
   }
 
   @override
@@ -74,12 +84,23 @@ AND NOT EXISTS (
     required String schemaName,
     required String tableName,
   }) async {
+    var rows = await _queryColumns(
+      r'n.nspname = $1 AND c.relname = $2',
+      QueryParameters.positional([schemaName, tableName]),
+    );
+    return rows.map(_parseColumn).toList();
+  }
+
+  Future<DatabaseResult> _queryColumns(
+    String filter,
+    QueryParameters parameters,
+  ) async {
     final vectorTypes = VectorColumnType.vectorTypes
         .map((e) => "'${e.name}'")
         .join(', ');
 
-    var queryResult = await database.unsafeQuery(
-      // Get the columns of this table and sort them based on their position.
+    return database.unsafeQuery(
+      // Keep information_schema column visibility and physical order per table.
       '''
 SELECT column_name, column_default, is_nullable,
        CASE
@@ -95,29 +116,30 @@ SELECT column_name, column_default, is_nullable,
          WHEN (data_type = 'USER-DEFINED') THEN udt_name
          ELSE data_type
        END as data_type,
-       CASE WHEN (udt_name IN ($vectorTypes)) THEN a.atttypmod ELSE NULL END as vector_size
+       CASE WHEN (udt_name IN ($vectorTypes)) THEN a.atttypmod ELSE NULL END as vector_size,
+       c.oid::bigint
 FROM information_schema.columns
-  LEFT JOIN pg_catalog.pg_attribute a ON a.attname = column_name
-  LEFT JOIN pg_catalog.pg_class c ON c.oid = a.attrelid
-  LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-WHERE table_schema = '$schemaName' AND table_name = '$tableName'
-  AND n.nspname = '$schemaName' AND c.relname = '$tableName'
-ORDER BY ordinal_position;
+JOIN pg_catalog.pg_namespace n ON n.nspname = table_schema
+JOIN pg_catalog.pg_class c ON c.relnamespace = n.oid AND c.relname = table_name
+JOIN pg_catalog.pg_attribute a ON a.attrelid = c.oid AND a.attname = column_name
+WHERE $filter
+ORDER BY c.oid, ordinal_position;
 ''',
+      parameters: parameters,
     );
+  }
 
-    return queryResult.map((e) {
-      var columnType = ExtendedColumnType.fromSqlType(e[3]);
+  ColumnDefinition _parseColumn(DatabaseResultRow e) {
+    var columnType = ExtendedColumnType.fromSqlType(e[3]);
 
-      return ColumnDefinition(
-        name: e[0] as String,
-        columnDefault: pgSqlToAbstractDefault(e[1] as String?, columnType),
-        columnType: columnType,
-        // SQL outputs YES or NO. So we have to convert it to a bool manually.
-        isNullable: e[2] == 'YES',
-        vectorDimension: e[4],
-      );
-    }).toList();
+    return ColumnDefinition(
+      name: e[0] as String,
+      columnDefault: pgSqlToAbstractDefault(e[1] as String?, columnType),
+      columnType: columnType,
+      // SQL outputs YES or NO. So we have to convert it to a bool manually.
+      isNullable: e[2] == 'YES',
+      vectorDimension: e[4],
+    );
   }
 
   @override
@@ -125,7 +147,18 @@ ORDER BY ordinal_position;
     required String schemaName,
     required String tableName,
   }) async {
-    var queryResult = await database.unsafeQuery(
+    var rows = await _queryIndexes(
+      r'n.nspname = $1 AND t.relname = $2',
+      QueryParameters.positional([schemaName, tableName]),
+    );
+    return rows.map(_parseIndex).toList();
+  }
+
+  Future<DatabaseResult> _queryIndexes(
+    String filter,
+    QueryParameters parameters,
+  ) async {
+    return database.unsafeQuery(
       // We want to get the name (0), tablespace (1), isUnique (2), isPrimary (3),
       // nullsDistinct (4), elements (5), isElementAColumn (6), predicate (7)
       // and type (8) of each index for this table.
@@ -136,11 +169,9 @@ ORDER BY ordinal_position;
       //
       // Most information is stored in pg_index.
       //
-      // Since we only know the name of our table and not the oid, we have to
-      // include pg_class in order to filter. Since we need pg_class twice, we name it t (table).
+      // Join pg_class for table filters and for grouping results by table OID.
       //
-      // Since we only know the name of our namespace / schema and not the oid, we have to
-      // include pg_namespace in order to filter. Name it n (namespace) to avoid duplicate column names.
+      // Join pg_namespace for the single-table schema/name filter.
       //
       // The name of the index and the tablespace are not stored in pg_index.
       // So we join pg_class again. Name it i (index).
@@ -154,7 +185,7 @@ ORDER BY ordinal_position;
       // For pgvector indexes, the operator class contains the distance metric information.
       // Extract this information using the pg_opclass table and joining with the indclass from pg_index.
       //
-      // Filter for the current table.
+      // Filter for the requested tables and omit primary indexes.
       //
       // In the first ARRAY, generate_subscripts generates us the indexes for the values of indkey. (In the first dimension.)
       // Then pg_get_indexdef gives us the name name of the column or the expression of the
@@ -177,101 +208,100 @@ ARRAY(
        FROM unnest(indclass::oid[]) WITH ORDINALITY AS ind_class(indclass, ord)
        JOIN pg_opclass oc ON oc.oid = ind_class.indclass
        ORDER BY ind_class.ord
-       )::text[] as opclass_names
+       )::text[] as opclass_names, t.oid::bigint
 FROM pg_index
 JOIN pg_class t ON t.oid = indrelid
 JOIN pg_namespace n ON n.oid = t.relnamespace
 JOIN pg_class i ON i.oid = indexrelid
 LEFT JOIN pg_tablespace as ts ON i.reltablespace = ts.oid
 JOIN pg_am am ON am.oid=i.relam
-WHERE t.relname = '$tableName' AND n.nspname = '$schemaName';
+WHERE ($filter) AND NOT indisprimary;
 ''',
+      parameters: parameters,
     );
+  }
 
-    var indexes = queryResult.map((index) {
-      var indkeyNames = index[5];
-      var indkeyIsColumn = index[6];
-      if (indkeyNames is! List<String> || indkeyIsColumn is! List<bool>) {
-        throw Exception('Failed to parse index definition.');
-      }
+  IndexDefinition _parseIndex(DatabaseResultRow index) {
+    var indkeyNames = index[5];
+    var indkeyIsColumn = index[6];
+    if (indkeyNames is! List<String> || indkeyIsColumn is! List<bool>) {
+      throw Exception('Failed to parse index definition.');
+    }
 
-      var parameters = <String, String>{};
-      GinOperatorClass? ginOperatorClass;
-      VectorDistanceFunction? vectorDistanceFunction;
-      ColumnType? vectorColumnType;
+    var parameters = <String, String>{};
+    GinOperatorClass? ginOperatorClass;
+    VectorDistanceFunction? vectorDistanceFunction;
+    ColumnType? vectorColumnType;
 
-      final indexType = index[8] as String;
-      final isGin = indexType == 'gin';
-      final isPgVector = ['hnsw', 'ivfflat'].contains(indexType);
-      if (isGin || isPgVector) {
-        if (isPgVector) {
-          // Parse index parameters from reloptions
-          var reloptions = index[9];
-          if (reloptions != null && reloptions is List<String>) {
-            for (var option in reloptions) {
-              var parts = option.split('=');
-              if (parts.length == 2) {
-                parameters[parts[0]] = parts[1];
-              }
-            }
-          }
-        }
-
-        // Extract data from operator class
-        var opclassNames = index[10];
-        if (opclassNames is List<String> && opclassNames.isNotEmpty) {
-          if (isGin) {
-            // For gin, the first operator class contains the gin operator class name
-            ginOperatorClass = opclassNames.first.toGinOperatorClass();
-          } else if (isPgVector) {
-            final opClassRegex = RegExp(r'(\w+)_(\w+)_ops');
-            final match = opClassRegex.firstMatch(opclassNames[0]);
-
-            if (match != null && match.groupCount >= 1) {
-              // Extract pgvector distance metric from operator class
-              // For pgvector, the first operator class contains the distance metric
-              vectorColumnType = VectorColumnType.vectorTypes
-                  .where((c) => c.name == match.group(1))
-                  .firstOrNull;
-
-              var distanceMetric = match.group(2)!;
-              if (distanceMetric == 'ip') distanceMetric = 'innerProduct';
-              vectorDistanceFunction = VectorDistanceFunction.values
-                  .where((e) => e.name == distanceMetric)
-                  .firstOrNull;
+    final indexType = index[8] as String;
+    final isGin = indexType == 'gin';
+    final isPgVector = ['hnsw', 'ivfflat'].contains(indexType);
+    if (isGin || isPgVector) {
+      if (isPgVector) {
+        // Parse index parameters from reloptions
+        var reloptions = index[9];
+        if (reloptions != null && reloptions is List<String>) {
+          for (var option in reloptions) {
+            var parts = option.split('=');
+            if (parts.length == 2) {
+              parameters[parts[0]] = parts[1];
             }
           }
         }
       }
 
-      return IndexDefinition(
-        indexName: index[0],
-        tableSpace: index[1],
-        elements: List.generate(
-          indkeyNames.length,
-          (i) => IndexElementDefinition(
-            type: indkeyIsColumn[i]
-                ? IndexElementDefinitionType.column
-                : IndexElementDefinitionType.expression,
-            definition: indkeyNames[i].removeSurroundingQuotes,
-          ),
+      // Extract data from operator class
+      var opclassNames = index[10];
+      if (opclassNames is List<String> && opclassNames.isNotEmpty) {
+        if (isGin) {
+          // For gin, the first operator class contains the gin operator class name
+          ginOperatorClass = opclassNames.first.toGinOperatorClass();
+        } else if (isPgVector) {
+          final opClassRegex = RegExp(r'(\w+)_(\w+)_ops');
+          final match = opClassRegex.firstMatch(opclassNames[0]);
+
+          if (match != null && match.groupCount >= 1) {
+            // Extract pgvector distance metric from operator class
+            // For pgvector, the first operator class contains the distance metric
+            vectorColumnType = VectorColumnType.vectorTypes
+                .where((c) => c.name == match.group(1))
+                .firstOrNull;
+
+            var distanceMetric = match.group(2)!;
+            if (distanceMetric == 'ip') distanceMetric = 'innerProduct';
+            vectorDistanceFunction = VectorDistanceFunction.values
+                .where((e) => e.name == distanceMetric)
+                .firstOrNull;
+          }
+        }
+      }
+    }
+
+    return IndexDefinition(
+      indexName: index[0],
+      tableSpace: index[1],
+      elements: List.generate(
+        indkeyNames.length,
+        (i) => IndexElementDefinition(
+          type: indkeyIsColumn[i]
+              ? IndexElementDefinitionType.column
+              : IndexElementDefinitionType.expression,
+          definition: indkeyNames[i].removeSurroundingQuotes,
         ),
-        type: index[8],
-        isUnique: index[2],
-        nullsDistinct: index[4],
-        isPrimary: index[3],
-        // ISSUE(https://github.com/serverpod/serverpod/issues/716):
-        // Maybe unquote in the future. Should be considered when Serverpod
-        // introduces partial indexes.
-        predicate: index[7],
-        ginOperatorClass: ginOperatorClass,
-        vectorDistanceFunction: vectorDistanceFunction,
-        vectorColumnType: vectorColumnType,
-        parameters: parameters.isEmpty ? null : parameters,
-      );
-    }).toList();
-
-    return indexes.where((index) => !index.isPrimary).toList();
+      ),
+      type: index[8],
+      isUnique: index[2],
+      nullsDistinct: index[4],
+      isPrimary: index[3],
+      // ISSUE(https://github.com/serverpod/serverpod/issues/716):
+      // Maybe unquote in the future. Should be considered when Serverpod
+      // introduces partial indexes.
+      predicate: index[7],
+      ginOperatorClass: ginOperatorClass,
+      vectorDistanceFunction: vectorDistanceFunction,
+      vectorColumnType: vectorColumnType,
+      parameters: parameters.isEmpty ? null : parameters,
+    );
   }
 
   @override
@@ -279,7 +309,18 @@ WHERE t.relname = '$tableName' AND n.nspname = '$schemaName';
     required String schemaName,
     required String tableName,
   }) async {
-    var queryResult = await database.unsafeQuery(
+    var rows = await _queryForeignKeys(
+      r'nt.nspname = $1 AND t.relname = $2',
+      QueryParameters.positional([schemaName, tableName]),
+    );
+    return rows.map(_parseForeignKey).toList();
+  }
+
+  Future<DatabaseResult> _queryForeignKeys(
+    String filter,
+    QueryParameters parameters,
+  ) async {
+    return database.unsafeQuery(
       // We want to get the constraint name (0), on update type (1),
       // on delete type (2), match type (3), whether the constraint is
       // deferrable (4), whether it is initially deferred (5),
@@ -307,34 +348,33 @@ ARRAY(
        SELECT attname::text
        FROM unnest(confkey) as i
        JOIN pg_attribute ON attrelid = r.oid AND attnum = i
-       ) as confkey
+       ) as confkey, t.oid::bigint
 FROM pg_constraint
 JOIN pg_class t ON t.oid = conrelid
 JOIN pg_class r ON r.oid = confrelid
 JOIN pg_namespace nt ON nt.oid = t.relnamespace
 JOIN pg_namespace nr ON nr.oid = r.relnamespace
-WHERE contype = 'f' AND t.relname = '$tableName' AND nt.nspname = '$schemaName';
+WHERE contype = 'f' AND ($filter);
 ''',
+      parameters: parameters,
     );
+  }
 
-    return queryResult
-        .map(
-          (key) => ForeignKeyDefinition(
-            constraintName: key[0],
-            columns: key[6],
-            referenceTable: key[7],
-            referenceTableSchema: key[8],
-            referenceColumns: key[9],
-            onUpdate: (key[1] as String).toForeignKeyAction(),
-            onDelete: (key[2] as String).toForeignKeyAction(),
-            matchType: (key[3] as String).toForeignKeyMatchType(),
-            deferrable: _deferrableConstraint(
-              isDeferrable: key[4] as bool,
-              isInitiallyDeferred: key[5] as bool,
-            ),
-          ),
-        )
-        .toList();
+  ForeignKeyDefinition _parseForeignKey(DatabaseResultRow key) {
+    return ForeignKeyDefinition(
+      constraintName: key[0],
+      columns: key[6],
+      referenceTable: key[7],
+      referenceTableSchema: key[8],
+      referenceColumns: key[9],
+      onUpdate: (key[1] as String).toForeignKeyAction(),
+      onDelete: (key[2] as String).toForeignKeyAction(),
+      matchType: (key[3] as String).toForeignKeyMatchType(),
+      deferrable: _deferrableConstraint(
+        isDeferrable: key[4] as bool,
+        isInitiallyDeferred: key[5] as bool,
+      ),
+    );
   }
 
   DeferrableConstraint? _deferrableConstraint({

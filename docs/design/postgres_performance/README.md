@@ -49,6 +49,7 @@ Times are medians in milliseconds for the whole workload. Raw samples are in
 | Direct result maps | Update 10,000 rows with returning | 142.711 | 142.438 | No clear timing gain |
 | Skip unused logging | 1,000 individual reads without a logger | 454.959 | 441.061 | Small, overlapping samples |
 | Skip unused logging | Same reads with a logger (control) | 424.673 | 414.943 | Similar variation; no precise speedup claim |
+| Batch catalog metadata | Inspect 104 tables, 100 secondary indexes and 103 foreign keys | 532.453 | 26.208 | 20.32x faster; 313 queries become 4 |
 
 Benchmark invocation from the repository root (choose one workload):
 
@@ -74,3 +75,15 @@ The logging guard avoids an unused stack trace and duration computation only
 when `DatabaseSession.logQuery` is null. The enabled-logger control varies by a
 similar amount, so the measurements do not establish a reliable percentage gain.
 The benchmark verifies all 16,000 enabled callbacks (warmups plus samples).
+
+Catalog analysis binds selected table OIDs and groups each metadata result by
+OID. Column queries still use `information_schema.columns`, preserving column
+visibility under restricted roles. Per-table methods share the same parsers and
+bind schema/table names, which also fixes the previous interpolation failure for
+names containing apostrophes. Extension-owned tables remain excluded. Queries
+retain the existing PostgreSQL version assumptions and do not cache metadata.
+
+Eight focused real-PostgreSQL regressions cover schema isolation, physical column
+order after a drop, defaults, foreign-key actions/deferral, expression and
+null-not-distinct indexes, direct/full analysis equivalence, quoted names,
+restricted column visibility, and PostGIS table exclusion/types.
