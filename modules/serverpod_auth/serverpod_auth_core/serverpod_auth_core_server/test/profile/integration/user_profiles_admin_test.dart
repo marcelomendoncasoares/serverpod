@@ -103,6 +103,41 @@ void main() {
           expect(profiles, isEmpty);
         },
       );
+
+      group('and a stored profile image,', () {
+        late Uri imageUrl;
+
+        setUp(() async {
+          imageUrl = Uri.parse('https://example.com/avatar.png');
+          final profile = (await UserProfile.db.findFirstRow(
+            session,
+            where: (t) => t.authUserId.equals(authUserId),
+          ))!;
+          final image = await UserProfileImage.db.insertRow(
+            session,
+            UserProfileImage(
+              userProfileId: profile.id!,
+              storageId: 'public',
+              path: 'avatar.png',
+              url: imageUrl,
+            ),
+          );
+          await UserProfile.db.updateRow(
+            session,
+            profile.copyWith(imageId: image.id),
+          );
+        });
+
+        test(
+          'when listing profiles, '
+          'then the stored image URL is included.',
+          () async {
+            final profiles = await userProfiles.admin.listUserProfiles(session);
+
+            expect(profiles.single.imageUrl, imageUrl);
+          },
+        );
+      });
     },
   );
 

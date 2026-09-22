@@ -7,13 +7,14 @@ import '../../serverpod_test_tools.dart';
 
 void main() {
   test(
-    'Given a user profile entity, '
+    'Given a user profile entity without an image, '
     'when converting it to a user profile model, '
     'then its public fields are preserved.',
     () {
       final authUserId = const Uuid().v4obj();
       final profile = UserProfile(
         authUserId: authUserId,
+        image: null,
         userName: 'user-name',
         fullName: 'Full Name',
         email: 'user@example.com',
@@ -25,6 +26,7 @@ void main() {
       expect(model.userName, 'user-name');
       expect(model.fullName, 'Full Name');
       expect(model.email, 'user@example.com');
+      expect(model.imageUrl, isNull);
     },
   );
 

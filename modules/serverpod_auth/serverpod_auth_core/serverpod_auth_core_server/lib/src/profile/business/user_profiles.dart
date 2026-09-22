@@ -61,6 +61,7 @@ class UserProfiles {
           session,
           UserProfile(
             authUserId: authUserId,
+            image: null,
             userName: userProfile.userName,
             fullName: userProfile.fullName,
             email: userProfile.email,

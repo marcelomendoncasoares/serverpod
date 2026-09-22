@@ -46,6 +46,7 @@ class UserProfilesAdmin {
 
         return expression;
       },
+      include: UserProfile.include(image: UserProfileImage.include()),
       limit: limit,
       offset: offset,
       orderBy: (final t) => t.id,
