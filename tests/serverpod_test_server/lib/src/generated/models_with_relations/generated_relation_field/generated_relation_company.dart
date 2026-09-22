@@ -8,13 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_server/src/generated/protocol.dart' as _igqrxdcj;
 import '../../models_with_relations/generated_relation_field/generated_relation_employee.dart'
     as _inw8ul07;
@@ -26,9 +25,19 @@ abstract class GeneratedRelationCompany
   GeneratedRelationCompany._({
     this.id,
     required this.name,
-    this.office,
+    Object? office = #serverpodUnloadedRelation,
     this.employees,
-  });
+  }) : _office$loaded = !identical(
+         office,
+         #serverpodUnloadedRelation,
+       ),
+       _office =
+           !identical(
+             office,
+             #serverpodUnloadedRelation,
+           )
+           ? (office as _im57bsix.GeneratedRelationOffice?)
+           : null;
 
   factory GeneratedRelationCompany({
     int? id,
@@ -40,14 +49,17 @@ abstract class GeneratedRelationCompany
   factory GeneratedRelationCompany.fromJson(
     Map<String, dynamic> jsonSerialization,
   ) {
-    return GeneratedRelationCompany(
+    return _GeneratedRelationCompanyImpl(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
-      office: jsonSerialization['office'] == null
-          ? null
-          : _igqrxdcj.Protocol().deserialize<_im57bsix.GeneratedRelationOffice>(
-              jsonSerialization['office'],
-            ),
+      office: jsonSerialization.containsKey('office')
+          ? jsonSerialization['office'] == null
+                ? null
+                : _igqrxdcj.Protocol()
+                      .deserialize<_im57bsix.GeneratedRelationOffice>(
+                        jsonSerialization['office'],
+                      )
+          : #serverpodUnloadedRelation,
       employees: jsonSerialization['employees'] == null
           ? null
           : _igqrxdcj.Protocol()
@@ -66,12 +78,31 @@ abstract class GeneratedRelationCompany
 
   String name;
 
-  _im57bsix.GeneratedRelationOffice? office;
+  bool _office$loaded;
+
+  _im57bsix.GeneratedRelationOffice? _office;
 
   List<_inw8ul07.GeneratedRelationEmployee>? employees;
 
   @override
   _is.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _im57bsix.GeneratedRelationOffice? get office {
+    final value = _office;
+    if (!_office$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'GeneratedRelationCompany',
+        relation: 'office',
+      );
+    }
+    return value;
+  }
+
+  set office(_im57bsix.GeneratedRelationOffice? value) {
+    _office = value;
+    _office$loaded = true;
+  }
 
   /// Returns a shallow copy of this [GeneratedRelationCompany]
   /// with some or all fields replaced by the given arguments.
@@ -79,10 +110,8 @@ abstract class GeneratedRelationCompany
   GeneratedRelationCompany copyWith({
     int? id,
     String? name,
-    _im57bsix.GeneratedRelationOffice? office =
-        const _UndefinedGeneratedRelationCompany$office(),
-    List<_inw8ul07.GeneratedRelationEmployee>? employees =
-        const _issu.$UndefinedList<_inw8ul07.GeneratedRelationEmployee>(),
+    Object? office = _Undefined,
+    List<_inw8ul07.GeneratedRelationEmployee>? employees,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -90,7 +119,7 @@ abstract class GeneratedRelationCompany
       '__className__': 'GeneratedRelationCompany',
       if (id != null) 'id': id,
       'name': name,
-      if (office != null) 'office': office?.toJson(),
+      if (_office$loaded) 'office': _office?.toJson(),
       if (employees != null)
         'employees': employees?.toJson(valueToJson: (v) => v.toJson()),
     };
@@ -102,7 +131,7 @@ abstract class GeneratedRelationCompany
       '__className__': 'GeneratedRelationCompany',
       if (id != null) 'id': id,
       'name': name,
-      if (office != null) 'office': office?.toJsonForProtocol(),
+      if (_office$loaded) 'office': _office?.toJsonForProtocol(),
       if (employees != null)
         'employees': employees?.toJson(
           valueToJson: (v) => v.toJsonForProtocol(),
@@ -146,16 +175,11 @@ abstract class GeneratedRelationCompany
 
 class _Undefined {}
 
-class _UndefinedGeneratedRelationCompany$office extends _issu.UndefinedSentinel
-    implements _im57bsix.GeneratedRelationOffice {
-  const _UndefinedGeneratedRelationCompany$office();
-}
-
 class _GeneratedRelationCompanyImpl extends GeneratedRelationCompany {
   _GeneratedRelationCompanyImpl({
     int? id,
     required String name,
-    _im57bsix.GeneratedRelationOffice? office,
+    Object? office = #serverpodUnloadedRelation,
     List<_inw8ul07.GeneratedRelationEmployee>? employees,
   }) : super._(
          id: id,
@@ -171,20 +195,20 @@ class _GeneratedRelationCompanyImpl extends GeneratedRelationCompany {
   GeneratedRelationCompany copyWith({
     Object? id = _Undefined,
     String? name,
-    _im57bsix.GeneratedRelationOffice? office =
-        const _UndefinedGeneratedRelationCompany$office(),
-    List<_inw8ul07.GeneratedRelationEmployee>? employees =
-        const _issu.$UndefinedList<_inw8ul07.GeneratedRelationEmployee>(),
+    Object? office = _Undefined,
+    Object? employees = _Undefined,
   }) {
-    return GeneratedRelationCompany(
+    return _GeneratedRelationCompanyImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      office: office is _issu.UndefinedSentinel
-          ? this.office?.copyWith()
-          : office,
-      employees: employees is _issu.UndefinedSentinel
-          ? this.employees?.map((e0) => e0.copyWith()).toList()
-          : employees,
+      office: office is _im57bsix.GeneratedRelationOffice?
+          ? office?.copyWith()
+          : _office$loaded
+          ? this._office?.copyWith()
+          : #serverpodUnloadedRelation,
+      employees: employees is List<_inw8ul07.GeneratedRelationEmployee>?
+          ? employees
+          : this.employees?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }
@@ -900,7 +924,7 @@ class GeneratedRelationCompanyDetachRowRepository {
     GeneratedRelationCompany generatedRelationCompany, {
     _is.Transaction? transaction,
   }) async {
-    var $office = generatedRelationCompany.office;
+    var $office = generatedRelationCompany._office;
 
     if ($office == null) {
       throw ArgumentError.notNull('generatedRelationCompany.office');

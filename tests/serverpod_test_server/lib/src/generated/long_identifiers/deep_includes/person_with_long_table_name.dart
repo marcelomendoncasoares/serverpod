@@ -8,13 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_server/src/generated/protocol.dart' as _igqrxdcj;
 import '../../long_identifiers/deep_includes/organization_with_long_table_name.dart'
     as _imc5i9r4;
@@ -25,8 +24,19 @@ abstract class PersonWithLongTableName
     this.id,
     required this.name,
     this.organizationId,
-    this.organization,
-  }) : _cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id = null;
+    Object? organization = #serverpodUnloadedRelation,
+  }) : _organization$loaded = !identical(
+         organization,
+         #serverpodUnloadedRelation,
+       ),
+       _organization =
+           !identical(
+             organization,
+             #serverpodUnloadedRelation,
+           )
+           ? (organization as _imc5i9r4.OrganizationWithLongTableName?)
+           : null,
+       _cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id = null;
 
   factory PersonWithLongTableName({
     int? id,
@@ -42,12 +52,14 @@ abstract class PersonWithLongTableName
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       organizationId: jsonSerialization['organizationId'] as int?,
-      organization: jsonSerialization['organization'] == null
-          ? null
-          : _igqrxdcj.Protocol()
-                .deserialize<_imc5i9r4.OrganizationWithLongTableName>(
-                  jsonSerialization['organization'],
-                ),
+      organization: jsonSerialization.containsKey('organization')
+          ? jsonSerialization['organization'] == null
+                ? null
+                : _igqrxdcj.Protocol()
+                      .deserialize<_imc5i9r4.OrganizationWithLongTableName>(
+                        jsonSerialization['organization'],
+                      )
+          : #serverpodUnloadedRelation,
       $_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id:
           jsonSerialization['_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id']
               as int?,
@@ -65,12 +77,31 @@ abstract class PersonWithLongTableName
 
   int? organizationId;
 
-  _imc5i9r4.OrganizationWithLongTableName? organization;
+  bool _organization$loaded;
+
+  _imc5i9r4.OrganizationWithLongTableName? _organization;
 
   final int? _cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id;
 
   @override
   _is.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _imc5i9r4.OrganizationWithLongTableName? get organization {
+    final value = _organization;
+    if (!_organization$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'PersonWithLongTableName',
+        relation: 'organization',
+      );
+    }
+    return value;
+  }
+
+  set organization(_imc5i9r4.OrganizationWithLongTableName? value) {
+    _organization = value;
+    _organization$loaded = true;
+  }
 
   /// Returns a shallow copy of this [PersonWithLongTableName]
   /// with some or all fields replaced by the given arguments.
@@ -79,8 +110,7 @@ abstract class PersonWithLongTableName
     int? id,
     String? name,
     int? organizationId,
-    _imc5i9r4.OrganizationWithLongTableName? organization =
-        const _UndefinedPersonWithLongTableName$organization(),
+    Object? organization = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -89,7 +119,7 @@ abstract class PersonWithLongTableName
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
-      if (organization != null) 'organization': organization?.toJson(),
+      if (_organization$loaded) 'organization': _organization?.toJson(),
       if (_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id !=
           null)
         '_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id':
@@ -104,8 +134,8 @@ abstract class PersonWithLongTableName
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
-      if (organization != null)
-        'organization': organization?.toJsonForProtocol(),
+      if (_organization$loaded)
+        'organization': _organization?.toJsonForProtocol(),
     };
   }
 
@@ -141,18 +171,12 @@ abstract class PersonWithLongTableName
 
 class _Undefined {}
 
-class _UndefinedPersonWithLongTableName$organization
-    extends _issu.UndefinedSentinel
-    implements _imc5i9r4.OrganizationWithLongTableName {
-  const _UndefinedPersonWithLongTableName$organization();
-}
-
 class _PersonWithLongTableNameImpl extends PersonWithLongTableName {
   _PersonWithLongTableNameImpl({
     int? id,
     required String name,
     int? organizationId,
-    _imc5i9r4.OrganizationWithLongTableName? organization,
+    Object? organization = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -168,8 +192,7 @@ class _PersonWithLongTableNameImpl extends PersonWithLongTableName {
     Object? id = _Undefined,
     String? name,
     Object? organizationId = _Undefined,
-    _imc5i9r4.OrganizationWithLongTableName? organization =
-        const _UndefinedPersonWithLongTableName$organization(),
+    Object? organization = _Undefined,
   }) {
     return PersonWithLongTableNameImplicit._(
       id: id is int? ? id : this.id,
@@ -177,9 +200,11 @@ class _PersonWithLongTableNameImpl extends PersonWithLongTableName {
       organizationId: organizationId is int?
           ? organizationId
           : this.organizationId,
-      organization: organization is _issu.UndefinedSentinel
-          ? this.organization?.copyWith()
-          : organization,
+      organization: organization is _imc5i9r4.OrganizationWithLongTableName?
+          ? organization?.copyWith()
+          : _organization$loaded
+          ? this._organization?.copyWith()
+          : #serverpodUnloadedRelation,
       $_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id:
           this._cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id,
     );
@@ -191,7 +216,7 @@ class PersonWithLongTableNameImplicit extends _PersonWithLongTableNameImpl {
     int? id,
     required String name,
     int? organizationId,
-    _imc5i9r4.OrganizationWithLongTableName? organization,
+    Object? organization = #serverpodUnloadedRelation,
     int? $_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id,
   }) : _cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id =
            $_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id,
@@ -210,7 +235,9 @@ class PersonWithLongTableNameImplicit extends _PersonWithLongTableNameImpl {
       id: personWithLongTableName.id,
       name: personWithLongTableName.name,
       organizationId: personWithLongTableName.organizationId,
-      organization: personWithLongTableName.organization,
+      organization: personWithLongTableName._organization$loaded
+          ? personWithLongTableName._organization
+          : #serverpodUnloadedRelation,
       $_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id:
           $_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id,
     );

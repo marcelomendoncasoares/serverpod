@@ -8,13 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_server/src/generated/protocol.dart' as _igqrxdcj;
 import '../inheritance/child_with_inherited_id.dart' as _id412n1c;
 import '../protocol.dart' as _iv35mfmj;
@@ -24,11 +23,22 @@ abstract class ChildWithInheritedId extends _iv35mfmj.ParentWithChangedId
   ChildWithInheritedId._({
     _is.UuidValue? id,
     required this.name,
-    this.parent,
+    Object? parent = #serverpodUnloadedRelation,
     this.parentId,
     super.createdAt,
     super.updatedAt,
-  }) : id = id ?? const _is.Uuid().v7obj();
+  }) : _parent$loaded = !identical(
+         parent,
+         #serverpodUnloadedRelation,
+       ),
+       _parent =
+           !identical(
+             parent,
+             #serverpodUnloadedRelation,
+           )
+           ? (parent as _id412n1c.ChildWithInheritedId?)
+           : null,
+       id = id ?? const _is.Uuid().v7obj();
 
   factory ChildWithInheritedId({
     _is.UuidValue? id,
@@ -42,16 +52,19 @@ abstract class ChildWithInheritedId extends _iv35mfmj.ParentWithChangedId
   factory ChildWithInheritedId.fromJson(
     Map<String, dynamic> jsonSerialization,
   ) {
-    return ChildWithInheritedId(
+    return _ChildWithInheritedIdImpl(
       id: jsonSerialization['id'] == null
           ? null
           : _is.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
       name: jsonSerialization['name'] as String,
-      parent: jsonSerialization['parent'] == null
-          ? null
-          : _igqrxdcj.Protocol().deserialize<_id412n1c.ChildWithInheritedId>(
-              jsonSerialization['parent'],
-            ),
+      parent: jsonSerialization.containsKey('parent')
+          ? jsonSerialization['parent'] == null
+                ? null
+                : _igqrxdcj.Protocol()
+                      .deserialize<_id412n1c.ChildWithInheritedId>(
+                        jsonSerialization['parent'],
+                      )
+          : #serverpodUnloadedRelation,
       parentId: jsonSerialization['parentId'] == null
           ? null
           : _is.UuidValueJsonExtension.fromJson(jsonSerialization['parentId']),
@@ -73,12 +86,31 @@ abstract class ChildWithInheritedId extends _iv35mfmj.ParentWithChangedId
 
   String name;
 
-  _id412n1c.ChildWithInheritedId? parent;
+  bool _parent$loaded;
+
+  _id412n1c.ChildWithInheritedId? _parent;
 
   _is.UuidValue? parentId;
 
   @override
   _is.Table<_is.UuidValue> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _id412n1c.ChildWithInheritedId? get parent {
+    final value = _parent;
+    if (!_parent$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'ChildWithInheritedId',
+        relation: 'parent',
+      );
+    }
+    return value;
+  }
+
+  set parent(_id412n1c.ChildWithInheritedId? value) {
+    _parent = value;
+    _parent$loaded = true;
+  }
 
   /// Returns a shallow copy of this [ChildWithInheritedId]
   /// with some or all fields replaced by the given arguments.
@@ -87,11 +119,10 @@ abstract class ChildWithInheritedId extends _iv35mfmj.ParentWithChangedId
   ChildWithInheritedId copyWith({
     _is.UuidValue? id,
     String? name,
-    _id412n1c.ChildWithInheritedId? parent =
-        const _UndefinedChildWithInheritedId$parent(),
-    _is.UuidValue? parentId = const _issu.$UndefinedUuidValue(),
-    DateTime? createdAt = const _issu.$UndefinedDateTime(),
-    DateTime? updatedAt = const _issu.$UndefinedDateTime(),
+    Object? parent = _Undefined,
+    _is.UuidValue? parentId,
+    Object? createdAt,
+    Object? updatedAt,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -99,7 +130,7 @@ abstract class ChildWithInheritedId extends _iv35mfmj.ParentWithChangedId
       '__className__': 'ChildWithInheritedId',
       'id': id.toJson(),
       'name': name,
-      if (parent != null) 'parent': parent?.toJson(),
+      if (_parent$loaded) 'parent': _parent?.toJson(),
       if (parentId != null) 'parentId': parentId?.toJson(),
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
       if (updatedAt != null) 'updatedAt': updatedAt?.toJson(),
@@ -141,16 +172,13 @@ abstract class ChildWithInheritedId extends _iv35mfmj.ParentWithChangedId
   }
 }
 
-class _UndefinedChildWithInheritedId$parent extends _issu.UndefinedSentinel
-    implements _id412n1c.ChildWithInheritedId {
-  const _UndefinedChildWithInheritedId$parent();
-}
+class _Undefined {}
 
 class _ChildWithInheritedIdImpl extends ChildWithInheritedId {
   _ChildWithInheritedIdImpl({
     _is.UuidValue? id,
     required String name,
-    _id412n1c.ChildWithInheritedId? parent,
+    Object? parent = #serverpodUnloadedRelation,
     _is.UuidValue? parentId,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -170,25 +198,22 @@ class _ChildWithInheritedIdImpl extends ChildWithInheritedId {
   ChildWithInheritedId copyWith({
     _is.UuidValue? id,
     String? name,
-    _id412n1c.ChildWithInheritedId? parent =
-        const _UndefinedChildWithInheritedId$parent(),
-    _is.UuidValue? parentId = const _issu.$UndefinedUuidValue(),
-    DateTime? createdAt = const _issu.$UndefinedDateTime(),
-    DateTime? updatedAt = const _issu.$UndefinedDateTime(),
+    Object? parent = _Undefined,
+    Object? parentId = _Undefined,
+    Object? createdAt = _Undefined,
+    Object? updatedAt = _Undefined,
   }) {
-    return ChildWithInheritedId(
+    return _ChildWithInheritedIdImpl(
       id: id ?? this.id,
       name: name ?? this.name,
-      parent: parent is _issu.UndefinedSentinel
-          ? this.parent?.copyWith()
-          : parent,
-      parentId: parentId is _issu.UndefinedSentinel ? this.parentId : parentId,
-      createdAt: createdAt is _issu.UndefinedSentinel
-          ? this.createdAt
-          : createdAt,
-      updatedAt: updatedAt is _issu.UndefinedSentinel
-          ? this.updatedAt
-          : updatedAt,
+      parent: parent is _id412n1c.ChildWithInheritedId?
+          ? parent?.copyWith()
+          : _parent$loaded
+          ? this._parent?.copyWith()
+          : #serverpodUnloadedRelation,
+      parentId: parentId is _is.UuidValue? ? parentId : this.parentId,
+      createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
+      updatedAt: updatedAt is DateTime? ? updatedAt : this.updatedAt,
     );
   }
 }

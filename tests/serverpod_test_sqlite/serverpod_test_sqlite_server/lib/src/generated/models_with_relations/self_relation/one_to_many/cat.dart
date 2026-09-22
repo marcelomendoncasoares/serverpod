@@ -24,16 +24,16 @@ abstract class Cat implements _is.TableRow<int?>, _is.ProtocolSerialization {
     this.id,
     required this.name,
     this.motherId,
-    Object? mother = _Undefined,
+    Object? mother = #serverpodUnloadedRelation,
     this.kittens,
-  }) : _motherLoaded = !identical(
+  }) : _mother$loaded = !identical(
          mother,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _mother =
            !identical(
              mother,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (mother as _iayhscrz.Cat?)
            : null;
@@ -57,7 +57,7 @@ abstract class Cat implements _is.TableRow<int?>, _is.ProtocolSerialization {
                 : _i08l111i.Protocol().deserialize<_iayhscrz.Cat>(
                     jsonSerialization['mother'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       kittens: jsonSerialization['kittens'] == null
           ? null
           : _i08l111i.Protocol().deserialize<List<_iayhscrz.Cat>>(
@@ -77,7 +77,7 @@ abstract class Cat implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   int? motherId;
 
-  bool _motherLoaded;
+  bool _mother$loaded;
 
   _iayhscrz.Cat? _mother;
 
@@ -89,7 +89,7 @@ abstract class Cat implements _is.TableRow<int?>, _is.ProtocolSerialization {
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _iayhscrz.Cat? get mother {
     final value = _mother;
-    if (!_motherLoaded) {
+    if (!_mother$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'Cat',
         relation: 'mother',
@@ -100,7 +100,7 @@ abstract class Cat implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   set mother(_iayhscrz.Cat? value) {
     _mother = value;
-    _motherLoaded = true;
+    _mother$loaded = true;
   }
 
   /// Returns a shallow copy of this [Cat]
@@ -120,7 +120,7 @@ abstract class Cat implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (motherId != null) 'motherId': motherId,
-      if (_motherLoaded) 'mother': _mother?.toJson(),
+      if (_mother$loaded) 'mother': _mother?.toJson(),
       if (kittens != null)
         'kittens': kittens?.toJson(valueToJson: (v) => v.toJson()),
     };
@@ -133,7 +133,7 @@ abstract class Cat implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (motherId != null) 'motherId': motherId,
-      if (_motherLoaded) 'mother': _mother?.toJsonForProtocol(),
+      if (_mother$loaded) 'mother': _mother?.toJsonForProtocol(),
       if (kittens != null)
         'kittens': kittens?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
@@ -180,7 +180,7 @@ class _CatImpl extends Cat {
     int? id,
     required String name,
     int? motherId,
-    Object? mother = _Undefined,
+    Object? mother = #serverpodUnloadedRelation,
     List<_iayhscrz.Cat>? kittens,
   }) : super._(
          id: id,
@@ -207,9 +207,9 @@ class _CatImpl extends Cat {
       motherId: motherId is int? ? motherId : this.motherId,
       mother: mother is _iayhscrz.Cat?
           ? mother?.copyWith()
-          : _motherLoaded
+          : _mother$loaded
           ? this._mother?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       kittens: kittens is List<_iayhscrz.Cat>?
           ? kittens
           : this.kittens?.map((e0) => e0.copyWith()).toList(),

@@ -25,15 +25,15 @@ abstract class Player
     this.id,
     required this.name,
     this.teamId,
-    Object? team = _Undefined,
-  }) : _teamLoaded = !identical(
+    Object? team = #serverpodUnloadedRelation,
+  }) : _team$loaded = !identical(
          team,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _team =
            !identical(
              team,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (team as _iaks25tn.Team?)
            : null;
@@ -56,7 +56,7 @@ abstract class Player
                 : _i0ntutnq.Protocol().deserialize<_iaks25tn.Team>(
                     jsonSerialization['team'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -71,7 +71,7 @@ abstract class Player
 
   int? teamId;
 
-  bool _teamLoaded;
+  bool _team$loaded;
 
   _iaks25tn.Team? _team;
 
@@ -81,7 +81,7 @@ abstract class Player
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _iaks25tn.Team? get team {
     final value = _team;
-    if (!_teamLoaded) {
+    if (!_team$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'Player',
         relation: 'team',
@@ -92,7 +92,7 @@ abstract class Player
 
   set team(_iaks25tn.Team? value) {
     _team = value;
-    _teamLoaded = true;
+    _team$loaded = true;
   }
 
   /// Returns a shallow copy of this [Player]
@@ -111,7 +111,7 @@ abstract class Player
       if (id != null) 'id': id,
       'name': name,
       if (teamId != null) 'teamId': teamId,
-      if (_teamLoaded) 'team': _team?.toJson(),
+      if (_team$loaded) 'team': _team?.toJson(),
     };
   }
 
@@ -122,7 +122,7 @@ abstract class Player
       if (id != null) 'id': id,
       'name': name,
       if (teamId != null) 'teamId': teamId,
-      if (_teamLoaded) 'team': _team?.toJsonForProtocol(),
+      if (_team$loaded) 'team': _team?.toJsonForProtocol(),
     };
   }
 
@@ -161,7 +161,7 @@ class _PlayerImpl extends Player {
     int? id,
     required String name,
     int? teamId,
-    Object? team = _Undefined,
+    Object? team = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -185,9 +185,9 @@ class _PlayerImpl extends Player {
       teamId: teamId is int? ? teamId : this.teamId,
       team: team is _iaks25tn.Team?
           ? team?.copyWith()
-          : _teamLoaded
+          : _team$loaded
           ? this._team?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 }

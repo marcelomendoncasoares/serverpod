@@ -8,15 +8,14 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_idp_server/src/generated/protocol.dart'
     as _i99s0abf;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import '../../../common/secret_challenge/models/secret_challenge.dart'
     as _i7k1fa50;
 import '../../../providers/email/models/email_account.dart' as _imety4f2;
@@ -32,8 +31,19 @@ abstract class EmailAccountPasswordResetRequest
     required this.challengeId,
     this.challenge,
     this.setPasswordChallengeId,
-    this.setPasswordChallenge,
-  }) : createdAt = createdAt ?? DateTime.now();
+    Object? setPasswordChallenge = #serverpodUnloadedRelation,
+  }) : _setPasswordChallenge$loaded = !identical(
+         setPasswordChallenge,
+         #serverpodUnloadedRelation,
+       ),
+       _setPasswordChallenge =
+           !identical(
+             setPasswordChallenge,
+             #serverpodUnloadedRelation,
+           )
+           ? (setPasswordChallenge as _i7k1fa50.SecretChallenge?)
+           : null,
+       createdAt = createdAt ?? DateTime.now();
 
   factory EmailAccountPasswordResetRequest({
     _is.UuidValue? id,
@@ -49,7 +59,7 @@ abstract class EmailAccountPasswordResetRequest
   factory EmailAccountPasswordResetRequest.fromJson(
     Map<String, dynamic> jsonSerialization,
   ) {
-    return EmailAccountPasswordResetRequest(
+    return _EmailAccountPasswordResetRequestImpl(
       id: jsonSerialization['id'] == null
           ? null
           : _is.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
@@ -78,11 +88,14 @@ abstract class EmailAccountPasswordResetRequest
           : _is.UuidValueJsonExtension.fromJson(
               jsonSerialization['setPasswordChallengeId'],
             ),
-      setPasswordChallenge: jsonSerialization['setPasswordChallenge'] == null
-          ? null
-          : _i99s0abf.Protocol().deserialize<_i7k1fa50.SecretChallenge>(
-              jsonSerialization['setPasswordChallenge'],
-            ),
+      setPasswordChallenge:
+          jsonSerialization.containsKey('setPasswordChallenge')
+          ? jsonSerialization['setPasswordChallenge'] == null
+                ? null
+                : _i99s0abf.Protocol().deserialize<_i7k1fa50.SecretChallenge>(
+                    jsonSerialization['setPasswordChallenge'],
+                  )
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -108,28 +121,46 @@ abstract class EmailAccountPasswordResetRequest
 
   _is.UuidValue? setPasswordChallengeId;
 
+  bool _setPasswordChallenge$loaded;
+
   /// Used to complete the password reset when setting the password.
   /// This will be set after the password reset challenge has been validated.
-  _i7k1fa50.SecretChallenge? setPasswordChallenge;
+  _i7k1fa50.SecretChallenge? _setPasswordChallenge;
 
   @override
   _is.Table<_is.UuidValue?> get table => t;
+
+  /// Used to complete the password reset when setting the password.
+  /// This will be set after the password reset challenge has been validated.
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _i7k1fa50.SecretChallenge? get setPasswordChallenge {
+    final value = _setPasswordChallenge;
+    if (!_setPasswordChallenge$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'EmailAccountPasswordResetRequest',
+        relation: 'setPasswordChallenge',
+      );
+    }
+    return value;
+  }
+
+  set setPasswordChallenge(_i7k1fa50.SecretChallenge? value) {
+    _setPasswordChallenge = value;
+    _setPasswordChallenge$loaded = true;
+  }
 
   /// Returns a shallow copy of this [EmailAccountPasswordResetRequest]
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   EmailAccountPasswordResetRequest copyWith({
-    _is.UuidValue? id = const _issu.$UndefinedUuidValue(),
+    _is.UuidValue? id,
     _is.UuidValue? emailAccountId,
-    _imety4f2.EmailAccount? emailAccount =
-        const _UndefinedEmailAccountPasswordResetRequest$emailAccount(),
+    _imety4f2.EmailAccount? emailAccount,
     DateTime? createdAt,
     _is.UuidValue? challengeId,
-    _i7k1fa50.SecretChallenge? challenge =
-        const _UndefinedEmailAccountPasswordResetRequest$challenge(),
-    _is.UuidValue? setPasswordChallengeId = const _issu.$UndefinedUuidValue(),
-    _i7k1fa50.SecretChallenge? setPasswordChallenge =
-        const _UndefinedEmailAccountPasswordResetRequest$challenge(),
+    _i7k1fa50.SecretChallenge? challenge,
+    _is.UuidValue? setPasswordChallengeId,
+    Object? setPasswordChallenge = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -143,8 +174,8 @@ abstract class EmailAccountPasswordResetRequest
       if (challenge != null) 'challenge': challenge?.toJson(),
       if (setPasswordChallengeId != null)
         'setPasswordChallengeId': setPasswordChallengeId?.toJson(),
-      if (setPasswordChallenge != null)
-        'setPasswordChallenge': setPasswordChallenge?.toJson(),
+      if (_setPasswordChallenge$loaded)
+        'setPasswordChallenge': _setPasswordChallenge?.toJson(),
     };
   }
 
@@ -189,17 +220,7 @@ abstract class EmailAccountPasswordResetRequest
   }
 }
 
-class _UndefinedEmailAccountPasswordResetRequest$emailAccount
-    extends _issu.UndefinedSentinel
-    implements _imety4f2.EmailAccount {
-  const _UndefinedEmailAccountPasswordResetRequest$emailAccount();
-}
-
-class _UndefinedEmailAccountPasswordResetRequest$challenge
-    extends _issu.UndefinedSentinel
-    implements _i7k1fa50.SecretChallenge {
-  const _UndefinedEmailAccountPasswordResetRequest$challenge();
-}
+class _Undefined {}
 
 class _EmailAccountPasswordResetRequestImpl
     extends EmailAccountPasswordResetRequest {
@@ -211,7 +232,7 @@ class _EmailAccountPasswordResetRequestImpl
     required _is.UuidValue challengeId,
     _i7k1fa50.SecretChallenge? challenge,
     _is.UuidValue? setPasswordChallengeId,
-    _i7k1fa50.SecretChallenge? setPasswordChallenge,
+    Object? setPasswordChallenge = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          emailAccountId: emailAccountId,
@@ -228,35 +249,34 @@ class _EmailAccountPasswordResetRequestImpl
   @_is.useResult
   @override
   EmailAccountPasswordResetRequest copyWith({
-    _is.UuidValue? id = const _issu.$UndefinedUuidValue(),
+    Object? id = _Undefined,
     _is.UuidValue? emailAccountId,
-    _imety4f2.EmailAccount? emailAccount =
-        const _UndefinedEmailAccountPasswordResetRequest$emailAccount(),
+    Object? emailAccount = _Undefined,
     DateTime? createdAt,
     _is.UuidValue? challengeId,
-    _i7k1fa50.SecretChallenge? challenge =
-        const _UndefinedEmailAccountPasswordResetRequest$challenge(),
-    _is.UuidValue? setPasswordChallengeId = const _issu.$UndefinedUuidValue(),
-    _i7k1fa50.SecretChallenge? setPasswordChallenge =
-        const _UndefinedEmailAccountPasswordResetRequest$challenge(),
+    Object? challenge = _Undefined,
+    Object? setPasswordChallengeId = _Undefined,
+    Object? setPasswordChallenge = _Undefined,
   }) {
-    return EmailAccountPasswordResetRequest(
-      id: id is _issu.UndefinedSentinel ? this.id : id,
+    return _EmailAccountPasswordResetRequestImpl(
+      id: id is _is.UuidValue? ? id : this.id,
       emailAccountId: emailAccountId ?? this.emailAccountId,
-      emailAccount: emailAccount is _issu.UndefinedSentinel
-          ? this.emailAccount?.copyWith()
-          : emailAccount,
+      emailAccount: emailAccount is _imety4f2.EmailAccount?
+          ? emailAccount
+          : this.emailAccount?.copyWith(),
       createdAt: createdAt ?? this.createdAt,
       challengeId: challengeId ?? this.challengeId,
-      challenge: challenge is _issu.UndefinedSentinel
-          ? this.challenge?.copyWith()
-          : challenge,
-      setPasswordChallengeId: setPasswordChallengeId is _issu.UndefinedSentinel
-          ? this.setPasswordChallengeId
-          : setPasswordChallengeId,
-      setPasswordChallenge: setPasswordChallenge is _issu.UndefinedSentinel
-          ? this.setPasswordChallenge?.copyWith()
-          : setPasswordChallenge,
+      challenge: challenge is _i7k1fa50.SecretChallenge?
+          ? challenge
+          : this.challenge?.copyWith(),
+      setPasswordChallengeId: setPasswordChallengeId is _is.UuidValue?
+          ? setPasswordChallengeId
+          : this.setPasswordChallengeId,
+      setPasswordChallenge: setPasswordChallenge is _i7k1fa50.SecretChallenge?
+          ? setPasswordChallenge?.copyWith()
+          : _setPasswordChallenge$loaded
+          ? this._setPasswordChallenge?.copyWith()
+          : #serverpodUnloadedRelation,
     );
   }
 }

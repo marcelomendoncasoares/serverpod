@@ -23,15 +23,15 @@ abstract class Contractor
     this.id,
     required this.name,
     this.serviceIdField,
-    Object? service = _Undefined,
-  }) : _serviceLoaded = !identical(
+    Object? service = #serverpodUnloadedRelation,
+  }) : _service$loaded = !identical(
          service,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _service =
            !identical(
              service,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (service as _iml73r3x.Service?)
            : null;
@@ -54,7 +54,7 @@ abstract class Contractor
                 : _i0ntutnq.Protocol().deserialize<_iml73r3x.Service>(
                     jsonSerialization['service'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -67,14 +67,14 @@ abstract class Contractor
 
   int? serviceIdField;
 
-  bool _serviceLoaded;
+  bool _service$loaded;
 
   _iml73r3x.Service? _service;
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _iml73r3x.Service? get service {
     final value = _service;
-    if (!_serviceLoaded) {
+    if (!_service$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'Contractor',
         relation: 'service',
@@ -85,7 +85,7 @@ abstract class Contractor
 
   set service(_iml73r3x.Service? value) {
     _service = value;
-    _serviceLoaded = true;
+    _service$loaded = true;
   }
 
   /// Returns a shallow copy of this [Contractor]
@@ -104,7 +104,7 @@ abstract class Contractor
       if (id != null) 'id': id,
       'name': name,
       if (serviceIdField != null) 'serviceIdField': serviceIdField,
-      if (_serviceLoaded) 'service': _service?.toJson(),
+      if (_service$loaded) 'service': _service?.toJson(),
     };
   }
 
@@ -115,7 +115,7 @@ abstract class Contractor
       if (id != null) 'id': id,
       'name': name,
       if (serviceIdField != null) 'serviceIdField': serviceIdField,
-      if (_serviceLoaded) 'service': _service?.toJsonForProtocol(),
+      if (_service$loaded) 'service': _service?.toJsonForProtocol(),
     };
   }
 
@@ -132,7 +132,7 @@ class _ContractorImpl extends Contractor {
     int? id,
     required String name,
     int? serviceIdField,
-    Object? service = _Undefined,
+    Object? service = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -158,9 +158,9 @@ class _ContractorImpl extends Contractor {
           : this.serviceIdField,
       service: service is _iml73r3x.Service?
           ? service?.copyWith()
-          : _serviceLoaded
+          : _service$loaded
           ? this._service?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 }

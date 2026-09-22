@@ -8,13 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_server/src/generated/protocol.dart' as _igqrxdcj;
 import '../../../models_with_relations/self_relation/one_to_one/post.dart'
     as _ittc76ec;
@@ -23,10 +22,31 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
   Post._({
     this.id,
     required this.content,
-    this.previous,
+    Object? previous = #serverpodUnloadedRelation,
     this.nextId,
-    this.next,
-  });
+    Object? next = #serverpodUnloadedRelation,
+  }) : _previous$loaded = !identical(
+         previous,
+         #serverpodUnloadedRelation,
+       ),
+       _previous =
+           !identical(
+             previous,
+             #serverpodUnloadedRelation,
+           )
+           ? (previous as _ittc76ec.Post?)
+           : null,
+       _next$loaded = !identical(
+         next,
+         #serverpodUnloadedRelation,
+       ),
+       _next =
+           !identical(
+             next,
+             #serverpodUnloadedRelation,
+           )
+           ? (next as _ittc76ec.Post?)
+           : null;
 
   factory Post({
     int? id,
@@ -37,20 +57,24 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
   }) = _PostImpl;
 
   factory Post.fromJson(Map<String, dynamic> jsonSerialization) {
-    return Post(
+    return _PostImpl(
       id: jsonSerialization['id'] as int?,
       content: jsonSerialization['content'] as String,
-      previous: jsonSerialization['previous'] == null
-          ? null
-          : _igqrxdcj.Protocol().deserialize<_ittc76ec.Post>(
-              jsonSerialization['previous'],
-            ),
+      previous: jsonSerialization.containsKey('previous')
+          ? jsonSerialization['previous'] == null
+                ? null
+                : _igqrxdcj.Protocol().deserialize<_ittc76ec.Post>(
+                    jsonSerialization['previous'],
+                  )
+          : #serverpodUnloadedRelation,
       nextId: jsonSerialization['nextId'] as int?,
-      next: jsonSerialization['next'] == null
-          ? null
-          : _igqrxdcj.Protocol().deserialize<_ittc76ec.Post>(
-              jsonSerialization['next'],
-            ),
+      next: jsonSerialization.containsKey('next')
+          ? jsonSerialization['next'] == null
+                ? null
+                : _igqrxdcj.Protocol().deserialize<_ittc76ec.Post>(
+                    jsonSerialization['next'],
+                  )
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -63,14 +87,52 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   String content;
 
-  _ittc76ec.Post? previous;
+  bool _previous$loaded;
+
+  _ittc76ec.Post? _previous;
 
   int? nextId;
 
-  _ittc76ec.Post? next;
+  bool _next$loaded;
+
+  _ittc76ec.Post? _next;
 
   @override
   _is.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _ittc76ec.Post? get previous {
+    final value = _previous;
+    if (!_previous$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'Post',
+        relation: 'previous',
+      );
+    }
+    return value;
+  }
+
+  set previous(_ittc76ec.Post? value) {
+    _previous = value;
+    _previous$loaded = true;
+  }
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _ittc76ec.Post? get next {
+    final value = _next;
+    if (!_next$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'Post',
+        relation: 'next',
+      );
+    }
+    return value;
+  }
+
+  set next(_ittc76ec.Post? value) {
+    _next = value;
+    _next$loaded = true;
+  }
 
   /// Returns a shallow copy of this [Post]
   /// with some or all fields replaced by the given arguments.
@@ -78,9 +140,9 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
   Post copyWith({
     int? id,
     String? content,
-    _ittc76ec.Post? previous = const _UndefinedPost$previous(),
+    Object? previous = _Undefined,
     int? nextId,
-    _ittc76ec.Post? next = const _UndefinedPost$previous(),
+    Object? next = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -88,9 +150,9 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
       '__className__': 'Post',
       if (id != null) 'id': id,
       'content': content,
-      if (previous != null) 'previous': previous?.toJson(),
+      if (_previous$loaded) 'previous': _previous?.toJson(),
       if (nextId != null) 'nextId': nextId,
-      if (next != null) 'next': next?.toJson(),
+      if (_next$loaded) 'next': _next?.toJson(),
     };
   }
 
@@ -100,9 +162,9 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
       '__className__': 'Post',
       if (id != null) 'id': id,
       'content': content,
-      if (previous != null) 'previous': previous?.toJsonForProtocol(),
+      if (_previous$loaded) 'previous': _previous?.toJsonForProtocol(),
       if (nextId != null) 'nextId': nextId,
-      if (next != null) 'next': next?.toJsonForProtocol(),
+      if (_next$loaded) 'next': _next?.toJsonForProtocol(),
     };
   }
 
@@ -142,18 +204,13 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
 class _Undefined {}
 
-class _UndefinedPost$previous extends _issu.UndefinedSentinel
-    implements _ittc76ec.Post {
-  const _UndefinedPost$previous();
-}
-
 class _PostImpl extends Post {
   _PostImpl({
     int? id,
     required String content,
-    _ittc76ec.Post? previous,
+    Object? previous = #serverpodUnloadedRelation,
     int? nextId,
-    _ittc76ec.Post? next,
+    Object? next = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          content: content,
@@ -169,18 +226,24 @@ class _PostImpl extends Post {
   Post copyWith({
     Object? id = _Undefined,
     String? content,
-    _ittc76ec.Post? previous = const _UndefinedPost$previous(),
+    Object? previous = _Undefined,
     Object? nextId = _Undefined,
-    _ittc76ec.Post? next = const _UndefinedPost$previous(),
+    Object? next = _Undefined,
   }) {
-    return Post(
+    return _PostImpl(
       id: id is int? ? id : this.id,
       content: content ?? this.content,
-      previous: previous is _issu.UndefinedSentinel
-          ? this.previous?.copyWith()
-          : previous,
+      previous: previous is _ittc76ec.Post?
+          ? previous?.copyWith()
+          : _previous$loaded
+          ? this._previous?.copyWith()
+          : #serverpodUnloadedRelation,
       nextId: nextId is int? ? nextId : this.nextId,
-      next: next is _issu.UndefinedSentinel ? this.next?.copyWith() : next,
+      next: next is _ittc76ec.Post?
+          ? next?.copyWith()
+          : _next$loaded
+          ? this._next?.copyWith()
+          : #serverpodUnloadedRelation,
     );
   }
 }
@@ -842,7 +905,7 @@ class PostDetachRowRepository {
     Post post, {
     _is.Transaction? transaction,
   }) async {
-    var $previous = post.previous;
+    var $previous = post._previous;
 
     if ($previous == null) {
       throw ArgumentError.notNull('post.previous');

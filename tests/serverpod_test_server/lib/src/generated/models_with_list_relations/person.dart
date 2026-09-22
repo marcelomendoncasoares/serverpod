@@ -8,13 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_server/src/generated/protocol.dart' as _igqrxdcj;
 import '../models_with_list_relations/organization.dart' as _i0ptycc3;
 
@@ -23,8 +22,19 @@ abstract class Person implements _is.TableRow<int?>, _is.ProtocolSerialization {
     this.id,
     required this.name,
     this.organizationId,
-    this.organization,
-  }) : _cityCitizensCityId = null;
+    Object? organization = #serverpodUnloadedRelation,
+  }) : _organization$loaded = !identical(
+         organization,
+         #serverpodUnloadedRelation,
+       ),
+       _organization =
+           !identical(
+             organization,
+             #serverpodUnloadedRelation,
+           )
+           ? (organization as _i0ptycc3.Organization?)
+           : null,
+       _cityCitizensCityId = null;
 
   factory Person({
     int? id,
@@ -38,11 +48,13 @@ abstract class Person implements _is.TableRow<int?>, _is.ProtocolSerialization {
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       organizationId: jsonSerialization['organizationId'] as int?,
-      organization: jsonSerialization['organization'] == null
-          ? null
-          : _igqrxdcj.Protocol().deserialize<_i0ptycc3.Organization>(
-              jsonSerialization['organization'],
-            ),
+      organization: jsonSerialization.containsKey('organization')
+          ? jsonSerialization['organization'] == null
+                ? null
+                : _igqrxdcj.Protocol().deserialize<_i0ptycc3.Organization>(
+                    jsonSerialization['organization'],
+                  )
+          : #serverpodUnloadedRelation,
       $_cityCitizensCityId: jsonSerialization['_cityCitizensCityId'] as int?,
     );
   }
@@ -58,12 +70,31 @@ abstract class Person implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   int? organizationId;
 
-  _i0ptycc3.Organization? organization;
+  bool _organization$loaded;
+
+  _i0ptycc3.Organization? _organization;
 
   final int? _cityCitizensCityId;
 
   @override
   _is.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _i0ptycc3.Organization? get organization {
+    final value = _organization;
+    if (!_organization$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'Person',
+        relation: 'organization',
+      );
+    }
+    return value;
+  }
+
+  set organization(_i0ptycc3.Organization? value) {
+    _organization = value;
+    _organization$loaded = true;
+  }
 
   /// Returns a shallow copy of this [Person]
   /// with some or all fields replaced by the given arguments.
@@ -72,8 +103,7 @@ abstract class Person implements _is.TableRow<int?>, _is.ProtocolSerialization {
     int? id,
     String? name,
     int? organizationId,
-    _i0ptycc3.Organization? organization =
-        const _UndefinedPerson$organization(),
+    Object? organization = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -82,7 +112,7 @@ abstract class Person implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
-      if (organization != null) 'organization': organization?.toJson(),
+      if (_organization$loaded) 'organization': _organization?.toJson(),
       if (_cityCitizensCityId != null)
         '_cityCitizensCityId': _cityCitizensCityId,
     };
@@ -95,8 +125,8 @@ abstract class Person implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
-      if (organization != null)
-        'organization': organization?.toJsonForProtocol(),
+      if (_organization$loaded)
+        'organization': _organization?.toJsonForProtocol(),
     };
   }
 
@@ -130,17 +160,12 @@ abstract class Person implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
 class _Undefined {}
 
-class _UndefinedPerson$organization extends _issu.UndefinedSentinel
-    implements _i0ptycc3.Organization {
-  const _UndefinedPerson$organization();
-}
-
 class _PersonImpl extends Person {
   _PersonImpl({
     int? id,
     required String name,
     int? organizationId,
-    _i0ptycc3.Organization? organization,
+    Object? organization = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -156,8 +181,7 @@ class _PersonImpl extends Person {
     Object? id = _Undefined,
     String? name,
     Object? organizationId = _Undefined,
-    _i0ptycc3.Organization? organization =
-        const _UndefinedPerson$organization(),
+    Object? organization = _Undefined,
   }) {
     return PersonImplicit._(
       id: id is int? ? id : this.id,
@@ -165,9 +189,11 @@ class _PersonImpl extends Person {
       organizationId: organizationId is int?
           ? organizationId
           : this.organizationId,
-      organization: organization is _issu.UndefinedSentinel
-          ? this.organization?.copyWith()
-          : organization,
+      organization: organization is _i0ptycc3.Organization?
+          ? organization?.copyWith()
+          : _organization$loaded
+          ? this._organization?.copyWith()
+          : #serverpodUnloadedRelation,
       $_cityCitizensCityId: this._cityCitizensCityId,
     );
   }
@@ -178,7 +204,7 @@ class PersonImplicit extends _PersonImpl {
     int? id,
     required String name,
     int? organizationId,
-    _i0ptycc3.Organization? organization,
+    Object? organization = #serverpodUnloadedRelation,
     int? $_cityCitizensCityId,
   }) : _cityCitizensCityId = $_cityCitizensCityId,
        super(
@@ -196,7 +222,9 @@ class PersonImplicit extends _PersonImpl {
       id: person.id,
       name: person.name,
       organizationId: person.organizationId,
-      organization: person.organization,
+      organization: person._organization$loaded
+          ? person._organization
+          : #serverpodUnloadedRelation,
       $_cityCitizensCityId: $_cityCitizensCityId,
     );
   }

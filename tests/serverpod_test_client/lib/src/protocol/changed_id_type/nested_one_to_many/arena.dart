@@ -8,11 +8,10 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: depend_on_referenced_packages
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_client/src/protocol/protocol.dart' as _iza9lbb5;
 import '../../changed_id_type/nested_one_to_many/team.dart' as _i9bz1am4;
 
@@ -21,8 +20,19 @@ abstract class ArenaUuid
   ArenaUuid._({
     _isc.UuidValue? id,
     required this.name,
-    this.team,
-  }) : id = id ?? const _isc.Uuid().v7obj();
+    Object? team = #serverpodUnloadedRelation,
+  }) : _team$loaded = !identical(
+         team,
+         #serverpodUnloadedRelation,
+       ),
+       _team =
+           !identical(
+             team,
+             #serverpodUnloadedRelation,
+           )
+           ? (team as _i9bz1am4.TeamInt?)
+           : null,
+       id = id ?? const _isc.Uuid().v7obj();
 
   factory ArenaUuid({
     _isc.UuidValue? id,
@@ -31,16 +41,18 @@ abstract class ArenaUuid
   }) = _ArenaUuidImpl;
 
   factory ArenaUuid.fromJson(Map<String, dynamic> jsonSerialization) {
-    return ArenaUuid(
+    return _ArenaUuidImpl(
       id: jsonSerialization['id'] == null
           ? null
           : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
       name: jsonSerialization['name'] as String,
-      team: jsonSerialization['team'] == null
-          ? null
-          : _iza9lbb5.Protocol().deserialize<_i9bz1am4.TeamInt>(
-              jsonSerialization['team'],
-            ),
+      team: jsonSerialization.containsKey('team')
+          ? jsonSerialization['team'] == null
+                ? null
+                : _iza9lbb5.Protocol().deserialize<_i9bz1am4.TeamInt>(
+                    jsonSerialization['team'],
+                  )
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -49,7 +61,26 @@ abstract class ArenaUuid
 
   String name;
 
-  _i9bz1am4.TeamInt? team;
+  bool _team$loaded;
+
+  _i9bz1am4.TeamInt? _team;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _i9bz1am4.TeamInt? get team {
+    final value = _team;
+    if (!_team$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'ArenaUuid',
+        relation: 'team',
+      );
+    }
+    return value;
+  }
+
+  set team(_i9bz1am4.TeamInt? value) {
+    _team = value;
+    _team$loaded = true;
+  }
 
   /// Returns a shallow copy of this [ArenaUuid]
   /// with some or all fields replaced by the given arguments.
@@ -57,7 +88,7 @@ abstract class ArenaUuid
   ArenaUuid copyWith({
     _isc.UuidValue? id,
     String? name,
-    _i9bz1am4.TeamInt? team = const _UndefinedArenaUuid$team(),
+    Object? team = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -65,7 +96,7 @@ abstract class ArenaUuid
       '__className__': 'ArenaUuid',
       'id': id.toJson(),
       'name': name,
-      if (team != null) 'team': team?.toJson(),
+      if (_team$loaded) 'team': _team?.toJson(),
     };
   }
 
@@ -75,7 +106,7 @@ abstract class ArenaUuid
       '__className__': 'ArenaUuid',
       'id': id.toJson(),
       'name': name,
-      if (team != null) 'team': team?.toJsonForProtocol(),
+      if (_team$loaded) 'team': _team?.toJsonForProtocol(),
     };
   }
 
@@ -85,16 +116,13 @@ abstract class ArenaUuid
   }
 }
 
-class _UndefinedArenaUuid$team extends _issu.UndefinedSentinel
-    implements _i9bz1am4.TeamInt {
-  const _UndefinedArenaUuid$team();
-}
+class _Undefined {}
 
 class _ArenaUuidImpl extends ArenaUuid {
   _ArenaUuidImpl({
     _isc.UuidValue? id,
     required String name,
-    _i9bz1am4.TeamInt? team,
+    Object? team = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -108,12 +136,16 @@ class _ArenaUuidImpl extends ArenaUuid {
   ArenaUuid copyWith({
     _isc.UuidValue? id,
     String? name,
-    _i9bz1am4.TeamInt? team = const _UndefinedArenaUuid$team(),
+    Object? team = _Undefined,
   }) {
-    return ArenaUuid(
+    return _ArenaUuidImpl(
       id: id ?? this.id,
       name: name ?? this.name,
-      team: team is _issu.UndefinedSentinel ? this.team?.copyWith() : team,
+      team: team is _i9bz1am4.TeamInt?
+          ? team?.copyWith()
+          : _team$loaded
+          ? this._team?.copyWith()
+          : #serverpodUnloadedRelation,
     );
   }
 }

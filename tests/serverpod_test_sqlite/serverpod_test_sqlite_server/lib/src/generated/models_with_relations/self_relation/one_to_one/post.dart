@@ -23,28 +23,28 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
   Post._({
     this.id,
     required this.content,
-    Object? previous = _Undefined,
+    Object? previous = #serverpodUnloadedRelation,
     this.nextId,
-    Object? next = _Undefined,
-  }) : _previousLoaded = !identical(
+    Object? next = #serverpodUnloadedRelation,
+  }) : _previous$loaded = !identical(
          previous,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _previous =
            !identical(
              previous,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (previous as _ittc76ec.Post?)
            : null,
-       _nextLoaded = !identical(
+       _next$loaded = !identical(
          next,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _next =
            !identical(
              next,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (next as _ittc76ec.Post?)
            : null;
@@ -67,7 +67,7 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
                 : _i08l111i.Protocol().deserialize<_ittc76ec.Post>(
                     jsonSerialization['previous'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       nextId: jsonSerialization['nextId'] as int?,
       next: jsonSerialization.containsKey('next')
           ? jsonSerialization['next'] == null
@@ -75,7 +75,7 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
                 : _i08l111i.Protocol().deserialize<_ittc76ec.Post>(
                     jsonSerialization['next'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -88,13 +88,13 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   String content;
 
-  bool _previousLoaded;
+  bool _previous$loaded;
 
   _ittc76ec.Post? _previous;
 
   int? nextId;
 
-  bool _nextLoaded;
+  bool _next$loaded;
 
   _ittc76ec.Post? _next;
 
@@ -104,7 +104,7 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _ittc76ec.Post? get previous {
     final value = _previous;
-    if (!_previousLoaded) {
+    if (!_previous$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'Post',
         relation: 'previous',
@@ -115,13 +115,13 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   set previous(_ittc76ec.Post? value) {
     _previous = value;
-    _previousLoaded = true;
+    _previous$loaded = true;
   }
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _ittc76ec.Post? get next {
     final value = _next;
-    if (!_nextLoaded) {
+    if (!_next$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'Post',
         relation: 'next',
@@ -132,7 +132,7 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   set next(_ittc76ec.Post? value) {
     _next = value;
-    _nextLoaded = true;
+    _next$loaded = true;
   }
 
   /// Returns a shallow copy of this [Post]
@@ -151,9 +151,9 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
       '__className__': 'Post',
       if (id != null) 'id': id,
       'content': content,
-      if (_previousLoaded) 'previous': _previous?.toJson(),
+      if (_previous$loaded) 'previous': _previous?.toJson(),
       if (nextId != null) 'nextId': nextId,
-      if (_nextLoaded) 'next': _next?.toJson(),
+      if (_next$loaded) 'next': _next?.toJson(),
     };
   }
 
@@ -163,9 +163,9 @@ abstract class Post implements _is.TableRow<int?>, _is.ProtocolSerialization {
       '__className__': 'Post',
       if (id != null) 'id': id,
       'content': content,
-      if (_previousLoaded) 'previous': _previous?.toJsonForProtocol(),
+      if (_previous$loaded) 'previous': _previous?.toJsonForProtocol(),
       if (nextId != null) 'nextId': nextId,
-      if (_nextLoaded) 'next': _next?.toJsonForProtocol(),
+      if (_next$loaded) 'next': _next?.toJsonForProtocol(),
     };
   }
 
@@ -209,9 +209,9 @@ class _PostImpl extends Post {
   _PostImpl({
     int? id,
     required String content,
-    Object? previous = _Undefined,
+    Object? previous = #serverpodUnloadedRelation,
     int? nextId,
-    Object? next = _Undefined,
+    Object? next = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          content: content,
@@ -236,15 +236,15 @@ class _PostImpl extends Post {
       content: content ?? this.content,
       previous: previous is _ittc76ec.Post?
           ? previous?.copyWith()
-          : _previousLoaded
+          : _previous$loaded
           ? this._previous?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       nextId: nextId is int? ? nextId : this.nextId,
       next: next is _ittc76ec.Post?
           ? next?.copyWith()
-          : _nextLoaded
+          : _next$loaded
           ? this._next?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 }
@@ -906,7 +906,7 @@ class PostDetachRowRepository {
     Post post, {
     _is.Transaction? transaction,
   }) async {
-    var $previous = post.previous;
+    var $previous = post._previous;
 
     if ($previous == null) {
       throw ArgumentError.notNull('post.previous');

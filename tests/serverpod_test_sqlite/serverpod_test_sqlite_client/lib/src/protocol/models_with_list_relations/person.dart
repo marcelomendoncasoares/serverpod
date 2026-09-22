@@ -25,15 +25,15 @@ abstract class Person
     this.id,
     required this.name,
     this.organizationId,
-    Object? organization = _Undefined,
-  }) : _organizationLoaded = !identical(
+    Object? organization = #serverpodUnloadedRelation,
+  }) : _organization$loaded = !identical(
          organization,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _organization =
            !identical(
              organization,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (organization as _i0ptycc3.Organization?)
            : null,
@@ -57,7 +57,7 @@ abstract class Person
                 : _i0ntutnq.Protocol().deserialize<_i0ptycc3.Organization>(
                     jsonSerialization['organization'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       $_cityCitizensCityId: jsonSerialization['_cityCitizensCityId'] as int?,
     );
   }
@@ -73,7 +73,7 @@ abstract class Person
 
   int? organizationId;
 
-  bool _organizationLoaded;
+  bool _organization$loaded;
 
   _i0ptycc3.Organization? _organization;
 
@@ -85,7 +85,7 @@ abstract class Person
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _i0ptycc3.Organization? get organization {
     final value = _organization;
-    if (!_organizationLoaded) {
+    if (!_organization$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'Person',
         relation: 'organization',
@@ -96,7 +96,7 @@ abstract class Person
 
   set organization(_i0ptycc3.Organization? value) {
     _organization = value;
-    _organizationLoaded = true;
+    _organization$loaded = true;
   }
 
   /// Returns a shallow copy of this [Person]
@@ -115,7 +115,7 @@ abstract class Person
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
-      if (_organizationLoaded) 'organization': _organization?.toJson(),
+      if (_organization$loaded) 'organization': _organization?.toJson(),
       if (_cityCitizensCityId != null)
         '_cityCitizensCityId': _cityCitizensCityId,
     };
@@ -128,7 +128,7 @@ abstract class Person
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
-      if (_organizationLoaded)
+      if (_organization$loaded)
         'organization': _organization?.toJsonForProtocol(),
     };
   }
@@ -168,7 +168,7 @@ class _PersonImpl extends Person {
     int? id,
     required String name,
     int? organizationId,
-    Object? organization = _Undefined,
+    Object? organization = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -194,9 +194,9 @@ class _PersonImpl extends Person {
           : this.organizationId,
       organization: organization is _i0ptycc3.Organization?
           ? organization?.copyWith()
-          : _organizationLoaded
+          : _organization$loaded
           ? this._organization?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       $_cityCitizensCityId: this._cityCitizensCityId,
     );
   }
@@ -207,7 +207,7 @@ class PersonImplicit extends _PersonImpl {
     int? id,
     required String name,
     int? organizationId,
-    Object? organization = _Undefined,
+    Object? organization = #serverpodUnloadedRelation,
     int? $_cityCitizensCityId,
   }) : _cityCitizensCityId = $_cityCitizensCityId,
        super(
@@ -225,9 +225,9 @@ class PersonImplicit extends _PersonImpl {
       id: person.id,
       name: person.name,
       organizationId: person.organizationId,
-      organization: person._organizationLoaded
+      organization: person._organization$loaded
           ? person._organization
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       $_cityCitizensCityId: $_cityCitizensCityId,
     );
   }

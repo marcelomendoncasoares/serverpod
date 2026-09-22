@@ -25,15 +25,15 @@ abstract class PersonWithLongTableName
     this.id,
     required this.name,
     this.organizationId,
-    Object? organization = _Undefined,
-  }) : _organizationLoaded = !identical(
+    Object? organization = #serverpodUnloadedRelation,
+  }) : _organization$loaded = !identical(
          organization,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _organization =
            !identical(
              organization,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (organization as _imc5i9r4.OrganizationWithLongTableName?)
            : null,
@@ -60,7 +60,7 @@ abstract class PersonWithLongTableName
                       .deserialize<_imc5i9r4.OrganizationWithLongTableName>(
                         jsonSerialization['organization'],
                       )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       $_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id:
           jsonSerialization['_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id']
               as int?,
@@ -78,7 +78,7 @@ abstract class PersonWithLongTableName
 
   int? organizationId;
 
-  bool _organizationLoaded;
+  bool _organization$loaded;
 
   _imc5i9r4.OrganizationWithLongTableName? _organization;
 
@@ -90,7 +90,7 @@ abstract class PersonWithLongTableName
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _imc5i9r4.OrganizationWithLongTableName? get organization {
     final value = _organization;
-    if (!_organizationLoaded) {
+    if (!_organization$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'PersonWithLongTableName',
         relation: 'organization',
@@ -101,7 +101,7 @@ abstract class PersonWithLongTableName
 
   set organization(_imc5i9r4.OrganizationWithLongTableName? value) {
     _organization = value;
-    _organizationLoaded = true;
+    _organization$loaded = true;
   }
 
   /// Returns a shallow copy of this [PersonWithLongTableName]
@@ -120,7 +120,7 @@ abstract class PersonWithLongTableName
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
-      if (_organizationLoaded) 'organization': _organization?.toJson(),
+      if (_organization$loaded) 'organization': _organization?.toJson(),
       if (_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id !=
           null)
         '_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id':
@@ -135,7 +135,7 @@ abstract class PersonWithLongTableName
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
-      if (_organizationLoaded)
+      if (_organization$loaded)
         'organization': _organization?.toJsonForProtocol(),
     };
   }
@@ -177,7 +177,7 @@ class _PersonWithLongTableNameImpl extends PersonWithLongTableName {
     int? id,
     required String name,
     int? organizationId,
-    Object? organization = _Undefined,
+    Object? organization = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -203,9 +203,9 @@ class _PersonWithLongTableNameImpl extends PersonWithLongTableName {
           : this.organizationId,
       organization: organization is _imc5i9r4.OrganizationWithLongTableName?
           ? organization?.copyWith()
-          : _organizationLoaded
+          : _organization$loaded
           ? this._organization?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       $_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id:
           this._cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id,
     );
@@ -217,7 +217,7 @@ class PersonWithLongTableNameImplicit extends _PersonWithLongTableNameImpl {
     int? id,
     required String name,
     int? organizationId,
-    Object? organization = _Undefined,
+    Object? organization = #serverpodUnloadedRelation,
     int? $_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id,
   }) : _cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id =
            $_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id,
@@ -236,9 +236,9 @@ class PersonWithLongTableNameImplicit extends _PersonWithLongTableNameImpl {
       id: personWithLongTableName.id,
       name: personWithLongTableName.name,
       organizationId: personWithLongTableName.organizationId,
-      organization: personWithLongTableName._organizationLoaded
+      organization: personWithLongTableName._organization$loaded
           ? personWithLongTableName._organization
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       $_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id:
           $_cityWithLongTableNameThatIsStillValidCitizensCityWithLon4fe0Id,
     );

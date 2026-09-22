@@ -21,15 +21,15 @@ abstract class ArenaUuid
   ArenaUuid._({
     _isc.UuidValue? id,
     required this.name,
-    Object? team = _Undefined,
-  }) : _teamLoaded = !identical(
+    Object? team = #serverpodUnloadedRelation,
+  }) : _team$loaded = !identical(
          team,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _team =
            !identical(
              team,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (team as _i9bz1am4.TeamInt?)
            : null,
@@ -53,7 +53,7 @@ abstract class ArenaUuid
                 : _i0ntutnq.Protocol().deserialize<_i9bz1am4.TeamInt>(
                     jsonSerialization['team'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -62,14 +62,14 @@ abstract class ArenaUuid
 
   String name;
 
-  bool _teamLoaded;
+  bool _team$loaded;
 
   _i9bz1am4.TeamInt? _team;
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _i9bz1am4.TeamInt? get team {
     final value = _team;
-    if (!_teamLoaded) {
+    if (!_team$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'ArenaUuid',
         relation: 'team',
@@ -80,7 +80,7 @@ abstract class ArenaUuid
 
   set team(_i9bz1am4.TeamInt? value) {
     _team = value;
-    _teamLoaded = true;
+    _team$loaded = true;
   }
 
   /// Returns a shallow copy of this [ArenaUuid]
@@ -97,7 +97,7 @@ abstract class ArenaUuid
       '__className__': 'ArenaUuid',
       'id': id.toJson(),
       'name': name,
-      if (_teamLoaded) 'team': _team?.toJson(),
+      if (_team$loaded) 'team': _team?.toJson(),
     };
   }
 
@@ -107,7 +107,7 @@ abstract class ArenaUuid
       '__className__': 'ArenaUuid',
       'id': id.toJson(),
       'name': name,
-      if (_teamLoaded) 'team': _team?.toJsonForProtocol(),
+      if (_team$loaded) 'team': _team?.toJsonForProtocol(),
     };
   }
 
@@ -123,7 +123,7 @@ class _ArenaUuidImpl extends ArenaUuid {
   _ArenaUuidImpl({
     _isc.UuidValue? id,
     required String name,
-    Object? team = _Undefined,
+    Object? team = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -144,9 +144,9 @@ class _ArenaUuidImpl extends ArenaUuid {
       name: name ?? this.name,
       team: team is _i9bz1am4.TeamInt?
           ? team?.copyWith()
-          : _teamLoaded
+          : _team$loaded
           ? this._team?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 }

@@ -24,15 +24,15 @@ abstract class Town implements _isd.TableRow<int?>, _isc.ProtocolSerialization {
     this.id,
     required this.name,
     this.mayorId,
-    Object? mayor = _Undefined,
-  }) : _mayorLoaded = !identical(
+    Object? mayor = #serverpodUnloadedRelation,
+  }) : _mayor$loaded = !identical(
          mayor,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _mayor =
            !identical(
              mayor,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (mayor as _igho3lba.Citizen?)
            : null;
@@ -55,7 +55,7 @@ abstract class Town implements _isd.TableRow<int?>, _isc.ProtocolSerialization {
                 : _i0ntutnq.Protocol().deserialize<_igho3lba.Citizen>(
                     jsonSerialization['mayor'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -70,7 +70,7 @@ abstract class Town implements _isd.TableRow<int?>, _isc.ProtocolSerialization {
 
   int? mayorId;
 
-  bool _mayorLoaded;
+  bool _mayor$loaded;
 
   _igho3lba.Citizen? _mayor;
 
@@ -80,7 +80,7 @@ abstract class Town implements _isd.TableRow<int?>, _isc.ProtocolSerialization {
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _igho3lba.Citizen? get mayor {
     final value = _mayor;
-    if (!_mayorLoaded) {
+    if (!_mayor$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'Town',
         relation: 'mayor',
@@ -91,7 +91,7 @@ abstract class Town implements _isd.TableRow<int?>, _isc.ProtocolSerialization {
 
   set mayor(_igho3lba.Citizen? value) {
     _mayor = value;
-    _mayorLoaded = true;
+    _mayor$loaded = true;
   }
 
   /// Returns a shallow copy of this [Town]
@@ -110,7 +110,7 @@ abstract class Town implements _isd.TableRow<int?>, _isc.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (mayorId != null) 'mayorId': mayorId,
-      if (_mayorLoaded) 'mayor': _mayor?.toJson(),
+      if (_mayor$loaded) 'mayor': _mayor?.toJson(),
     };
   }
 
@@ -121,7 +121,7 @@ abstract class Town implements _isd.TableRow<int?>, _isc.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (mayorId != null) 'mayorId': mayorId,
-      if (_mayorLoaded) 'mayor': _mayor?.toJsonForProtocol(),
+      if (_mayor$loaded) 'mayor': _mayor?.toJsonForProtocol(),
     };
   }
 
@@ -160,7 +160,7 @@ class _TownImpl extends Town {
     int? id,
     required String name,
     int? mayorId,
-    Object? mayor = _Undefined,
+    Object? mayor = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -184,9 +184,9 @@ class _TownImpl extends Town {
       mayorId: mayorId is int? ? mayorId : this.mayorId,
       mayor: mayor is _igho3lba.Citizen?
           ? mayor?.copyWith()
-          : _mayorLoaded
+          : _mayor$loaded
           ? this._mayor?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 }

@@ -25,16 +25,16 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
     this.id,
     required this.name,
     this.arenaId,
-    Object? arena = _Undefined,
+    Object? arena = #serverpodUnloadedRelation,
     this.players,
-  }) : _arenaLoaded = !identical(
+  }) : _arena$loaded = !identical(
          arena,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _arena =
            !identical(
              arena,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (arena as _iv085ahk.Arena?)
            : null;
@@ -58,7 +58,7 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
                 : _i08l111i.Protocol().deserialize<_iv085ahk.Arena>(
                     jsonSerialization['arena'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       players: jsonSerialization['players'] == null
           ? null
           : _i08l111i.Protocol().deserialize<List<_i9mhudyy.Player>>(
@@ -78,7 +78,7 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   int? arenaId;
 
-  bool _arenaLoaded;
+  bool _arena$loaded;
 
   _iv085ahk.Arena? _arena;
 
@@ -90,7 +90,7 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _iv085ahk.Arena? get arena {
     final value = _arena;
-    if (!_arenaLoaded) {
+    if (!_arena$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'Team',
         relation: 'arena',
@@ -101,7 +101,7 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   set arena(_iv085ahk.Arena? value) {
     _arena = value;
-    _arenaLoaded = true;
+    _arena$loaded = true;
   }
 
   /// Returns a shallow copy of this [Team]
@@ -121,7 +121,7 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (arenaId != null) 'arenaId': arenaId,
-      if (_arenaLoaded) 'arena': _arena?.toJson(),
+      if (_arena$loaded) 'arena': _arena?.toJson(),
       if (players != null)
         'players': players?.toJson(valueToJson: (v) => v.toJson()),
     };
@@ -134,7 +134,7 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (arenaId != null) 'arenaId': arenaId,
-      if (_arenaLoaded) 'arena': _arena?.toJsonForProtocol(),
+      if (_arena$loaded) 'arena': _arena?.toJsonForProtocol(),
       if (players != null)
         'players': players?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
@@ -181,7 +181,7 @@ class _TeamImpl extends Team {
     int? id,
     required String name,
     int? arenaId,
-    Object? arena = _Undefined,
+    Object? arena = #serverpodUnloadedRelation,
     List<_i9mhudyy.Player>? players,
   }) : super._(
          id: id,
@@ -208,9 +208,9 @@ class _TeamImpl extends Team {
       arenaId: arenaId is int? ? arenaId : this.arenaId,
       arena: arena is _iv085ahk.Arena?
           ? arena?.copyWith()
-          : _arenaLoaded
+          : _arena$loaded
           ? this._arena?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       players: players is List<_i9mhudyy.Player>?
           ? players
           : this.players?.map((e0) => e0.copyWith()).toList(),

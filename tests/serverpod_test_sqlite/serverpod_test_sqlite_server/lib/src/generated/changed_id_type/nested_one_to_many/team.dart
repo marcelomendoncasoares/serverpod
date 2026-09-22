@@ -25,16 +25,16 @@ abstract class TeamInt
     this.id,
     required this.name,
     this.arenaId,
-    Object? arena = _Undefined,
+    Object? arena = #serverpodUnloadedRelation,
     this.players,
-  }) : _arenaLoaded = !identical(
+  }) : _arena$loaded = !identical(
          arena,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _arena =
            !identical(
              arena,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (arena as _izqzqdtt.ArenaUuid?)
            : null;
@@ -60,7 +60,7 @@ abstract class TeamInt
                 : _i08l111i.Protocol().deserialize<_izqzqdtt.ArenaUuid>(
                     jsonSerialization['arena'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       players: jsonSerialization['players'] == null
           ? null
           : _i08l111i.Protocol().deserialize<List<_igtph8zx.PlayerUuid>>(
@@ -80,7 +80,7 @@ abstract class TeamInt
 
   _is.UuidValue? arenaId;
 
-  bool _arenaLoaded;
+  bool _arena$loaded;
 
   _izqzqdtt.ArenaUuid? _arena;
 
@@ -92,7 +92,7 @@ abstract class TeamInt
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _izqzqdtt.ArenaUuid? get arena {
     final value = _arena;
-    if (!_arenaLoaded) {
+    if (!_arena$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'TeamInt',
         relation: 'arena',
@@ -103,7 +103,7 @@ abstract class TeamInt
 
   set arena(_izqzqdtt.ArenaUuid? value) {
     _arena = value;
-    _arenaLoaded = true;
+    _arena$loaded = true;
   }
 
   /// Returns a shallow copy of this [TeamInt]
@@ -123,7 +123,7 @@ abstract class TeamInt
       if (id != null) 'id': id,
       'name': name,
       if (arenaId != null) 'arenaId': arenaId?.toJson(),
-      if (_arenaLoaded) 'arena': _arena?.toJson(),
+      if (_arena$loaded) 'arena': _arena?.toJson(),
       if (players != null)
         'players': players?.toJson(valueToJson: (v) => v.toJson()),
     };
@@ -136,7 +136,7 @@ abstract class TeamInt
       if (id != null) 'id': id,
       'name': name,
       if (arenaId != null) 'arenaId': arenaId?.toJson(),
-      if (_arenaLoaded) 'arena': _arena?.toJsonForProtocol(),
+      if (_arena$loaded) 'arena': _arena?.toJsonForProtocol(),
       if (players != null)
         'players': players?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
@@ -183,7 +183,7 @@ class _TeamIntImpl extends TeamInt {
     int? id,
     required String name,
     _is.UuidValue? arenaId,
-    Object? arena = _Undefined,
+    Object? arena = #serverpodUnloadedRelation,
     List<_igtph8zx.PlayerUuid>? players,
   }) : super._(
          id: id,
@@ -210,9 +210,9 @@ class _TeamIntImpl extends TeamInt {
       arenaId: arenaId is _is.UuidValue? ? arenaId : this.arenaId,
       arena: arena is _izqzqdtt.ArenaUuid?
           ? arena?.copyWith()
-          : _arenaLoaded
+          : _arena$loaded
           ? this._arena?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       players: players is List<_igtph8zx.PlayerUuid>?
           ? players
           : this.players?.map((e0) => e0.copyWith()).toList(),

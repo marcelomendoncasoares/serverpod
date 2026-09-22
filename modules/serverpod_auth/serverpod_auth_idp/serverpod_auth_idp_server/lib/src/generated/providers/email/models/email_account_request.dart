@@ -8,15 +8,14 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_idp_server/src/generated/protocol.dart'
     as _i99s0abf;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import '../../../common/secret_challenge/models/secret_challenge.dart'
     as _i7k1fa50;
 
@@ -30,8 +29,19 @@ abstract class EmailAccountRequest
     required this.challengeId,
     this.challenge,
     this.createAccountChallengeId,
-    this.createAccountChallenge,
-  }) : createdAt = createdAt ?? DateTime.now();
+    Object? createAccountChallenge = #serverpodUnloadedRelation,
+  }) : _createAccountChallenge$loaded = !identical(
+         createAccountChallenge,
+         #serverpodUnloadedRelation,
+       ),
+       _createAccountChallenge =
+           !identical(
+             createAccountChallenge,
+             #serverpodUnloadedRelation,
+           )
+           ? (createAccountChallenge as _i7k1fa50.SecretChallenge?)
+           : null,
+       createdAt = createdAt ?? DateTime.now();
 
   factory EmailAccountRequest({
     _is.UuidValue? id,
@@ -44,7 +54,7 @@ abstract class EmailAccountRequest
   }) = _EmailAccountRequestImpl;
 
   factory EmailAccountRequest.fromJson(Map<String, dynamic> jsonSerialization) {
-    return EmailAccountRequest(
+    return _EmailAccountRequestImpl(
       id: jsonSerialization['id'] == null
           ? null
           : _is.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
@@ -67,11 +77,13 @@ abstract class EmailAccountRequest
               jsonSerialization['createAccountChallengeId'],
             ),
       createAccountChallenge:
-          jsonSerialization['createAccountChallenge'] == null
-          ? null
-          : _i99s0abf.Protocol().deserialize<_i7k1fa50.SecretChallenge>(
-              jsonSerialization['createAccountChallenge'],
-            ),
+          jsonSerialization.containsKey('createAccountChallenge')
+          ? jsonSerialization['createAccountChallenge'] == null
+                ? null
+                : _i99s0abf.Protocol().deserialize<_i7k1fa50.SecretChallenge>(
+                    jsonSerialization['createAccountChallenge'],
+                  )
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -97,26 +109,45 @@ abstract class EmailAccountRequest
 
   _is.UuidValue? createAccountChallengeId;
 
+  bool _createAccountChallenge$loaded;
+
   /// Used to complete the account creation.
   /// This will be set after the account creation challenge has been validated.
-  _i7k1fa50.SecretChallenge? createAccountChallenge;
+  _i7k1fa50.SecretChallenge? _createAccountChallenge;
 
   @override
   _is.Table<_is.UuidValue?> get table => t;
+
+  /// Used to complete the account creation.
+  /// This will be set after the account creation challenge has been validated.
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _i7k1fa50.SecretChallenge? get createAccountChallenge {
+    final value = _createAccountChallenge;
+    if (!_createAccountChallenge$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'EmailAccountRequest',
+        relation: 'createAccountChallenge',
+      );
+    }
+    return value;
+  }
+
+  set createAccountChallenge(_i7k1fa50.SecretChallenge? value) {
+    _createAccountChallenge = value;
+    _createAccountChallenge$loaded = true;
+  }
 
   /// Returns a shallow copy of this [EmailAccountRequest]
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   EmailAccountRequest copyWith({
-    _is.UuidValue? id = const _issu.$UndefinedUuidValue(),
+    _is.UuidValue? id,
     DateTime? createdAt,
     String? email,
     _is.UuidValue? challengeId,
-    _i7k1fa50.SecretChallenge? challenge =
-        const _UndefinedEmailAccountRequest$challenge(),
-    _is.UuidValue? createAccountChallengeId = const _issu.$UndefinedUuidValue(),
-    _i7k1fa50.SecretChallenge? createAccountChallenge =
-        const _UndefinedEmailAccountRequest$challenge(),
+    _i7k1fa50.SecretChallenge? challenge,
+    _is.UuidValue? createAccountChallengeId,
+    Object? createAccountChallenge = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -129,8 +160,8 @@ abstract class EmailAccountRequest
       if (challenge != null) 'challenge': challenge?.toJson(),
       if (createAccountChallengeId != null)
         'createAccountChallengeId': createAccountChallengeId?.toJson(),
-      if (createAccountChallenge != null)
-        'createAccountChallenge': createAccountChallenge?.toJson(),
+      if (_createAccountChallenge$loaded)
+        'createAccountChallenge': _createAccountChallenge?.toJson(),
     };
   }
 
@@ -173,10 +204,7 @@ abstract class EmailAccountRequest
   }
 }
 
-class _UndefinedEmailAccountRequest$challenge extends _issu.UndefinedSentinel
-    implements _i7k1fa50.SecretChallenge {
-  const _UndefinedEmailAccountRequest$challenge();
-}
+class _Undefined {}
 
 class _EmailAccountRequestImpl extends EmailAccountRequest {
   _EmailAccountRequestImpl({
@@ -186,7 +214,7 @@ class _EmailAccountRequestImpl extends EmailAccountRequest {
     required _is.UuidValue challengeId,
     _i7k1fa50.SecretChallenge? challenge,
     _is.UuidValue? createAccountChallengeId,
-    _i7k1fa50.SecretChallenge? createAccountChallenge,
+    Object? createAccountChallenge = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          createdAt: createdAt,
@@ -202,31 +230,31 @@ class _EmailAccountRequestImpl extends EmailAccountRequest {
   @_is.useResult
   @override
   EmailAccountRequest copyWith({
-    _is.UuidValue? id = const _issu.$UndefinedUuidValue(),
+    Object? id = _Undefined,
     DateTime? createdAt,
     String? email,
     _is.UuidValue? challengeId,
-    _i7k1fa50.SecretChallenge? challenge =
-        const _UndefinedEmailAccountRequest$challenge(),
-    _is.UuidValue? createAccountChallengeId = const _issu.$UndefinedUuidValue(),
-    _i7k1fa50.SecretChallenge? createAccountChallenge =
-        const _UndefinedEmailAccountRequest$challenge(),
+    Object? challenge = _Undefined,
+    Object? createAccountChallengeId = _Undefined,
+    Object? createAccountChallenge = _Undefined,
   }) {
-    return EmailAccountRequest(
-      id: id is _issu.UndefinedSentinel ? this.id : id,
+    return _EmailAccountRequestImpl(
+      id: id is _is.UuidValue? ? id : this.id,
       createdAt: createdAt ?? this.createdAt,
       email: email ?? this.email,
       challengeId: challengeId ?? this.challengeId,
-      challenge: challenge is _issu.UndefinedSentinel
-          ? this.challenge?.copyWith()
-          : challenge,
-      createAccountChallengeId:
-          createAccountChallengeId is _issu.UndefinedSentinel
-          ? this.createAccountChallengeId
-          : createAccountChallengeId,
-      createAccountChallenge: createAccountChallenge is _issu.UndefinedSentinel
-          ? this.createAccountChallenge?.copyWith()
-          : createAccountChallenge,
+      challenge: challenge is _i7k1fa50.SecretChallenge?
+          ? challenge
+          : this.challenge?.copyWith(),
+      createAccountChallengeId: createAccountChallengeId is _is.UuidValue?
+          ? createAccountChallengeId
+          : this.createAccountChallengeId,
+      createAccountChallenge:
+          createAccountChallenge is _i7k1fa50.SecretChallenge?
+          ? createAccountChallenge?.copyWith()
+          : _createAccountChallenge$loaded
+          ? this._createAccountChallenge?.copyWith()
+          : #serverpodUnloadedRelation,
     );
   }
 }

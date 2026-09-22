@@ -24,15 +24,15 @@ abstract class AddressUuid
     _is.UuidValue? id,
     required this.street,
     this.inhabitantId,
-    Object? inhabitant = _Undefined,
-  }) : _inhabitantLoaded = !identical(
+    Object? inhabitant = #serverpodUnloadedRelation,
+  }) : _inhabitant$loaded = !identical(
          inhabitant,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _inhabitant =
            !identical(
              inhabitant,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (inhabitant as _i7hzilwf.CitizenInt?)
            : null,
@@ -58,7 +58,7 @@ abstract class AddressUuid
                 : _i08l111i.Protocol().deserialize<_i7hzilwf.CitizenInt>(
                     jsonSerialization['inhabitant'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -73,7 +73,7 @@ abstract class AddressUuid
 
   int? inhabitantId;
 
-  bool _inhabitantLoaded;
+  bool _inhabitant$loaded;
 
   _i7hzilwf.CitizenInt? _inhabitant;
 
@@ -83,7 +83,7 @@ abstract class AddressUuid
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _i7hzilwf.CitizenInt? get inhabitant {
     final value = _inhabitant;
-    if (!_inhabitantLoaded) {
+    if (!_inhabitant$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'AddressUuid',
         relation: 'inhabitant',
@@ -94,7 +94,7 @@ abstract class AddressUuid
 
   set inhabitant(_i7hzilwf.CitizenInt? value) {
     _inhabitant = value;
-    _inhabitantLoaded = true;
+    _inhabitant$loaded = true;
   }
 
   /// Returns a shallow copy of this [AddressUuid]
@@ -113,7 +113,7 @@ abstract class AddressUuid
       'id': id.toJson(),
       'street': street,
       if (inhabitantId != null) 'inhabitantId': inhabitantId,
-      if (_inhabitantLoaded) 'inhabitant': _inhabitant?.toJson(),
+      if (_inhabitant$loaded) 'inhabitant': _inhabitant?.toJson(),
     };
   }
 
@@ -124,7 +124,7 @@ abstract class AddressUuid
       'id': id.toJson(),
       'street': street,
       if (inhabitantId != null) 'inhabitantId': inhabitantId,
-      if (_inhabitantLoaded) 'inhabitant': _inhabitant?.toJsonForProtocol(),
+      if (_inhabitant$loaded) 'inhabitant': _inhabitant?.toJsonForProtocol(),
     };
   }
 
@@ -163,7 +163,7 @@ class _AddressUuidImpl extends AddressUuid {
     _is.UuidValue? id,
     required String street,
     int? inhabitantId,
-    Object? inhabitant = _Undefined,
+    Object? inhabitant = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          street: street,
@@ -187,9 +187,9 @@ class _AddressUuidImpl extends AddressUuid {
       inhabitantId: inhabitantId is int? ? inhabitantId : this.inhabitantId,
       inhabitant: inhabitant is _i7hzilwf.CitizenInt?
           ? inhabitant?.copyWith()
-          : _inhabitantLoaded
+          : _inhabitant$loaded
           ? this._inhabitant?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 }

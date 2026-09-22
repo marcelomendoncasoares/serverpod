@@ -8,13 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_server/src/generated/protocol.dart' as _igqrxdcj;
 import '../../models_with_relations/nested_one_to_many/team.dart' as _iaks25tn;
 
@@ -22,8 +21,18 @@ abstract class Arena implements _is.TableRow<int?>, _is.ProtocolSerialization {
   Arena._({
     this.id,
     required this.name,
-    this.team,
-  });
+    Object? team = #serverpodUnloadedRelation,
+  }) : _team$loaded = !identical(
+         team,
+         #serverpodUnloadedRelation,
+       ),
+       _team =
+           !identical(
+             team,
+             #serverpodUnloadedRelation,
+           )
+           ? (team as _iaks25tn.Team?)
+           : null;
 
   factory Arena({
     int? id,
@@ -32,14 +41,16 @@ abstract class Arena implements _is.TableRow<int?>, _is.ProtocolSerialization {
   }) = _ArenaImpl;
 
   factory Arena.fromJson(Map<String, dynamic> jsonSerialization) {
-    return Arena(
+    return _ArenaImpl(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
-      team: jsonSerialization['team'] == null
-          ? null
-          : _igqrxdcj.Protocol().deserialize<_iaks25tn.Team>(
-              jsonSerialization['team'],
-            ),
+      team: jsonSerialization.containsKey('team')
+          ? jsonSerialization['team'] == null
+                ? null
+                : _igqrxdcj.Protocol().deserialize<_iaks25tn.Team>(
+                    jsonSerialization['team'],
+                  )
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -52,10 +63,29 @@ abstract class Arena implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   String name;
 
-  _iaks25tn.Team? team;
+  bool _team$loaded;
+
+  _iaks25tn.Team? _team;
 
   @override
   _is.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _iaks25tn.Team? get team {
+    final value = _team;
+    if (!_team$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'Arena',
+        relation: 'team',
+      );
+    }
+    return value;
+  }
+
+  set team(_iaks25tn.Team? value) {
+    _team = value;
+    _team$loaded = true;
+  }
 
   /// Returns a shallow copy of this [Arena]
   /// with some or all fields replaced by the given arguments.
@@ -63,7 +93,7 @@ abstract class Arena implements _is.TableRow<int?>, _is.ProtocolSerialization {
   Arena copyWith({
     int? id,
     String? name,
-    _iaks25tn.Team? team = const _UndefinedArena$team(),
+    Object? team = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -71,7 +101,7 @@ abstract class Arena implements _is.TableRow<int?>, _is.ProtocolSerialization {
       '__className__': 'Arena',
       if (id != null) 'id': id,
       'name': name,
-      if (team != null) 'team': team?.toJson(),
+      if (_team$loaded) 'team': _team?.toJson(),
     };
   }
 
@@ -81,7 +111,7 @@ abstract class Arena implements _is.TableRow<int?>, _is.ProtocolSerialization {
       '__className__': 'Arena',
       if (id != null) 'id': id,
       'name': name,
-      if (team != null) 'team': team?.toJsonForProtocol(),
+      if (_team$loaded) 'team': _team?.toJsonForProtocol(),
     };
   }
 
@@ -115,16 +145,11 @@ abstract class Arena implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
 class _Undefined {}
 
-class _UndefinedArena$team extends _issu.UndefinedSentinel
-    implements _iaks25tn.Team {
-  const _UndefinedArena$team();
-}
-
 class _ArenaImpl extends Arena {
   _ArenaImpl({
     int? id,
     required String name,
-    _iaks25tn.Team? team,
+    Object? team = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -138,12 +163,16 @@ class _ArenaImpl extends Arena {
   Arena copyWith({
     Object? id = _Undefined,
     String? name,
-    _iaks25tn.Team? team = const _UndefinedArena$team(),
+    Object? team = _Undefined,
   }) {
-    return Arena(
+    return _ArenaImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      team: team is _issu.UndefinedSentinel ? this.team?.copyWith() : team,
+      team: team is _iaks25tn.Team?
+          ? team?.copyWith()
+          : _team$loaded
+          ? this._team?.copyWith()
+          : #serverpodUnloadedRelation,
     );
   }
 }
@@ -743,7 +772,7 @@ class ArenaDetachRowRepository {
     Arena arena, {
     _is.Transaction? transaction,
   }) async {
-    var $team = arena.team;
+    var $team = arena._team;
 
     if ($team == null) {
       throw ArgumentError.notNull('arena.team');

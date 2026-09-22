@@ -21,42 +21,42 @@ abstract class ChangedIdTypeSelf
   ChangedIdTypeSelf._({
     _isc.UuidValue? id,
     required this.name,
-    Object? previous = _Undefined,
+    Object? previous = #serverpodUnloadedRelation,
     this.nextId,
-    Object? next = _Undefined,
+    Object? next = #serverpodUnloadedRelation,
     this.parentId,
-    Object? parent = _Undefined,
+    Object? parent = #serverpodUnloadedRelation,
     this.children,
-  }) : _previousLoaded = !identical(
+  }) : _previous$loaded = !identical(
          previous,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _previous =
            !identical(
              previous,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (previous as _iqjmn1nu.ChangedIdTypeSelf?)
            : null,
-       _nextLoaded = !identical(
+       _next$loaded = !identical(
          next,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _next =
            !identical(
              next,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (next as _iqjmn1nu.ChangedIdTypeSelf?)
            : null,
-       _parentLoaded = !identical(
+       _parent$loaded = !identical(
          parent,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _parent =
            !identical(
              parent,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (parent as _iqjmn1nu.ChangedIdTypeSelf?)
            : null,
@@ -85,7 +85,7 @@ abstract class ChangedIdTypeSelf
                 : _i0ntutnq.Protocol().deserialize<_iqjmn1nu.ChangedIdTypeSelf>(
                     jsonSerialization['previous'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       nextId: jsonSerialization['nextId'] == null
           ? null
           : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['nextId']),
@@ -95,7 +95,7 @@ abstract class ChangedIdTypeSelf
                 : _i0ntutnq.Protocol().deserialize<_iqjmn1nu.ChangedIdTypeSelf>(
                     jsonSerialization['next'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       parentId: jsonSerialization['parentId'] == null
           ? null
           : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['parentId']),
@@ -105,7 +105,7 @@ abstract class ChangedIdTypeSelf
                 : _i0ntutnq.Protocol().deserialize<_iqjmn1nu.ChangedIdTypeSelf>(
                     jsonSerialization['parent'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       children: jsonSerialization['children'] == null
           ? null
           : _i0ntutnq.Protocol().deserialize<List<_iqjmn1nu.ChangedIdTypeSelf>>(
@@ -119,19 +119,19 @@ abstract class ChangedIdTypeSelf
 
   String name;
 
-  bool _previousLoaded;
+  bool _previous$loaded;
 
   _iqjmn1nu.ChangedIdTypeSelf? _previous;
 
   _isc.UuidValue? nextId;
 
-  bool _nextLoaded;
+  bool _next$loaded;
 
   _iqjmn1nu.ChangedIdTypeSelf? _next;
 
   _isc.UuidValue? parentId;
 
-  bool _parentLoaded;
+  bool _parent$loaded;
 
   _iqjmn1nu.ChangedIdTypeSelf? _parent;
 
@@ -140,7 +140,7 @@ abstract class ChangedIdTypeSelf
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _iqjmn1nu.ChangedIdTypeSelf? get previous {
     final value = _previous;
-    if (!_previousLoaded) {
+    if (!_previous$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'ChangedIdTypeSelf',
         relation: 'previous',
@@ -151,13 +151,13 @@ abstract class ChangedIdTypeSelf
 
   set previous(_iqjmn1nu.ChangedIdTypeSelf? value) {
     _previous = value;
-    _previousLoaded = true;
+    _previous$loaded = true;
   }
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _iqjmn1nu.ChangedIdTypeSelf? get next {
     final value = _next;
-    if (!_nextLoaded) {
+    if (!_next$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'ChangedIdTypeSelf',
         relation: 'next',
@@ -168,13 +168,13 @@ abstract class ChangedIdTypeSelf
 
   set next(_iqjmn1nu.ChangedIdTypeSelf? value) {
     _next = value;
-    _nextLoaded = true;
+    _next$loaded = true;
   }
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _iqjmn1nu.ChangedIdTypeSelf? get parent {
     final value = _parent;
-    if (!_parentLoaded) {
+    if (!_parent$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'ChangedIdTypeSelf',
         relation: 'parent',
@@ -185,7 +185,7 @@ abstract class ChangedIdTypeSelf
 
   set parent(_iqjmn1nu.ChangedIdTypeSelf? value) {
     _parent = value;
-    _parentLoaded = true;
+    _parent$loaded = true;
   }
 
   /// Returns a shallow copy of this [ChangedIdTypeSelf]
@@ -207,11 +207,11 @@ abstract class ChangedIdTypeSelf
       '__className__': 'ChangedIdTypeSelf',
       if (id != null) 'id': id?.toJson(),
       'name': name,
-      if (_previousLoaded) 'previous': _previous?.toJson(),
+      if (_previous$loaded) 'previous': _previous?.toJson(),
       if (nextId != null) 'nextId': nextId?.toJson(),
-      if (_nextLoaded) 'next': _next?.toJson(),
+      if (_next$loaded) 'next': _next?.toJson(),
       if (parentId != null) 'parentId': parentId?.toJson(),
-      if (_parentLoaded) 'parent': _parent?.toJson(),
+      if (_parent$loaded) 'parent': _parent?.toJson(),
       if (children != null)
         'children': children?.toJson(valueToJson: (v) => v.toJson()),
     };
@@ -223,11 +223,11 @@ abstract class ChangedIdTypeSelf
       '__className__': 'ChangedIdTypeSelf',
       if (id != null) 'id': id?.toJson(),
       'name': name,
-      if (_previousLoaded) 'previous': _previous?.toJsonForProtocol(),
+      if (_previous$loaded) 'previous': _previous?.toJsonForProtocol(),
       if (nextId != null) 'nextId': nextId?.toJson(),
-      if (_nextLoaded) 'next': _next?.toJsonForProtocol(),
+      if (_next$loaded) 'next': _next?.toJsonForProtocol(),
       if (parentId != null) 'parentId': parentId?.toJson(),
-      if (_parentLoaded) 'parent': _parent?.toJsonForProtocol(),
+      if (_parent$loaded) 'parent': _parent?.toJsonForProtocol(),
       if (children != null)
         'children': children?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
@@ -245,11 +245,11 @@ class _ChangedIdTypeSelfImpl extends ChangedIdTypeSelf {
   _ChangedIdTypeSelfImpl({
     _isc.UuidValue? id,
     required String name,
-    Object? previous = _Undefined,
+    Object? previous = #serverpodUnloadedRelation,
     _isc.UuidValue? nextId,
-    Object? next = _Undefined,
+    Object? next = #serverpodUnloadedRelation,
     _isc.UuidValue? parentId,
-    Object? parent = _Undefined,
+    Object? parent = #serverpodUnloadedRelation,
     List<_iqjmn1nu.ChangedIdTypeSelf>? children,
   }) : super._(
          id: id,
@@ -281,21 +281,21 @@ class _ChangedIdTypeSelfImpl extends ChangedIdTypeSelf {
       name: name ?? this.name,
       previous: previous is _iqjmn1nu.ChangedIdTypeSelf?
           ? previous?.copyWith()
-          : _previousLoaded
+          : _previous$loaded
           ? this._previous?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       nextId: nextId is _isc.UuidValue? ? nextId : this.nextId,
       next: next is _iqjmn1nu.ChangedIdTypeSelf?
           ? next?.copyWith()
-          : _nextLoaded
+          : _next$loaded
           ? this._next?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       parentId: parentId is _isc.UuidValue? ? parentId : this.parentId,
       parent: parent is _iqjmn1nu.ChangedIdTypeSelf?
           ? parent?.copyWith()
-          : _parentLoaded
+          : _parent$loaded
           ? this._parent?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
       children: children is List<_iqjmn1nu.ChangedIdTypeSelf>?
           ? children
           : this.children?.map((e0) => e0.copyWith()).toList(),

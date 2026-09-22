@@ -28,15 +28,15 @@ abstract class OrganizationWithLongTableName
     required this.name,
     this.people,
     this.cityId,
-    Object? city = _Undefined,
-  }) : _cityLoaded = !identical(
+    Object? city = #serverpodUnloadedRelation,
+  }) : _city$loaded = !identical(
          city,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _city =
            !identical(
              city,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (city as _ii8bs4lb.CityWithLongTableName?)
            : null;
@@ -69,7 +69,7 @@ abstract class OrganizationWithLongTableName
                       .deserialize<_ii8bs4lb.CityWithLongTableName>(
                         jsonSerialization['city'],
                       )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -86,7 +86,7 @@ abstract class OrganizationWithLongTableName
 
   int? cityId;
 
-  bool _cityLoaded;
+  bool _city$loaded;
 
   _ii8bs4lb.CityWithLongTableName? _city;
 
@@ -96,7 +96,7 @@ abstract class OrganizationWithLongTableName
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _ii8bs4lb.CityWithLongTableName? get city {
     final value = _city;
-    if (!_cityLoaded) {
+    if (!_city$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'OrganizationWithLongTableName',
         relation: 'city',
@@ -107,7 +107,7 @@ abstract class OrganizationWithLongTableName
 
   set city(_ii8bs4lb.CityWithLongTableName? value) {
     _city = value;
-    _cityLoaded = true;
+    _city$loaded = true;
   }
 
   /// Returns a shallow copy of this [OrganizationWithLongTableName]
@@ -129,7 +129,7 @@ abstract class OrganizationWithLongTableName
       if (people != null)
         'people': people?.toJson(valueToJson: (v) => v.toJson()),
       if (cityId != null) 'cityId': cityId,
-      if (_cityLoaded) 'city': _city?.toJson(),
+      if (_city$loaded) 'city': _city?.toJson(),
     };
   }
 
@@ -142,7 +142,7 @@ abstract class OrganizationWithLongTableName
       if (people != null)
         'people': people?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
       if (cityId != null) 'cityId': cityId,
-      if (_cityLoaded) 'city': _city?.toJsonForProtocol(),
+      if (_city$loaded) 'city': _city?.toJsonForProtocol(),
     };
   }
 
@@ -188,7 +188,7 @@ class _OrganizationWithLongTableNameImpl extends OrganizationWithLongTableName {
     required String name,
     List<_i5nficvp.PersonWithLongTableName>? people,
     int? cityId,
-    Object? city = _Undefined,
+    Object? city = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -217,9 +217,9 @@ class _OrganizationWithLongTableNameImpl extends OrganizationWithLongTableName {
       cityId: cityId is int? ? cityId : this.cityId,
       city: city is _ii8bs4lb.CityWithLongTableName?
           ? city?.copyWith()
-          : _cityLoaded
+          : _city$loaded
           ? this._city?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 }

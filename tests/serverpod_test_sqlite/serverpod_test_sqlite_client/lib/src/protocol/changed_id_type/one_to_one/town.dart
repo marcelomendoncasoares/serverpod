@@ -23,15 +23,15 @@ abstract class TownInt
     this.id,
     required this.name,
     this.mayorId,
-    Object? mayor = _Undefined,
-  }) : _mayorLoaded = !identical(
+    Object? mayor = #serverpodUnloadedRelation,
+  }) : _mayor$loaded = !identical(
          mayor,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _mayor =
            !identical(
              mayor,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (mayor as _i7hzilwf.CitizenInt?)
            : null;
@@ -54,7 +54,7 @@ abstract class TownInt
                 : _i0ntutnq.Protocol().deserialize<_i7hzilwf.CitizenInt>(
                     jsonSerialization['mayor'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -67,14 +67,14 @@ abstract class TownInt
 
   final int? mayorId;
 
-  final bool _mayorLoaded;
+  final bool _mayor$loaded;
 
   final _i7hzilwf.CitizenInt? _mayor;
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _i7hzilwf.CitizenInt? get mayor {
     final value = _mayor;
-    if (!_mayorLoaded) {
+    if (!_mayor$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'TownInt',
         relation: 'mayor',
@@ -100,7 +100,7 @@ abstract class TownInt
         ) ||
         other.runtimeType == runtimeType &&
             other is TownInt &&
-            _mayorLoaded == other._mayorLoaded &&
+            _mayor$loaded == other._mayor$loaded &&
             (identical(
                   other.id,
                   id,
@@ -127,7 +127,7 @@ abstract class TownInt
   int get hashCode {
     return Object.hash(
       runtimeType,
-      _mayorLoaded,
+      _mayor$loaded,
       id,
       name,
       mayorId,
@@ -142,7 +142,7 @@ abstract class TownInt
       if (id != null) 'id': id,
       'name': name,
       if (mayorId != null) 'mayorId': mayorId,
-      if (_mayorLoaded) 'mayor': _mayor?.toJson(),
+      if (_mayor$loaded) 'mayor': _mayor?.toJson(),
     };
   }
 
@@ -153,7 +153,7 @@ abstract class TownInt
       if (id != null) 'id': id,
       'name': name,
       if (mayorId != null) 'mayorId': mayorId,
-      if (_mayorLoaded) 'mayor': _mayor?.toJsonForProtocol(),
+      if (_mayor$loaded) 'mayor': _mayor?.toJsonForProtocol(),
     };
   }
 
@@ -170,7 +170,7 @@ class _TownIntImpl extends TownInt {
     int? id,
     required String name,
     int? mayorId,
-    Object? mayor = _Undefined,
+    Object? mayor = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -194,9 +194,9 @@ class _TownIntImpl extends TownInt {
       mayorId: mayorId is int? ? mayorId : this.mayorId,
       mayor: mayor is _i7hzilwf.CitizenInt?
           ? mayor?.copyWith()
-          : _mayorLoaded
+          : _mayor$loaded
           ? this._mayor?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 }

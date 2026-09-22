@@ -24,15 +24,15 @@ abstract class PlayerUuid
     this.id,
     required this.name,
     this.teamId,
-    Object? team = _Undefined,
-  }) : _teamLoaded = !identical(
+    Object? team = #serverpodUnloadedRelation,
+  }) : _team$loaded = !identical(
          team,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _team =
            !identical(
              team,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (team as _i9bz1am4.TeamInt?)
            : null;
@@ -57,7 +57,7 @@ abstract class PlayerUuid
                 : _i08l111i.Protocol().deserialize<_i9bz1am4.TeamInt>(
                     jsonSerialization['team'],
                   )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -72,7 +72,7 @@ abstract class PlayerUuid
 
   int? teamId;
 
-  bool _teamLoaded;
+  bool _team$loaded;
 
   _i9bz1am4.TeamInt? _team;
 
@@ -82,7 +82,7 @@ abstract class PlayerUuid
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _i9bz1am4.TeamInt? get team {
     final value = _team;
-    if (!_teamLoaded) {
+    if (!_team$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'PlayerUuid',
         relation: 'team',
@@ -93,7 +93,7 @@ abstract class PlayerUuid
 
   set team(_i9bz1am4.TeamInt? value) {
     _team = value;
-    _teamLoaded = true;
+    _team$loaded = true;
   }
 
   /// Returns a shallow copy of this [PlayerUuid]
@@ -112,7 +112,7 @@ abstract class PlayerUuid
       if (id != null) 'id': id?.toJson(),
       'name': name,
       if (teamId != null) 'teamId': teamId,
-      if (_teamLoaded) 'team': _team?.toJson(),
+      if (_team$loaded) 'team': _team?.toJson(),
     };
   }
 
@@ -123,7 +123,7 @@ abstract class PlayerUuid
       if (id != null) 'id': id?.toJson(),
       'name': name,
       if (teamId != null) 'teamId': teamId,
-      if (_teamLoaded) 'team': _team?.toJsonForProtocol(),
+      if (_team$loaded) 'team': _team?.toJsonForProtocol(),
     };
   }
 
@@ -162,7 +162,7 @@ class _PlayerUuidImpl extends PlayerUuid {
     _is.UuidValue? id,
     required String name,
     int? teamId,
-    Object? team = _Undefined,
+    Object? team = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -186,9 +186,9 @@ class _PlayerUuidImpl extends PlayerUuid {
       teamId: teamId is int? ? teamId : this.teamId,
       team: team is _i9bz1am4.TeamInt?
           ? team?.copyWith()
-          : _teamLoaded
+          : _team$loaded
           ? this._team?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 }

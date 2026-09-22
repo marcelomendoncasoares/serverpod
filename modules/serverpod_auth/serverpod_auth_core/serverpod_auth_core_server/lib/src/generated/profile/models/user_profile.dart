@@ -8,15 +8,14 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/src/generated/protocol.dart'
     as _i8reeoob;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import '../../auth_user/models/auth_user.dart' as _ivyervu7;
 import '../../profile/models/user_profile_image.dart' as _i7y29ltp;
 
@@ -35,8 +34,19 @@ abstract class UserProfile
     this.email,
     DateTime? createdAt,
     this.imageId,
-    this.image,
-  }) : createdAt = createdAt ?? DateTime.now();
+    Object? image = #serverpodUnloadedRelation,
+  }) : _image$loaded = !identical(
+         image,
+         #serverpodUnloadedRelation,
+       ),
+       _image =
+           !identical(
+             image,
+             #serverpodUnloadedRelation,
+           )
+           ? (image as _i7y29ltp.UserProfileImage?)
+           : null,
+       createdAt = createdAt ?? DateTime.now();
 
   factory UserProfile({
     _is.UuidValue? id,
@@ -51,7 +61,7 @@ abstract class UserProfile
   }) = _UserProfileImpl;
 
   factory UserProfile.fromJson(Map<String, dynamic> jsonSerialization) {
-    return UserProfile(
+    return _UserProfileImpl(
       id: jsonSerialization['id'] == null
           ? null
           : _is.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
@@ -72,11 +82,13 @@ abstract class UserProfile
       imageId: jsonSerialization['imageId'] == null
           ? null
           : _is.UuidValueJsonExtension.fromJson(jsonSerialization['imageId']),
-      image: jsonSerialization['image'] == null
-          ? null
-          : _i8reeoob.Protocol().deserialize<_i7y29ltp.UserProfileImage>(
-              jsonSerialization['image'],
-            ),
+      image: jsonSerialization.containsKey('image')
+          ? jsonSerialization['image'] == null
+                ? null
+                : _i8reeoob.Protocol().deserialize<_i7y29ltp.UserProfileImage>(
+                    jsonSerialization['image'],
+                  )
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -111,25 +123,45 @@ abstract class UserProfile
 
   _is.UuidValue? imageId;
 
+  bool _image$loaded;
+
   /// The user's profile image.
-  _i7y29ltp.UserProfileImage? image;
+  _i7y29ltp.UserProfileImage? _image;
 
   @override
   _is.Table<_is.UuidValue?> get table => t;
+
+  /// The user's profile image.
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _i7y29ltp.UserProfileImage? get image {
+    final value = _image;
+    if (!_image$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'UserProfile',
+        relation: 'image',
+      );
+    }
+    return value;
+  }
+
+  set image(_i7y29ltp.UserProfileImage? value) {
+    _image = value;
+    _image$loaded = true;
+  }
 
   /// Returns a shallow copy of this [UserProfile]
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   UserProfile copyWith({
-    _is.UuidValue? id = const _issu.$UndefinedUuidValue(),
+    _is.UuidValue? id,
     _is.UuidValue? authUserId,
-    _ivyervu7.AuthUser? authUser = const _UndefinedUserProfile$authUser(),
+    _ivyervu7.AuthUser? authUser,
     String? userName,
     String? fullName,
     String? email,
     DateTime? createdAt,
-    _is.UuidValue? imageId = const _issu.$UndefinedUuidValue(),
-    _i7y29ltp.UserProfileImage? image = const _UndefinedUserProfile$image(),
+    _is.UuidValue? imageId,
+    Object? image = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -143,7 +175,7 @@ abstract class UserProfile
       if (email != null) 'email': email,
       'createdAt': createdAt.toJson(),
       if (imageId != null) 'imageId': imageId?.toJson(),
-      if (image != null) 'image': image?.toJson(),
+      if (_image$loaded) 'image': _image?.toJson(),
     };
   }
 
@@ -159,7 +191,7 @@ abstract class UserProfile
       if (email != null) 'email': email,
       'createdAt': createdAt.toJson(),
       if (imageId != null) 'imageId': imageId?.toJson(),
-      if (image != null) 'image': image?.toJsonForProtocol(),
+      if (_image$loaded) 'image': _image?.toJsonForProtocol(),
     };
   }
 
@@ -199,16 +231,6 @@ abstract class UserProfile
 
 class _Undefined {}
 
-class _UndefinedUserProfile$authUser extends _issu.UndefinedSentinel
-    implements _ivyervu7.AuthUser {
-  const _UndefinedUserProfile$authUser();
-}
-
-class _UndefinedUserProfile$image extends _issu.UndefinedSentinel
-    implements _i7y29ltp.UserProfileImage {
-  const _UndefinedUserProfile$image();
-}
-
 class _UserProfileImpl extends UserProfile {
   _UserProfileImpl({
     _is.UuidValue? id,
@@ -219,7 +241,7 @@ class _UserProfileImpl extends UserProfile {
     String? email,
     DateTime? createdAt,
     _is.UuidValue? imageId,
-    _i7y29ltp.UserProfileImage? image,
+    Object? image = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          authUserId: authUserId,
@@ -237,28 +259,32 @@ class _UserProfileImpl extends UserProfile {
   @_is.useResult
   @override
   UserProfile copyWith({
-    _is.UuidValue? id = const _issu.$UndefinedUuidValue(),
+    Object? id = _Undefined,
     _is.UuidValue? authUserId,
-    _ivyervu7.AuthUser? authUser = const _UndefinedUserProfile$authUser(),
+    Object? authUser = _Undefined,
     Object? userName = _Undefined,
     Object? fullName = _Undefined,
     Object? email = _Undefined,
     DateTime? createdAt,
-    _is.UuidValue? imageId = const _issu.$UndefinedUuidValue(),
-    _i7y29ltp.UserProfileImage? image = const _UndefinedUserProfile$image(),
+    Object? imageId = _Undefined,
+    Object? image = _Undefined,
   }) {
-    return UserProfile(
-      id: id is _issu.UndefinedSentinel ? this.id : id,
+    return _UserProfileImpl(
+      id: id is _is.UuidValue? ? id : this.id,
       authUserId: authUserId ?? this.authUserId,
-      authUser: authUser is _issu.UndefinedSentinel
-          ? this.authUser?.copyWith()
-          : authUser,
+      authUser: authUser is _ivyervu7.AuthUser?
+          ? authUser
+          : this.authUser?.copyWith(),
       userName: userName is String? ? userName : this.userName,
       fullName: fullName is String? ? fullName : this.fullName,
       email: email is String? ? email : this.email,
       createdAt: createdAt ?? this.createdAt,
-      imageId: imageId is _issu.UndefinedSentinel ? this.imageId : imageId,
-      image: image is _issu.UndefinedSentinel ? this.image?.copyWith() : image,
+      imageId: imageId is _is.UuidValue? ? imageId : this.imageId,
+      image: image is _i7y29ltp.UserProfileImage?
+          ? image?.copyWith()
+          : _image$loaded
+          ? this._image?.copyWith()
+          : #serverpodUnloadedRelation,
     );
   }
 }

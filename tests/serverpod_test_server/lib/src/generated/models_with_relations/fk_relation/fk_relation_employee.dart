@@ -8,13 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_server/src/generated/protocol.dart' as _igqrxdcj;
 import '../../models_with_relations/fk_relation/fk_relation_company.dart'
     as _ikyus01r;
@@ -27,8 +26,18 @@ abstract class FkRelationEmployee
     required this.companyId,
     this.company,
     this.previousCompanyId,
-    this.previousCompany,
-  });
+    Object? previousCompany = #serverpodUnloadedRelation,
+  }) : _previousCompany$loaded = !identical(
+         previousCompany,
+         #serverpodUnloadedRelation,
+       ),
+       _previousCompany =
+           !identical(
+             previousCompany,
+             #serverpodUnloadedRelation,
+           )
+           ? (previousCompany as _ikyus01r.FkRelationCompany?)
+           : null;
 
   factory FkRelationEmployee({
     int? id,
@@ -40,7 +49,7 @@ abstract class FkRelationEmployee
   }) = _FkRelationEmployeeImpl;
 
   factory FkRelationEmployee.fromJson(Map<String, dynamic> jsonSerialization) {
-    return FkRelationEmployee(
+    return _FkRelationEmployeeImpl(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       companyId: jsonSerialization['companyId'] as int,
@@ -50,11 +59,13 @@ abstract class FkRelationEmployee
               jsonSerialization['company'],
             ),
       previousCompanyId: jsonSerialization['previousCompanyId'] as int?,
-      previousCompany: jsonSerialization['previousCompany'] == null
-          ? null
-          : _igqrxdcj.Protocol().deserialize<_ikyus01r.FkRelationCompany>(
-              jsonSerialization['previousCompany'],
-            ),
+      previousCompany: jsonSerialization.containsKey('previousCompany')
+          ? jsonSerialization['previousCompany'] == null
+                ? null
+                : _igqrxdcj.Protocol().deserialize<_ikyus01r.FkRelationCompany>(
+                    jsonSerialization['previousCompany'],
+                  )
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -73,10 +84,29 @@ abstract class FkRelationEmployee
 
   int? previousCompanyId;
 
-  _ikyus01r.FkRelationCompany? previousCompany;
+  bool _previousCompany$loaded;
+
+  _ikyus01r.FkRelationCompany? _previousCompany;
 
   @override
   _is.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _ikyus01r.FkRelationCompany? get previousCompany {
+    final value = _previousCompany;
+    if (!_previousCompany$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'FkRelationEmployee',
+        relation: 'previousCompany',
+      );
+    }
+    return value;
+  }
+
+  set previousCompany(_ikyus01r.FkRelationCompany? value) {
+    _previousCompany = value;
+    _previousCompany$loaded = true;
+  }
 
   /// Returns a shallow copy of this [FkRelationEmployee]
   /// with some or all fields replaced by the given arguments.
@@ -85,11 +115,9 @@ abstract class FkRelationEmployee
     int? id,
     String? name,
     int? companyId,
-    _ikyus01r.FkRelationCompany? company =
-        const _UndefinedFkRelationEmployee$company(),
+    _ikyus01r.FkRelationCompany? company,
     int? previousCompanyId,
-    _ikyus01r.FkRelationCompany? previousCompany =
-        const _UndefinedFkRelationEmployee$company(),
+    Object? previousCompany = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -100,7 +128,8 @@ abstract class FkRelationEmployee
       'companyId': companyId,
       if (company != null) 'company': company?.toJson(),
       if (previousCompanyId != null) 'previousCompanyId': previousCompanyId,
-      if (previousCompany != null) 'previousCompany': previousCompany?.toJson(),
+      if (_previousCompany$loaded)
+        'previousCompany': _previousCompany?.toJson(),
     };
   }
 
@@ -113,8 +142,8 @@ abstract class FkRelationEmployee
       'companyId': companyId,
       if (company != null) 'company': company?.toJsonForProtocol(),
       if (previousCompanyId != null) 'previousCompanyId': previousCompanyId,
-      if (previousCompany != null)
-        'previousCompany': previousCompany?.toJsonForProtocol(),
+      if (_previousCompany$loaded)
+        'previousCompany': _previousCompany?.toJsonForProtocol(),
     };
   }
 
@@ -154,11 +183,6 @@ abstract class FkRelationEmployee
 
 class _Undefined {}
 
-class _UndefinedFkRelationEmployee$company extends _issu.UndefinedSentinel
-    implements _ikyus01r.FkRelationCompany {
-  const _UndefinedFkRelationEmployee$company();
-}
-
 class _FkRelationEmployeeImpl extends FkRelationEmployee {
   _FkRelationEmployeeImpl({
     int? id,
@@ -166,7 +190,7 @@ class _FkRelationEmployeeImpl extends FkRelationEmployee {
     required int companyId,
     _ikyus01r.FkRelationCompany? company,
     int? previousCompanyId,
-    _ikyus01r.FkRelationCompany? previousCompany,
+    Object? previousCompany = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -184,25 +208,25 @@ class _FkRelationEmployeeImpl extends FkRelationEmployee {
     Object? id = _Undefined,
     String? name,
     int? companyId,
-    _ikyus01r.FkRelationCompany? company =
-        const _UndefinedFkRelationEmployee$company(),
+    Object? company = _Undefined,
     Object? previousCompanyId = _Undefined,
-    _ikyus01r.FkRelationCompany? previousCompany =
-        const _UndefinedFkRelationEmployee$company(),
+    Object? previousCompany = _Undefined,
   }) {
-    return FkRelationEmployee(
+    return _FkRelationEmployeeImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       companyId: companyId ?? this.companyId,
-      company: company is _issu.UndefinedSentinel
-          ? this.company?.copyWith()
-          : company,
+      company: company is _ikyus01r.FkRelationCompany?
+          ? company
+          : this.company?.copyWith(),
       previousCompanyId: previousCompanyId is int?
           ? previousCompanyId
           : this.previousCompanyId,
-      previousCompany: previousCompany is _issu.UndefinedSentinel
-          ? this.previousCompany?.copyWith()
-          : previousCompany,
+      previousCompany: previousCompany is _ikyus01r.FkRelationCompany?
+          ? previousCompany?.copyWith()
+          : _previousCompany$loaded
+          ? this._previousCompany?.copyWith()
+          : #serverpodUnloadedRelation,
     );
   }
 }

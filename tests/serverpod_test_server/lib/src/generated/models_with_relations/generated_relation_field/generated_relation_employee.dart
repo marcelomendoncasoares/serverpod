@@ -8,13 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_server/src/generated/protocol.dart' as _igqrxdcj;
 import '../../models_with_relations/generated_relation_field/generated_relation_company.dart'
     as _ipeijyfj;
@@ -27,8 +26,18 @@ abstract class GeneratedRelationEmployee
     required this.customCompanyId,
     this.company,
     this.customPreviousCompanyId,
-    this.previousCompany,
-  });
+    Object? previousCompany = #serverpodUnloadedRelation,
+  }) : _previousCompany$loaded = !identical(
+         previousCompany,
+         #serverpodUnloadedRelation,
+       ),
+       _previousCompany =
+           !identical(
+             previousCompany,
+             #serverpodUnloadedRelation,
+           )
+           ? (previousCompany as _ipeijyfj.GeneratedRelationCompany?)
+           : null;
 
   factory GeneratedRelationEmployee({
     int? id,
@@ -42,7 +51,7 @@ abstract class GeneratedRelationEmployee
   factory GeneratedRelationEmployee.fromJson(
     Map<String, dynamic> jsonSerialization,
   ) {
-    return GeneratedRelationEmployee(
+    return _GeneratedRelationEmployeeImpl(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       customCompanyId: jsonSerialization['customCompanyId'] as int,
@@ -54,12 +63,14 @@ abstract class GeneratedRelationEmployee
                 ),
       customPreviousCompanyId:
           jsonSerialization['customPreviousCompanyId'] as int?,
-      previousCompany: jsonSerialization['previousCompany'] == null
-          ? null
-          : _igqrxdcj.Protocol()
-                .deserialize<_ipeijyfj.GeneratedRelationCompany>(
-                  jsonSerialization['previousCompany'],
-                ),
+      previousCompany: jsonSerialization.containsKey('previousCompany')
+          ? jsonSerialization['previousCompany'] == null
+                ? null
+                : _igqrxdcj.Protocol()
+                      .deserialize<_ipeijyfj.GeneratedRelationCompany>(
+                        jsonSerialization['previousCompany'],
+                      )
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -80,10 +91,29 @@ abstract class GeneratedRelationEmployee
   /// The foreign key of the [previousCompany] relation.
   int? customPreviousCompanyId;
 
-  _ipeijyfj.GeneratedRelationCompany? previousCompany;
+  bool _previousCompany$loaded;
+
+  _ipeijyfj.GeneratedRelationCompany? _previousCompany;
 
   @override
   _is.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _ipeijyfj.GeneratedRelationCompany? get previousCompany {
+    final value = _previousCompany;
+    if (!_previousCompany$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'GeneratedRelationEmployee',
+        relation: 'previousCompany',
+      );
+    }
+    return value;
+  }
+
+  set previousCompany(_ipeijyfj.GeneratedRelationCompany? value) {
+    _previousCompany = value;
+    _previousCompany$loaded = true;
+  }
 
   /// Returns a shallow copy of this [GeneratedRelationEmployee]
   /// with some or all fields replaced by the given arguments.
@@ -92,11 +122,9 @@ abstract class GeneratedRelationEmployee
     int? id,
     String? name,
     int? customCompanyId,
-    _ipeijyfj.GeneratedRelationCompany? company =
-        const _UndefinedGeneratedRelationEmployee$company(),
+    _ipeijyfj.GeneratedRelationCompany? company,
     int? customPreviousCompanyId,
-    _ipeijyfj.GeneratedRelationCompany? previousCompany =
-        const _UndefinedGeneratedRelationEmployee$company(),
+    Object? previousCompany = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -108,7 +136,8 @@ abstract class GeneratedRelationEmployee
       if (company != null) 'company': company?.toJson(),
       if (customPreviousCompanyId != null)
         'customPreviousCompanyId': customPreviousCompanyId,
-      if (previousCompany != null) 'previousCompany': previousCompany?.toJson(),
+      if (_previousCompany$loaded)
+        'previousCompany': _previousCompany?.toJson(),
     };
   }
 
@@ -122,8 +151,8 @@ abstract class GeneratedRelationEmployee
       if (company != null) 'company': company?.toJsonForProtocol(),
       if (customPreviousCompanyId != null)
         'customPreviousCompanyId': customPreviousCompanyId,
-      if (previousCompany != null)
-        'previousCompany': previousCompany?.toJsonForProtocol(),
+      if (_previousCompany$loaded)
+        'previousCompany': _previousCompany?.toJsonForProtocol(),
     };
   }
 
@@ -163,12 +192,6 @@ abstract class GeneratedRelationEmployee
 
 class _Undefined {}
 
-class _UndefinedGeneratedRelationEmployee$company
-    extends _issu.UndefinedSentinel
-    implements _ipeijyfj.GeneratedRelationCompany {
-  const _UndefinedGeneratedRelationEmployee$company();
-}
-
 class _GeneratedRelationEmployeeImpl extends GeneratedRelationEmployee {
   _GeneratedRelationEmployeeImpl({
     int? id,
@@ -176,7 +199,7 @@ class _GeneratedRelationEmployeeImpl extends GeneratedRelationEmployee {
     required int customCompanyId,
     _ipeijyfj.GeneratedRelationCompany? company,
     int? customPreviousCompanyId,
-    _ipeijyfj.GeneratedRelationCompany? previousCompany,
+    Object? previousCompany = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -194,25 +217,25 @@ class _GeneratedRelationEmployeeImpl extends GeneratedRelationEmployee {
     Object? id = _Undefined,
     String? name,
     int? customCompanyId,
-    _ipeijyfj.GeneratedRelationCompany? company =
-        const _UndefinedGeneratedRelationEmployee$company(),
+    Object? company = _Undefined,
     Object? customPreviousCompanyId = _Undefined,
-    _ipeijyfj.GeneratedRelationCompany? previousCompany =
-        const _UndefinedGeneratedRelationEmployee$company(),
+    Object? previousCompany = _Undefined,
   }) {
-    return GeneratedRelationEmployee(
+    return _GeneratedRelationEmployeeImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       customCompanyId: customCompanyId ?? this.customCompanyId,
-      company: company is _issu.UndefinedSentinel
-          ? this.company?.copyWith()
-          : company,
+      company: company is _ipeijyfj.GeneratedRelationCompany?
+          ? company
+          : this.company?.copyWith(),
       customPreviousCompanyId: customPreviousCompanyId is int?
           ? customPreviousCompanyId
           : this.customPreviousCompanyId,
-      previousCompany: previousCompany is _issu.UndefinedSentinel
-          ? this.previousCompany?.copyWith()
-          : previousCompany,
+      previousCompany: previousCompany is _ipeijyfj.GeneratedRelationCompany?
+          ? previousCompany?.copyWith()
+          : _previousCompany$loaded
+          ? this._previousCompany?.copyWith()
+          : #serverpodUnloadedRelation,
     );
   }
 }

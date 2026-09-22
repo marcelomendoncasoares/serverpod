@@ -23,15 +23,15 @@ abstract class PersonWithLongTableName
     this.id,
     required this.name,
     this.organizationId,
-    Object? organization = _Undefined,
-  }) : _organizationLoaded = !identical(
+    Object? organization = #serverpodUnloadedRelation,
+  }) : _organization$loaded = !identical(
          organization,
-         _Undefined,
+         #serverpodUnloadedRelation,
        ),
        _organization =
            !identical(
              organization,
-             _Undefined,
+             #serverpodUnloadedRelation,
            )
            ? (organization as _imc5i9r4.OrganizationWithLongTableName?)
            : null;
@@ -57,7 +57,7 @@ abstract class PersonWithLongTableName
                       .deserialize<_imc5i9r4.OrganizationWithLongTableName>(
                         jsonSerialization['organization'],
                       )
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -70,14 +70,14 @@ abstract class PersonWithLongTableName
 
   int? organizationId;
 
-  bool _organizationLoaded;
+  bool _organization$loaded;
 
   _imc5i9r4.OrganizationWithLongTableName? _organization;
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _imc5i9r4.OrganizationWithLongTableName? get organization {
     final value = _organization;
-    if (!_organizationLoaded) {
+    if (!_organization$loaded) {
       throw _iss.RelationNotLoadedError(
         model: 'PersonWithLongTableName',
         relation: 'organization',
@@ -88,7 +88,7 @@ abstract class PersonWithLongTableName
 
   set organization(_imc5i9r4.OrganizationWithLongTableName? value) {
     _organization = value;
-    _organizationLoaded = true;
+    _organization$loaded = true;
   }
 
   /// Returns a shallow copy of this [PersonWithLongTableName]
@@ -107,7 +107,7 @@ abstract class PersonWithLongTableName
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
-      if (_organizationLoaded) 'organization': _organization?.toJson(),
+      if (_organization$loaded) 'organization': _organization?.toJson(),
     };
   }
 
@@ -118,7 +118,7 @@ abstract class PersonWithLongTableName
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
-      if (_organizationLoaded)
+      if (_organization$loaded)
         'organization': _organization?.toJsonForProtocol(),
     };
   }
@@ -136,7 +136,7 @@ class _PersonWithLongTableNameImpl extends PersonWithLongTableName {
     int? id,
     required String name,
     int? organizationId,
-    Object? organization = _Undefined,
+    Object? organization = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -162,9 +162,9 @@ class _PersonWithLongTableNameImpl extends PersonWithLongTableName {
           : this.organizationId,
       organization: organization is _imc5i9r4.OrganizationWithLongTableName?
           ? organization?.copyWith()
-          : _organizationLoaded
+          : _organization$loaded
           ? this._organization?.copyWith()
-          : _Undefined,
+          : #serverpodUnloadedRelation,
     );
   }
 }

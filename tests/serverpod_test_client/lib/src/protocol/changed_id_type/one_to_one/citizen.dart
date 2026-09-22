@@ -8,11 +8,10 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: depend_on_referenced_packages
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_client/src/protocol/protocol.dart' as _iza9lbb5;
 import '../../changed_id_type/one_to_one/address.dart' as _ih0efjtk;
 import '../../changed_id_type/one_to_one/company.dart' as _i441ok8u;
@@ -22,12 +21,33 @@ abstract class CitizenInt
   CitizenInt._({
     this.id,
     required this.name,
-    this.address,
+    Object? address = #serverpodUnloadedRelation,
     required this.companyId,
     this.company,
     this.oldCompanyId,
-    this.oldCompany,
-  });
+    Object? oldCompany = #serverpodUnloadedRelation,
+  }) : _address$loaded = !identical(
+         address,
+         #serverpodUnloadedRelation,
+       ),
+       _address =
+           !identical(
+             address,
+             #serverpodUnloadedRelation,
+           )
+           ? (address as _ih0efjtk.AddressUuid?)
+           : null,
+       _oldCompany$loaded = !identical(
+         oldCompany,
+         #serverpodUnloadedRelation,
+       ),
+       _oldCompany =
+           !identical(
+             oldCompany,
+             #serverpodUnloadedRelation,
+           )
+           ? (oldCompany as _i441ok8u.CompanyUuid?)
+           : null;
 
   factory CitizenInt({
     int? id,
@@ -40,14 +60,16 @@ abstract class CitizenInt
   }) = _CitizenIntImpl;
 
   factory CitizenInt.fromJson(Map<String, dynamic> jsonSerialization) {
-    return CitizenInt(
+    return _CitizenIntImpl(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
-      address: jsonSerialization['address'] == null
-          ? null
-          : _iza9lbb5.Protocol().deserialize<_ih0efjtk.AddressUuid>(
-              jsonSerialization['address'],
-            ),
+      address: jsonSerialization.containsKey('address')
+          ? jsonSerialization['address'] == null
+                ? null
+                : _iza9lbb5.Protocol().deserialize<_ih0efjtk.AddressUuid>(
+                    jsonSerialization['address'],
+                  )
+          : #serverpodUnloadedRelation,
       companyId: _isc.UuidValueJsonExtension.fromJson(
         jsonSerialization['companyId'],
       ),
@@ -61,11 +83,13 @@ abstract class CitizenInt
           : _isc.UuidValueJsonExtension.fromJson(
               jsonSerialization['oldCompanyId'],
             ),
-      oldCompany: jsonSerialization['oldCompany'] == null
-          ? null
-          : _iza9lbb5.Protocol().deserialize<_i441ok8u.CompanyUuid>(
-              jsonSerialization['oldCompany'],
-            ),
+      oldCompany: jsonSerialization.containsKey('oldCompany')
+          ? jsonSerialization['oldCompany'] == null
+                ? null
+                : _iza9lbb5.Protocol().deserialize<_i441ok8u.CompanyUuid>(
+                    jsonSerialization['oldCompany'],
+                  )
+          : #serverpodUnloadedRelation,
     );
   }
 
@@ -76,7 +100,9 @@ abstract class CitizenInt
 
   String name;
 
-  _ih0efjtk.AddressUuid? address;
+  bool _address$loaded;
+
+  _ih0efjtk.AddressUuid? _address;
 
   _isc.UuidValue companyId;
 
@@ -84,7 +110,43 @@ abstract class CitizenInt
 
   _isc.UuidValue? oldCompanyId;
 
-  _i441ok8u.CompanyUuid? oldCompany;
+  bool _oldCompany$loaded;
+
+  _i441ok8u.CompanyUuid? _oldCompany;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _ih0efjtk.AddressUuid? get address {
+    final value = _address;
+    if (!_address$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'CitizenInt',
+        relation: 'address',
+      );
+    }
+    return value;
+  }
+
+  set address(_ih0efjtk.AddressUuid? value) {
+    _address = value;
+    _address$loaded = true;
+  }
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _i441ok8u.CompanyUuid? get oldCompany {
+    final value = _oldCompany;
+    if (!_oldCompany$loaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'CitizenInt',
+        relation: 'oldCompany',
+      );
+    }
+    return value;
+  }
+
+  set oldCompany(_i441ok8u.CompanyUuid? value) {
+    _oldCompany = value;
+    _oldCompany$loaded = true;
+  }
 
   /// Returns a shallow copy of this [CitizenInt]
   /// with some or all fields replaced by the given arguments.
@@ -92,11 +154,11 @@ abstract class CitizenInt
   CitizenInt copyWith({
     int? id,
     String? name,
-    _ih0efjtk.AddressUuid? address = const _UndefinedCitizenInt$address(),
+    Object? address = _Undefined,
     _isc.UuidValue? companyId,
-    _i441ok8u.CompanyUuid? company = const _UndefinedCitizenInt$company(),
-    _isc.UuidValue? oldCompanyId = const _issu.$UndefinedUuidValue(),
-    _i441ok8u.CompanyUuid? oldCompany = const _UndefinedCitizenInt$company(),
+    _i441ok8u.CompanyUuid? company,
+    _isc.UuidValue? oldCompanyId,
+    Object? oldCompany = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -104,11 +166,11 @@ abstract class CitizenInt
       '__className__': 'CitizenInt',
       if (id != null) 'id': id,
       'name': name,
-      if (address != null) 'address': address?.toJson(),
+      if (_address$loaded) 'address': _address?.toJson(),
       'companyId': companyId.toJson(),
       if (company != null) 'company': company?.toJson(),
       if (oldCompanyId != null) 'oldCompanyId': oldCompanyId?.toJson(),
-      if (oldCompany != null) 'oldCompany': oldCompany?.toJson(),
+      if (_oldCompany$loaded) 'oldCompany': _oldCompany?.toJson(),
     };
   }
 
@@ -118,11 +180,11 @@ abstract class CitizenInt
       '__className__': 'CitizenInt',
       if (id != null) 'id': id,
       'name': name,
-      if (address != null) 'address': address?.toJsonForProtocol(),
+      if (_address$loaded) 'address': _address?.toJsonForProtocol(),
       'companyId': companyId.toJson(),
       if (company != null) 'company': company?.toJsonForProtocol(),
       if (oldCompanyId != null) 'oldCompanyId': oldCompanyId?.toJson(),
-      if (oldCompany != null) 'oldCompany': oldCompany?.toJsonForProtocol(),
+      if (_oldCompany$loaded) 'oldCompany': _oldCompany?.toJsonForProtocol(),
     };
   }
 
@@ -134,25 +196,15 @@ abstract class CitizenInt
 
 class _Undefined {}
 
-class _UndefinedCitizenInt$address extends _issu.UndefinedSentinel
-    implements _ih0efjtk.AddressUuid {
-  const _UndefinedCitizenInt$address();
-}
-
-class _UndefinedCitizenInt$company extends _issu.UndefinedSentinel
-    implements _i441ok8u.CompanyUuid {
-  const _UndefinedCitizenInt$company();
-}
-
 class _CitizenIntImpl extends CitizenInt {
   _CitizenIntImpl({
     int? id,
     required String name,
-    _ih0efjtk.AddressUuid? address,
+    Object? address = #serverpodUnloadedRelation,
     required _isc.UuidValue companyId,
     _i441ok8u.CompanyUuid? company,
     _isc.UuidValue? oldCompanyId,
-    _i441ok8u.CompanyUuid? oldCompany,
+    Object? oldCompany = #serverpodUnloadedRelation,
   }) : super._(
          id: id,
          name: name,
@@ -170,28 +222,32 @@ class _CitizenIntImpl extends CitizenInt {
   CitizenInt copyWith({
     Object? id = _Undefined,
     String? name,
-    _ih0efjtk.AddressUuid? address = const _UndefinedCitizenInt$address(),
+    Object? address = _Undefined,
     _isc.UuidValue? companyId,
-    _i441ok8u.CompanyUuid? company = const _UndefinedCitizenInt$company(),
-    _isc.UuidValue? oldCompanyId = const _issu.$UndefinedUuidValue(),
-    _i441ok8u.CompanyUuid? oldCompany = const _UndefinedCitizenInt$company(),
+    Object? company = _Undefined,
+    Object? oldCompanyId = _Undefined,
+    Object? oldCompany = _Undefined,
   }) {
-    return CitizenInt(
+    return _CitizenIntImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      address: address is _issu.UndefinedSentinel
-          ? this.address?.copyWith()
-          : address,
+      address: address is _ih0efjtk.AddressUuid?
+          ? address?.copyWith()
+          : _address$loaded
+          ? this._address?.copyWith()
+          : #serverpodUnloadedRelation,
       companyId: companyId ?? this.companyId,
-      company: company is _issu.UndefinedSentinel
-          ? this.company?.copyWith()
-          : company,
-      oldCompanyId: oldCompanyId is _issu.UndefinedSentinel
-          ? this.oldCompanyId
-          : oldCompanyId,
-      oldCompany: oldCompany is _issu.UndefinedSentinel
-          ? this.oldCompany?.copyWith()
-          : oldCompany,
+      company: company is _i441ok8u.CompanyUuid?
+          ? company
+          : this.company?.copyWith(),
+      oldCompanyId: oldCompanyId is _isc.UuidValue?
+          ? oldCompanyId
+          : this.oldCompanyId,
+      oldCompany: oldCompany is _i441ok8u.CompanyUuid?
+          ? oldCompany?.copyWith()
+          : _oldCompany$loaded
+          ? this._oldCompany?.copyWith()
+          : #serverpodUnloadedRelation,
     );
   }
 }
