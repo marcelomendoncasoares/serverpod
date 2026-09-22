@@ -292,6 +292,89 @@
           ]
         }
       ]
+    },
+    {
+      "change": "Skip logging work without a logger",
+      "before": [
+        {
+          "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+          "postgres": "PostgreSQL 16.13 on x86_64-pc-linux-gnu, compiled by clang version 21.1.0, 64-bit"
+        },
+        {
+          "case": "select_1000_logging_false",
+          "median_ms": 454.959,
+          "samples_ms": [
+            461.724,
+            463.166,
+            441.885,
+            454.959,
+            438.555,
+            449.026,
+            453.594,
+            477.729,
+            488.918,
+            484.299,
+            429.575
+          ]
+        },
+        {
+          "case": "select_1000_logging_true",
+          "median_ms": 424.673,
+          "samples_ms": [
+            417.168,
+            443.378,
+            435.292,
+            470.958,
+            439.969,
+            459.085,
+            416.958,
+            421.488,
+            424.673,
+            417.496,
+            414.76
+          ]
+        }
+      ],
+      "after": [
+        {
+          "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+          "postgres": "PostgreSQL 16.13 on x86_64-pc-linux-gnu, compiled by clang version 21.1.0, 64-bit"
+        },
+        {
+          "case": "select_1000_logging_false",
+          "median_ms": 441.061,
+          "samples_ms": [
+            549.942,
+            593.496,
+            525.349,
+            428.688,
+            441.061,
+            457.94,
+            428.384,
+            428.108,
+            431.237,
+            441.858,
+            418.606
+          ]
+        },
+        {
+          "case": "select_1000_logging_true",
+          "median_ms": 414.943,
+          "samples_ms": [
+            414.272,
+            414.943,
+            414.574,
+            424.477,
+            410.222,
+            421.347,
+            412.78,
+            413.075,
+            416.851,
+            422.465,
+            449.326
+          ]
+        }
+      ]
     }
   ]
 }

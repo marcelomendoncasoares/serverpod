@@ -47,6 +47,8 @@ Times are medians in milliseconds for the whole workload. Raw samples are in
 | Direct result maps | Find 10,000 rows | 49.603 | 46.722 | Small, overlapping samples |
 | Direct result maps | Read 10,000 parents with a city and children | 317.936 | 295.041 | 7.2% lower median, overlapping samples |
 | Direct result maps | Update 10,000 rows with returning | 142.711 | 142.438 | No clear timing gain |
+| Skip unused logging | 1,000 individual reads without a logger | 454.959 | 441.061 | Small, overlapping samples |
+| Skip unused logging | Same reads with a logger (control) | 424.673 | 414.943 | Similar variation; no precise speedup claim |
 
 Benchmark invocation from the repository root (choose one workload):
 
@@ -67,3 +69,8 @@ single-pass reads and measured 66.157 ms for the plain 10,000-row read; it was
 replaced with lazy mapping for single-pass consumers. Small timing changes are
 not evidence of a reliable end-to-end speedup, although the redundant map
 allocation and repeated include normalization are removed.
+
+The logging guard avoids an unused stack trace and duration computation only
+when `DatabaseSession.logQuery` is null. The enabled-logger control varies by a
+similar amount, so the measurements do not establish a reliable percentage gain.
+The benchmark verifies all 16,000 enabled callbacks (warmups plus samples).

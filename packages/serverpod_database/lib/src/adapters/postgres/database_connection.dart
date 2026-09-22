@@ -870,12 +870,15 @@ class PostgresDatabaseConnection
     dynamic exception,
     StackTrace? trace,
   }) {
+    var logQuery = session.logQuery;
+    if (logQuery == null) return;
+
     var duration = DateTime.now().difference(startTime);
 
     // Use the current stack trace if there is no exception.
     trace ??= StackTrace.current;
 
-    session.logQuery?.call(
+    logQuery(
       query: query,
       duration: duration,
       numRowsAffected: numRowsAffected,
