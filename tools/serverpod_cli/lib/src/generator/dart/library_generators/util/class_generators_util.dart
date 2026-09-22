@@ -92,8 +92,9 @@ Expression buildFromJsonForField(
   bool serverCode,
   GeneratorConfig config,
   List<String> subDirParts,
-  String? currentSharedPackageName,
-) {
+  String? currentSharedPackageName, {
+  Expression? ifAbsent,
+}) {
   Reference jsonReference = refer('jsonSerialization');
   var value = _buildFromJson(
     jsonReference,
@@ -106,13 +107,13 @@ Expression buildFromJsonForField(
     currentSharedPackageName: currentSharedPackageName,
   );
 
-  if (field.hasOptionalRelationGetter) {
+  if (ifAbsent != null) {
     return jsonReference
         .property('containsKey')
         .call([
           literalString(field.jsonKey),
         ])
-        .conditional(value, refer('#serverpodUnloadedRelation'));
+        .conditional(value, ifAbsent);
   }
 
   return value;

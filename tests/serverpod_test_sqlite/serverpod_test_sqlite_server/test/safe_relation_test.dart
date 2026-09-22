@@ -68,10 +68,10 @@ void main() {
     );
 
     test(
-      'when copying an unrelated field or passing null for town, '
+      'when copying an unrelated field, '
       'then town remains unloaded.',
       () {
-        final copy = company.copyWith(name: 'Renamed', town: null);
+        final copy = company.copyWith(name: 'Renamed');
 
         expect(copy.name, 'Renamed');
         expect(() => copy.town, throwsA(isA<RelationNotLoadedError>()));
@@ -212,9 +212,9 @@ void main() {
       expect(() => customer.orders, throwsA(isA<RelationNotLoadedError>()));
     });
 
-    test('when copying with null orders, '
+    test('when copying without orders, '
         'then orders remain unloaded.', () {
-      final copy = customer.copyWith(orders: null);
+      final copy = customer.copyWith();
 
       expect(() => copy.orders, throwsA(isA<RelationNotLoadedError>()));
       expect(copy.toJson().containsKey('orders'), isFalse);
@@ -254,19 +254,16 @@ void main() {
 
   test(
     'Given a loaded required town, '
-    'when copying with an omitted or null town, '
+    'when copying with an omitted town, '
     'then the loaded value is deep copied.',
     () {
       final town = Town(name: 'Stockholm', mayor: null);
       final company = Company(name: 'Serverpod', townId: 1, town: town);
 
       final omitted = company.copyWith();
-      final explicitNull = company.copyWith(town: null);
 
       expect(omitted.town.name, 'Stockholm');
-      expect(explicitNull.town.name, 'Stockholm');
       expect(identical(omitted.town, town), isFalse);
-      expect(identical(explicitNull.town, town), isFalse);
       expect(omitted.town.mayor, isNull);
     },
   );
@@ -340,8 +337,8 @@ void main() {
       const customer = CustomerInt(name: 'Ada');
 
       final townCopy = town.copyWith();
-      final companyCopy = company.copyWith(town: null);
-      final customerCopy = customer.copyWith(orders: null);
+      final companyCopy = company.copyWith();
+      final customerCopy = customer.copyWith();
 
       expect(townCopy, town);
       expect(townCopy.hashCode, town.hashCode);

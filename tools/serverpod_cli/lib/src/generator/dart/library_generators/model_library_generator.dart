@@ -703,11 +703,6 @@ class SerializableModelLibraryGenerator {
       ? '\$${field.name}RelationValue'
       : '_${field.name}';
 
-  String _relationLoadedName(SerializableModelFieldDefinition field) =>
-      _currentClass!.inheritedFields.contains(field)
-      ? '\$${field.name}RelationLoaded'
-      : '_${field.name}\$loaded';
-
   Expression _modelConstructionExpression(
     bool hasImplicitClass,
     String className,
@@ -724,17 +719,15 @@ class SerializableModelLibraryGenerator {
   Expression _relationState(
     SerializableModelFieldDefinition field, {
     required String receiver,
-  }) {
-    var value = refer(receiver).property(_relationValueName(field));
-    if (!field.hasOptionalRelationGetter) return value;
+  }) => refer(receiver).property(_relationValueName(field));
 
-    return refer(receiver)
-        .property(_relationLoadedName(field))
-        .conditional(
-          value,
-          refer('#serverpodUnloadedRelation'),
-        );
-  }
+  Expression _relationUndefinedSentinel(
+    SerializableModelFieldDefinition field,
+  ) => _typedUndefinedSentinel(
+    field,
+    _currentClass!.subDirParts,
+    _currentClass!.className,
+  );
 
   List<Method> _buildRelationAccessors(ModelClassDefinition definition) {
     return [
@@ -757,16 +750,6 @@ class SerializableModelLibraryGenerator {
               ..lambda = true
               ..body = refer('_${field.name}').code,
           ),
-          if (field.hasOptionalRelationGetter)
-            Method(
-              (m) => m
-                ..name = '\$${field.name}RelationLoaded'
-                ..type = MethodType.getter
-                ..docs.add('/// @nodoc')
-                ..returns = refer('bool')
-                ..lambda = true
-                ..body = refer('_${field.name}\$loaded').code,
-            ),
         ],
         Method((m) {
           m
@@ -783,11 +766,17 @@ class SerializableModelLibraryGenerator {
             ])
             ..body = Block.of([
               Code('final value = _${field.name};'),
-              Code(
-                field.hasOptionalRelationGetter
-                    ? 'if (!_${field.name}\$loaded) {'
-                    : 'if (value == null) {',
-              ),
+              const Code('if ('),
+              (field.hasOptionalRelationGetter
+                      ? refer('value').isA(
+                          refer(
+                            'UndefinedSentinel',
+                            serverpodUndefinedSentinelUrl,
+                          ),
+                        )
+                      : refer('value').equalTo(literalNull))
+                  .code,
+              const Code(') {'),
               refer('RelationNotLoadedError', serverpodSerializationUrl)
                   .call([], {
                     'model': literalString(definition.className),
@@ -817,8 +806,6 @@ class SerializableModelLibraryGenerator {
               )
               ..body = Block.of([
                 Code('_${field.name} = value;'),
-                if (field.hasOptionalRelationGetter)
-                  Code('_${field.name}\$loaded = true;'),
               ]);
           }),
       ],
@@ -833,8 +820,8 @@ class SerializableModelLibraryGenerator {
       field.type.className == 'dynamic' ||
       field.hasSafeRelationGetter;
 
-  bool _hasTypedCopyWithSentinel(TypeDefinition type) =>
-      _hasPrivateCopyWithSentinel(type) ||
+  bool _hasTypedUndefinedSentinel(TypeDefinition type) =>
+      _hasPrivateUndefinedSentinel(type) ||
       type.isCollectionType ||
       type.isVectorType ||
       type.isGeographyType ||
@@ -845,7 +832,7 @@ class SerializableModelLibraryGenerator {
         'Uri',
       }.contains(type.className);
 
-  bool _hasPrivateCopyWithSentinel(TypeDefinition type) {
+  bool _hasPrivateUndefinedSentinel(TypeDefinition type) {
     if (type.customClass || type.isEnumType) return false;
 
     final model = type.classDefinition ?? type.projectModelDefinition;
@@ -865,8 +852,8 @@ class SerializableModelLibraryGenerator {
     for (final definition in libraryClasses) {
       for (final field in definition.fieldsIncludingInherited) {
         if (!field.shouldIncludeField(serverCode) ||
-            !field.type.nullable ||
-            !_hasPrivateCopyWithSentinel(field.type)) {
+            !_fieldUsesUndefinedCopyWithSentinel(field) ||
+            !_hasPrivateUndefinedSentinel(field.type)) {
           continue;
         }
 
@@ -911,13 +898,13 @@ class SerializableModelLibraryGenerator {
     }
   }
 
-  Expression _typedCopyWithSentinel(
+  Expression _typedUndefinedSentinel(
     SerializableModelFieldDefinition field,
     List<String> subDirParts,
     String className,
   ) {
     final type = field.type;
-    if (_hasPrivateCopyWithSentinel(type)) {
+    if (_hasPrivateUndefinedSentinel(type)) {
       final model = type.classDefinition ?? type.projectModelDefinition;
       final sentinel = _copyWithSentinels[className]![model]!;
 
@@ -944,7 +931,7 @@ class SerializableModelLibraryGenerator {
     SerializableModelFieldDefinition field,
   ) =>
       _fieldUsesUndefinedCopyWithSentinel(field) &&
-      !_hasTypedCopyWithSentinel(field.type);
+      !_hasTypedUndefinedSentinel(field.type);
 
   bool _shouldCreateUndefinedClass(
     ClassDefinition classDefinition,
@@ -1260,7 +1247,9 @@ class SerializableModelLibraryGenerator {
             (field) {
               var fieldType = field.type.reference(
                 serverCode,
-                nullable: true,
+                nullable: field.hasSafeRelationGetter
+                    ? field.type.nullable
+                    : true,
                 subDirParts: subDirParts,
                 config: config,
               );
@@ -1269,12 +1258,12 @@ class SerializableModelLibraryGenerator {
                   _fieldUsesUndefinedCopyWithSentinel(field);
               final usesTypedSentinel =
                   usesUndefinedCopyWithDefault &&
-                  _hasTypedCopyWithSentinel(field.type);
+                  _hasTypedUndefinedSentinel(field.type);
               var type = usesUndefinedCopyWithDefault && !usesTypedSentinel
                   ? refer('Object?')
                   : fieldType;
               var defaultValue = usesTypedSentinel
-                  ? _typedCopyWithSentinel(field, subDirParts, className).code
+                  ? _typedUndefinedSentinel(field, subDirParts, className).code
                   : usesUndefinedCopyWithDefault
                   ? const Code('_Undefined')
                   : null;
@@ -1327,33 +1316,10 @@ class SerializableModelLibraryGenerator {
 
     var visibleAssignments = visibleFields.fold({}, (map, field) {
       if (field.hasSafeRelationGetter) {
-        var fieldType = field.type.reference(
-          serverCode,
-          subDirParts: subDirParts,
-          config: config,
-        );
         var copiedValue = _buildDeepCloneTree(
           field.type,
           field.name,
         );
-        if (field.type.isListType) {
-          // Object? parameters do not provide inference for an empty list
-          // literal. Accept List<dynamic> and check its elements while copying.
-          fieldType = refer('List');
-          copiedValue = refer(field.name)
-              .property('cast')
-              .call([], {}, [
-                field.type.generics.single.reference(
-                  serverCode,
-                  subDirParts: subDirParts,
-                  config: config,
-                ),
-              ])
-              .property('map')
-              .call([_buildListCloneCallback(field.type.generics.single, 0)])
-              .property('toList')
-              .call([]);
-        }
 
         var preservedValue = _buildDeepCloneTree(
           field.type.asNullable,
@@ -1362,18 +1328,18 @@ class SerializableModelLibraryGenerator {
         );
 
         if (field.hasOptionalRelationGetter) {
-          preservedValue = refer(_relationLoadedName(field)).conditional(
-            preservedValue,
-            refer('#serverpodUnloadedRelation'),
-          );
+          var storedValue = refer(_relationValueName(field));
+          preservedValue = storedValue
+              .isA(refer('UndefinedSentinel', serverpodUndefinedSentinelUrl))
+              .conditional(storedValue, preservedValue);
         }
 
         return map
           ..[field.name] = refer(field.name)
-              .isA(fieldType)
+              .isA(refer('UndefinedSentinel', serverpodUndefinedSentinelUrl))
               .conditional(
-                copiedValue,
                 preservedValue,
+                copiedValue,
               );
       }
 
@@ -1393,7 +1359,8 @@ class SerializableModelLibraryGenerator {
               refer(field.name),
               assignment,
             );
-      } else if (field.type.nullable && _hasTypedCopyWithSentinel(field.type)) {
+      } else if (field.type.nullable &&
+          _hasTypedUndefinedSentinel(field.type)) {
         valueDefinition = refer(field.name)
             .isA(refer('UndefinedSentinel', serverpodUndefinedSentinelUrl))
             .conditional(assignment, refer(field.name));
@@ -1463,12 +1430,6 @@ class SerializableModelLibraryGenerator {
         var comparisons = [
           refer('other').property('runtimeType').equalTo(refer('runtimeType')),
           refer('other').isA(refer(classDefinition.className)),
-          for (var field in includedFields.where(
-            (field) => field.hasOptionalRelationGetter,
-          ))
-            refer(_relationLoadedName(field)).equalTo(
-              refer('other').property(_relationLoadedName(field)),
-            ),
           ...includedFields.map((field) {
             var name = field.hasSafeRelationGetter
                 ? _relationValueName(field)
@@ -1483,11 +1444,26 @@ class SerializableModelLibraryGenerator {
                   .call([otherProperty, thisProperty]);
             }
 
-            return _wrapWithParentheses(
-              refer('identical')
-                  .call([otherProperty, thisProperty])
-                  .or(otherProperty.equalTo(thisProperty)),
-            );
+            var comparison = refer('identical')
+                .call([otherProperty, thisProperty])
+                .or(otherProperty.equalTo(thisProperty));
+
+            if (field.hasOptionalRelationGetter) {
+              var sentinelType = refer(
+                'UndefinedSentinel',
+                serverpodUndefinedSentinelUrl,
+              );
+              comparison = thisProperty
+                  .isA(sentinelType)
+                  .conditional(
+                    otherProperty.isA(sentinelType),
+                    otherProperty
+                        .isNotA(sentinelType)
+                        .and(_wrapWithParentheses(comparison)),
+                  );
+            }
+
+            return _wrapWithParentheses(comparison);
           }),
         ];
 
@@ -1506,7 +1482,9 @@ class SerializableModelLibraryGenerator {
   }
 
   Expression _wrapWithParentheses(Expression expr) {
-    return CodeExpression(Code('(${expr.accept(DartEmitter())})'));
+    return CodeExpression(
+      Block.of([const Code('('), expr.code, const Code(')')]),
+    );
   }
 
   Method _buildHashCodeMethod(
@@ -1525,10 +1503,6 @@ class SerializableModelLibraryGenerator {
 
         var expressions = [
           refer('runtimeType'),
-          for (var field in includedFields.where(
-            (field) => field.hasOptionalRelationGetter,
-          ))
-            refer(_relationLoadedName(field)),
           ...includedFields.map((field) {
             var fieldName = field.hasSafeRelationGetter
                 ? _relationValueName(field)
@@ -1541,7 +1515,16 @@ class SerializableModelLibraryGenerator {
               ).constInstance([]).property('hash').call([refer(fieldName)]);
             }
 
-            return refer(fieldName);
+            var value = refer(fieldName);
+            if (field.hasOptionalRelationGetter) {
+              var sentinelType = refer(
+                'UndefinedSentinel',
+                serverpodUndefinedSentinelUrl,
+              );
+              return value.isA(sentinelType).conditional(sentinelType, value);
+            }
+
+            return value;
           }),
         ];
 
@@ -2246,7 +2229,15 @@ class SerializableModelLibraryGenerator {
       return {
         ...map,
         if (field.hasOptionalRelationGetter)
-          Code("if (${_relationLoadedName(field)}) '$fieldKey'"): fieldRef
+          Block.of([
+            const Code('if ('),
+            fieldName
+                .isNotA(
+                  refer('UndefinedSentinel', serverpodUndefinedSentinelUrl),
+                )
+                .code,
+            Code(") '$fieldKey'"),
+          ]): fieldRef
         else if (hasNonNullableRelation)
           Code("if (${fieldName.symbol} case final value?) '$fieldKey'"):
               fieldRef
@@ -2308,6 +2299,9 @@ class SerializableModelLibraryGenerator {
                     config,
                     subDirParts,
                     currentSharedPackageName,
+                    ifAbsent: field.hasOptionalRelationGetter
+                        ? _relationUndefinedSentinel(field)
+                        : null,
                   ),
                 for (var field in hiddenSerializableFields)
                   createFieldName(serverCode, field): buildFromJsonForField(
@@ -2360,32 +2354,8 @@ class SerializableModelLibraryGenerator {
         (field) =>
             field.hasSafeRelationGetter && field.shouldIncludeField(serverCode),
       )) {
-        var value = refer(field.name);
-        Expression initialValue = value;
-
-        if (field.hasOptionalRelationGetter) {
-          var isLoaded = refer('identical').call([
-            value,
-            refer('#serverpodUnloadedRelation'),
-          ]).negate();
-
-          c.initializers.add(
-            refer('_${field.name}\$loaded').assign(isLoaded).code,
-          );
-          initialValue = isLoaded.conditional(
-            value.asA(
-              field.type.reference(
-                serverCode,
-                subDirParts: subDirParts,
-                config: config,
-              ),
-            ),
-            literalNull,
-          );
-        }
-
         c.initializers.add(
-          refer('_${field.name}').assign(initialValue).code,
+          refer('_${field.name}').assign(refer(field.name)).code,
         );
       }
 
@@ -2534,17 +2504,15 @@ class SerializableModelLibraryGenerator {
             ..named = true
             ..name = field.name
             ..required = publicFactory && field.isRequired
-            ..type = !publicFactory && field.hasOptionalRelationGetter
-                ? refer('Object?')
-                : field.type.reference(
-                    serverCode,
-                    nullable: publicFactory ? field.type.nullable : true,
-                    subDirParts: subDirParts,
-                    config: config,
-                  );
+            ..type = field.type.reference(
+              serverCode,
+              nullable: publicFactory ? field.type.nullable : true,
+              subDirParts: subDirParts,
+              config: config,
+            );
 
           if (!publicFactory && field.hasOptionalRelationGetter) {
-            p.defaultTo = const Code('#serverpodUnloadedRelation');
+            p.defaultTo = _relationUndefinedSentinel(field).code;
           }
         });
       }
@@ -2679,7 +2647,7 @@ class SerializableModelLibraryGenerator {
     ) {
       var fieldType = field.type.reference(
         serverCode,
-        nullable: true,
+        nullable: field.hasSafeRelationGetter ? field.type.nullable : true,
         subDirParts: subDirParts,
         config: config,
       );
@@ -2689,7 +2657,8 @@ class SerializableModelLibraryGenerator {
           (field.name == defaultPrimaryKeyName && isIdInherited);
 
       var usesTypedSentinel =
-          field.type.nullable && _hasTypedCopyWithSentinel(field.type);
+          _fieldUsesUndefinedCopyWithSentinel(field) &&
+          _hasTypedUndefinedSentinel(field.type);
       var type = field.type.nullable && isInheritedField && !usesTypedSentinel
           ? refer('Object?')
           : fieldType;
@@ -2699,7 +2668,7 @@ class SerializableModelLibraryGenerator {
           ..named = true
           ..type = type
           ..defaultTo = usesTypedSentinel
-              ? _typedCopyWithSentinel(field, subDirParts, className).code
+              ? _typedUndefinedSentinel(field, subDirParts, className).code
               : null
           ..name = field.name,
       );
@@ -2726,19 +2695,6 @@ class SerializableModelLibraryGenerator {
         .where((f) => !(f.name == 'id' && isTableOwner && tableName != null));
 
     for (var field in classFields) {
-      if (field.hasOptionalRelationGetter) {
-        modelClassFields.add(
-          Field(
-            (f) => f
-              ..name = '_${field.name}\$loaded'
-              ..type = refer('bool')
-              ..modifier = isClassImmutable
-                  ? FieldModifier.final$
-                  : FieldModifier.var$,
-          ),
-        );
-      }
-
       modelClassFields.add(
         Field((f) {
           f

@@ -40,10 +40,20 @@ loaded and absent. Immutable models have no setters.
 ## Copying and serialization
 
 `copyWith` preserves omitted relations and deep copies loaded related models and
-lists. Explicit null preserves required and list relations; on optional
-relations it means loaded and absent. Passing an empty list loads an empty list.
+lists. Parameters retain their domain types: explicit null is rejected for
+required and list relations; on optional relations it means loaded and absent.
+Passing an empty list loads an empty list.
 Copying, comparing immutable models, serialization, and generated persistence
 helpers inspect stored state without invoking throwing getters.
+
+Constructors, deserialization, and copying share the typed `UndefinedSentinel`
+mechanism used by `copyWith`. Generated code recognizes its shared base type so
+omitted arguments remain unloaded across inherited models in separate libraries.
+Optional relations retain the sentinel in their private backing field when
+unloaded, so they need no separate loading flag. Getters and generated helpers
+check for it before using a domain value. Sentinels never appear in JSON.
+Immutable equality and hashing compare unloaded state independently of which
+private sentinel class supplied the default.
 
 Unloaded relations are omitted from JSON. Loaded optional nulls are emitted as
 present keys with null values; loaded empty lists are present empty arrays. Both

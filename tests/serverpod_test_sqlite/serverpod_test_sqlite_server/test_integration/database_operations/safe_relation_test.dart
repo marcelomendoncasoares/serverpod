@@ -261,6 +261,57 @@ void main() {
       },
     );
 
+    group(
+      'Given a persisted arena whose optional inverse team is omitted,',
+      () {
+        late Arena arena;
+        late Team team;
+
+        setUp(() async {
+          arena = await Arena.db.insertRow(session, Arena(name: 'Arena'));
+          team = await Team.db.insertRow(
+            session,
+            Team(name: 'Team', arenaId: arena.id),
+          );
+        });
+
+        group('when detaching the inverse relation without loading it,', () {
+          Object? failure;
+          late Team persistedTeam;
+
+          setUp(() async {
+            failure = null;
+
+            try {
+              await Arena.db.detachRow.team(session, arena);
+            } catch (error) {
+              failure = error;
+            }
+
+            persistedTeam = (await Team.db.findById(session, team.id!))!;
+          });
+
+          test(
+            'then the missing relation produces the expected argument error.',
+            () {
+              expect(
+                failure,
+                isA<ArgumentError>().having(
+                  (error) => error.name,
+                  'name',
+                  'arena.team',
+                ),
+              );
+            },
+          );
+
+          test('then the persisted association is preserved.', () {
+            expect(persistedTeam.arenaId, arena.id);
+          });
+        });
+      },
+    );
+
     test(
       'Given an arena with an unloaded optional inverse team, '
       'when attaching and detaching the inverse relation, '

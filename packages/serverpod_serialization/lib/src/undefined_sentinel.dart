@@ -4,18 +4,19 @@ import 'package:uuid/uuid.dart';
 import 'pgvector.dart';
 import 'postgis.dart';
 
-/// Base for generated `copyWith` defaults that distinguish omission from null.
+/// Base for generated argument defaults that distinguish omission from null.
 ///
-/// Sentinels are generated-code infrastructure, not field values. Generated
-/// code must check for them before accessing any members of the field's type.
+/// Sentinels are generated-code infrastructure, not application values. They
+/// may mark unloaded relations in private backing fields. Generated code must
+/// check for them before accessing any members of the field's type.
 @internal
 abstract class UndefinedSentinel {
-  /// Creates an undefined value for a generated `copyWith` parameter.
+  /// Creates an undefined value for a generated parameter.
   const UndefinedSentinel();
 
   @override
   dynamic noSuchMethod(Invocation invocation) =>
-      throw UnsupportedError('An undefined copyWith argument is not a value.');
+      throw UnsupportedError('An undefined argument is not a value.');
 }
 
 /// An omitted list argument in generated `copyWith` methods.

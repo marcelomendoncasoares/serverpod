@@ -2572,6 +2572,14 @@ class BuildRepositoryClass {
       var fieldName = field.name;
 
       var relation = field.relation as ObjectRelationDefinition;
+      Expression storedValue = refer(classFieldName).property(
+        field.hasSafeRelationGetter ? '_$fieldName' : fieldName,
+      );
+      if (field.hasOptionalRelationGetter) {
+        storedValue = storedValue
+            .isA(refer('UndefinedSentinel', serverpodUndefinedSentinelUrl))
+            .conditional(literalNull, storedValue);
+      }
 
       methodBuilder
         ..docs.add('''
@@ -2617,7 +2625,7 @@ class BuildRepositoryClass {
               )
             : _buildDetachRowImplementationBlockForeignSide(
                 fieldName,
-                field.hasSafeRelationGetter ? '_$fieldName' : fieldName,
+                storedValue,
                 classFieldName,
                 relation.foreignFieldName,
                 field.type.reference(
@@ -2718,7 +2726,7 @@ class BuildRepositoryClass {
 
   Block _buildDetachRowImplementationBlockForeignSide(
     String fieldName,
-    String storageFieldName,
+    Expression storedValue,
     String classFieldName,
     String foreignKeyField,
     Reference foreignClass,
@@ -2728,10 +2736,8 @@ class BuildRepositoryClass {
           ..statements.addAll(
             [
               declareVar(
-                    localCopyVariable,
-                  )
-                  .assign(refer(classFieldName).property(storageFieldName))
-                  .statement,
+                localCopyVariable,
+              ).assign(storedValue).statement,
               const Code(''),
               _buildCodeBlockThrowIfFieldIsNull(
                 localCopyVariable,
