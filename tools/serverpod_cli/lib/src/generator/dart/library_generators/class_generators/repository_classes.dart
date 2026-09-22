@@ -2617,6 +2617,7 @@ class BuildRepositoryClass {
               )
             : _buildDetachRowImplementationBlockForeignSide(
                 fieldName,
+                field.hasSafeRelationGetter ? '_$fieldName' : fieldName,
                 classFieldName,
                 relation.foreignFieldName,
                 field.type.reference(
@@ -2717,6 +2718,7 @@ class BuildRepositoryClass {
 
   Block _buildDetachRowImplementationBlockForeignSide(
     String fieldName,
+    String storageFieldName,
     String classFieldName,
     String foreignKeyField,
     Reference foreignClass,
@@ -2726,8 +2728,10 @@ class BuildRepositoryClass {
           ..statements.addAll(
             [
               declareVar(
-                localCopyVariable,
-              ).assign(refer(classFieldName).property(fieldName)).statement,
+                    localCopyVariable,
+                  )
+                  .assign(refer(classFieldName).property(storageFieldName))
+                  .statement,
               const Code(''),
               _buildCodeBlockThrowIfFieldIsNull(
                 localCopyVariable,
