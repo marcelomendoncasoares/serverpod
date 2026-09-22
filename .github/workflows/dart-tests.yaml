@@ -579,7 +579,7 @@ jobs:
         timeout-minutes: ${{ matrix.suite.timeout_minutes || 15 }}
 
   serverpod_embedded_postgres_tests:
-    name: serverpod_embedded_postgres integration (${{ matrix.os }})
+    name: Embedded PostgreSQL and database adapter integration (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: seed_embedded_pg
     strategy:
@@ -610,7 +610,7 @@ jobs:
         # Postgres refuses to run with an Administrators-group token.
         if: matrix.os == 'windows-latest'
         env:
-          STANDARD_USER_TEST_COMMAND: cd packages/serverpod_embedded_postgres && dart test --tags=integration --reporter=failures-only
+          STANDARD_USER_TEST_COMMAND: cd packages/serverpod_embedded_postgres && dart test --tags=integration --reporter=failures-only && cd ../serverpod_database && dart test --tags=integration --reporter=failures-only
         shell: bash
         run: bash util/prepare_windows_standard_user_test run-test.cmd
       - name: Run integration tests against the embedded PG bundle (Windows, non-admin)
@@ -622,6 +622,11 @@ jobs:
         if: matrix.os != 'windows-latest'
         run: dart test --tags=integration --reporter=failures-only
         working-directory: packages/serverpod_embedded_postgres
+        timeout-minutes: 10
+      - name: Run database adapter integration tests
+        if: matrix.os != 'windows-latest'
+        run: dart test --tags=integration --reporter=failures-only
+        working-directory: packages/serverpod_database
         timeout-minutes: 10
 
   unit_io_tests:

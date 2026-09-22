@@ -87,6 +87,7 @@ melos:
         provision their own database on the shared embedded postmaster on demand;
         the SQLite server suite runs against on-disk SQLite.
       steps:
+        - test_integration_database
         - test_integration_server
         - test_integration_modules
         - test_integration_sqlite_server
@@ -102,6 +103,9 @@ melos:
         then run its package integration tests and the host integration suite.
         Requires the native PostgreSQL bundle build toolchain.
       run: bash util/run_tests_integration_embedded_pg_build
+    test_integration_database:
+      description: Database adapter integration tests against embedded PostgreSQL.
+      run: dart run melos exec --concurrency 1 --scope="serverpod_database" -- dart test -t integration --reporter=failures-only
     test_integration_server:
       description: serverpod_test_server integration tests (real-server-boot + withServerpod).
       run: dart run melos exec --concurrency 1 --scope="serverpod_test_server" -- "set -e && dart run bin/main.dart -m production -r maintenance --apply-migrations > /dev/null && dart test test_integration -x integration --reporter=failures-only && dart test test_integration/test_tools/start_timeout_test/test_that_will_not_timeout.dart --name '__warmup_no_match__' > /dev/null 2>&1 || true && INTEGRATION_TEST_SERVERPOD_MODE=test dart test test_integration -t integration --reporter=failures-only"
