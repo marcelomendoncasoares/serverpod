@@ -117,7 +117,7 @@ void main() async {
 
         var companyNames = companiesFetched.map((c) => c.name);
         expect(companyNames, containsAll(['Serverpod', 'Apple']));
-        var companyTownNames = companiesFetched.map((c) => c.town?.name);
+        var companyTownNames = companiesFetched.map((c) => c.town.name);
         expect(companyTownNames, containsAll(['Stockholm', 'San Francisco']));
       },
     );
@@ -168,7 +168,7 @@ void main() async {
         var citizenCompanyNames = citizensFetched.map((c) => c.company?.name);
         expect(citizenCompanyNames, ['Serverpod', 'Apple']);
         var citizenCompanyTownNames = citizensFetched.map(
-          (c) => c.company?.town?.name,
+          (c) => c.company?.town.name,
         );
         expect(citizenCompanyTownNames, ['Stockholm', 'San Francisco']);
       },
@@ -207,7 +207,7 @@ void main() async {
         });
 
         test('has Stockholm as company town.', () {
-          expect(citizensWithDeepIncludes[0].company?.town?.name, 'Stockholm');
+          expect(citizensWithDeepIncludes[0].company?.town.name, 'Stockholm');
         });
 
         test('has Systemair as oldCompany.', () {
@@ -216,7 +216,7 @@ void main() async {
 
         test('has Skinnskatteberg as oldCompany town.', () {
           expect(
-            citizensWithDeepIncludes[0].oldCompany?.town?.name,
+            citizensWithDeepIncludes[0].oldCompany?.town.name,
             'Skinnskatteberg',
           );
         });
@@ -232,7 +232,7 @@ void main() async {
         });
 
         test('has Stockholm as company town.', () {
-          expect(citizensWithDeepIncludes[1].company?.town?.name, 'Stockholm');
+          expect(citizensWithDeepIncludes[1].company?.town.name, 'Stockholm');
         });
 
         test('does NOT have oldCompany.', () {

@@ -510,7 +510,7 @@ void main() async {
           expect(await iterator.moveNext(), isTrue);
           expect(iterator.current, hasLength(1));
           expect(iterator.current.single.name, 'Serverpod');
-          expect(iterator.current.single.town?.name, 'Stockholm');
+          expect(iterator.current.single.town.name, 'Stockholm');
         },
       );
     });
@@ -566,7 +566,7 @@ void main() async {
               await iterator.moveNext().timeout(const Duration(seconds: 2)),
               isTrue,
             );
-            expect(iterator.current.single.town?.name, 'Gothenburg');
+            expect(iterator.current.single.town.name, 'Gothenburg');
           },
         );
       });
@@ -677,7 +677,7 @@ void main() async {
               await iterator.moveNext().timeout(const Duration(seconds: 2)),
               isTrue,
             );
-            expect(iterator.current.single.town?.name, 'Malmo');
+            expect(iterator.current.single.town.name, 'Malmo');
           },
         );
       });

@@ -3,4 +3,4 @@ table: company
 database: all
 fields:
   name: String
-  town: Town?, relation
+  town: Town, relation

@@ -3,4 +3,4 @@ table: customer
 database: all
 fields:
   name: String
-  orders: List<Order>?, relation(name=customer_orders)
+  orders: List<Order>, relation(name=customer_orders)

@@ -1,6 +1,7 @@
 class: CompanyUuid
+immutable: true
 table: company_uuid
 fields:
   id: UuidValue?, defaultPersist=random_v7
   name: String
-  town: TownInt?, relation
+  town: TownInt, relation

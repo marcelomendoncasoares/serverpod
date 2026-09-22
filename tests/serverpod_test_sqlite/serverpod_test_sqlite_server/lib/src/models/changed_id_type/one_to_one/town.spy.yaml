@@ -1,4 +1,5 @@
 class: TownInt
+immutable: true
 table: town_int
 fields:
   id: int?, defaultPersist=serial

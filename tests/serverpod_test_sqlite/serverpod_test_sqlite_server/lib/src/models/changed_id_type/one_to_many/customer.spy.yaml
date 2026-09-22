@@ -1,6 +1,7 @@
 class: CustomerInt
+immutable: true
 table: customer_int
 fields:
   id: int?, defaultPersist=serial
   name: String
-  orders: List<OrderUuid>?, relation(name=customer_orders)
+  orders: List<OrderUuid>, relation(name=customer_orders)
