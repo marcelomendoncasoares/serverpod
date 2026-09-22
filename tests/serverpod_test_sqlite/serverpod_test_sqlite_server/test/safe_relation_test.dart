@@ -15,7 +15,8 @@ void main() {
     });
 
     test(
-      'when reading its town, then the error identifies the relation.',
+      'when reading its town, '
+      'then the error identifies the relation.',
       () {
         expect(
           () => company.town,
@@ -111,11 +112,13 @@ void main() {
       town = Town(name: 'Stockholm');
     });
 
-    test('when reading its mayor, then unloaded access throws.', () {
+    test('when reading its mayor, '
+        'then unloaded access throws.', () {
       expect(() => town.mayor, throwsA(isA<RelationNotLoadedError>()));
     });
 
-    test('when copying its name, then mayor remains unloaded.', () {
+    test('when copying its name, '
+        'then mayor remains unloaded.', () {
       final copy = town.copyWith(name: 'Renamed');
 
       expect(() => copy.mayor, throwsA(isA<RelationNotLoadedError>()));
@@ -123,7 +126,8 @@ void main() {
     });
 
     test(
-      'when copying with an explicit null mayor, then mayor is loaded absent.',
+      'when copying with an explicit null mayor, '
+      'then mayor is loaded absent.',
       () {
         final copy = town.copyWith(mayor: null);
 
@@ -132,7 +136,8 @@ void main() {
       },
     );
 
-    test('when assigning a null mayor, then mayor is loaded absent.', () {
+    test('when assigning a null mayor, '
+        'then mayor is loaded absent.', () {
       town.mayor = null;
 
       expect(town.mayor, isNull);
@@ -148,7 +153,8 @@ void main() {
     });
 
     test(
-      'when copying without a mayor argument, then loaded absence is preserved.',
+      'when copying without a mayor argument, '
+      'then loaded absence is preserved.',
       () {
         final copy = town.copyWith();
 
@@ -201,25 +207,29 @@ void main() {
       customer = Customer(name: 'Ada');
     });
 
-    test('when reading orders, then unloaded access throws.', () {
+    test('when reading orders, '
+        'then unloaded access throws.', () {
       expect(() => customer.orders, throwsA(isA<RelationNotLoadedError>()));
     });
 
-    test('when copying with null orders, then orders remain unloaded.', () {
+    test('when copying with null orders, '
+        'then orders remain unloaded.', () {
       final copy = customer.copyWith(orders: null);
 
       expect(() => copy.orders, throwsA(isA<RelationNotLoadedError>()));
       expect(copy.toJson().containsKey('orders'), isFalse);
     });
 
-    test('when assigning an empty list, then orders are loaded empty.', () {
+    test('when assigning an empty list, '
+        'then orders are loaded empty.', () {
       customer.orders = [];
 
       expect(customer.orders, isEmpty);
       expect(customer.toJson(), containsPair('orders', isEmpty));
     });
 
-    test('when copying with an empty list, then orders are loaded empty.', () {
+    test('when copying with an empty list, '
+        'then orders are loaded empty.', () {
       final copy = customer.copyWith(orders: []);
 
       expect(copy.orders, isEmpty);

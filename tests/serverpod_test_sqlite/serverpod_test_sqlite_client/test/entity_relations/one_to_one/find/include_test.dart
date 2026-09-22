@@ -239,8 +239,11 @@ void main() {
           expect(citizensWithoutIncludes[0].company, isNull);
         });
 
-        test('does NOT have oldCompany.', () {
-          expect(citizensWithoutIncludes[0].oldCompany, isNull);
+        test('throws on access to unloaded oldCompany.', () {
+          expect(
+            () => citizensWithoutIncludes[0].oldCompany,
+            throwsA(isA<RelationNotLoadedError>()),
+          );
         });
       });
 
@@ -253,8 +256,11 @@ void main() {
           expect(citizensWithoutIncludes[1].company, isNull);
         });
 
-        test('does NOT have oldCompany.', () {
-          expect(citizensWithoutIncludes[1].oldCompany, isNull);
+        test('throws on access to unloaded oldCompany.', () {
+          expect(
+            () => citizensWithoutIncludes[1].oldCompany,
+            throwsA(isA<RelationNotLoadedError>()),
+          );
         });
       });
     },
@@ -289,16 +295,22 @@ void main() {
           expect(citizensWithShallowIncludes[0].company?.name, 'Serverpod');
         });
 
-        test('does NOT have company town.', () {
-          expect(citizensWithShallowIncludes[0].company?.town, isNull);
+        test('throws on access to unloaded company town.', () {
+          expect(
+            () => citizensWithShallowIncludes[0].company?.town,
+            throwsA(isA<RelationNotLoadedError>()),
+          );
         });
 
         test('has Systemair as oldCompany.', () {
           expect(citizensWithShallowIncludes[0].oldCompany?.name, 'Systemair');
         });
 
-        test('does NOT have oldCompany town.', () {
-          expect(citizensWithShallowIncludes[0].oldCompany?.town, isNull);
+        test('throws on access to unloaded oldCompany town.', () {
+          expect(
+            () => citizensWithShallowIncludes[0].oldCompany?.town,
+            throwsA(isA<RelationNotLoadedError>()),
+          );
         });
       });
 
@@ -311,8 +323,11 @@ void main() {
           expect(citizensWithShallowIncludes[1].company?.name, 'Serverpod');
         });
 
-        test('does NOT have company town.', () {
-          expect(citizensWithShallowIncludes[1].company?.town, isNull);
+        test('throws on access to unloaded company town.', () {
+          expect(
+            () => citizensWithShallowIncludes[1].company?.town,
+            throwsA(isA<RelationNotLoadedError>()),
+          );
         });
 
         test('does NOT have oldCompany.', () {
