@@ -263,8 +263,11 @@ void main() async {
           expect(citizensWithoutIncludes[0].company, isNull);
         });
 
-        test('does NOT have oldCompany.', () {
-          expect(citizensWithoutIncludes[0].oldCompany, isNull);
+        test('throws on access to unloaded oldCompany.', () {
+          expect(
+            () => citizensWithoutIncludes[0].oldCompany,
+            throwsA(isA<RelationNotLoadedError>()),
+          );
         });
       });
 
@@ -277,8 +280,11 @@ void main() async {
           expect(citizensWithoutIncludes[1].company, isNull);
         });
 
-        test('does NOT have oldCompany.', () {
-          expect(citizensWithoutIncludes[1].oldCompany, isNull);
+        test('throws on access to unloaded oldCompany.', () {
+          expect(
+            () => citizensWithoutIncludes[1].oldCompany,
+            throwsA(isA<RelationNotLoadedError>()),
+          );
         });
       });
     },
