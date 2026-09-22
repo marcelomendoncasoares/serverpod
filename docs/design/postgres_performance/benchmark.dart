@@ -52,8 +52,16 @@ Future<void> measure(
 
 Future<void> main(List<String> arguments) async {
   if (arguments.length != 1 ||
-      !{'builder', 'rows', 'logging', 'catalog'}.contains(arguments.single)) {
-    throw ArgumentError('Choose one workload: builder, rows, logging, catalog');
+      !{
+        'builder',
+        'rows',
+        'logging',
+        'catalog',
+        'updates',
+      }.contains(arguments.single)) {
+    throw ArgumentError(
+      'Choose one workload: builder, rows, logging, catalog, updates',
+    );
   }
 
   bool run(String name) => arguments.single == name;
@@ -177,6 +185,27 @@ FROM generate_series(1, 10000) AS i;
         final result = await session.db.update(rows);
         if (result.length != 10000) throw StateError('Incorrect update count');
       });
+    }
+
+    if (run('updates')) {
+      final rows = List.generate(10000, (i) => SimpleData(id: i + 1, num: i));
+      await measure('update_10000_noReturn', () async {
+        final result = await session.db.update(rows, noReturn: true);
+        if (result.isNotEmpty) throw StateError('Unexpected returning rows');
+      });
+
+      final organizations = List.generate(
+        10000,
+        (i) => Organization(id: i + 1, name: 'updated $i', cityId: 1),
+      );
+      await measure('update_10000_organizations_noReturn', () async {
+        await session.db.update(organizations, noReturn: true);
+      });
+
+      final stored = await session.db.findById<Organization>(10000);
+      if (stored!.name != 'updated 9999' || stored.cityId != 1) {
+        throw StateError('Incorrect update values');
+      }
     }
 
     if (run('logging')) {

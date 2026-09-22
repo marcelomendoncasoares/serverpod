@@ -8,7 +8,7 @@ Baseline: `f3bcd20f8`, including the completed SQLite performance changes.
 | --- | --- | --- | --- |
 | 1 | Materialize insert/upsert SQL fragments once | Avoid repeated serialization, escaping, and construction of large SQL strings; roughly halve builder work for uniform ID batches | Very low; preserve identical SQL, mixed IDs, defaults, conflicts, and returning behavior |
 | 2 | Normalize PostgreSQL result rows once, directly from the result schema | Eliminate intermediate maps and repeated mapping during include traversal; improve large reads and returning writes | Low; preserve aliases, nulls, undecoded bytes, and duplicate-column behavior |
-| 3 | Skip query logging work when the session has no logger | Avoid an unused stack trace and duration calculation on every query | Very low; benefit applies to sessions without query logging; retain full enabled logging and exception behavior |
+| 3 | Skip query logging work when the session has no logger | Avoid an unused stack trace and duration calculation on every query | Very low; benefit applies when `logQuery` is null (`Session(enableLogging: false)`), not merely when log settings discard query logs; retain enabled logging and exception behavior |
 | 4 | Fetch schema metadata in batches | Reduce schema inspection from `1 + 3 × tables` queries to a small fixed number; improve startup/migration checks on larger schemas | Medium; preserve schema isolation, column permissions, extension exclusions, types, constraints, and indexes; bind catalog filters |
 | 5 | Hoist bulk-update column type conversion out of the row loop | Reduce repeated Dart type checks for wide bulk updates | Low; probably small compared with PostgreSQL execution; retain only if measurement supports it |
 | 6 | Parameterize ORM SQL and consider prepared statements | Reduce large literal SQL and repeated parsing for stable query shapes | High; defer this separate design because parameter limits, type encoders, query logging, pool ownership, and cache memory require broader changes |
@@ -56,7 +56,7 @@ Benchmark invocation from the repository root (choose one workload):
 ```sh
 dart --packages=.dart_tool/package_config.json -Ddart.vm.product=true \
   docs/design/postgres_performance/benchmark.dart builder
-# Other workloads: rows, logging, catalog
+# Other workloads: rows, logging, catalog, updates
 ```
 
 The harness creates and removes its own embedded PostgreSQL cluster. Database
@@ -72,7 +72,10 @@ not evidence of a reliable end-to-end speedup, although the redundant map
 allocation and repeated include normalization are removed.
 
 The logging guard avoids an unused stack trace and duration computation only
-when `DatabaseSession.logQuery` is null. The enabled-logger control varies by a
+when `DatabaseSession.logQuery` is null. Server sessions reach this path when
+created with `enableLogging: false`, as for the internal session. Ordinary
+endpoint sessions still have a logger when settings disable query logging, so
+they do not benefit from this guard. The enabled-logger control varies by a
 similar amount, so the measurements do not establish a reliable percentage gain.
 The benchmark verifies all 16,000 enabled callbacks (warmups plus samples).
 
@@ -87,3 +90,101 @@ Eight focused real-PostgreSQL regressions cover schema isolation, physical colum
 order after a drop, defaults, foreign-key actions/deferral, expression and
 null-not-distinct indexes, direct/full analysis equivalence, quoted names,
 restricted column visibility, and PostGIS table exclusion/types.
+
+## Scope of the analysis
+
+Inspected the PostgreSQL pool, connection/transaction path, SQL builder, value
+encoding, result normalization, schema analyzer, and migration runner, plus the
+resolved `postgres` 3.5.16 execution path. Bulk inserts and updates already use
+set-based statements. The driver sends parse/bind/execute in one exchange for
+ordinary extended queries, so there is no separate prepare round trip to remove
+there. Stable bound ORM statements and connection-owned prepared caches remain
+a separate design opportunity; changes must account for typed values, parameter
+limits, transaction poolers, logging, and retained SQL memory.
+
+## Validation
+
+Completed locally:
+
+- 116 existing SQL-builder tests.
+- 276 PostgreSQL CRUD, explicit-column-name, and list-include tests; one existing skip.
+- 13 existing session-logging tests.
+- Full database package: 879 tests, including all eight new catalog regressions.
+- Full PostgreSQL database/column suites: 1,415 tests; one existing skip.
+- SQLite client: 590 tests; one existing skip.
+- CLI database/migration generation: 767 tests.
+- Static analysis and formatting for the changed Dart code.
+- A later shared-setup catalog assertion also passed when selected alone.
+- `dart run melos run test_integration_database`: all 10 tagged adapter tests.
+- CI workflow diagnostics match the baseline (details below).
+
+An initial broad run could not initialize a reused embedded data path
+because of a stale process marker; it was cancelled and restarted with a fresh
+path. That startup failure is not counted as executed test coverage.
+
+## Rejected experiment
+
+Hoisting bulk-update column type conversion was tried in an isolated package
+copy. Fresh-process runs in baseline/candidate/baseline order measured the
+following medians (ms) for 10,000-row no-return updates:
+
+| Model | Baseline | Candidate | Repeated baseline |
+| --- | ---: | ---: | ---: |
+| Two-column rows | 88.350 | 76.446 | 75.166 |
+| Three-column organizations | 106.714 | 106.432 | 92.199 |
+
+The unchanged baseline reproduced or beat the candidate, so the apparent gain
+was not attributable to type hoisting. The candidate was **not retained**.
+The `updates` workload and all samples remain available for future profiling.
+
+## Adversarial review
+
+Opus xhigh reviewed `f3bcd20f8..735e43ace` through Orca orchestration, run
+`run_62bf30db6872`, task `task_3d165673c1d3`, dispatch `ctx_d44d63bb6bd0`.
+The launch receipt confirmed the effective model and effort. The accepted
+review reported **no significant findings** in the four production changes.
+The reviewer terminal was released after settlement.
+
+The reviewer independently compared old and new catalog output for 46 tables
+covering pgvector, PostGIS, GIN, partial/expression/INCLUDE/null-not-distinct
+indexes, composite/cross-schema foreign keys, same-named tables, partitions,
+inheritance, views, dropped columns and restricted column grants. Output
+matched; 139 queries became four. Transaction-local temporary tables also
+matched (47 tables, 142 queries to four), as did direct versus bulk inspection.
+A 1,501-table check measured 10.3–10.6 seconds before versus 0.24–0.52 seconds
+after. Table-list ordering differed, but was already unspecified and consumers
+look up definitions by name. Maximum unsigned OID binding also round-tripped.
+These independent scale timings are supporting evidence, separate from the
+main warmed benchmark samples.
+
+Two low-severity review notes were addressed: clarify that the logging guard
+requires a null logger, and route the integration-tagged database tests through
+the existing embedded-PostgreSQL CI job and the local Melos integration command.
+The CI route covers Windows through its existing non-admin test runner and the
+other matrix platforms through an added database-package step. Hosted CI has
+not run as part of this local task. Workflow lint reports the same two existing
+`matrix.suite.timeout_minutes` diagnostics as the baseline; filtering only
+those diagnostics yields no additional errors.
+
+The reviewer also reproduced an **existing, out-of-range bug**: a mixed
+explicit/generated-ID batch insert can attach non-persisted fields to the wrong
+returned rows because merging follows input indexes while SQL returns generated
+IDs first. The unchanged SQL has this behavior at the baseline as well. This is
+recorded for a separate correctness fix, alongside deferred opportunity 7; it
+is not claimed as fixed by these performance changes.
+
+## Commits
+
+| Commit | Change |
+| --- | --- |
+| `00c2bfd10` | Ranked opportunities and expected outcomes |
+| `ca92036e1` | Build insert/upsert SQL fragments once |
+| `67e976755` | Avoid redundant result maps |
+| `76697b578` | Skip logging work when no logger is attached |
+| `735e43ace` | Batch catalog inspection and pin missing behavior |
+| `2b683b487` | Run tagged database adapter tests in CI and Melos |
+
+Each performance commit includes its measurements. The subsequent test-routing
+commit addresses review note L1; the final documentation records review note
+L2, complete validation, and the rejected type-hoisting experiment. All changes
+are local commits; no push or hosted CI run was performed.

@@ -431,5 +431,132 @@
         }
       ]
     }
+  ],
+  "experiments": [
+    {
+      "change": "Hoist bulk-update column type conversion",
+      "retained": false,
+      "reason": "The apparent simple-row gain vanished when the unchanged baseline was repeated; organization timings also varied more than the candidate effect. No repeatable end-to-end gain demonstrated.",
+      "before": [
+        {
+          "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+          "postgres": "PostgreSQL 16.13 on x86_64-pc-linux-gnu, compiled by clang version 21.1.0, 64-bit"
+        },
+        {
+          "case": "update_10000_noReturn",
+          "median_ms": 88.35,
+          "samples_ms": [
+            85.033,
+            91.164,
+            91.365,
+            79.867,
+            87.235,
+            89.934,
+            92.114,
+            88.35,
+            87.286,
+            91.765,
+            86.751
+          ]
+        },
+        {
+          "case": "update_10000_organizations_noReturn",
+          "median_ms": 106.714,
+          "samples_ms": [
+            106.714,
+            110.199,
+            100.035,
+            110.568,
+            107.638,
+            106.831,
+            98.917,
+            116.92,
+            100.903,
+            103.05,
+            99.529
+          ]
+        }
+      ],
+      "candidate": [
+        {
+          "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+          "postgres": "PostgreSQL 16.13 on x86_64-pc-linux-gnu, compiled by clang version 21.1.0, 64-bit"
+        },
+        {
+          "case": "update_10000_noReturn",
+          "median_ms": 76.446,
+          "samples_ms": [
+            78.957,
+            80.057,
+            84.631,
+            82.425,
+            76.424,
+            80.808,
+            74.791,
+            75.69,
+            75.067,
+            75.118,
+            76.446
+          ]
+        },
+        {
+          "case": "update_10000_organizations_noReturn",
+          "median_ms": 106.432,
+          "samples_ms": [
+            99.583,
+            106.689,
+            106.486,
+            107.586,
+            104.097,
+            101.675,
+            89.996,
+            109.601,
+            106.432,
+            105.324,
+            106.68
+          ]
+        }
+      ],
+      "before_repeat": [
+        {
+          "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+          "postgres": "PostgreSQL 16.13 on x86_64-pc-linux-gnu, compiled by clang version 21.1.0, 64-bit"
+        },
+        {
+          "case": "update_10000_noReturn",
+          "median_ms": 75.166,
+          "samples_ms": [
+            85.583,
+            75.111,
+            78.41,
+            74.675,
+            75.166,
+            75.644,
+            72.59,
+            73.126,
+            75.938,
+            74.397,
+            75.275
+          ]
+        },
+        {
+          "case": "update_10000_organizations_noReturn",
+          "median_ms": 92.199,
+          "samples_ms": [
+            92.584,
+            91.06,
+            92.199,
+            91.609,
+            90.922,
+            92.018,
+            88.769,
+            104.125,
+            95.972,
+            114.577,
+            113.016
+          ]
+        }
+      ]
+    }
   ]
 }
