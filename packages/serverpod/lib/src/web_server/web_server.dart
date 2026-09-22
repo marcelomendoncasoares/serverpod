@@ -202,7 +202,7 @@ class WebServer {
   void logError(Object e, {StackTrace? stackTrace}) {
     log.error(
       'WebServer: $e',
-      error: e is Exception ? e : null,
+      error: e,
       stackTrace: stackTrace,
     );
   }
