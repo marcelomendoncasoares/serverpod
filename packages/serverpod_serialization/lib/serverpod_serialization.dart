@@ -1,4 +1,4 @@
-export 'package:decimal/decimal.dart' show Decimal;
+export 'package:decimal/decimal.dart';
 export 'package:meta/meta.dart' show useResult, immutable;
 export 'package:uuid/uuid.dart';
 

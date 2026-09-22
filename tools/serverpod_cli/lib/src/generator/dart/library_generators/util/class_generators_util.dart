@@ -183,6 +183,13 @@ Expression _buildFromJson(
         serverCode,
         field,
       );
+    case ValueType.decimal:
+      return _buildComplexTypeFromJson(
+        type,
+        valueExpression,
+        serverCode,
+        field,
+      );
     case ValueType.dynamicType:
       return CodeExpression(
         getProtocolReference(
@@ -195,13 +202,6 @@ Expression _buildFromJson(
             .call([valueExpression])
             .checkIfNull(type, valueExpression: valueExpression)
             .code,
-      );
-    case ValueType.decimal:
-      return _buildComplexTypeFromJson(
-        type,
-        valueExpression,
-        serverCode,
-        field,
       );
     case ValueType.isEnum:
       EnumSerialization? enumSerialization = type.enumDefinition?.serialized;

@@ -160,16 +160,19 @@ extension SqliteColumnDefinitionSqlGeneration on ColumnDefinition {
       case ColumnType.halfvec:
       case ColumnType.sparsevec:
       case ColumnType.bit:
-      case ColumnType.decimal:
-        // SQLite has no native NUMERIC(p,s); store as TEXT and recover the
-        // abstract type from serverpod_sqlite_schema during analysis.
         type = 'TEXT';
+      case ColumnType.decimal:
+        // Numbers with up to 18 digits fit completely in an INTEGER column.
+        // Otherwise, store as TEXT to avoid overflow errors.
+        type = (decimalPrecision != null && decimalPrecision! <= 18)
+            ? 'INTEGER'
+            : 'TEXT';
       case ColumnType.unknown:
         throw const FormatException('Unknown column type');
     }
 
     var nullable = isNullable ? '' : ' NOT NULL';
-    var defaultSql = columnType.getSqliteColumnDefault(columnDefault);
+    var defaultSql = getSqliteColumnDefault(columnDefault);
 
     var defaultValue = defaultSql != null ? ' DEFAULT ($defaultSql)' : '';
 
@@ -528,18 +531,16 @@ String _sqlStoreColumnTypesForMigrations(
   }
 
   out += 'INSERT INTO "$_sqliteSchemaTable" VALUES\n';
-  for (var t in tables) {
-    for (var c in t.columns) {
-      out += '    (';
-      out += "'${t.name}', ";
-      out += "'${c.name}', ";
-      out += "'${c.columnType.name}', ";
-      out += "${c.vectorDimension ?? 'NULL'}, ";
-      out += "${c.decimalPrecision ?? 'NULL'}, ";
-      out += "${c.decimalScale ?? 'NULL'}";
-      out += ')';
-      out += (t == tables.last && c == t.columns.last) ? ';\n' : ',\n';
-    }
+  for (var (index, (tableName, column)) in allColumns.indexed) {
+    out += '    (';
+    out += "'$tableName', ";
+    out += "'${column.name}', ";
+    out += "'${column.columnType.name}', ";
+    out += "${column.vectorDimension ?? 'NULL'}, ";
+    out += "${column.decimalPrecision ?? 'NULL'}, ";
+    out += "${column.decimalScale ?? 'NULL'}";
+    out += ')';
+    out += (index == allColumns.length - 1) ? ';\n' : ',\n';
   }
   return out;
 }

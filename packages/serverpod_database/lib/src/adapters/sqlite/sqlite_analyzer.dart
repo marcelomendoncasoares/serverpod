@@ -91,12 +91,17 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
                 (columnType == ColumnType.integer ||
                     columnType == ColumnType.bigint)
             ? defaultIntSerial
-            : sqliteSqlToAbstractDefault(e[4] as String?, columnType),
+            : sqliteSqlToAbstractDefault(
+                e[4] as String?,
+                columnType,
+                decimalPrecision: schemaInfo?.decimalPrecision,
+                decimalScale: schemaInfo?.decimalScale,
+              ),
         columnType: columnType,
         isNullable: !isIdColumn && (e[3] as int?) != 1,
         vectorDimension: schemaInfo?.vectorDimension,
-        decimalPrecision: columnTypes[columnName]?.decimalPrecision,
-        decimalScale: columnTypes[columnName]?.decimalScale,
+        decimalPrecision: schemaInfo?.decimalPrecision,
+        decimalScale: schemaInfo?.decimalScale,
       );
     }).toList();
   }

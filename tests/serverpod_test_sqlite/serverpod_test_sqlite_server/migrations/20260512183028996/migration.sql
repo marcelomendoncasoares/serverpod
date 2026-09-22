@@ -50,12 +50,12 @@ CREATE TABLE "object_with_decimal" (
 --
 CREATE TABLE "object_with_decimal_precision" (
     "id" INTEGER PRIMARY KEY,
-    "price" TEXT NOT NULL,
-    "priceNullable" TEXT,
+    "price" INTEGER NOT NULL,
+    "priceNullable" INTEGER,
     "quantity" TEXT NOT NULL,
     "unbounded" TEXT NOT NULL,
-    "priceWithDefault" TEXT NOT NULL DEFAULT ('9.99'),
-    "priceWithDefaultNullable" TEXT DEFAULT ('1.23'),
+    "priceWithDefault" INTEGER NOT NULL DEFAULT (999),
+    "priceWithDefaultNullable" INTEGER DEFAULT (123),
     "quantityWithDefault" TEXT NOT NULL DEFAULT ('100.0000')
 ) STRICT;
 

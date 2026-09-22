@@ -20,6 +20,7 @@ class SqliteValueEncoder implements ValueEncoder {
     dynamic input, {
     bool escapeStrings = true,
     bool hasDefaults = false,
+    bool decimalAsInt = false,
   }) {
     if (input == null) {
       return hasDefaults ? 'DEFAULT' : 'NULL';
@@ -53,9 +54,9 @@ class SqliteValueEncoder implements ValueEncoder {
     } else if (input is BigInt) {
       return "'${input.toString()}'";
     } else if (input is Decimal) {
-      // Decimal is stored as TEXT in SQLite to preserve precision — storing
-      // as INTEGER/REAL would overflow or lose precision for large values.
-      return "'${input.toString()}'";
+      return decimalAsInt
+          ? input.toString().replaceAll('.', '')
+          : "'${input.toString()}'";
     } else if (input is String) {
       if (input.startsWith('decode(\'') && input.endsWith('\', \'base64\')')) {
         // This is a bit of a hack to get ByteData working. Strings that starts
@@ -125,6 +126,7 @@ class SqliteValueEncoder implements ValueEncoder {
       ColumnDuration() => DurationJsonExtension.fromJson(value),
       ColumnUuid() => UuidValueJsonExtension.fromJson(value),
       ColumnByteData() => ByteDataJsonExtension.fromJson(value),
+      ColumnDecimal() => DecimalJsonExtension.fromJson(value, column.scale),
       ColumnStructured() => _decodeJsonbValue(value),
       ColumnSerializable() => _decodeJsonValue(value),
       _ => value,
@@ -144,6 +146,10 @@ class SqliteValueEncoder implements ValueEncoder {
         _ => coerceColumnValue(column, value),
       },
       hasDefaults: hasDefaults,
+      decimalAsInt:
+          column is ColumnDecimal &&
+          column.precision != null &&
+          column.precision! <= 18,
     );
     return column is ColumnStructured && value != null
         ? 'jsonb($encoded)'
