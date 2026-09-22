@@ -602,7 +602,9 @@ class InsertQueryBuilder {
   /// Builds the insert SQL query.
   String build() {
     // Can not be empty because the constructor checks for empty rows.
-    var insertQueries = [true, false].map(_build).nonNulls;
+    // Each fragment serializes and escapes the batch. Reuse it when checking
+    // the count and composing the final statement.
+    var insertQueries = [true, false].map(_build).nonNulls.toList();
     if (insertQueries.length == 1) return insertQueries.single;
 
     // Without a RETURNING clause the inserts produce no rows to union, so the

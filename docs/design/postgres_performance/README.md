@@ -32,3 +32,28 @@ Run the existing database and PostgreSQL integration suites, adding regressions
 only for uncovered behavior affected by these changes. After implementation,
 use an Opus xhigh adversarial reviewer through Orca orchestration and resolve
 significant findings before completion.
+
+## Incremental results
+
+Times are medians in milliseconds for the whole workload. Raw samples are in
+[measurements.json](measurements.json); the reproducible harness is
+[benchmark.dart](benchmark.dart).
+
+| Change | Workload | Before | After | Result |
+| --- | --- | ---: | ---: | --- |
+| Build insert fragments once | Build SQL for 1,000 rows with 4 KiB text | 97.330 | 54.007 | 1.80x faster CPU construction |
+| Build insert fragments once | Same batch with mixed explicit/generated IDs | 124.427 | 53.501 | 2.33x faster CPU construction |
+| Build insert fragments once | Insert 1,000 wide rows, no return | 179.028 | 136.752 | 23.6% lower elapsed time |
+
+Benchmark invocation from the repository root (choose one workload):
+
+```sh
+dart --packages=.dart_tool/package_config.json -Ddart.vm.product=true \
+  docs/design/postgres_performance/benchmark.dart builder
+# Other workloads: rows, logging, catalog
+```
+
+The harness creates and removes its own embedded PostgreSQL cluster. Database
+measurements retain default durability settings. No tests run concurrently with
+the timings. The large insert includes apostrophes and backslashes and checks
+that stored text round-trips unchanged.

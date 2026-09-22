@@ -1,0 +1,123 @@
+{
+  "baseline": "f3bcd20f8",
+  "environment": "Dart 3.12.2, PostgreSQL 16.13, local Unix socket, Linux/WSL2, warmed JIT, 5 warmups, 11 samples; setup excluded; shared host",
+  "changes": [
+    {
+      "change": "Materialize insert SQL fragments once",
+      "before": [
+        {
+          "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+          "postgres": "PostgreSQL 16.13 on x86_64-pc-linux-gnu, compiled by clang version 21.1.0, 64-bit"
+        },
+        {
+          "case": "build_uniform_1000_wide",
+          "median_ms": 97.33,
+          "samples_ms": [
+            101.884,
+            98.214,
+            97.862,
+            95.454,
+            95.232,
+            95.576,
+            96.345,
+            108.167,
+            100.603,
+            95.594,
+            97.33
+          ]
+        },
+        {
+          "case": "build_mixed_1000_wide",
+          "median_ms": 124.427,
+          "samples_ms": [
+            129.969,
+            121.179,
+            123.14,
+            117.263,
+            124.427,
+            123.261,
+            128.462,
+            118.762,
+            128.814,
+            135.061,
+            139.411
+          ]
+        },
+        {
+          "case": "insert_1000_wide_noReturn",
+          "median_ms": 179.028,
+          "samples_ms": [
+            180.045,
+            186.08,
+            174.043,
+            197.613,
+            188.343,
+            179.028,
+            175.932,
+            189.844,
+            166.856,
+            172.094,
+            173.221
+          ]
+        }
+      ],
+      "after": [
+        {
+          "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+          "postgres": "PostgreSQL 16.13 on x86_64-pc-linux-gnu, compiled by clang version 21.1.0, 64-bit"
+        },
+        {
+          "case": "build_uniform_1000_wide",
+          "median_ms": 54.007,
+          "samples_ms": [
+            60.75,
+            54.007,
+            58.26,
+            50.208,
+            55.021,
+            48.162,
+            55.949,
+            51.453,
+            52.58,
+            48.981,
+            55.189
+          ]
+        },
+        {
+          "case": "build_mixed_1000_wide",
+          "median_ms": 53.501,
+          "samples_ms": [
+            53.886,
+            54.599,
+            54.829,
+            50.387,
+            53.501,
+            53.728,
+            46.391,
+            53.881,
+            51.937,
+            51.595,
+            52.106
+          ]
+        },
+        {
+          "case": "insert_1000_wide_noReturn",
+          "median_ms": 136.752,
+          "samples_ms": [
+            131.902,
+            136.359,
+            137.33,
+            136.752,
+            139.534,
+            142.997,
+            140.089,
+            136.59,
+            132.298,
+            145.889,
+            133.371
+          ]
+        }
+      ]
+    }
+  ]
+}
