@@ -8,12 +8,14 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, unnecessary_null_comparison
+// ignore_for_file: dead_code, depend_on_referenced_packages
+// ignore_for_file: unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_server/src/generated/protocol.dart' as _igqrxdcj;
 import '../../models_with_relations/nested_one_to_many/arena.dart' as _iv085ahk;
 import '../../models_with_relations/nested_one_to_many/player.dart'
@@ -24,19 +26,9 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
     this.id,
     required this.name,
     this.arenaId,
-    Object? arena = #serverpodUnloadedRelation,
+    _iv085ahk.Arena? arena = const _UndefinedTeam$arena(),
     this.players,
-  }) : _arena$loaded = !identical(
-         arena,
-         #serverpodUnloadedRelation,
-       ),
-       _arena =
-           !identical(
-             arena,
-             #serverpodUnloadedRelation,
-           )
-           ? (arena as _iv085ahk.Arena?)
-           : null;
+  }) : _arena = arena;
 
   factory Team({
     int? id,
@@ -57,7 +49,7 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
                 : _igqrxdcj.Protocol().deserialize<_iv085ahk.Arena>(
                     jsonSerialization['arena'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedTeam$arena(),
       players: jsonSerialization['players'] == null
           ? null
           : _igqrxdcj.Protocol().deserialize<List<_i9mhudyy.Player>>(
@@ -77,8 +69,6 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   int? arenaId;
 
-  bool _arena$loaded;
-
   _iv085ahk.Arena? _arena;
 
   List<_i9mhudyy.Player>? players;
@@ -89,7 +79,7 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _iv085ahk.Arena? get arena {
     final value = _arena;
-    if (!_arena$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'Team',
         relation: 'arena',
@@ -100,7 +90,6 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   set arena(_iv085ahk.Arena? value) {
     _arena = value;
-    _arena$loaded = true;
   }
 
   /// Returns a shallow copy of this [Team]
@@ -110,8 +99,9 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
     int? id,
     String? name,
     int? arenaId,
-    Object? arena = _Undefined,
-    List<_i9mhudyy.Player>? players,
+    _iv085ahk.Arena? arena = const _UndefinedTeam$arena(),
+    List<_i9mhudyy.Player>? players =
+        const _issu.$UndefinedList<_i9mhudyy.Player>(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -120,7 +110,7 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (arenaId != null) 'arenaId': arenaId,
-      if (_arena$loaded) 'arena': _arena?.toJson(),
+      if (_arena is! _issu.UndefinedSentinel) 'arena': _arena?.toJson(),
       if (players != null)
         'players': players?.toJson(valueToJson: (v) => v.toJson()),
     };
@@ -133,7 +123,8 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (arenaId != null) 'arenaId': arenaId,
-      if (_arena$loaded) 'arena': _arena?.toJsonForProtocol(),
+      if (_arena is! _issu.UndefinedSentinel)
+        'arena': _arena?.toJsonForProtocol(),
       if (players != null)
         'players': players?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
@@ -175,12 +166,17 @@ abstract class Team implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
 class _Undefined {}
 
+class _UndefinedTeam$arena extends _issu.UndefinedSentinel
+    implements _iv085ahk.Arena {
+  const _UndefinedTeam$arena();
+}
+
 class _TeamImpl extends Team {
   _TeamImpl({
     int? id,
     required String name,
     int? arenaId,
-    Object? arena = #serverpodUnloadedRelation,
+    _iv085ahk.Arena? arena = const _UndefinedTeam$arena(),
     List<_i9mhudyy.Player>? players,
   }) : super._(
          id: id,
@@ -198,21 +194,22 @@ class _TeamImpl extends Team {
     Object? id = _Undefined,
     String? name,
     Object? arenaId = _Undefined,
-    Object? arena = _Undefined,
-    Object? players = _Undefined,
+    _iv085ahk.Arena? arena = const _UndefinedTeam$arena(),
+    List<_i9mhudyy.Player>? players =
+        const _issu.$UndefinedList<_i9mhudyy.Player>(),
   }) {
     return _TeamImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       arenaId: arenaId is int? ? arenaId : this.arenaId,
-      arena: arena is _iv085ahk.Arena?
-          ? arena?.copyWith()
-          : _arena$loaded
-          ? this._arena?.copyWith()
-          : #serverpodUnloadedRelation,
-      players: players is List<_i9mhudyy.Player>?
-          ? players
-          : this.players?.map((e0) => e0.copyWith()).toList(),
+      arena: arena is _issu.UndefinedSentinel
+          ? _arena is _issu.UndefinedSentinel
+                ? _arena
+                : this._arena?.copyWith()
+          : arena?.copyWith(),
+      players: players is _issu.UndefinedSentinel
+          ? this.players?.map((e0) => e0.copyWith()).toList()
+          : players,
     );
   }
 }

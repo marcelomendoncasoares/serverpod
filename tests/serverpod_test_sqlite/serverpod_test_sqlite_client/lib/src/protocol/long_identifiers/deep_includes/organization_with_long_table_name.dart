@@ -8,10 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
+// ignore_for_file: depend_on_referenced_packages
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_sqlite_client/src/protocol/protocol.dart'
     as _i0ntutnq;
 import '../../long_identifiers/deep_includes/city_with_long_table_name.dart'
@@ -26,18 +28,9 @@ abstract class OrganizationWithLongTableName
     required this.name,
     this.people,
     this.cityId,
-    Object? city = #serverpodUnloadedRelation,
-  }) : _city$loaded = !identical(
-         city,
-         #serverpodUnloadedRelation,
-       ),
-       _city =
-           !identical(
-             city,
-             #serverpodUnloadedRelation,
-           )
-           ? (city as _ii8bs4lb.CityWithLongTableName?)
-           : null;
+    _ii8bs4lb.CityWithLongTableName? city =
+        const _UndefinedOrganizationWithLongTableName$city(),
+  }) : _city = city;
 
   factory OrganizationWithLongTableName({
     int? id,
@@ -67,7 +60,7 @@ abstract class OrganizationWithLongTableName
                       .deserialize<_ii8bs4lb.CityWithLongTableName>(
                         jsonSerialization['city'],
                       )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedOrganizationWithLongTableName$city(),
     );
   }
 
@@ -82,14 +75,12 @@ abstract class OrganizationWithLongTableName
 
   int? cityId;
 
-  bool _city$loaded;
-
   _ii8bs4lb.CityWithLongTableName? _city;
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _ii8bs4lb.CityWithLongTableName? get city {
     final value = _city;
-    if (!_city$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'OrganizationWithLongTableName',
         relation: 'city',
@@ -100,7 +91,6 @@ abstract class OrganizationWithLongTableName
 
   set city(_ii8bs4lb.CityWithLongTableName? value) {
     _city = value;
-    _city$loaded = true;
   }
 
   /// Returns a shallow copy of this [OrganizationWithLongTableName]
@@ -109,9 +99,11 @@ abstract class OrganizationWithLongTableName
   OrganizationWithLongTableName copyWith({
     int? id,
     String? name,
-    List<_i5nficvp.PersonWithLongTableName>? people,
+    List<_i5nficvp.PersonWithLongTableName>? people =
+        const _issu.$UndefinedList<_i5nficvp.PersonWithLongTableName>(),
     int? cityId,
-    Object? city = _Undefined,
+    _ii8bs4lb.CityWithLongTableName? city =
+        const _UndefinedOrganizationWithLongTableName$city(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -122,7 +114,7 @@ abstract class OrganizationWithLongTableName
       if (people != null)
         'people': people?.toJson(valueToJson: (v) => v.toJson()),
       if (cityId != null) 'cityId': cityId,
-      if (_city$loaded) 'city': _city?.toJson(),
+      if (_city is! _issu.UndefinedSentinel) 'city': _city?.toJson(),
     };
   }
 
@@ -135,7 +127,7 @@ abstract class OrganizationWithLongTableName
       if (people != null)
         'people': people?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
       if (cityId != null) 'cityId': cityId,
-      if (_city$loaded) 'city': _city?.toJsonForProtocol(),
+      if (_city is! _issu.UndefinedSentinel) 'city': _city?.toJsonForProtocol(),
     };
   }
 
@@ -147,13 +139,20 @@ abstract class OrganizationWithLongTableName
 
 class _Undefined {}
 
+class _UndefinedOrganizationWithLongTableName$city
+    extends _issu.UndefinedSentinel
+    implements _ii8bs4lb.CityWithLongTableName {
+  const _UndefinedOrganizationWithLongTableName$city();
+}
+
 class _OrganizationWithLongTableNameImpl extends OrganizationWithLongTableName {
   _OrganizationWithLongTableNameImpl({
     int? id,
     required String name,
     List<_i5nficvp.PersonWithLongTableName>? people,
     int? cityId,
-    Object? city = #serverpodUnloadedRelation,
+    _ii8bs4lb.CityWithLongTableName? city =
+        const _UndefinedOrganizationWithLongTableName$city(),
   }) : super._(
          id: id,
          name: name,
@@ -169,22 +168,24 @@ class _OrganizationWithLongTableNameImpl extends OrganizationWithLongTableName {
   OrganizationWithLongTableName copyWith({
     Object? id = _Undefined,
     String? name,
-    Object? people = _Undefined,
+    List<_i5nficvp.PersonWithLongTableName>? people =
+        const _issu.$UndefinedList<_i5nficvp.PersonWithLongTableName>(),
     Object? cityId = _Undefined,
-    Object? city = _Undefined,
+    _ii8bs4lb.CityWithLongTableName? city =
+        const _UndefinedOrganizationWithLongTableName$city(),
   }) {
     return _OrganizationWithLongTableNameImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      people: people is List<_i5nficvp.PersonWithLongTableName>?
-          ? people
-          : this.people?.map((e0) => e0.copyWith()).toList(),
+      people: people is _issu.UndefinedSentinel
+          ? this.people?.map((e0) => e0.copyWith()).toList()
+          : people,
       cityId: cityId is int? ? cityId : this.cityId,
-      city: city is _ii8bs4lb.CityWithLongTableName?
-          ? city?.copyWith()
-          : _city$loaded
-          ? this._city?.copyWith()
-          : #serverpodUnloadedRelation,
+      city: city is _issu.UndefinedSentinel
+          ? _city is _issu.UndefinedSentinel
+                ? _city
+                : this._city?.copyWith()
+          : city?.copyWith(),
     );
   }
 }

@@ -8,10 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
+// ignore_for_file: depend_on_referenced_packages
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_sqlite_client/src/protocol/protocol.dart'
     as _i0ntutnq;
 import '../../../explicit_column_name/relations/one_to_one/service.dart'
@@ -23,18 +25,8 @@ abstract class Contractor
     this.id,
     required this.name,
     this.serviceIdField,
-    Object? service = #serverpodUnloadedRelation,
-  }) : _service$loaded = !identical(
-         service,
-         #serverpodUnloadedRelation,
-       ),
-       _service =
-           !identical(
-             service,
-             #serverpodUnloadedRelation,
-           )
-           ? (service as _iml73r3x.Service?)
-           : null;
+    _iml73r3x.Service? service = const _UndefinedContractor$service(),
+  }) : _service = service;
 
   factory Contractor({
     int? id,
@@ -54,7 +46,7 @@ abstract class Contractor
                 : _i0ntutnq.Protocol().deserialize<_iml73r3x.Service>(
                     jsonSerialization['service'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedContractor$service(),
     );
   }
 
@@ -67,14 +59,12 @@ abstract class Contractor
 
   int? serviceIdField;
 
-  bool _service$loaded;
-
   _iml73r3x.Service? _service;
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _iml73r3x.Service? get service {
     final value = _service;
-    if (!_service$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'Contractor',
         relation: 'service',
@@ -85,7 +75,6 @@ abstract class Contractor
 
   set service(_iml73r3x.Service? value) {
     _service = value;
-    _service$loaded = true;
   }
 
   /// Returns a shallow copy of this [Contractor]
@@ -95,7 +84,7 @@ abstract class Contractor
     int? id,
     String? name,
     int? serviceIdField,
-    Object? service = _Undefined,
+    _iml73r3x.Service? service = const _UndefinedContractor$service(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -104,7 +93,7 @@ abstract class Contractor
       if (id != null) 'id': id,
       'name': name,
       if (serviceIdField != null) 'serviceIdField': serviceIdField,
-      if (_service$loaded) 'service': _service?.toJson(),
+      if (_service is! _issu.UndefinedSentinel) 'service': _service?.toJson(),
     };
   }
 
@@ -115,7 +104,8 @@ abstract class Contractor
       if (id != null) 'id': id,
       'name': name,
       if (serviceIdField != null) 'serviceIdField': serviceIdField,
-      if (_service$loaded) 'service': _service?.toJsonForProtocol(),
+      if (_service is! _issu.UndefinedSentinel)
+        'service': _service?.toJsonForProtocol(),
     };
   }
 
@@ -127,12 +117,17 @@ abstract class Contractor
 
 class _Undefined {}
 
+class _UndefinedContractor$service extends _issu.UndefinedSentinel
+    implements _iml73r3x.Service {
+  const _UndefinedContractor$service();
+}
+
 class _ContractorImpl extends Contractor {
   _ContractorImpl({
     int? id,
     required String name,
     int? serviceIdField,
-    Object? service = #serverpodUnloadedRelation,
+    _iml73r3x.Service? service = const _UndefinedContractor$service(),
   }) : super._(
          id: id,
          name: name,
@@ -148,7 +143,7 @@ class _ContractorImpl extends Contractor {
     Object? id = _Undefined,
     String? name,
     Object? serviceIdField = _Undefined,
-    Object? service = _Undefined,
+    _iml73r3x.Service? service = const _UndefinedContractor$service(),
   }) {
     return _ContractorImpl(
       id: id is int? ? id : this.id,
@@ -156,11 +151,11 @@ class _ContractorImpl extends Contractor {
       serviceIdField: serviceIdField is int?
           ? serviceIdField
           : this.serviceIdField,
-      service: service is _iml73r3x.Service?
-          ? service?.copyWith()
-          : _service$loaded
-          ? this._service?.copyWith()
-          : #serverpodUnloadedRelation,
+      service: service is _issu.UndefinedSentinel
+          ? _service is _issu.UndefinedSentinel
+                ? _service
+                : this._service?.copyWith()
+          : service?.copyWith(),
     );
   }
 }

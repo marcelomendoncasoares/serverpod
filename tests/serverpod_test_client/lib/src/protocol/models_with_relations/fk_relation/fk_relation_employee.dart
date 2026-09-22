@@ -8,10 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
+// ignore_for_file: depend_on_referenced_packages
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_client/src/protocol/protocol.dart' as _iza9lbb5;
 import '../../models_with_relations/fk_relation/fk_relation_company.dart'
     as _ikyus01r;
@@ -24,18 +26,9 @@ abstract class FkRelationEmployee
     required this.companyId,
     this.company,
     this.previousCompanyId,
-    Object? previousCompany = #serverpodUnloadedRelation,
-  }) : _previousCompany$loaded = !identical(
-         previousCompany,
-         #serverpodUnloadedRelation,
-       ),
-       _previousCompany =
-           !identical(
-             previousCompany,
-             #serverpodUnloadedRelation,
-           )
-           ? (previousCompany as _ikyus01r.FkRelationCompany?)
-           : null;
+    _ikyus01r.FkRelationCompany? previousCompany =
+        const _UndefinedFkRelationEmployee$company(),
+  }) : _previousCompany = previousCompany;
 
   factory FkRelationEmployee({
     int? id,
@@ -63,7 +56,7 @@ abstract class FkRelationEmployee
                 : _iza9lbb5.Protocol().deserialize<_ikyus01r.FkRelationCompany>(
                     jsonSerialization['previousCompany'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedFkRelationEmployee$company(),
     );
   }
 
@@ -80,14 +73,12 @@ abstract class FkRelationEmployee
 
   int? previousCompanyId;
 
-  bool _previousCompany$loaded;
-
   _ikyus01r.FkRelationCompany? _previousCompany;
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _ikyus01r.FkRelationCompany? get previousCompany {
     final value = _previousCompany;
-    if (!_previousCompany$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'FkRelationEmployee',
         relation: 'previousCompany',
@@ -98,7 +89,6 @@ abstract class FkRelationEmployee
 
   set previousCompany(_ikyus01r.FkRelationCompany? value) {
     _previousCompany = value;
-    _previousCompany$loaded = true;
   }
 
   /// Returns a shallow copy of this [FkRelationEmployee]
@@ -108,9 +98,11 @@ abstract class FkRelationEmployee
     int? id,
     String? name,
     int? companyId,
-    _ikyus01r.FkRelationCompany? company,
+    _ikyus01r.FkRelationCompany? company =
+        const _UndefinedFkRelationEmployee$company(),
     int? previousCompanyId,
-    Object? previousCompany = _Undefined,
+    _ikyus01r.FkRelationCompany? previousCompany =
+        const _UndefinedFkRelationEmployee$company(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -121,7 +113,7 @@ abstract class FkRelationEmployee
       'companyId': companyId,
       if (company != null) 'company': company?.toJson(),
       if (previousCompanyId != null) 'previousCompanyId': previousCompanyId,
-      if (_previousCompany$loaded)
+      if (_previousCompany is! _issu.UndefinedSentinel)
         'previousCompany': _previousCompany?.toJson(),
     };
   }
@@ -135,7 +127,7 @@ abstract class FkRelationEmployee
       'companyId': companyId,
       if (company != null) 'company': company?.toJsonForProtocol(),
       if (previousCompanyId != null) 'previousCompanyId': previousCompanyId,
-      if (_previousCompany$loaded)
+      if (_previousCompany is! _issu.UndefinedSentinel)
         'previousCompany': _previousCompany?.toJsonForProtocol(),
     };
   }
@@ -148,6 +140,11 @@ abstract class FkRelationEmployee
 
 class _Undefined {}
 
+class _UndefinedFkRelationEmployee$company extends _issu.UndefinedSentinel
+    implements _ikyus01r.FkRelationCompany {
+  const _UndefinedFkRelationEmployee$company();
+}
+
 class _FkRelationEmployeeImpl extends FkRelationEmployee {
   _FkRelationEmployeeImpl({
     int? id,
@@ -155,7 +152,8 @@ class _FkRelationEmployeeImpl extends FkRelationEmployee {
     required int companyId,
     _ikyus01r.FkRelationCompany? company,
     int? previousCompanyId,
-    Object? previousCompany = #serverpodUnloadedRelation,
+    _ikyus01r.FkRelationCompany? previousCompany =
+        const _UndefinedFkRelationEmployee$company(),
   }) : super._(
          id: id,
          name: name,
@@ -173,25 +171,27 @@ class _FkRelationEmployeeImpl extends FkRelationEmployee {
     Object? id = _Undefined,
     String? name,
     int? companyId,
-    Object? company = _Undefined,
+    _ikyus01r.FkRelationCompany? company =
+        const _UndefinedFkRelationEmployee$company(),
     Object? previousCompanyId = _Undefined,
-    Object? previousCompany = _Undefined,
+    _ikyus01r.FkRelationCompany? previousCompany =
+        const _UndefinedFkRelationEmployee$company(),
   }) {
     return _FkRelationEmployeeImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       companyId: companyId ?? this.companyId,
-      company: company is _ikyus01r.FkRelationCompany?
-          ? company
-          : this.company?.copyWith(),
+      company: company is _issu.UndefinedSentinel
+          ? this.company?.copyWith()
+          : company,
       previousCompanyId: previousCompanyId is int?
           ? previousCompanyId
           : this.previousCompanyId,
-      previousCompany: previousCompany is _ikyus01r.FkRelationCompany?
-          ? previousCompany?.copyWith()
-          : _previousCompany$loaded
-          ? this._previousCompany?.copyWith()
-          : #serverpodUnloadedRelation,
+      previousCompany: previousCompany is _issu.UndefinedSentinel
+          ? _previousCompany is _issu.UndefinedSentinel
+                ? _previousCompany
+                : this._previousCompany?.copyWith()
+          : previousCompany?.copyWith(),
     );
   }
 }

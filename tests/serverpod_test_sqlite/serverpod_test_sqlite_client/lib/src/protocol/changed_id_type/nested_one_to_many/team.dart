@@ -8,10 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
+// ignore_for_file: depend_on_referenced_packages
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_sqlite_client/src/protocol/protocol.dart'
     as _i0ntutnq;
 import '../../changed_id_type/nested_one_to_many/arena.dart' as _izqzqdtt;
@@ -23,19 +25,9 @@ abstract class TeamInt
     this.id,
     required this.name,
     this.arenaId,
-    Object? arena = #serverpodUnloadedRelation,
+    _izqzqdtt.ArenaUuid? arena = const _UndefinedTeamInt$arena(),
     this.players,
-  }) : _arena$loaded = !identical(
-         arena,
-         #serverpodUnloadedRelation,
-       ),
-       _arena =
-           !identical(
-             arena,
-             #serverpodUnloadedRelation,
-           )
-           ? (arena as _izqzqdtt.ArenaUuid?)
-           : null;
+  }) : _arena = arena;
 
   factory TeamInt({
     int? id,
@@ -58,7 +50,7 @@ abstract class TeamInt
                 : _i0ntutnq.Protocol().deserialize<_izqzqdtt.ArenaUuid>(
                     jsonSerialization['arena'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedTeamInt$arena(),
       players: jsonSerialization['players'] == null
           ? null
           : _i0ntutnq.Protocol().deserialize<List<_igtph8zx.PlayerUuid>>(
@@ -76,8 +68,6 @@ abstract class TeamInt
 
   _isc.UuidValue? arenaId;
 
-  bool _arena$loaded;
-
   _izqzqdtt.ArenaUuid? _arena;
 
   List<_igtph8zx.PlayerUuid>? players;
@@ -85,7 +75,7 @@ abstract class TeamInt
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _izqzqdtt.ArenaUuid? get arena {
     final value = _arena;
-    if (!_arena$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'TeamInt',
         relation: 'arena',
@@ -96,7 +86,6 @@ abstract class TeamInt
 
   set arena(_izqzqdtt.ArenaUuid? value) {
     _arena = value;
-    _arena$loaded = true;
   }
 
   /// Returns a shallow copy of this [TeamInt]
@@ -105,9 +94,10 @@ abstract class TeamInt
   TeamInt copyWith({
     int? id,
     String? name,
-    _isc.UuidValue? arenaId,
-    Object? arena = _Undefined,
-    List<_igtph8zx.PlayerUuid>? players,
+    _isc.UuidValue? arenaId = const _issu.$UndefinedUuidValue(),
+    _izqzqdtt.ArenaUuid? arena = const _UndefinedTeamInt$arena(),
+    List<_igtph8zx.PlayerUuid>? players =
+        const _issu.$UndefinedList<_igtph8zx.PlayerUuid>(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -116,7 +106,7 @@ abstract class TeamInt
       if (id != null) 'id': id,
       'name': name,
       if (arenaId != null) 'arenaId': arenaId?.toJson(),
-      if (_arena$loaded) 'arena': _arena?.toJson(),
+      if (_arena is! _issu.UndefinedSentinel) 'arena': _arena?.toJson(),
       if (players != null)
         'players': players?.toJson(valueToJson: (v) => v.toJson()),
     };
@@ -129,7 +119,8 @@ abstract class TeamInt
       if (id != null) 'id': id,
       'name': name,
       if (arenaId != null) 'arenaId': arenaId?.toJson(),
-      if (_arena$loaded) 'arena': _arena?.toJsonForProtocol(),
+      if (_arena is! _issu.UndefinedSentinel)
+        'arena': _arena?.toJsonForProtocol(),
       if (players != null)
         'players': players?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
@@ -143,12 +134,17 @@ abstract class TeamInt
 
 class _Undefined {}
 
+class _UndefinedTeamInt$arena extends _issu.UndefinedSentinel
+    implements _izqzqdtt.ArenaUuid {
+  const _UndefinedTeamInt$arena();
+}
+
 class _TeamIntImpl extends TeamInt {
   _TeamIntImpl({
     int? id,
     required String name,
     _isc.UuidValue? arenaId,
-    Object? arena = #serverpodUnloadedRelation,
+    _izqzqdtt.ArenaUuid? arena = const _UndefinedTeamInt$arena(),
     List<_igtph8zx.PlayerUuid>? players,
   }) : super._(
          id: id,
@@ -165,22 +161,23 @@ class _TeamIntImpl extends TeamInt {
   TeamInt copyWith({
     Object? id = _Undefined,
     String? name,
-    Object? arenaId = _Undefined,
-    Object? arena = _Undefined,
-    Object? players = _Undefined,
+    _isc.UuidValue? arenaId = const _issu.$UndefinedUuidValue(),
+    _izqzqdtt.ArenaUuid? arena = const _UndefinedTeamInt$arena(),
+    List<_igtph8zx.PlayerUuid>? players =
+        const _issu.$UndefinedList<_igtph8zx.PlayerUuid>(),
   }) {
     return _TeamIntImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      arenaId: arenaId is _isc.UuidValue? ? arenaId : this.arenaId,
-      arena: arena is _izqzqdtt.ArenaUuid?
-          ? arena?.copyWith()
-          : _arena$loaded
-          ? this._arena?.copyWith()
-          : #serverpodUnloadedRelation,
-      players: players is List<_igtph8zx.PlayerUuid>?
-          ? players
-          : this.players?.map((e0) => e0.copyWith()).toList(),
+      arenaId: arenaId is _issu.UndefinedSentinel ? this.arenaId : arenaId,
+      arena: arena is _issu.UndefinedSentinel
+          ? _arena is _issu.UndefinedSentinel
+                ? _arena
+                : this._arena?.copyWith()
+          : arena?.copyWith(),
+      players: players is _issu.UndefinedSentinel
+          ? this.players?.map((e0) => e0.copyWith()).toList()
+          : players,
     );
   }
 }

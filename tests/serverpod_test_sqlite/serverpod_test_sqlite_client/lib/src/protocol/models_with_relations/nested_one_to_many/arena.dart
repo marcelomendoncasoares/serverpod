@@ -8,13 +8,15 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, unnecessary_null_comparison
+// ignore_for_file: dead_code, depend_on_referenced_packages
+// ignore_for_file: unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_database/serverpod_database.dart' as _isd;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_sqlite_client/src/protocol/protocol.dart'
     as _i0ntutnq;
 import '../../models_with_relations/nested_one_to_many/team.dart' as _iaks25tn;
@@ -24,18 +26,8 @@ abstract class Arena
   Arena._({
     this.id,
     required this.name,
-    Object? team = #serverpodUnloadedRelation,
-  }) : _team$loaded = !identical(
-         team,
-         #serverpodUnloadedRelation,
-       ),
-       _team =
-           !identical(
-             team,
-             #serverpodUnloadedRelation,
-           )
-           ? (team as _iaks25tn.Team?)
-           : null;
+    _iaks25tn.Team? team = const _UndefinedArena$team(),
+  }) : _team = team;
 
   factory Arena({
     int? id,
@@ -53,7 +45,7 @@ abstract class Arena
                 : _i0ntutnq.Protocol().deserialize<_iaks25tn.Team>(
                     jsonSerialization['team'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedArena$team(),
     );
   }
 
@@ -66,8 +58,6 @@ abstract class Arena
 
   String name;
 
-  bool _team$loaded;
-
   _iaks25tn.Team? _team;
 
   @override
@@ -76,7 +66,7 @@ abstract class Arena
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _iaks25tn.Team? get team {
     final value = _team;
-    if (!_team$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'Arena',
         relation: 'team',
@@ -87,7 +77,6 @@ abstract class Arena
 
   set team(_iaks25tn.Team? value) {
     _team = value;
-    _team$loaded = true;
   }
 
   /// Returns a shallow copy of this [Arena]
@@ -96,7 +85,7 @@ abstract class Arena
   Arena copyWith({
     int? id,
     String? name,
-    Object? team = _Undefined,
+    _iaks25tn.Team? team = const _UndefinedArena$team(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -104,7 +93,7 @@ abstract class Arena
       '__className__': 'Arena',
       if (id != null) 'id': id,
       'name': name,
-      if (_team$loaded) 'team': _team?.toJson(),
+      if (_team is! _issu.UndefinedSentinel) 'team': _team?.toJson(),
     };
   }
 
@@ -114,7 +103,7 @@ abstract class Arena
       '__className__': 'Arena',
       if (id != null) 'id': id,
       'name': name,
-      if (_team$loaded) 'team': _team?.toJsonForProtocol(),
+      if (_team is! _issu.UndefinedSentinel) 'team': _team?.toJsonForProtocol(),
     };
   }
 
@@ -148,11 +137,16 @@ abstract class Arena
 
 class _Undefined {}
 
+class _UndefinedArena$team extends _issu.UndefinedSentinel
+    implements _iaks25tn.Team {
+  const _UndefinedArena$team();
+}
+
 class _ArenaImpl extends Arena {
   _ArenaImpl({
     int? id,
     required String name,
-    Object? team = #serverpodUnloadedRelation,
+    _iaks25tn.Team? team = const _UndefinedArena$team(),
   }) : super._(
          id: id,
          name: name,
@@ -166,16 +160,16 @@ class _ArenaImpl extends Arena {
   Arena copyWith({
     Object? id = _Undefined,
     String? name,
-    Object? team = _Undefined,
+    _iaks25tn.Team? team = const _UndefinedArena$team(),
   }) {
     return _ArenaImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      team: team is _iaks25tn.Team?
-          ? team?.copyWith()
-          : _team$loaded
-          ? this._team?.copyWith()
-          : #serverpodUnloadedRelation,
+      team: team is _issu.UndefinedSentinel
+          ? _team is _issu.UndefinedSentinel
+                ? _team
+                : this._team?.copyWith()
+          : team?.copyWith(),
     );
   }
 }
@@ -775,7 +769,7 @@ class ArenaDetachRowRepository {
     Arena arena, {
     _isd.Transaction? transaction,
   }) async {
-    var $team = arena._team;
+    var $team = arena._team is _issu.UndefinedSentinel ? null : arena._team;
 
     if ($team == null) {
       throw ArgumentError.notNull('arena.team');

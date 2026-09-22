@@ -8,12 +8,14 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, unnecessary_null_comparison
+// ignore_for_file: dead_code, depend_on_referenced_packages
+// ignore_for_file: unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_sqlite_server/src/generated/protocol.dart'
     as _i08l111i;
 import '../../models_with_relations/nested_one_to_many/team.dart' as _iaks25tn;
@@ -23,18 +25,8 @@ abstract class Player implements _is.TableRow<int?>, _is.ProtocolSerialization {
     this.id,
     required this.name,
     this.teamId,
-    Object? team = #serverpodUnloadedRelation,
-  }) : _team$loaded = !identical(
-         team,
-         #serverpodUnloadedRelation,
-       ),
-       _team =
-           !identical(
-             team,
-             #serverpodUnloadedRelation,
-           )
-           ? (team as _iaks25tn.Team?)
-           : null;
+    _iaks25tn.Team? team = const _UndefinedPlayer$team(),
+  }) : _team = team;
 
   factory Player({
     int? id,
@@ -54,7 +46,7 @@ abstract class Player implements _is.TableRow<int?>, _is.ProtocolSerialization {
                 : _i08l111i.Protocol().deserialize<_iaks25tn.Team>(
                     jsonSerialization['team'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedPlayer$team(),
     );
   }
 
@@ -69,8 +61,6 @@ abstract class Player implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   int? teamId;
 
-  bool _team$loaded;
-
   _iaks25tn.Team? _team;
 
   @override
@@ -79,7 +69,7 @@ abstract class Player implements _is.TableRow<int?>, _is.ProtocolSerialization {
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _iaks25tn.Team? get team {
     final value = _team;
-    if (!_team$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'Player',
         relation: 'team',
@@ -90,7 +80,6 @@ abstract class Player implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   set team(_iaks25tn.Team? value) {
     _team = value;
-    _team$loaded = true;
   }
 
   /// Returns a shallow copy of this [Player]
@@ -100,7 +89,7 @@ abstract class Player implements _is.TableRow<int?>, _is.ProtocolSerialization {
     int? id,
     String? name,
     int? teamId,
-    Object? team = _Undefined,
+    _iaks25tn.Team? team = const _UndefinedPlayer$team(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -109,7 +98,7 @@ abstract class Player implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (teamId != null) 'teamId': teamId,
-      if (_team$loaded) 'team': _team?.toJson(),
+      if (_team is! _issu.UndefinedSentinel) 'team': _team?.toJson(),
     };
   }
 
@@ -120,7 +109,7 @@ abstract class Player implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (teamId != null) 'teamId': teamId,
-      if (_team$loaded) 'team': _team?.toJsonForProtocol(),
+      if (_team is! _issu.UndefinedSentinel) 'team': _team?.toJsonForProtocol(),
     };
   }
 
@@ -154,12 +143,17 @@ abstract class Player implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
 class _Undefined {}
 
+class _UndefinedPlayer$team extends _issu.UndefinedSentinel
+    implements _iaks25tn.Team {
+  const _UndefinedPlayer$team();
+}
+
 class _PlayerImpl extends Player {
   _PlayerImpl({
     int? id,
     required String name,
     int? teamId,
-    Object? team = #serverpodUnloadedRelation,
+    _iaks25tn.Team? team = const _UndefinedPlayer$team(),
   }) : super._(
          id: id,
          name: name,
@@ -175,17 +169,17 @@ class _PlayerImpl extends Player {
     Object? id = _Undefined,
     String? name,
     Object? teamId = _Undefined,
-    Object? team = _Undefined,
+    _iaks25tn.Team? team = const _UndefinedPlayer$team(),
   }) {
     return _PlayerImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       teamId: teamId is int? ? teamId : this.teamId,
-      team: team is _iaks25tn.Team?
-          ? team?.copyWith()
-          : _team$loaded
-          ? this._team?.copyWith()
-          : #serverpodUnloadedRelation,
+      team: team is _issu.UndefinedSentinel
+          ? _team is _issu.UndefinedSentinel
+                ? _team
+                : this._team?.copyWith()
+          : team?.copyWith(),
     );
   }
 }

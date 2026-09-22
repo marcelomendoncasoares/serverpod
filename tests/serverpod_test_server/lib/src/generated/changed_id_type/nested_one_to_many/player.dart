@@ -8,12 +8,14 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, unnecessary_null_comparison
+// ignore_for_file: dead_code, depend_on_referenced_packages
+// ignore_for_file: unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_server/src/generated/protocol.dart' as _igqrxdcj;
 import '../../changed_id_type/nested_one_to_many/team.dart' as _i9bz1am4;
 
@@ -23,18 +25,8 @@ abstract class PlayerUuid
     this.id,
     required this.name,
     this.teamId,
-    Object? team = #serverpodUnloadedRelation,
-  }) : _team$loaded = !identical(
-         team,
-         #serverpodUnloadedRelation,
-       ),
-       _team =
-           !identical(
-             team,
-             #serverpodUnloadedRelation,
-           )
-           ? (team as _i9bz1am4.TeamInt?)
-           : null;
+    _i9bz1am4.TeamInt? team = const _UndefinedPlayerUuid$team(),
+  }) : _team = team;
 
   factory PlayerUuid({
     _is.UuidValue? id,
@@ -56,7 +48,7 @@ abstract class PlayerUuid
                 : _igqrxdcj.Protocol().deserialize<_i9bz1am4.TeamInt>(
                     jsonSerialization['team'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedPlayerUuid$team(),
     );
   }
 
@@ -71,8 +63,6 @@ abstract class PlayerUuid
 
   int? teamId;
 
-  bool _team$loaded;
-
   _i9bz1am4.TeamInt? _team;
 
   @override
@@ -81,7 +71,7 @@ abstract class PlayerUuid
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _i9bz1am4.TeamInt? get team {
     final value = _team;
-    if (!_team$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'PlayerUuid',
         relation: 'team',
@@ -92,17 +82,16 @@ abstract class PlayerUuid
 
   set team(_i9bz1am4.TeamInt? value) {
     _team = value;
-    _team$loaded = true;
   }
 
   /// Returns a shallow copy of this [PlayerUuid]
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   PlayerUuid copyWith({
-    _is.UuidValue? id,
+    _is.UuidValue? id = const _issu.$UndefinedUuidValue(),
     String? name,
     int? teamId,
-    Object? team = _Undefined,
+    _i9bz1am4.TeamInt? team = const _UndefinedPlayerUuid$team(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -111,7 +100,7 @@ abstract class PlayerUuid
       if (id != null) 'id': id?.toJson(),
       'name': name,
       if (teamId != null) 'teamId': teamId,
-      if (_team$loaded) 'team': _team?.toJson(),
+      if (_team is! _issu.UndefinedSentinel) 'team': _team?.toJson(),
     };
   }
 
@@ -122,7 +111,7 @@ abstract class PlayerUuid
       if (id != null) 'id': id?.toJson(),
       'name': name,
       if (teamId != null) 'teamId': teamId,
-      if (_team$loaded) 'team': _team?.toJsonForProtocol(),
+      if (_team is! _issu.UndefinedSentinel) 'team': _team?.toJsonForProtocol(),
     };
   }
 
@@ -156,12 +145,17 @@ abstract class PlayerUuid
 
 class _Undefined {}
 
+class _UndefinedPlayerUuid$team extends _issu.UndefinedSentinel
+    implements _i9bz1am4.TeamInt {
+  const _UndefinedPlayerUuid$team();
+}
+
 class _PlayerUuidImpl extends PlayerUuid {
   _PlayerUuidImpl({
     _is.UuidValue? id,
     required String name,
     int? teamId,
-    Object? team = #serverpodUnloadedRelation,
+    _i9bz1am4.TeamInt? team = const _UndefinedPlayerUuid$team(),
   }) : super._(
          id: id,
          name: name,
@@ -174,20 +168,20 @@ class _PlayerUuidImpl extends PlayerUuid {
   @_is.useResult
   @override
   PlayerUuid copyWith({
-    Object? id = _Undefined,
+    _is.UuidValue? id = const _issu.$UndefinedUuidValue(),
     String? name,
     Object? teamId = _Undefined,
-    Object? team = _Undefined,
+    _i9bz1am4.TeamInt? team = const _UndefinedPlayerUuid$team(),
   }) {
     return _PlayerUuidImpl(
-      id: id is _is.UuidValue? ? id : this.id,
+      id: id is _issu.UndefinedSentinel ? this.id : id,
       name: name ?? this.name,
       teamId: teamId is int? ? teamId : this.teamId,
-      team: team is _i9bz1am4.TeamInt?
-          ? team?.copyWith()
-          : _team$loaded
-          ? this._team?.copyWith()
-          : #serverpodUnloadedRelation,
+      team: team is _issu.UndefinedSentinel
+          ? _team is _issu.UndefinedSentinel
+                ? _team
+                : this._team?.copyWith()
+          : team?.copyWith(),
     );
   }
 }

@@ -8,10 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
+// ignore_for_file: depend_on_referenced_packages
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_client/src/protocol/protocol.dart' as _iza9lbb5;
 import '../models_with_list_relations/organization.dart' as _i0ptycc3;
 
@@ -21,18 +23,9 @@ abstract class Person
     this.id,
     required this.name,
     this.organizationId,
-    Object? organization = #serverpodUnloadedRelation,
-  }) : _organization$loaded = !identical(
-         organization,
-         #serverpodUnloadedRelation,
-       ),
-       _organization =
-           !identical(
-             organization,
-             #serverpodUnloadedRelation,
-           )
-           ? (organization as _i0ptycc3.Organization?)
-           : null;
+    _i0ptycc3.Organization? organization =
+        const _UndefinedPerson$organization(),
+  }) : _organization = organization;
 
   factory Person({
     int? id,
@@ -52,7 +45,7 @@ abstract class Person
                 : _iza9lbb5.Protocol().deserialize<_i0ptycc3.Organization>(
                     jsonSerialization['organization'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedPerson$organization(),
     );
   }
 
@@ -65,14 +58,12 @@ abstract class Person
 
   int? organizationId;
 
-  bool _organization$loaded;
-
   _i0ptycc3.Organization? _organization;
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _i0ptycc3.Organization? get organization {
     final value = _organization;
-    if (!_organization$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'Person',
         relation: 'organization',
@@ -83,7 +74,6 @@ abstract class Person
 
   set organization(_i0ptycc3.Organization? value) {
     _organization = value;
-    _organization$loaded = true;
   }
 
   /// Returns a shallow copy of this [Person]
@@ -93,7 +83,8 @@ abstract class Person
     int? id,
     String? name,
     int? organizationId,
-    Object? organization = _Undefined,
+    _i0ptycc3.Organization? organization =
+        const _UndefinedPerson$organization(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -102,7 +93,8 @@ abstract class Person
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
-      if (_organization$loaded) 'organization': _organization?.toJson(),
+      if (_organization is! _issu.UndefinedSentinel)
+        'organization': _organization?.toJson(),
     };
   }
 
@@ -113,7 +105,7 @@ abstract class Person
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
-      if (_organization$loaded)
+      if (_organization is! _issu.UndefinedSentinel)
         'organization': _organization?.toJsonForProtocol(),
     };
   }
@@ -126,12 +118,18 @@ abstract class Person
 
 class _Undefined {}
 
+class _UndefinedPerson$organization extends _issu.UndefinedSentinel
+    implements _i0ptycc3.Organization {
+  const _UndefinedPerson$organization();
+}
+
 class _PersonImpl extends Person {
   _PersonImpl({
     int? id,
     required String name,
     int? organizationId,
-    Object? organization = #serverpodUnloadedRelation,
+    _i0ptycc3.Organization? organization =
+        const _UndefinedPerson$organization(),
   }) : super._(
          id: id,
          name: name,
@@ -147,7 +145,8 @@ class _PersonImpl extends Person {
     Object? id = _Undefined,
     String? name,
     Object? organizationId = _Undefined,
-    Object? organization = _Undefined,
+    _i0ptycc3.Organization? organization =
+        const _UndefinedPerson$organization(),
   }) {
     return _PersonImpl(
       id: id is int? ? id : this.id,
@@ -155,11 +154,11 @@ class _PersonImpl extends Person {
       organizationId: organizationId is int?
           ? organizationId
           : this.organizationId,
-      organization: organization is _i0ptycc3.Organization?
-          ? organization?.copyWith()
-          : _organization$loaded
-          ? this._organization?.copyWith()
-          : #serverpodUnloadedRelation,
+      organization: organization is _issu.UndefinedSentinel
+          ? _organization is _issu.UndefinedSentinel
+                ? _organization
+                : this._organization?.copyWith()
+          : organization?.copyWith(),
     );
   }
 }

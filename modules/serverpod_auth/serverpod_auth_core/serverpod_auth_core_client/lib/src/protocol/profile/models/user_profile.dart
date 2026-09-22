@@ -8,12 +8,14 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
+// ignore_for_file: depend_on_referenced_packages
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_auth_core_client/src/protocol/protocol.dart'
     as _ifwxqeej;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import '../../auth_user/models/auth_user.dart' as _ivyervu7;
 import '../../profile/models/user_profile_image.dart' as _i7y29ltp;
 
@@ -32,18 +34,8 @@ abstract class UserProfile
     this.email,
     DateTime? createdAt,
     this.imageId,
-    Object? image = #serverpodUnloadedRelation,
-  }) : _image$loaded = !identical(
-         image,
-         #serverpodUnloadedRelation,
-       ),
-       _image =
-           !identical(
-             image,
-             #serverpodUnloadedRelation,
-           )
-           ? (image as _i7y29ltp.UserProfileImage?)
-           : null,
+    _i7y29ltp.UserProfileImage? image = const _UndefinedUserProfile$image(),
+  }) : _image = image,
        createdAt = createdAt ?? DateTime.now();
 
   factory UserProfile({
@@ -86,7 +78,7 @@ abstract class UserProfile
                 : _ifwxqeej.Protocol().deserialize<_i7y29ltp.UserProfileImage>(
                     jsonSerialization['image'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedUserProfile$image(),
     );
   }
 
@@ -119,8 +111,6 @@ abstract class UserProfile
 
   _isc.UuidValue? imageId;
 
-  bool _image$loaded;
-
   /// The user's profile image.
   _i7y29ltp.UserProfileImage? _image;
 
@@ -128,7 +118,7 @@ abstract class UserProfile
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _i7y29ltp.UserProfileImage? get image {
     final value = _image;
-    if (!_image$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'UserProfile',
         relation: 'image',
@@ -139,22 +129,21 @@ abstract class UserProfile
 
   set image(_i7y29ltp.UserProfileImage? value) {
     _image = value;
-    _image$loaded = true;
   }
 
   /// Returns a shallow copy of this [UserProfile]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
   UserProfile copyWith({
-    _isc.UuidValue? id,
+    _isc.UuidValue? id = const _issu.$UndefinedUuidValue(),
     _isc.UuidValue? authUserId,
-    _ivyervu7.AuthUser? authUser,
+    _ivyervu7.AuthUser? authUser = const _UndefinedUserProfile$authUser(),
     String? userName,
     String? fullName,
     String? email,
     DateTime? createdAt,
-    _isc.UuidValue? imageId,
-    Object? image = _Undefined,
+    _isc.UuidValue? imageId = const _issu.$UndefinedUuidValue(),
+    _i7y29ltp.UserProfileImage? image = const _UndefinedUserProfile$image(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -168,7 +157,7 @@ abstract class UserProfile
       if (email != null) 'email': email,
       'createdAt': createdAt.toJson(),
       if (imageId != null) 'imageId': imageId?.toJson(),
-      if (_image$loaded) 'image': _image?.toJson(),
+      if (_image is! _issu.UndefinedSentinel) 'image': _image?.toJson(),
     };
   }
 
@@ -184,7 +173,8 @@ abstract class UserProfile
       if (email != null) 'email': email,
       'createdAt': createdAt.toJson(),
       if (imageId != null) 'imageId': imageId?.toJson(),
-      if (_image$loaded) 'image': _image?.toJsonForProtocol(),
+      if (_image is! _issu.UndefinedSentinel)
+        'image': _image?.toJsonForProtocol(),
     };
   }
 
@@ -196,6 +186,16 @@ abstract class UserProfile
 
 class _Undefined {}
 
+class _UndefinedUserProfile$authUser extends _issu.UndefinedSentinel
+    implements _ivyervu7.AuthUser {
+  const _UndefinedUserProfile$authUser();
+}
+
+class _UndefinedUserProfile$image extends _issu.UndefinedSentinel
+    implements _i7y29ltp.UserProfileImage {
+  const _UndefinedUserProfile$image();
+}
+
 class _UserProfileImpl extends UserProfile {
   _UserProfileImpl({
     _isc.UuidValue? id,
@@ -206,7 +206,7 @@ class _UserProfileImpl extends UserProfile {
     String? email,
     DateTime? createdAt,
     _isc.UuidValue? imageId,
-    Object? image = #serverpodUnloadedRelation,
+    _i7y29ltp.UserProfileImage? image = const _UndefinedUserProfile$image(),
   }) : super._(
          id: id,
          authUserId: authUserId,
@@ -224,32 +224,32 @@ class _UserProfileImpl extends UserProfile {
   @_isc.useResult
   @override
   UserProfile copyWith({
-    Object? id = _Undefined,
+    _isc.UuidValue? id = const _issu.$UndefinedUuidValue(),
     _isc.UuidValue? authUserId,
-    Object? authUser = _Undefined,
+    _ivyervu7.AuthUser? authUser = const _UndefinedUserProfile$authUser(),
     Object? userName = _Undefined,
     Object? fullName = _Undefined,
     Object? email = _Undefined,
     DateTime? createdAt,
-    Object? imageId = _Undefined,
-    Object? image = _Undefined,
+    _isc.UuidValue? imageId = const _issu.$UndefinedUuidValue(),
+    _i7y29ltp.UserProfileImage? image = const _UndefinedUserProfile$image(),
   }) {
     return _UserProfileImpl(
-      id: id is _isc.UuidValue? ? id : this.id,
+      id: id is _issu.UndefinedSentinel ? this.id : id,
       authUserId: authUserId ?? this.authUserId,
-      authUser: authUser is _ivyervu7.AuthUser?
-          ? authUser
-          : this.authUser?.copyWith(),
+      authUser: authUser is _issu.UndefinedSentinel
+          ? this.authUser?.copyWith()
+          : authUser,
       userName: userName is String? ? userName : this.userName,
       fullName: fullName is String? ? fullName : this.fullName,
       email: email is String? ? email : this.email,
       createdAt: createdAt ?? this.createdAt,
-      imageId: imageId is _isc.UuidValue? ? imageId : this.imageId,
-      image: image is _i7y29ltp.UserProfileImage?
-          ? image?.copyWith()
-          : _image$loaded
-          ? this._image?.copyWith()
-          : #serverpodUnloadedRelation,
+      imageId: imageId is _issu.UndefinedSentinel ? this.imageId : imageId,
+      image: image is _issu.UndefinedSentinel
+          ? _image is _issu.UndefinedSentinel
+                ? _image
+                : this._image?.copyWith()
+          : image?.copyWith(),
     );
   }
 }

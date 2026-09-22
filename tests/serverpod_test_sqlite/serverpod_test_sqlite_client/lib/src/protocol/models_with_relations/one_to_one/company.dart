@@ -8,13 +8,15 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, unnecessary_null_comparison
+// ignore_for_file: dead_code, depend_on_referenced_packages
+// ignore_for_file: unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_database/serverpod_database.dart' as _isd;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_sqlite_client/src/protocol/protocol.dart'
     as _i0ntutnq;
 import '../../models_with_relations/one_to_one/town.dart' as _i59ly1gg;
@@ -87,7 +89,7 @@ abstract class Company
     int? id,
     String? name,
     int? townId,
-    Object? town = _Undefined,
+    _i59ly1gg.Town town = const _UndefinedCompany$town(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -141,6 +143,11 @@ abstract class Company
 
 class _Undefined {}
 
+class _UndefinedCompany$town extends _issu.UndefinedSentinel
+    implements _i59ly1gg.Town {
+  const _UndefinedCompany$town();
+}
+
 class _CompanyImpl extends Company {
   _CompanyImpl({
     int? id,
@@ -162,13 +169,15 @@ class _CompanyImpl extends Company {
     Object? id = _Undefined,
     String? name,
     int? townId,
-    Object? town = _Undefined,
+    _i59ly1gg.Town town = const _UndefinedCompany$town(),
   }) {
     return _CompanyImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       townId: townId ?? this.townId,
-      town: town is _i59ly1gg.Town ? town.copyWith() : this._town?.copyWith(),
+      town: town is _issu.UndefinedSentinel
+          ? this._town?.copyWith()
+          : town.copyWith(),
     );
   }
 }

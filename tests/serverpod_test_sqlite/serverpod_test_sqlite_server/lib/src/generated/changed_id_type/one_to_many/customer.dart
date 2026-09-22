@@ -8,12 +8,14 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, unnecessary_null_comparison
+// ignore_for_file: dead_code, depend_on_referenced_packages
+// ignore_for_file: unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_sqlite_server/src/generated/protocol.dart'
     as _i08l111i;
 import '../../changed_id_type/one_to_many/order.dart' as _ivss21qh;
@@ -77,7 +79,8 @@ abstract class CustomerInt
   CustomerInt copyWith({
     int? id,
     String? name,
-    Object? orders = _Undefined,
+    List<_ivss21qh.OrderUuid> orders =
+        const _issu.$UndefinedList<_ivss21qh.OrderUuid>(),
   });
   @override
   bool operator ==(Object other) {
@@ -183,17 +186,15 @@ class _CustomerIntImpl extends CustomerInt {
   CustomerInt copyWith({
     Object? id = _Undefined,
     String? name,
-    Object? orders = _Undefined,
+    List<_ivss21qh.OrderUuid> orders =
+        const _issu.$UndefinedList<_ivss21qh.OrderUuid>(),
   }) {
     return _CustomerIntImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      orders: orders is List
-          ? orders
-                .cast<_ivss21qh.OrderUuid>()
-                .map((e0) => e0.copyWith())
-                .toList()
-          : this._orders?.map((e0) => e0.copyWith()).toList(),
+      orders: orders is _issu.UndefinedSentinel
+          ? this._orders?.map((e0) => e0.copyWith()).toList()
+          : orders.map((e0) => e0.copyWith()).toList(),
     );
   }
 }

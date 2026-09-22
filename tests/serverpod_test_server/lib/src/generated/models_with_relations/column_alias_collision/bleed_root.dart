@@ -8,12 +8,14 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, unnecessary_null_comparison
+// ignore_for_file: dead_code, depend_on_referenced_packages
+// ignore_for_file: unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_server/src/generated/protocol.dart' as _igqrxdcj;
 import '../../models_with_relations/column_alias_collision/bleed_child.dart'
     as _i2rsfnut;
@@ -36,37 +38,15 @@ abstract class BleedRoot
     this.id,
     required this.name,
     this.firstChildId,
-    Object? childRelationWithExtremelyLongFieldNameForcingTrun24 =
-        #serverpodUnloadedRelation,
+    _i2rsfnut.BleedChild? childRelationWithExtremelyLongFieldNameForcingTrun24 =
+        const _UndefinedBleedRoot$childRelationWithExtremelyLongFieldNameForcingTrun24(),
     this.secondChildId,
-    Object? childRelationWithExtremelyLongFieldNameForcingTrun23 =
-        #serverpodUnloadedRelation,
-  }) : _childRelationWithExtremelyLongFieldNameForcingTrun24$loaded =
-           !identical(
-             childRelationWithExtremelyLongFieldNameForcingTrun24,
-             #serverpodUnloadedRelation,
-           ),
-       _childRelationWithExtremelyLongFieldNameForcingTrun24 =
-           !identical(
-             childRelationWithExtremelyLongFieldNameForcingTrun24,
-             #serverpodUnloadedRelation,
-           )
-           ? (childRelationWithExtremelyLongFieldNameForcingTrun24
-                 as _i2rsfnut.BleedChild?)
-           : null,
-       _childRelationWithExtremelyLongFieldNameForcingTrun23$loaded =
-           !identical(
-             childRelationWithExtremelyLongFieldNameForcingTrun23,
-             #serverpodUnloadedRelation,
-           ),
+    _i2rsfnut.BleedChild? childRelationWithExtremelyLongFieldNameForcingTrun23 =
+        const _UndefinedBleedRoot$childRelationWithExtremelyLongFieldNameForcingTrun24(),
+  }) : _childRelationWithExtremelyLongFieldNameForcingTrun24 =
+           childRelationWithExtremelyLongFieldNameForcingTrun24,
        _childRelationWithExtremelyLongFieldNameForcingTrun23 =
-           !identical(
-             childRelationWithExtremelyLongFieldNameForcingTrun23,
-             #serverpodUnloadedRelation,
-           )
-           ? (childRelationWithExtremelyLongFieldNameForcingTrun23
-                 as _i2rsfnut.BleedChild?)
-           : null;
+           childRelationWithExtremelyLongFieldNameForcingTrun23;
 
   factory BleedRoot({
     int? id,
@@ -92,7 +72,7 @@ abstract class BleedRoot
                 : _igqrxdcj.Protocol().deserialize<_i2rsfnut.BleedChild>(
                     jsonSerialization['childRelationWithExtremelyLongFieldNameForcingTrun24'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedBleedRoot$childRelationWithExtremelyLongFieldNameForcingTrun24(),
       secondChildId: jsonSerialization['secondChildId'] as int?,
       childRelationWithExtremelyLongFieldNameForcingTrun23:
           jsonSerialization.containsKey(
@@ -104,7 +84,7 @@ abstract class BleedRoot
                 : _igqrxdcj.Protocol().deserialize<_i2rsfnut.BleedChild>(
                     jsonSerialization['childRelationWithExtremelyLongFieldNameForcingTrun23'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedBleedRoot$childRelationWithExtremelyLongFieldNameForcingTrun24(),
     );
   }
 
@@ -119,13 +99,9 @@ abstract class BleedRoot
 
   int? firstChildId;
 
-  bool _childRelationWithExtremelyLongFieldNameForcingTrun24$loaded;
-
   _i2rsfnut.BleedChild? _childRelationWithExtremelyLongFieldNameForcingTrun24;
 
   int? secondChildId;
-
-  bool _childRelationWithExtremelyLongFieldNameForcingTrun23$loaded;
 
   _i2rsfnut.BleedChild? _childRelationWithExtremelyLongFieldNameForcingTrun23;
 
@@ -136,7 +112,7 @@ abstract class BleedRoot
   _i2rsfnut.BleedChild?
   get childRelationWithExtremelyLongFieldNameForcingTrun24 {
     final value = _childRelationWithExtremelyLongFieldNameForcingTrun24;
-    if (!_childRelationWithExtremelyLongFieldNameForcingTrun24$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'BleedRoot',
         relation: 'childRelationWithExtremelyLongFieldNameForcingTrun24',
@@ -149,14 +125,13 @@ abstract class BleedRoot
     _i2rsfnut.BleedChild? value,
   ) {
     _childRelationWithExtremelyLongFieldNameForcingTrun24 = value;
-    _childRelationWithExtremelyLongFieldNameForcingTrun24$loaded = true;
   }
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _i2rsfnut.BleedChild?
   get childRelationWithExtremelyLongFieldNameForcingTrun23 {
     final value = _childRelationWithExtremelyLongFieldNameForcingTrun23;
-    if (!_childRelationWithExtremelyLongFieldNameForcingTrun23$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'BleedRoot',
         relation: 'childRelationWithExtremelyLongFieldNameForcingTrun23',
@@ -169,7 +144,6 @@ abstract class BleedRoot
     _i2rsfnut.BleedChild? value,
   ) {
     _childRelationWithExtremelyLongFieldNameForcingTrun23 = value;
-    _childRelationWithExtremelyLongFieldNameForcingTrun23$loaded = true;
   }
 
   /// Returns a shallow copy of this [BleedRoot]
@@ -179,9 +153,11 @@ abstract class BleedRoot
     int? id,
     String? name,
     int? firstChildId,
-    Object? childRelationWithExtremelyLongFieldNameForcingTrun24 = _Undefined,
+    _i2rsfnut.BleedChild? childRelationWithExtremelyLongFieldNameForcingTrun24 =
+        const _UndefinedBleedRoot$childRelationWithExtremelyLongFieldNameForcingTrun24(),
     int? secondChildId,
-    Object? childRelationWithExtremelyLongFieldNameForcingTrun23 = _Undefined,
+    _i2rsfnut.BleedChild? childRelationWithExtremelyLongFieldNameForcingTrun23 =
+        const _UndefinedBleedRoot$childRelationWithExtremelyLongFieldNameForcingTrun24(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -190,11 +166,13 @@ abstract class BleedRoot
       if (id != null) 'id': id,
       'name': name,
       if (firstChildId != null) 'firstChildId': firstChildId,
-      if (_childRelationWithExtremelyLongFieldNameForcingTrun24$loaded)
+      if (_childRelationWithExtremelyLongFieldNameForcingTrun24
+          is! _issu.UndefinedSentinel)
         'childRelationWithExtremelyLongFieldNameForcingTrun24':
             _childRelationWithExtremelyLongFieldNameForcingTrun24?.toJson(),
       if (secondChildId != null) 'secondChildId': secondChildId,
-      if (_childRelationWithExtremelyLongFieldNameForcingTrun23$loaded)
+      if (_childRelationWithExtremelyLongFieldNameForcingTrun23
+          is! _issu.UndefinedSentinel)
         'childRelationWithExtremelyLongFieldNameForcingTrun23':
             _childRelationWithExtremelyLongFieldNameForcingTrun23?.toJson(),
     };
@@ -207,12 +185,14 @@ abstract class BleedRoot
       if (id != null) 'id': id,
       'name': name,
       if (firstChildId != null) 'firstChildId': firstChildId,
-      if (_childRelationWithExtremelyLongFieldNameForcingTrun24$loaded)
+      if (_childRelationWithExtremelyLongFieldNameForcingTrun24
+          is! _issu.UndefinedSentinel)
         'childRelationWithExtremelyLongFieldNameForcingTrun24':
             _childRelationWithExtremelyLongFieldNameForcingTrun24
                 ?.toJsonForProtocol(),
       if (secondChildId != null) 'secondChildId': secondChildId,
-      if (_childRelationWithExtremelyLongFieldNameForcingTrun23$loaded)
+      if (_childRelationWithExtremelyLongFieldNameForcingTrun23
+          is! _issu.UndefinedSentinel)
         'childRelationWithExtremelyLongFieldNameForcingTrun23':
             _childRelationWithExtremelyLongFieldNameForcingTrun23
                 ?.toJsonForProtocol(),
@@ -259,16 +239,22 @@ abstract class BleedRoot
 
 class _Undefined {}
 
+class _UndefinedBleedRoot$childRelationWithExtremelyLongFieldNameForcingTrun24
+    extends _issu.UndefinedSentinel
+    implements _i2rsfnut.BleedChild {
+  const _UndefinedBleedRoot$childRelationWithExtremelyLongFieldNameForcingTrun24();
+}
+
 class _BleedRootImpl extends BleedRoot {
   _BleedRootImpl({
     int? id,
     required String name,
     int? firstChildId,
-    Object? childRelationWithExtremelyLongFieldNameForcingTrun24 =
-        #serverpodUnloadedRelation,
+    _i2rsfnut.BleedChild? childRelationWithExtremelyLongFieldNameForcingTrun24 =
+        const _UndefinedBleedRoot$childRelationWithExtremelyLongFieldNameForcingTrun24(),
     int? secondChildId,
-    Object? childRelationWithExtremelyLongFieldNameForcingTrun23 =
-        #serverpodUnloadedRelation,
+    _i2rsfnut.BleedChild? childRelationWithExtremelyLongFieldNameForcingTrun23 =
+        const _UndefinedBleedRoot$childRelationWithExtremelyLongFieldNameForcingTrun24(),
   }) : super._(
          id: id,
          name: name,
@@ -288,9 +274,11 @@ class _BleedRootImpl extends BleedRoot {
     Object? id = _Undefined,
     String? name,
     Object? firstChildId = _Undefined,
-    Object? childRelationWithExtremelyLongFieldNameForcingTrun24 = _Undefined,
+    _i2rsfnut.BleedChild? childRelationWithExtremelyLongFieldNameForcingTrun24 =
+        const _UndefinedBleedRoot$childRelationWithExtremelyLongFieldNameForcingTrun24(),
     Object? secondChildId = _Undefined,
-    Object? childRelationWithExtremelyLongFieldNameForcingTrun23 = _Undefined,
+    _i2rsfnut.BleedChild? childRelationWithExtremelyLongFieldNameForcingTrun23 =
+        const _UndefinedBleedRoot$childRelationWithExtremelyLongFieldNameForcingTrun24(),
   }) {
     return _BleedRootImpl(
       id: id is int? ? id : this.id,
@@ -298,21 +286,23 @@ class _BleedRootImpl extends BleedRoot {
       firstChildId: firstChildId is int? ? firstChildId : this.firstChildId,
       childRelationWithExtremelyLongFieldNameForcingTrun24:
           childRelationWithExtremelyLongFieldNameForcingTrun24
-              is _i2rsfnut.BleedChild?
-          ? childRelationWithExtremelyLongFieldNameForcingTrun24?.copyWith()
-          : _childRelationWithExtremelyLongFieldNameForcingTrun24$loaded
-          ? this._childRelationWithExtremelyLongFieldNameForcingTrun24
-                ?.copyWith()
-          : #serverpodUnloadedRelation,
+              is _issu.UndefinedSentinel
+          ? _childRelationWithExtremelyLongFieldNameForcingTrun24
+                    is _issu.UndefinedSentinel
+                ? _childRelationWithExtremelyLongFieldNameForcingTrun24
+                : this._childRelationWithExtremelyLongFieldNameForcingTrun24
+                      ?.copyWith()
+          : childRelationWithExtremelyLongFieldNameForcingTrun24?.copyWith(),
       secondChildId: secondChildId is int? ? secondChildId : this.secondChildId,
       childRelationWithExtremelyLongFieldNameForcingTrun23:
           childRelationWithExtremelyLongFieldNameForcingTrun23
-              is _i2rsfnut.BleedChild?
-          ? childRelationWithExtremelyLongFieldNameForcingTrun23?.copyWith()
-          : _childRelationWithExtremelyLongFieldNameForcingTrun23$loaded
-          ? this._childRelationWithExtremelyLongFieldNameForcingTrun23
-                ?.copyWith()
-          : #serverpodUnloadedRelation,
+              is _issu.UndefinedSentinel
+          ? _childRelationWithExtremelyLongFieldNameForcingTrun23
+                    is _issu.UndefinedSentinel
+                ? _childRelationWithExtremelyLongFieldNameForcingTrun23
+                : this._childRelationWithExtremelyLongFieldNameForcingTrun23
+                      ?.copyWith()
+          : childRelationWithExtremelyLongFieldNameForcingTrun23?.copyWith(),
     );
   }
 }

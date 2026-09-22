@@ -8,10 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
+// ignore_for_file: depend_on_referenced_packages
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_client/src/protocol/protocol.dart' as _iza9lbb5;
 import '../../../models_with_relations/self_relation/one_to_one/post.dart'
     as _ittc76ec;
@@ -21,31 +23,11 @@ abstract class Post
   Post._({
     this.id,
     required this.content,
-    Object? previous = #serverpodUnloadedRelation,
+    _ittc76ec.Post? previous = const _UndefinedPost$previous(),
     this.nextId,
-    Object? next = #serverpodUnloadedRelation,
-  }) : _previous$loaded = !identical(
-         previous,
-         #serverpodUnloadedRelation,
-       ),
-       _previous =
-           !identical(
-             previous,
-             #serverpodUnloadedRelation,
-           )
-           ? (previous as _ittc76ec.Post?)
-           : null,
-       _next$loaded = !identical(
-         next,
-         #serverpodUnloadedRelation,
-       ),
-       _next =
-           !identical(
-             next,
-             #serverpodUnloadedRelation,
-           )
-           ? (next as _ittc76ec.Post?)
-           : null;
+    _ittc76ec.Post? next = const _UndefinedPost$previous(),
+  }) : _previous = previous,
+       _next = next;
 
   factory Post({
     int? id,
@@ -65,7 +47,7 @@ abstract class Post
                 : _iza9lbb5.Protocol().deserialize<_ittc76ec.Post>(
                     jsonSerialization['previous'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedPost$previous(),
       nextId: jsonSerialization['nextId'] as int?,
       next: jsonSerialization.containsKey('next')
           ? jsonSerialization['next'] == null
@@ -73,7 +55,7 @@ abstract class Post
                 : _iza9lbb5.Protocol().deserialize<_ittc76ec.Post>(
                     jsonSerialization['next'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedPost$previous(),
     );
   }
 
@@ -84,20 +66,16 @@ abstract class Post
 
   String content;
 
-  bool _previous$loaded;
-
   _ittc76ec.Post? _previous;
 
   int? nextId;
-
-  bool _next$loaded;
 
   _ittc76ec.Post? _next;
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _ittc76ec.Post? get previous {
     final value = _previous;
-    if (!_previous$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'Post',
         relation: 'previous',
@@ -108,13 +86,12 @@ abstract class Post
 
   set previous(_ittc76ec.Post? value) {
     _previous = value;
-    _previous$loaded = true;
   }
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _ittc76ec.Post? get next {
     final value = _next;
-    if (!_next$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'Post',
         relation: 'next',
@@ -125,7 +102,6 @@ abstract class Post
 
   set next(_ittc76ec.Post? value) {
     _next = value;
-    _next$loaded = true;
   }
 
   /// Returns a shallow copy of this [Post]
@@ -134,9 +110,9 @@ abstract class Post
   Post copyWith({
     int? id,
     String? content,
-    Object? previous = _Undefined,
+    _ittc76ec.Post? previous = const _UndefinedPost$previous(),
     int? nextId,
-    Object? next = _Undefined,
+    _ittc76ec.Post? next = const _UndefinedPost$previous(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -144,9 +120,10 @@ abstract class Post
       '__className__': 'Post',
       if (id != null) 'id': id,
       'content': content,
-      if (_previous$loaded) 'previous': _previous?.toJson(),
+      if (_previous is! _issu.UndefinedSentinel)
+        'previous': _previous?.toJson(),
       if (nextId != null) 'nextId': nextId,
-      if (_next$loaded) 'next': _next?.toJson(),
+      if (_next is! _issu.UndefinedSentinel) 'next': _next?.toJson(),
     };
   }
 
@@ -156,9 +133,10 @@ abstract class Post
       '__className__': 'Post',
       if (id != null) 'id': id,
       'content': content,
-      if (_previous$loaded) 'previous': _previous?.toJsonForProtocol(),
+      if (_previous is! _issu.UndefinedSentinel)
+        'previous': _previous?.toJsonForProtocol(),
       if (nextId != null) 'nextId': nextId,
-      if (_next$loaded) 'next': _next?.toJsonForProtocol(),
+      if (_next is! _issu.UndefinedSentinel) 'next': _next?.toJsonForProtocol(),
     };
   }
 
@@ -170,13 +148,18 @@ abstract class Post
 
 class _Undefined {}
 
+class _UndefinedPost$previous extends _issu.UndefinedSentinel
+    implements _ittc76ec.Post {
+  const _UndefinedPost$previous();
+}
+
 class _PostImpl extends Post {
   _PostImpl({
     int? id,
     required String content,
-    Object? previous = #serverpodUnloadedRelation,
+    _ittc76ec.Post? previous = const _UndefinedPost$previous(),
     int? nextId,
-    Object? next = #serverpodUnloadedRelation,
+    _ittc76ec.Post? next = const _UndefinedPost$previous(),
   }) : super._(
          id: id,
          content: content,
@@ -192,24 +175,24 @@ class _PostImpl extends Post {
   Post copyWith({
     Object? id = _Undefined,
     String? content,
-    Object? previous = _Undefined,
+    _ittc76ec.Post? previous = const _UndefinedPost$previous(),
     Object? nextId = _Undefined,
-    Object? next = _Undefined,
+    _ittc76ec.Post? next = const _UndefinedPost$previous(),
   }) {
     return _PostImpl(
       id: id is int? ? id : this.id,
       content: content ?? this.content,
-      previous: previous is _ittc76ec.Post?
-          ? previous?.copyWith()
-          : _previous$loaded
-          ? this._previous?.copyWith()
-          : #serverpodUnloadedRelation,
+      previous: previous is _issu.UndefinedSentinel
+          ? _previous is _issu.UndefinedSentinel
+                ? _previous
+                : this._previous?.copyWith()
+          : previous?.copyWith(),
       nextId: nextId is int? ? nextId : this.nextId,
-      next: next is _ittc76ec.Post?
-          ? next?.copyWith()
-          : _next$loaded
-          ? this._next?.copyWith()
-          : #serverpodUnloadedRelation,
+      next: next is _issu.UndefinedSentinel
+          ? _next is _issu.UndefinedSentinel
+                ? _next
+                : this._next?.copyWith()
+          : next?.copyWith(),
     );
   }
 }

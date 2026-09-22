@@ -8,10 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
+// ignore_for_file: depend_on_referenced_packages
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_sqlite_client/src/protocol/protocol.dart'
     as _i0ntutnq;
 import '../changed_id_type/self.dart' as _iqjmn1nu;
@@ -21,45 +23,18 @@ abstract class ChangedIdTypeSelf
   ChangedIdTypeSelf._({
     _isc.UuidValue? id,
     required this.name,
-    Object? previous = #serverpodUnloadedRelation,
+    _iqjmn1nu.ChangedIdTypeSelf? previous =
+        const _UndefinedChangedIdTypeSelf$previous(),
     this.nextId,
-    Object? next = #serverpodUnloadedRelation,
+    _iqjmn1nu.ChangedIdTypeSelf? next =
+        const _UndefinedChangedIdTypeSelf$previous(),
     this.parentId,
-    Object? parent = #serverpodUnloadedRelation,
+    _iqjmn1nu.ChangedIdTypeSelf? parent =
+        const _UndefinedChangedIdTypeSelf$previous(),
     this.children,
-  }) : _previous$loaded = !identical(
-         previous,
-         #serverpodUnloadedRelation,
-       ),
-       _previous =
-           !identical(
-             previous,
-             #serverpodUnloadedRelation,
-           )
-           ? (previous as _iqjmn1nu.ChangedIdTypeSelf?)
-           : null,
-       _next$loaded = !identical(
-         next,
-         #serverpodUnloadedRelation,
-       ),
-       _next =
-           !identical(
-             next,
-             #serverpodUnloadedRelation,
-           )
-           ? (next as _iqjmn1nu.ChangedIdTypeSelf?)
-           : null,
-       _parent$loaded = !identical(
-         parent,
-         #serverpodUnloadedRelation,
-       ),
-       _parent =
-           !identical(
-             parent,
-             #serverpodUnloadedRelation,
-           )
-           ? (parent as _iqjmn1nu.ChangedIdTypeSelf?)
-           : null,
+  }) : _previous = previous,
+       _next = next,
+       _parent = parent,
        id = id ?? const _isc.Uuid().v4obj();
 
   factory ChangedIdTypeSelf({
@@ -85,7 +60,7 @@ abstract class ChangedIdTypeSelf
                 : _i0ntutnq.Protocol().deserialize<_iqjmn1nu.ChangedIdTypeSelf>(
                     jsonSerialization['previous'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedChangedIdTypeSelf$previous(),
       nextId: jsonSerialization['nextId'] == null
           ? null
           : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['nextId']),
@@ -95,7 +70,7 @@ abstract class ChangedIdTypeSelf
                 : _i0ntutnq.Protocol().deserialize<_iqjmn1nu.ChangedIdTypeSelf>(
                     jsonSerialization['next'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedChangedIdTypeSelf$previous(),
       parentId: jsonSerialization['parentId'] == null
           ? null
           : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['parentId']),
@@ -105,7 +80,7 @@ abstract class ChangedIdTypeSelf
                 : _i0ntutnq.Protocol().deserialize<_iqjmn1nu.ChangedIdTypeSelf>(
                     jsonSerialization['parent'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedChangedIdTypeSelf$previous(),
       children: jsonSerialization['children'] == null
           ? null
           : _i0ntutnq.Protocol().deserialize<List<_iqjmn1nu.ChangedIdTypeSelf>>(
@@ -119,19 +94,13 @@ abstract class ChangedIdTypeSelf
 
   String name;
 
-  bool _previous$loaded;
-
   _iqjmn1nu.ChangedIdTypeSelf? _previous;
 
   _isc.UuidValue? nextId;
 
-  bool _next$loaded;
-
   _iqjmn1nu.ChangedIdTypeSelf? _next;
 
   _isc.UuidValue? parentId;
-
-  bool _parent$loaded;
 
   _iqjmn1nu.ChangedIdTypeSelf? _parent;
 
@@ -140,7 +109,7 @@ abstract class ChangedIdTypeSelf
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _iqjmn1nu.ChangedIdTypeSelf? get previous {
     final value = _previous;
-    if (!_previous$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'ChangedIdTypeSelf',
         relation: 'previous',
@@ -151,13 +120,12 @@ abstract class ChangedIdTypeSelf
 
   set previous(_iqjmn1nu.ChangedIdTypeSelf? value) {
     _previous = value;
-    _previous$loaded = true;
   }
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _iqjmn1nu.ChangedIdTypeSelf? get next {
     final value = _next;
-    if (!_next$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'ChangedIdTypeSelf',
         relation: 'next',
@@ -168,13 +136,12 @@ abstract class ChangedIdTypeSelf
 
   set next(_iqjmn1nu.ChangedIdTypeSelf? value) {
     _next = value;
-    _next$loaded = true;
   }
 
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _iqjmn1nu.ChangedIdTypeSelf? get parent {
     final value = _parent;
-    if (!_parent$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'ChangedIdTypeSelf',
         relation: 'parent',
@@ -185,21 +152,24 @@ abstract class ChangedIdTypeSelf
 
   set parent(_iqjmn1nu.ChangedIdTypeSelf? value) {
     _parent = value;
-    _parent$loaded = true;
   }
 
   /// Returns a shallow copy of this [ChangedIdTypeSelf]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
   ChangedIdTypeSelf copyWith({
-    _isc.UuidValue? id,
+    _isc.UuidValue? id = const _issu.$UndefinedUuidValue(),
     String? name,
-    Object? previous = _Undefined,
-    _isc.UuidValue? nextId,
-    Object? next = _Undefined,
-    _isc.UuidValue? parentId,
-    Object? parent = _Undefined,
-    List<_iqjmn1nu.ChangedIdTypeSelf>? children,
+    _iqjmn1nu.ChangedIdTypeSelf? previous =
+        const _UndefinedChangedIdTypeSelf$previous(),
+    _isc.UuidValue? nextId = const _issu.$UndefinedUuidValue(),
+    _iqjmn1nu.ChangedIdTypeSelf? next =
+        const _UndefinedChangedIdTypeSelf$previous(),
+    _isc.UuidValue? parentId = const _issu.$UndefinedUuidValue(),
+    _iqjmn1nu.ChangedIdTypeSelf? parent =
+        const _UndefinedChangedIdTypeSelf$previous(),
+    List<_iqjmn1nu.ChangedIdTypeSelf>? children =
+        const _issu.$UndefinedList<_iqjmn1nu.ChangedIdTypeSelf>(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -207,11 +177,12 @@ abstract class ChangedIdTypeSelf
       '__className__': 'ChangedIdTypeSelf',
       if (id != null) 'id': id?.toJson(),
       'name': name,
-      if (_previous$loaded) 'previous': _previous?.toJson(),
+      if (_previous is! _issu.UndefinedSentinel)
+        'previous': _previous?.toJson(),
       if (nextId != null) 'nextId': nextId?.toJson(),
-      if (_next$loaded) 'next': _next?.toJson(),
+      if (_next is! _issu.UndefinedSentinel) 'next': _next?.toJson(),
       if (parentId != null) 'parentId': parentId?.toJson(),
-      if (_parent$loaded) 'parent': _parent?.toJson(),
+      if (_parent is! _issu.UndefinedSentinel) 'parent': _parent?.toJson(),
       if (children != null)
         'children': children?.toJson(valueToJson: (v) => v.toJson()),
     };
@@ -223,11 +194,13 @@ abstract class ChangedIdTypeSelf
       '__className__': 'ChangedIdTypeSelf',
       if (id != null) 'id': id?.toJson(),
       'name': name,
-      if (_previous$loaded) 'previous': _previous?.toJsonForProtocol(),
+      if (_previous is! _issu.UndefinedSentinel)
+        'previous': _previous?.toJsonForProtocol(),
       if (nextId != null) 'nextId': nextId?.toJson(),
-      if (_next$loaded) 'next': _next?.toJsonForProtocol(),
+      if (_next is! _issu.UndefinedSentinel) 'next': _next?.toJsonForProtocol(),
       if (parentId != null) 'parentId': parentId?.toJson(),
-      if (_parent$loaded) 'parent': _parent?.toJsonForProtocol(),
+      if (_parent is! _issu.UndefinedSentinel)
+        'parent': _parent?.toJsonForProtocol(),
       if (children != null)
         'children': children?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
@@ -239,17 +212,23 @@ abstract class ChangedIdTypeSelf
   }
 }
 
-class _Undefined {}
+class _UndefinedChangedIdTypeSelf$previous extends _issu.UndefinedSentinel
+    implements _iqjmn1nu.ChangedIdTypeSelf {
+  const _UndefinedChangedIdTypeSelf$previous();
+}
 
 class _ChangedIdTypeSelfImpl extends ChangedIdTypeSelf {
   _ChangedIdTypeSelfImpl({
     _isc.UuidValue? id,
     required String name,
-    Object? previous = #serverpodUnloadedRelation,
+    _iqjmn1nu.ChangedIdTypeSelf? previous =
+        const _UndefinedChangedIdTypeSelf$previous(),
     _isc.UuidValue? nextId,
-    Object? next = #serverpodUnloadedRelation,
+    _iqjmn1nu.ChangedIdTypeSelf? next =
+        const _UndefinedChangedIdTypeSelf$previous(),
     _isc.UuidValue? parentId,
-    Object? parent = #serverpodUnloadedRelation,
+    _iqjmn1nu.ChangedIdTypeSelf? parent =
+        const _UndefinedChangedIdTypeSelf$previous(),
     List<_iqjmn1nu.ChangedIdTypeSelf>? children,
   }) : super._(
          id: id,
@@ -267,38 +246,42 @@ class _ChangedIdTypeSelfImpl extends ChangedIdTypeSelf {
   @_isc.useResult
   @override
   ChangedIdTypeSelf copyWith({
-    Object? id = _Undefined,
+    _isc.UuidValue? id = const _issu.$UndefinedUuidValue(),
     String? name,
-    Object? previous = _Undefined,
-    Object? nextId = _Undefined,
-    Object? next = _Undefined,
-    Object? parentId = _Undefined,
-    Object? parent = _Undefined,
-    Object? children = _Undefined,
+    _iqjmn1nu.ChangedIdTypeSelf? previous =
+        const _UndefinedChangedIdTypeSelf$previous(),
+    _isc.UuidValue? nextId = const _issu.$UndefinedUuidValue(),
+    _iqjmn1nu.ChangedIdTypeSelf? next =
+        const _UndefinedChangedIdTypeSelf$previous(),
+    _isc.UuidValue? parentId = const _issu.$UndefinedUuidValue(),
+    _iqjmn1nu.ChangedIdTypeSelf? parent =
+        const _UndefinedChangedIdTypeSelf$previous(),
+    List<_iqjmn1nu.ChangedIdTypeSelf>? children =
+        const _issu.$UndefinedList<_iqjmn1nu.ChangedIdTypeSelf>(),
   }) {
     return _ChangedIdTypeSelfImpl(
-      id: id is _isc.UuidValue? ? id : this.id,
+      id: id is _issu.UndefinedSentinel ? this.id : id,
       name: name ?? this.name,
-      previous: previous is _iqjmn1nu.ChangedIdTypeSelf?
-          ? previous?.copyWith()
-          : _previous$loaded
-          ? this._previous?.copyWith()
-          : #serverpodUnloadedRelation,
-      nextId: nextId is _isc.UuidValue? ? nextId : this.nextId,
-      next: next is _iqjmn1nu.ChangedIdTypeSelf?
-          ? next?.copyWith()
-          : _next$loaded
-          ? this._next?.copyWith()
-          : #serverpodUnloadedRelation,
-      parentId: parentId is _isc.UuidValue? ? parentId : this.parentId,
-      parent: parent is _iqjmn1nu.ChangedIdTypeSelf?
-          ? parent?.copyWith()
-          : _parent$loaded
-          ? this._parent?.copyWith()
-          : #serverpodUnloadedRelation,
-      children: children is List<_iqjmn1nu.ChangedIdTypeSelf>?
-          ? children
-          : this.children?.map((e0) => e0.copyWith()).toList(),
+      previous: previous is _issu.UndefinedSentinel
+          ? _previous is _issu.UndefinedSentinel
+                ? _previous
+                : this._previous?.copyWith()
+          : previous?.copyWith(),
+      nextId: nextId is _issu.UndefinedSentinel ? this.nextId : nextId,
+      next: next is _issu.UndefinedSentinel
+          ? _next is _issu.UndefinedSentinel
+                ? _next
+                : this._next?.copyWith()
+          : next?.copyWith(),
+      parentId: parentId is _issu.UndefinedSentinel ? this.parentId : parentId,
+      parent: parent is _issu.UndefinedSentinel
+          ? _parent is _issu.UndefinedSentinel
+                ? _parent
+                : this._parent?.copyWith()
+          : parent?.copyWith(),
+      children: children is _issu.UndefinedSentinel
+          ? this.children?.map((e0) => e0.copyWith()).toList()
+          : children,
     );
   }
 }

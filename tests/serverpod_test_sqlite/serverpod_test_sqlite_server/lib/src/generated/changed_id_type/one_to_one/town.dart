@@ -8,12 +8,14 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, unnecessary_null_comparison
+// ignore_for_file: dead_code, depend_on_referenced_packages
+// ignore_for_file: unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
+import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
 import 'package:serverpod_test_sqlite_server/src/generated/protocol.dart'
     as _i08l111i;
 import '../../changed_id_type/one_to_one/citizen.dart' as _i7hzilwf;
@@ -25,18 +27,8 @@ abstract class TownInt
     this.id,
     required this.name,
     this.mayorId,
-    Object? mayor = #serverpodUnloadedRelation,
-  }) : _mayor$loaded = !identical(
-         mayor,
-         #serverpodUnloadedRelation,
-       ),
-       _mayor =
-           !identical(
-             mayor,
-             #serverpodUnloadedRelation,
-           )
-           ? (mayor as _i7hzilwf.CitizenInt?)
-           : null;
+    _i7hzilwf.CitizenInt? mayor = const _UndefinedTownInt$mayor(),
+  }) : _mayor = mayor;
 
   const factory TownInt({
     int? id,
@@ -56,7 +48,7 @@ abstract class TownInt
                 : _i08l111i.Protocol().deserialize<_i7hzilwf.CitizenInt>(
                     jsonSerialization['mayor'],
                   )
-          : #serverpodUnloadedRelation,
+          : const _UndefinedTownInt$mayor(),
     );
   }
 
@@ -71,8 +63,6 @@ abstract class TownInt
 
   final int? mayorId;
 
-  final bool _mayor$loaded;
-
   final _i7hzilwf.CitizenInt? _mayor;
 
   @override
@@ -81,7 +71,7 @@ abstract class TownInt
   /// Throws `RelationNotLoadedError` if this relation was not loaded.
   _i7hzilwf.CitizenInt? get mayor {
     final value = _mayor;
-    if (!_mayor$loaded) {
+    if (value is _issu.UndefinedSentinel) {
       throw _iss.RelationNotLoadedError(
         model: 'TownInt',
         relation: 'mayor',
@@ -97,7 +87,7 @@ abstract class TownInt
     int? id,
     String? name,
     int? mayorId,
-    Object? mayor = _Undefined,
+    _i7hzilwf.CitizenInt? mayor = const _UndefinedTownInt$mayor(),
   });
   @override
   bool operator ==(Object other) {
@@ -107,7 +97,6 @@ abstract class TownInt
         ) ||
         other.runtimeType == runtimeType &&
             other is TownInt &&
-            _mayor$loaded == other._mayor$loaded &&
             (identical(
                   other.id,
                   id,
@@ -123,22 +112,24 @@ abstract class TownInt
                   mayorId,
                 ) ||
                 other.mayorId == mayorId) &&
-            (identical(
-                  other._mayor,
-                  _mayor,
-                ) ||
-                other._mayor == _mayor);
+            (_mayor is _issu.UndefinedSentinel
+                ? other._mayor is _issu.UndefinedSentinel
+                : other._mayor is! _issu.UndefinedSentinel &&
+                      (identical(
+                            other._mayor,
+                            _mayor,
+                          ) ||
+                          other._mayor == _mayor));
   }
 
   @override
   int get hashCode {
     return Object.hash(
       runtimeType,
-      _mayor$loaded,
       id,
       name,
       mayorId,
-      _mayor,
+      _mayor is _issu.UndefinedSentinel ? _issu.UndefinedSentinel : _mayor,
     );
   }
 
@@ -149,7 +140,7 @@ abstract class TownInt
       if (id != null) 'id': id,
       'name': name,
       if (mayorId != null) 'mayorId': mayorId,
-      if (_mayor$loaded) 'mayor': _mayor?.toJson(),
+      if (_mayor is! _issu.UndefinedSentinel) 'mayor': _mayor?.toJson(),
     };
   }
 
@@ -160,7 +151,8 @@ abstract class TownInt
       if (id != null) 'id': id,
       'name': name,
       if (mayorId != null) 'mayorId': mayorId,
-      if (_mayor$loaded) 'mayor': _mayor?.toJsonForProtocol(),
+      if (_mayor is! _issu.UndefinedSentinel)
+        'mayor': _mayor?.toJsonForProtocol(),
     };
   }
 
@@ -194,12 +186,17 @@ abstract class TownInt
 
 class _Undefined {}
 
+class _UndefinedTownInt$mayor extends _issu.UndefinedSentinel
+    implements _i7hzilwf.CitizenInt {
+  const _UndefinedTownInt$mayor();
+}
+
 class _TownIntImpl extends TownInt {
   const _TownIntImpl({
     int? id,
     required String name,
     int? mayorId,
-    Object? mayor = #serverpodUnloadedRelation,
+    _i7hzilwf.CitizenInt? mayor = const _UndefinedTownInt$mayor(),
   }) : super._(
          id: id,
          name: name,
@@ -215,17 +212,17 @@ class _TownIntImpl extends TownInt {
     Object? id = _Undefined,
     String? name,
     Object? mayorId = _Undefined,
-    Object? mayor = _Undefined,
+    _i7hzilwf.CitizenInt? mayor = const _UndefinedTownInt$mayor(),
   }) {
     return _TownIntImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       mayorId: mayorId is int? ? mayorId : this.mayorId,
-      mayor: mayor is _i7hzilwf.CitizenInt?
-          ? mayor?.copyWith()
-          : _mayor$loaded
-          ? this._mayor?.copyWith()
-          : #serverpodUnloadedRelation,
+      mayor: mayor is _issu.UndefinedSentinel
+          ? _mayor is _issu.UndefinedSentinel
+                ? _mayor
+                : this._mayor?.copyWith()
+          : mayor?.copyWith(),
     );
   }
 }
