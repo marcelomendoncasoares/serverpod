@@ -211,13 +211,6 @@ class SerializableModelLibraryGenerator {
           libraryBuilder.directives.add(Directive.partOf(topNodePath));
         }
 
-        if (classDefinition.inheritedFields.any(
-          (field) => field.hasSafeRelationGetter,
-        )) {
-          // Equality and implicit wrappers can inspect another inherited model.
-          libraryBuilder.ignoreForFile.add('invalid_use_of_protected_member');
-        }
-
         libraryBuilder.body.addAll([
           _buildModelClass(
             className,
@@ -754,7 +747,7 @@ class SerializableModelLibraryGenerator {
             (m) => m
               ..name = '\$${field.name}RelationValue'
               ..type = MethodType.getter
-              ..annotations.add(refer('protected', serverpodSerializationUrl))
+              ..docs.add('/// @nodoc')
               ..returns = field.type.reference(
                 serverCode,
                 nullable: true,
@@ -769,7 +762,7 @@ class SerializableModelLibraryGenerator {
               (m) => m
                 ..name = '\$${field.name}RelationLoaded'
                 ..type = MethodType.getter
-                ..annotations.add(refer('protected', serverpodSerializationUrl))
+                ..docs.add('/// @nodoc')
                 ..returns = refer('bool')
                 ..lambda = true
                 ..body = refer('_${field.name}\$loaded').code,
@@ -2343,7 +2336,7 @@ class SerializableModelLibraryGenerator {
         c.name = '_';
       } else if (_hasSafeRelations) {
         c.name = r'$internal';
-        c.annotations.add(refer('internal', serverpodSerializationUrl));
+        c.docs.add('/// @nodoc');
       }
       c.optionalParameters.addAll(
         _buildModelClassConstructorParameters(
