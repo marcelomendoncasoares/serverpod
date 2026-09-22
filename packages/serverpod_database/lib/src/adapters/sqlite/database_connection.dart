@@ -1458,7 +1458,9 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
         ),
       );
     }
-    return rows;
+    // Included-list loading traverses these rows to collect parent ids before
+    // deserialization traverses them again. Decode each value only once.
+    return rows.toList();
   }
 
   Future<List<T>> _deserializedMappedQuery<T extends TableRow>(
