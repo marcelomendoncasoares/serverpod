@@ -8,14 +8,13 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_database/serverpod_database.dart' as _isd;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_sqlite_client/src/protocol/protocol.dart'
     as _i0ntutnq;
 import '../../models_with_relations/one_to_many/order.dart' as _ig920ya2;
@@ -25,17 +24,17 @@ abstract class Customer
   Customer._({
     this.id,
     required this.name,
-    this.orders,
-  });
+    List<_ig920ya2.Order>? orders,
+  }) : _orders = orders;
 
   factory Customer({
     int? id,
     required String name,
-    List<_ig920ya2.Order>? orders,
+    List<_ig920ya2.Order> orders,
   }) = _CustomerImpl;
 
   factory Customer.fromJson(Map<String, dynamic> jsonSerialization) {
-    return Customer(
+    return _CustomerImpl(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       orders: jsonSerialization['orders'] == null
@@ -55,10 +54,26 @@ abstract class Customer
 
   String name;
 
-  List<_ig920ya2.Order>? orders;
+  List<_ig920ya2.Order>? _orders;
 
   @override
   _isd.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  List<_ig920ya2.Order> get orders {
+    final value = _orders;
+    if (value == null) {
+      throw _iss.RelationNotLoadedError(
+        model: 'Customer',
+        relation: 'orders',
+      );
+    }
+    return value;
+  }
+
+  set orders(List<_ig920ya2.Order> value) {
+    _orders = value;
+  }
 
   /// Returns a shallow copy of this [Customer]
   /// with some or all fields replaced by the given arguments.
@@ -66,8 +81,7 @@ abstract class Customer
   Customer copyWith({
     int? id,
     String? name,
-    List<_ig920ya2.Order>? orders =
-        const _issu.$UndefinedList<_ig920ya2.Order>(),
+    Object? orders = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -75,8 +89,8 @@ abstract class Customer
       '__className__': 'Customer',
       if (id != null) 'id': id,
       'name': name,
-      if (orders != null)
-        'orders': orders?.toJson(valueToJson: (v) => v.toJson()),
+      if (_orders case final value?)
+        'orders': value.toJson(valueToJson: (v) => v.toJson()),
     };
   }
 
@@ -86,8 +100,8 @@ abstract class Customer
       '__className__': 'Customer',
       if (id != null) 'id': id,
       'name': name,
-      if (orders != null)
-        'orders': orders?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
+      if (_orders case final value?)
+        'orders': value.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
   }
 
@@ -139,15 +153,14 @@ class _CustomerImpl extends Customer {
   Customer copyWith({
     Object? id = _Undefined,
     String? name,
-    List<_ig920ya2.Order>? orders =
-        const _issu.$UndefinedList<_ig920ya2.Order>(),
+    Object? orders = _Undefined,
   }) {
-    return Customer(
+    return _CustomerImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      orders: orders is _issu.UndefinedSentinel
-          ? this.orders?.map((e0) => e0.copyWith()).toList()
-          : orders,
+      orders: orders is List
+          ? orders.cast<_ig920ya2.Order>().map((e0) => e0.copyWith()).toList()
+          : this._orders?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }

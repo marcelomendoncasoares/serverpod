@@ -8,14 +8,13 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_database/serverpod_database.dart' as _isd;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_sqlite_client/src/protocol/protocol.dart'
     as _i0ntutnq;
 import '../models_with_list_relations/city.dart' as _i64066zp;
@@ -28,8 +27,18 @@ abstract class Organization
     required this.name,
     this.people,
     this.cityId,
-    this.city,
-  });
+    Object? city = _Undefined,
+  }) : _cityLoaded = !identical(
+         city,
+         _Undefined,
+       ),
+       _city =
+           !identical(
+             city,
+             _Undefined,
+           )
+           ? (city as _i64066zp.City?)
+           : null;
 
   factory Organization({
     int? id,
@@ -40,7 +49,7 @@ abstract class Organization
   }) = _OrganizationImpl;
 
   factory Organization.fromJson(Map<String, dynamic> jsonSerialization) {
-    return Organization(
+    return _OrganizationImpl(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       people: jsonSerialization['people'] == null
@@ -49,11 +58,13 @@ abstract class Organization
               jsonSerialization['people'],
             ),
       cityId: jsonSerialization['cityId'] as int?,
-      city: jsonSerialization['city'] == null
-          ? null
-          : _i0ntutnq.Protocol().deserialize<_i64066zp.City>(
-              jsonSerialization['city'],
-            ),
+      city: jsonSerialization.containsKey('city')
+          ? jsonSerialization['city'] == null
+                ? null
+                : _i0ntutnq.Protocol().deserialize<_i64066zp.City>(
+                    jsonSerialization['city'],
+                  )
+          : _Undefined,
     );
   }
 
@@ -70,10 +81,29 @@ abstract class Organization
 
   int? cityId;
 
-  _i64066zp.City? city;
+  bool _cityLoaded;
+
+  _i64066zp.City? _city;
 
   @override
   _isd.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _i64066zp.City? get city {
+    final value = _city;
+    if (!_cityLoaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'Organization',
+        relation: 'city',
+      );
+    }
+    return value;
+  }
+
+  set city(_i64066zp.City? value) {
+    _city = value;
+    _cityLoaded = true;
+  }
 
   /// Returns a shallow copy of this [Organization]
   /// with some or all fields replaced by the given arguments.
@@ -81,10 +111,9 @@ abstract class Organization
   Organization copyWith({
     int? id,
     String? name,
-    List<_ijqkgw0m.Person>? people =
-        const _issu.$UndefinedList<_ijqkgw0m.Person>(),
+    List<_ijqkgw0m.Person>? people,
     int? cityId,
-    _i64066zp.City? city = const _UndefinedOrganization$city(),
+    Object? city = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -95,7 +124,7 @@ abstract class Organization
       if (people != null)
         'people': people?.toJson(valueToJson: (v) => v.toJson()),
       if (cityId != null) 'cityId': cityId,
-      if (city != null) 'city': city?.toJson(),
+      if (_cityLoaded) 'city': _city?.toJson(),
     };
   }
 
@@ -108,7 +137,7 @@ abstract class Organization
       if (people != null)
         'people': people?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
       if (cityId != null) 'cityId': cityId,
-      if (city != null) 'city': city?.toJsonForProtocol(),
+      if (_cityLoaded) 'city': _city?.toJsonForProtocol(),
     };
   }
 
@@ -148,18 +177,13 @@ abstract class Organization
 
 class _Undefined {}
 
-class _UndefinedOrganization$city extends _issu.UndefinedSentinel
-    implements _i64066zp.City {
-  const _UndefinedOrganization$city();
-}
-
 class _OrganizationImpl extends Organization {
   _OrganizationImpl({
     int? id,
     required String name,
     List<_ijqkgw0m.Person>? people,
     int? cityId,
-    _i64066zp.City? city,
+    Object? city = _Undefined,
   }) : super._(
          id: id,
          name: name,
@@ -175,19 +199,22 @@ class _OrganizationImpl extends Organization {
   Organization copyWith({
     Object? id = _Undefined,
     String? name,
-    List<_ijqkgw0m.Person>? people =
-        const _issu.$UndefinedList<_ijqkgw0m.Person>(),
+    Object? people = _Undefined,
     Object? cityId = _Undefined,
-    _i64066zp.City? city = const _UndefinedOrganization$city(),
+    Object? city = _Undefined,
   }) {
-    return Organization(
+    return _OrganizationImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      people: people is _issu.UndefinedSentinel
-          ? this.people?.map((e0) => e0.copyWith()).toList()
-          : people,
+      people: people is List<_ijqkgw0m.Person>?
+          ? people
+          : this.people?.map((e0) => e0.copyWith()).toList(),
       cityId: cityId is int? ? cityId : this.cityId,
-      city: city is _issu.UndefinedSentinel ? this.city?.copyWith() : city,
+      city: city is _i64066zp.City?
+          ? city?.copyWith()
+          : _cityLoaded
+          ? this._city?.copyWith()
+          : _Undefined,
     );
   }
 }

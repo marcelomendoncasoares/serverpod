@@ -8,14 +8,13 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_database/serverpod_database.dart' as _isd;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_sqlite_client/src/protocol/protocol.dart'
     as _i0ntutnq;
 import '../../models_with_relations/one_to_one/town.dart' as _i59ly1gg;
@@ -26,18 +25,18 @@ abstract class Company
     this.id,
     required this.name,
     required this.townId,
-    this.town,
-  });
+    _i59ly1gg.Town? town,
+  }) : _town = town;
 
   factory Company({
     int? id,
     required String name,
     required int townId,
-    _i59ly1gg.Town? town,
+    _i59ly1gg.Town town,
   }) = _CompanyImpl;
 
   factory Company.fromJson(Map<String, dynamic> jsonSerialization) {
-    return Company(
+    return _CompanyImpl(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       townId: jsonSerialization['townId'] as int,
@@ -60,10 +59,26 @@ abstract class Company
 
   int townId;
 
-  _i59ly1gg.Town? town;
+  _i59ly1gg.Town? _town;
 
   @override
   _isd.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _i59ly1gg.Town get town {
+    final value = _town;
+    if (value == null) {
+      throw _iss.RelationNotLoadedError(
+        model: 'Company',
+        relation: 'town',
+      );
+    }
+    return value;
+  }
+
+  set town(_i59ly1gg.Town value) {
+    _town = value;
+  }
 
   /// Returns a shallow copy of this [Company]
   /// with some or all fields replaced by the given arguments.
@@ -72,7 +87,7 @@ abstract class Company
     int? id,
     String? name,
     int? townId,
-    _i59ly1gg.Town? town = const _UndefinedCompany$town(),
+    Object? town = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -81,7 +96,7 @@ abstract class Company
       if (id != null) 'id': id,
       'name': name,
       'townId': townId,
-      if (town != null) 'town': town?.toJson(),
+      if (_town case final value?) 'town': value.toJson(),
     };
   }
 
@@ -92,7 +107,7 @@ abstract class Company
       if (id != null) 'id': id,
       'name': name,
       'townId': townId,
-      if (town != null) 'town': town?.toJsonForProtocol(),
+      if (_town case final value?) 'town': value.toJsonForProtocol(),
     };
   }
 
@@ -126,11 +141,6 @@ abstract class Company
 
 class _Undefined {}
 
-class _UndefinedCompany$town extends _issu.UndefinedSentinel
-    implements _i59ly1gg.Town {
-  const _UndefinedCompany$town();
-}
-
 class _CompanyImpl extends Company {
   _CompanyImpl({
     int? id,
@@ -152,13 +162,13 @@ class _CompanyImpl extends Company {
     Object? id = _Undefined,
     String? name,
     int? townId,
-    _i59ly1gg.Town? town = const _UndefinedCompany$town(),
+    Object? town = _Undefined,
   }) {
-    return Company(
+    return _CompanyImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       townId: townId ?? this.townId,
-      town: town is _issu.UndefinedSentinel ? this.town?.copyWith() : town,
+      town: town is _i59ly1gg.Town ? town.copyWith() : this._town?.copyWith(),
     );
   }
 }

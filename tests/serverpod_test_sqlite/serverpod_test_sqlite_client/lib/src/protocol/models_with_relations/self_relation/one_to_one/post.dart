@@ -8,14 +8,13 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_database/serverpod_database.dart' as _isd;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_sqlite_client/src/protocol/protocol.dart'
     as _i0ntutnq;
 import '../../../models_with_relations/self_relation/one_to_one/post.dart'
@@ -25,10 +24,31 @@ abstract class Post implements _isd.TableRow<int?>, _isc.ProtocolSerialization {
   Post._({
     this.id,
     required this.content,
-    this.previous,
+    Object? previous = _Undefined,
     this.nextId,
-    this.next,
-  });
+    Object? next = _Undefined,
+  }) : _previousLoaded = !identical(
+         previous,
+         _Undefined,
+       ),
+       _previous =
+           !identical(
+             previous,
+             _Undefined,
+           )
+           ? (previous as _ittc76ec.Post?)
+           : null,
+       _nextLoaded = !identical(
+         next,
+         _Undefined,
+       ),
+       _next =
+           !identical(
+             next,
+             _Undefined,
+           )
+           ? (next as _ittc76ec.Post?)
+           : null;
 
   factory Post({
     int? id,
@@ -39,20 +59,24 @@ abstract class Post implements _isd.TableRow<int?>, _isc.ProtocolSerialization {
   }) = _PostImpl;
 
   factory Post.fromJson(Map<String, dynamic> jsonSerialization) {
-    return Post(
+    return _PostImpl(
       id: jsonSerialization['id'] as int?,
       content: jsonSerialization['content'] as String,
-      previous: jsonSerialization['previous'] == null
-          ? null
-          : _i0ntutnq.Protocol().deserialize<_ittc76ec.Post>(
-              jsonSerialization['previous'],
-            ),
+      previous: jsonSerialization.containsKey('previous')
+          ? jsonSerialization['previous'] == null
+                ? null
+                : _i0ntutnq.Protocol().deserialize<_ittc76ec.Post>(
+                    jsonSerialization['previous'],
+                  )
+          : _Undefined,
       nextId: jsonSerialization['nextId'] as int?,
-      next: jsonSerialization['next'] == null
-          ? null
-          : _i0ntutnq.Protocol().deserialize<_ittc76ec.Post>(
-              jsonSerialization['next'],
-            ),
+      next: jsonSerialization.containsKey('next')
+          ? jsonSerialization['next'] == null
+                ? null
+                : _i0ntutnq.Protocol().deserialize<_ittc76ec.Post>(
+                    jsonSerialization['next'],
+                  )
+          : _Undefined,
     );
   }
 
@@ -65,14 +89,52 @@ abstract class Post implements _isd.TableRow<int?>, _isc.ProtocolSerialization {
 
   String content;
 
-  _ittc76ec.Post? previous;
+  bool _previousLoaded;
+
+  _ittc76ec.Post? _previous;
 
   int? nextId;
 
-  _ittc76ec.Post? next;
+  bool _nextLoaded;
+
+  _ittc76ec.Post? _next;
 
   @override
   _isd.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _ittc76ec.Post? get previous {
+    final value = _previous;
+    if (!_previousLoaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'Post',
+        relation: 'previous',
+      );
+    }
+    return value;
+  }
+
+  set previous(_ittc76ec.Post? value) {
+    _previous = value;
+    _previousLoaded = true;
+  }
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _ittc76ec.Post? get next {
+    final value = _next;
+    if (!_nextLoaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'Post',
+        relation: 'next',
+      );
+    }
+    return value;
+  }
+
+  set next(_ittc76ec.Post? value) {
+    _next = value;
+    _nextLoaded = true;
+  }
 
   /// Returns a shallow copy of this [Post]
   /// with some or all fields replaced by the given arguments.
@@ -80,9 +142,9 @@ abstract class Post implements _isd.TableRow<int?>, _isc.ProtocolSerialization {
   Post copyWith({
     int? id,
     String? content,
-    _ittc76ec.Post? previous = const _UndefinedPost$previous(),
+    Object? previous = _Undefined,
     int? nextId,
-    _ittc76ec.Post? next = const _UndefinedPost$previous(),
+    Object? next = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -90,9 +152,9 @@ abstract class Post implements _isd.TableRow<int?>, _isc.ProtocolSerialization {
       '__className__': 'Post',
       if (id != null) 'id': id,
       'content': content,
-      if (previous != null) 'previous': previous?.toJson(),
+      if (_previousLoaded) 'previous': _previous?.toJson(),
       if (nextId != null) 'nextId': nextId,
-      if (next != null) 'next': next?.toJson(),
+      if (_nextLoaded) 'next': _next?.toJson(),
     };
   }
 
@@ -102,9 +164,9 @@ abstract class Post implements _isd.TableRow<int?>, _isc.ProtocolSerialization {
       '__className__': 'Post',
       if (id != null) 'id': id,
       'content': content,
-      if (previous != null) 'previous': previous?.toJsonForProtocol(),
+      if (_previousLoaded) 'previous': _previous?.toJsonForProtocol(),
       if (nextId != null) 'nextId': nextId,
-      if (next != null) 'next': next?.toJsonForProtocol(),
+      if (_nextLoaded) 'next': _next?.toJsonForProtocol(),
     };
   }
 
@@ -144,18 +206,13 @@ abstract class Post implements _isd.TableRow<int?>, _isc.ProtocolSerialization {
 
 class _Undefined {}
 
-class _UndefinedPost$previous extends _issu.UndefinedSentinel
-    implements _ittc76ec.Post {
-  const _UndefinedPost$previous();
-}
-
 class _PostImpl extends Post {
   _PostImpl({
     int? id,
     required String content,
-    _ittc76ec.Post? previous,
+    Object? previous = _Undefined,
     int? nextId,
-    _ittc76ec.Post? next,
+    Object? next = _Undefined,
   }) : super._(
          id: id,
          content: content,
@@ -171,18 +228,24 @@ class _PostImpl extends Post {
   Post copyWith({
     Object? id = _Undefined,
     String? content,
-    _ittc76ec.Post? previous = const _UndefinedPost$previous(),
+    Object? previous = _Undefined,
     Object? nextId = _Undefined,
-    _ittc76ec.Post? next = const _UndefinedPost$previous(),
+    Object? next = _Undefined,
   }) {
-    return Post(
+    return _PostImpl(
       id: id is int? ? id : this.id,
       content: content ?? this.content,
-      previous: previous is _issu.UndefinedSentinel
-          ? this.previous?.copyWith()
-          : previous,
+      previous: previous is _ittc76ec.Post?
+          ? previous?.copyWith()
+          : _previousLoaded
+          ? this._previous?.copyWith()
+          : _Undefined,
       nextId: nextId is int? ? nextId : this.nextId,
-      next: next is _issu.UndefinedSentinel ? this.next?.copyWith() : next,
+      next: next is _ittc76ec.Post?
+          ? next?.copyWith()
+          : _nextLoaded
+          ? this._next?.copyWith()
+          : _Undefined,
     );
   }
 }

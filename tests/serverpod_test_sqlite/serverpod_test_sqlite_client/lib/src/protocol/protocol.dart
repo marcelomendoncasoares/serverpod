@@ -2891,14 +2891,6 @@ class Protocol extends _isd.DatabaseSerializationManager {
               .toList()
           as T;
     }
-    if (t == _isc.getType<List<_iywnby31.OrderUuid>?>()) {
-      return (data != null
-              ? (data as List)
-                    .map((e) => deserialize<_iywnby31.OrderUuid>(e))
-                    .toList()
-              : null)
-          as T;
-    }
     if (t == List<_i3jtpxta.CommentInt>) {
       return (data as List)
               .map((e) => deserialize<_i3jtpxta.CommentInt>(e))
@@ -3108,14 +3100,6 @@ class Protocol extends _isd.DatabaseSerializationManager {
     }
     if (t == List<_is5jy3ez.Order>) {
       return (data as List).map((e) => deserialize<_is5jy3ez.Order>(e)).toList()
-          as T;
-    }
-    if (t == _isc.getType<List<_is5jy3ez.Order>?>()) {
-      return (data != null
-              ? (data as List)
-                    .map((e) => deserialize<_is5jy3ez.Order>(e))
-                    .toList()
-              : null)
           as T;
     }
     if (t == List<_itdsc4u0.Chapter>) {

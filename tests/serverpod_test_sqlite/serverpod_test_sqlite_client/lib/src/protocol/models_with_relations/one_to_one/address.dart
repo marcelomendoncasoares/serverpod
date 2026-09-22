@@ -8,14 +8,13 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'package:serverpod_database/serverpod_database.dart' as _isd;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_sqlite_client/src/protocol/protocol.dart'
     as _i0ntutnq;
 import '../../models_with_relations/one_to_one/citizen.dart' as _igho3lba;
@@ -26,8 +25,18 @@ abstract class Address
     this.id,
     required this.street,
     this.inhabitantId,
-    this.inhabitant,
-  });
+    Object? inhabitant = _Undefined,
+  }) : _inhabitantLoaded = !identical(
+         inhabitant,
+         _Undefined,
+       ),
+       _inhabitant =
+           !identical(
+             inhabitant,
+             _Undefined,
+           )
+           ? (inhabitant as _igho3lba.Citizen?)
+           : null;
 
   factory Address({
     int? id,
@@ -37,15 +46,17 @@ abstract class Address
   }) = _AddressImpl;
 
   factory Address.fromJson(Map<String, dynamic> jsonSerialization) {
-    return Address(
+    return _AddressImpl(
       id: jsonSerialization['id'] as int?,
       street: jsonSerialization['street'] as String,
       inhabitantId: jsonSerialization['inhabitantId'] as int?,
-      inhabitant: jsonSerialization['inhabitant'] == null
-          ? null
-          : _i0ntutnq.Protocol().deserialize<_igho3lba.Citizen>(
-              jsonSerialization['inhabitant'],
-            ),
+      inhabitant: jsonSerialization.containsKey('inhabitant')
+          ? jsonSerialization['inhabitant'] == null
+                ? null
+                : _i0ntutnq.Protocol().deserialize<_igho3lba.Citizen>(
+                    jsonSerialization['inhabitant'],
+                  )
+          : _Undefined,
     );
   }
 
@@ -60,10 +71,29 @@ abstract class Address
 
   int? inhabitantId;
 
-  _igho3lba.Citizen? inhabitant;
+  bool _inhabitantLoaded;
+
+  _igho3lba.Citizen? _inhabitant;
 
   @override
   _isd.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _igho3lba.Citizen? get inhabitant {
+    final value = _inhabitant;
+    if (!_inhabitantLoaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'Address',
+        relation: 'inhabitant',
+      );
+    }
+    return value;
+  }
+
+  set inhabitant(_igho3lba.Citizen? value) {
+    _inhabitant = value;
+    _inhabitantLoaded = true;
+  }
 
   /// Returns a shallow copy of this [Address]
   /// with some or all fields replaced by the given arguments.
@@ -72,7 +102,7 @@ abstract class Address
     int? id,
     String? street,
     int? inhabitantId,
-    _igho3lba.Citizen? inhabitant = const _UndefinedAddress$inhabitant(),
+    Object? inhabitant = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -81,7 +111,7 @@ abstract class Address
       if (id != null) 'id': id,
       'street': street,
       if (inhabitantId != null) 'inhabitantId': inhabitantId,
-      if (inhabitant != null) 'inhabitant': inhabitant?.toJson(),
+      if (_inhabitantLoaded) 'inhabitant': _inhabitant?.toJson(),
     };
   }
 
@@ -92,7 +122,7 @@ abstract class Address
       if (id != null) 'id': id,
       'street': street,
       if (inhabitantId != null) 'inhabitantId': inhabitantId,
-      if (inhabitant != null) 'inhabitant': inhabitant?.toJsonForProtocol(),
+      if (_inhabitantLoaded) 'inhabitant': _inhabitant?.toJsonForProtocol(),
     };
   }
 
@@ -126,17 +156,12 @@ abstract class Address
 
 class _Undefined {}
 
-class _UndefinedAddress$inhabitant extends _issu.UndefinedSentinel
-    implements _igho3lba.Citizen {
-  const _UndefinedAddress$inhabitant();
-}
-
 class _AddressImpl extends Address {
   _AddressImpl({
     int? id,
     required String street,
     int? inhabitantId,
-    _igho3lba.Citizen? inhabitant,
+    Object? inhabitant = _Undefined,
   }) : super._(
          id: id,
          street: street,
@@ -152,15 +177,17 @@ class _AddressImpl extends Address {
     Object? id = _Undefined,
     String? street,
     Object? inhabitantId = _Undefined,
-    _igho3lba.Citizen? inhabitant = const _UndefinedAddress$inhabitant(),
+    Object? inhabitant = _Undefined,
   }) {
-    return Address(
+    return _AddressImpl(
       id: id is int? ? id : this.id,
       street: street ?? this.street,
       inhabitantId: inhabitantId is int? ? inhabitantId : this.inhabitantId,
-      inhabitant: inhabitant is _issu.UndefinedSentinel
-          ? this.inhabitant?.copyWith()
-          : inhabitant,
+      inhabitant: inhabitant is _igho3lba.Citizen?
+          ? inhabitant?.copyWith()
+          : _inhabitantLoaded
+          ? this._inhabitant?.copyWith()
+          : _Undefined,
     );
   }
 }

@@ -8,13 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_sqlite_server/src/generated/protocol.dart'
     as _i08l111i;
 import '../../../explicit_column_name/relations/one_to_one/service.dart'
@@ -26,8 +25,18 @@ abstract class Contractor
     this.id,
     required this.name,
     this.serviceIdField,
-    this.service,
-  });
+    Object? service = _Undefined,
+  }) : _serviceLoaded = !identical(
+         service,
+         _Undefined,
+       ),
+       _service =
+           !identical(
+             service,
+             _Undefined,
+           )
+           ? (service as _iml73r3x.Service?)
+           : null;
 
   factory Contractor({
     int? id,
@@ -37,15 +46,17 @@ abstract class Contractor
   }) = _ContractorImpl;
 
   factory Contractor.fromJson(Map<String, dynamic> jsonSerialization) {
-    return Contractor(
+    return _ContractorImpl(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       serviceIdField: jsonSerialization['serviceIdField'] as int?,
-      service: jsonSerialization['service'] == null
-          ? null
-          : _i08l111i.Protocol().deserialize<_iml73r3x.Service>(
-              jsonSerialization['service'],
-            ),
+      service: jsonSerialization.containsKey('service')
+          ? jsonSerialization['service'] == null
+                ? null
+                : _i08l111i.Protocol().deserialize<_iml73r3x.Service>(
+                    jsonSerialization['service'],
+                  )
+          : _Undefined,
     );
   }
 
@@ -60,10 +71,29 @@ abstract class Contractor
 
   int? serviceIdField;
 
-  _iml73r3x.Service? service;
+  bool _serviceLoaded;
+
+  _iml73r3x.Service? _service;
 
   @override
   _is.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _iml73r3x.Service? get service {
+    final value = _service;
+    if (!_serviceLoaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'Contractor',
+        relation: 'service',
+      );
+    }
+    return value;
+  }
+
+  set service(_iml73r3x.Service? value) {
+    _service = value;
+    _serviceLoaded = true;
+  }
 
   /// Returns a shallow copy of this [Contractor]
   /// with some or all fields replaced by the given arguments.
@@ -72,7 +102,7 @@ abstract class Contractor
     int? id,
     String? name,
     int? serviceIdField,
-    _iml73r3x.Service? service = const _UndefinedContractor$service(),
+    Object? service = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -81,7 +111,7 @@ abstract class Contractor
       if (id != null) 'id': id,
       'name': name,
       if (serviceIdField != null) 'serviceIdField': serviceIdField,
-      if (service != null) 'service': service?.toJson(),
+      if (_serviceLoaded) 'service': _service?.toJson(),
     };
   }
 
@@ -92,7 +122,7 @@ abstract class Contractor
       if (id != null) 'id': id,
       'name': name,
       if (serviceIdField != null) 'serviceIdField': serviceIdField,
-      if (service != null) 'service': service?.toJsonForProtocol(),
+      if (_serviceLoaded) 'service': _service?.toJsonForProtocol(),
     };
   }
 
@@ -126,17 +156,12 @@ abstract class Contractor
 
 class _Undefined {}
 
-class _UndefinedContractor$service extends _issu.UndefinedSentinel
-    implements _iml73r3x.Service {
-  const _UndefinedContractor$service();
-}
-
 class _ContractorImpl extends Contractor {
   _ContractorImpl({
     int? id,
     required String name,
     int? serviceIdField,
-    _iml73r3x.Service? service,
+    Object? service = _Undefined,
   }) : super._(
          id: id,
          name: name,
@@ -152,17 +177,19 @@ class _ContractorImpl extends Contractor {
     Object? id = _Undefined,
     String? name,
     Object? serviceIdField = _Undefined,
-    _iml73r3x.Service? service = const _UndefinedContractor$service(),
+    Object? service = _Undefined,
   }) {
-    return Contractor(
+    return _ContractorImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       serviceIdField: serviceIdField is int?
           ? serviceIdField
           : this.serviceIdField,
-      service: service is _issu.UndefinedSentinel
-          ? this.service?.copyWith()
-          : service,
+      service: service is _iml73r3x.Service?
+          ? service?.copyWith()
+          : _serviceLoaded
+          ? this._service?.copyWith()
+          : _Undefined,
     );
   }
 }

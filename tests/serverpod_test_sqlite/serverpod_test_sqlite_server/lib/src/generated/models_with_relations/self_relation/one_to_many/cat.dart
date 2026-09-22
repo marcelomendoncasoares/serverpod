@@ -8,13 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_sqlite_server/src/generated/protocol.dart'
     as _i08l111i;
 import '../../../models_with_relations/self_relation/one_to_many/cat.dart'
@@ -25,9 +24,19 @@ abstract class Cat implements _is.TableRow<int?>, _is.ProtocolSerialization {
     this.id,
     required this.name,
     this.motherId,
-    this.mother,
+    Object? mother = _Undefined,
     this.kittens,
-  });
+  }) : _motherLoaded = !identical(
+         mother,
+         _Undefined,
+       ),
+       _mother =
+           !identical(
+             mother,
+             _Undefined,
+           )
+           ? (mother as _iayhscrz.Cat?)
+           : null;
 
   factory Cat({
     int? id,
@@ -38,15 +47,17 @@ abstract class Cat implements _is.TableRow<int?>, _is.ProtocolSerialization {
   }) = _CatImpl;
 
   factory Cat.fromJson(Map<String, dynamic> jsonSerialization) {
-    return Cat(
+    return _CatImpl(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       motherId: jsonSerialization['motherId'] as int?,
-      mother: jsonSerialization['mother'] == null
-          ? null
-          : _i08l111i.Protocol().deserialize<_iayhscrz.Cat>(
-              jsonSerialization['mother'],
-            ),
+      mother: jsonSerialization.containsKey('mother')
+          ? jsonSerialization['mother'] == null
+                ? null
+                : _i08l111i.Protocol().deserialize<_iayhscrz.Cat>(
+                    jsonSerialization['mother'],
+                  )
+          : _Undefined,
       kittens: jsonSerialization['kittens'] == null
           ? null
           : _i08l111i.Protocol().deserialize<List<_iayhscrz.Cat>>(
@@ -66,12 +77,31 @@ abstract class Cat implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   int? motherId;
 
-  _iayhscrz.Cat? mother;
+  bool _motherLoaded;
+
+  _iayhscrz.Cat? _mother;
 
   List<_iayhscrz.Cat>? kittens;
 
   @override
   _is.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _iayhscrz.Cat? get mother {
+    final value = _mother;
+    if (!_motherLoaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'Cat',
+        relation: 'mother',
+      );
+    }
+    return value;
+  }
+
+  set mother(_iayhscrz.Cat? value) {
+    _mother = value;
+    _motherLoaded = true;
+  }
 
   /// Returns a shallow copy of this [Cat]
   /// with some or all fields replaced by the given arguments.
@@ -80,8 +110,8 @@ abstract class Cat implements _is.TableRow<int?>, _is.ProtocolSerialization {
     int? id,
     String? name,
     int? motherId,
-    _iayhscrz.Cat? mother = const _UndefinedCat$mother(),
-    List<_iayhscrz.Cat>? kittens = const _issu.$UndefinedList<_iayhscrz.Cat>(),
+    Object? mother = _Undefined,
+    List<_iayhscrz.Cat>? kittens,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -90,7 +120,7 @@ abstract class Cat implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (motherId != null) 'motherId': motherId,
-      if (mother != null) 'mother': mother?.toJson(),
+      if (_motherLoaded) 'mother': _mother?.toJson(),
       if (kittens != null)
         'kittens': kittens?.toJson(valueToJson: (v) => v.toJson()),
     };
@@ -103,7 +133,7 @@ abstract class Cat implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (motherId != null) 'motherId': motherId,
-      if (mother != null) 'mother': mother?.toJsonForProtocol(),
+      if (_motherLoaded) 'mother': _mother?.toJsonForProtocol(),
       if (kittens != null)
         'kittens': kittens?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
@@ -145,17 +175,12 @@ abstract class Cat implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
 class _Undefined {}
 
-class _UndefinedCat$mother extends _issu.UndefinedSentinel
-    implements _iayhscrz.Cat {
-  const _UndefinedCat$mother();
-}
-
 class _CatImpl extends Cat {
   _CatImpl({
     int? id,
     required String name,
     int? motherId,
-    _iayhscrz.Cat? mother,
+    Object? mother = _Undefined,
     List<_iayhscrz.Cat>? kittens,
   }) : super._(
          id: id,
@@ -173,19 +198,21 @@ class _CatImpl extends Cat {
     Object? id = _Undefined,
     String? name,
     Object? motherId = _Undefined,
-    _iayhscrz.Cat? mother = const _UndefinedCat$mother(),
-    List<_iayhscrz.Cat>? kittens = const _issu.$UndefinedList<_iayhscrz.Cat>(),
+    Object? mother = _Undefined,
+    Object? kittens = _Undefined,
   }) {
-    return Cat(
+    return _CatImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       motherId: motherId is int? ? motherId : this.motherId,
-      mother: mother is _issu.UndefinedSentinel
-          ? this.mother?.copyWith()
-          : mother,
-      kittens: kittens is _issu.UndefinedSentinel
-          ? this.kittens?.map((e0) => e0.copyWith()).toList()
-          : kittens,
+      mother: mother is _iayhscrz.Cat?
+          ? mother?.copyWith()
+          : _motherLoaded
+          ? this._mother?.copyWith()
+          : _Undefined,
+      kittens: kittens is List<_iayhscrz.Cat>?
+          ? kittens
+          : this.kittens?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }

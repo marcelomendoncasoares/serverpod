@@ -8,11 +8,10 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: depend_on_referenced_packages
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_sqlite_client/src/protocol/protocol.dart'
     as _i0ntutnq;
 import '../../long_identifiers/deep_includes/organization_with_long_table_name.dart'
@@ -24,8 +23,18 @@ abstract class PersonWithLongTableName
     this.id,
     required this.name,
     this.organizationId,
-    this.organization,
-  });
+    Object? organization = _Undefined,
+  }) : _organizationLoaded = !identical(
+         organization,
+         _Undefined,
+       ),
+       _organization =
+           !identical(
+             organization,
+             _Undefined,
+           )
+           ? (organization as _imc5i9r4.OrganizationWithLongTableName?)
+           : null;
 
   factory PersonWithLongTableName({
     int? id,
@@ -37,16 +46,18 @@ abstract class PersonWithLongTableName
   factory PersonWithLongTableName.fromJson(
     Map<String, dynamic> jsonSerialization,
   ) {
-    return PersonWithLongTableName(
+    return _PersonWithLongTableNameImpl(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       organizationId: jsonSerialization['organizationId'] as int?,
-      organization: jsonSerialization['organization'] == null
-          ? null
-          : _i0ntutnq.Protocol()
-                .deserialize<_imc5i9r4.OrganizationWithLongTableName>(
-                  jsonSerialization['organization'],
-                ),
+      organization: jsonSerialization.containsKey('organization')
+          ? jsonSerialization['organization'] == null
+                ? null
+                : _i0ntutnq.Protocol()
+                      .deserialize<_imc5i9r4.OrganizationWithLongTableName>(
+                        jsonSerialization['organization'],
+                      )
+          : _Undefined,
     );
   }
 
@@ -59,7 +70,26 @@ abstract class PersonWithLongTableName
 
   int? organizationId;
 
-  _imc5i9r4.OrganizationWithLongTableName? organization;
+  bool _organizationLoaded;
+
+  _imc5i9r4.OrganizationWithLongTableName? _organization;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _imc5i9r4.OrganizationWithLongTableName? get organization {
+    final value = _organization;
+    if (!_organizationLoaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'PersonWithLongTableName',
+        relation: 'organization',
+      );
+    }
+    return value;
+  }
+
+  set organization(_imc5i9r4.OrganizationWithLongTableName? value) {
+    _organization = value;
+    _organizationLoaded = true;
+  }
 
   /// Returns a shallow copy of this [PersonWithLongTableName]
   /// with some or all fields replaced by the given arguments.
@@ -68,8 +98,7 @@ abstract class PersonWithLongTableName
     int? id,
     String? name,
     int? organizationId,
-    _imc5i9r4.OrganizationWithLongTableName? organization =
-        const _UndefinedPersonWithLongTableName$organization(),
+    Object? organization = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -78,7 +107,7 @@ abstract class PersonWithLongTableName
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
-      if (organization != null) 'organization': organization?.toJson(),
+      if (_organizationLoaded) 'organization': _organization?.toJson(),
     };
   }
 
@@ -89,8 +118,8 @@ abstract class PersonWithLongTableName
       if (id != null) 'id': id,
       'name': name,
       if (organizationId != null) 'organizationId': organizationId,
-      if (organization != null)
-        'organization': organization?.toJsonForProtocol(),
+      if (_organizationLoaded)
+        'organization': _organization?.toJsonForProtocol(),
     };
   }
 
@@ -102,18 +131,12 @@ abstract class PersonWithLongTableName
 
 class _Undefined {}
 
-class _UndefinedPersonWithLongTableName$organization
-    extends _issu.UndefinedSentinel
-    implements _imc5i9r4.OrganizationWithLongTableName {
-  const _UndefinedPersonWithLongTableName$organization();
-}
-
 class _PersonWithLongTableNameImpl extends PersonWithLongTableName {
   _PersonWithLongTableNameImpl({
     int? id,
     required String name,
     int? organizationId,
-    _imc5i9r4.OrganizationWithLongTableName? organization,
+    Object? organization = _Undefined,
   }) : super._(
          id: id,
          name: name,
@@ -129,18 +152,19 @@ class _PersonWithLongTableNameImpl extends PersonWithLongTableName {
     Object? id = _Undefined,
     String? name,
     Object? organizationId = _Undefined,
-    _imc5i9r4.OrganizationWithLongTableName? organization =
-        const _UndefinedPersonWithLongTableName$organization(),
+    Object? organization = _Undefined,
   }) {
-    return PersonWithLongTableName(
+    return _PersonWithLongTableNameImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       organizationId: organizationId is int?
           ? organizationId
           : this.organizationId,
-      organization: organization is _issu.UndefinedSentinel
-          ? this.organization?.copyWith()
-          : organization,
+      organization: organization is _imc5i9r4.OrganizationWithLongTableName?
+          ? organization?.copyWith()
+          : _organizationLoaded
+          ? this._organization?.copyWith()
+          : _Undefined,
     );
   }
 }

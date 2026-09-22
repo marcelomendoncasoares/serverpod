@@ -8,13 +8,12 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_sqlite_server/src/generated/protocol.dart'
     as _i08l111i;
 import '../../models_with_relations/one_to_one/citizen.dart' as _igho3lba;
@@ -24,8 +23,18 @@ abstract class Town implements _is.TableRow<int?>, _is.ProtocolSerialization {
     this.id,
     required this.name,
     this.mayorId,
-    this.mayor,
-  });
+    Object? mayor = _Undefined,
+  }) : _mayorLoaded = !identical(
+         mayor,
+         _Undefined,
+       ),
+       _mayor =
+           !identical(
+             mayor,
+             _Undefined,
+           )
+           ? (mayor as _igho3lba.Citizen?)
+           : null;
 
   factory Town({
     int? id,
@@ -35,15 +44,17 @@ abstract class Town implements _is.TableRow<int?>, _is.ProtocolSerialization {
   }) = _TownImpl;
 
   factory Town.fromJson(Map<String, dynamic> jsonSerialization) {
-    return Town(
+    return _TownImpl(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       mayorId: jsonSerialization['mayorId'] as int?,
-      mayor: jsonSerialization['mayor'] == null
-          ? null
-          : _i08l111i.Protocol().deserialize<_igho3lba.Citizen>(
-              jsonSerialization['mayor'],
-            ),
+      mayor: jsonSerialization.containsKey('mayor')
+          ? jsonSerialization['mayor'] == null
+                ? null
+                : _i08l111i.Protocol().deserialize<_igho3lba.Citizen>(
+                    jsonSerialization['mayor'],
+                  )
+          : _Undefined,
     );
   }
 
@@ -58,10 +69,29 @@ abstract class Town implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
   int? mayorId;
 
-  _igho3lba.Citizen? mayor;
+  bool _mayorLoaded;
+
+  _igho3lba.Citizen? _mayor;
 
   @override
   _is.Table<int?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _igho3lba.Citizen? get mayor {
+    final value = _mayor;
+    if (!_mayorLoaded) {
+      throw _iss.RelationNotLoadedError(
+        model: 'Town',
+        relation: 'mayor',
+      );
+    }
+    return value;
+  }
+
+  set mayor(_igho3lba.Citizen? value) {
+    _mayor = value;
+    _mayorLoaded = true;
+  }
 
   /// Returns a shallow copy of this [Town]
   /// with some or all fields replaced by the given arguments.
@@ -70,7 +100,7 @@ abstract class Town implements _is.TableRow<int?>, _is.ProtocolSerialization {
     int? id,
     String? name,
     int? mayorId,
-    _igho3lba.Citizen? mayor = const _UndefinedTown$mayor(),
+    Object? mayor = _Undefined,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -79,7 +109,7 @@ abstract class Town implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (mayorId != null) 'mayorId': mayorId,
-      if (mayor != null) 'mayor': mayor?.toJson(),
+      if (_mayorLoaded) 'mayor': _mayor?.toJson(),
     };
   }
 
@@ -90,7 +120,7 @@ abstract class Town implements _is.TableRow<int?>, _is.ProtocolSerialization {
       if (id != null) 'id': id,
       'name': name,
       if (mayorId != null) 'mayorId': mayorId,
-      if (mayor != null) 'mayor': mayor?.toJsonForProtocol(),
+      if (_mayorLoaded) 'mayor': _mayor?.toJsonForProtocol(),
     };
   }
 
@@ -124,17 +154,12 @@ abstract class Town implements _is.TableRow<int?>, _is.ProtocolSerialization {
 
 class _Undefined {}
 
-class _UndefinedTown$mayor extends _issu.UndefinedSentinel
-    implements _igho3lba.Citizen {
-  const _UndefinedTown$mayor();
-}
-
 class _TownImpl extends Town {
   _TownImpl({
     int? id,
     required String name,
     int? mayorId,
-    _igho3lba.Citizen? mayor,
+    Object? mayor = _Undefined,
   }) : super._(
          id: id,
          name: name,
@@ -150,13 +175,17 @@ class _TownImpl extends Town {
     Object? id = _Undefined,
     String? name,
     Object? mayorId = _Undefined,
-    _igho3lba.Citizen? mayor = const _UndefinedTown$mayor(),
+    Object? mayor = _Undefined,
   }) {
-    return Town(
+    return _TownImpl(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       mayorId: mayorId is int? ? mayorId : this.mayorId,
-      mayor: mayor is _issu.UndefinedSentinel ? this.mayor?.copyWith() : mayor,
+      mayor: mayor is _igho3lba.Citizen?
+          ? mayor?.copyWith()
+          : _mayorLoaded
+          ? this._mayor?.copyWith()
+          : _Undefined,
     );
   }
 }

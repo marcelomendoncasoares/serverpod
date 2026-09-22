@@ -8,35 +8,35 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
-// ignore_for_file: dead_code, depend_on_referenced_packages
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
 import 'package:serverpod/serverpod.dart' as _is;
-import 'package:serverpod_serialization/undefined_sentinel.dart' as _issu;
+import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'package:serverpod_test_sqlite_server/src/generated/protocol.dart'
     as _i08l111i;
 import '../../changed_id_type/one_to_one/town.dart' as _i3qwzvq1;
 
+@_is.immutable
 abstract class CompanyUuid
     implements _is.TableRow<_is.UuidValue?>, _is.ProtocolSerialization {
-  CompanyUuid._({
+  const CompanyUuid._({
     this.id,
     required this.name,
     required this.townId,
-    this.town,
-  });
+    _i3qwzvq1.TownInt? town,
+  }) : _town = town;
 
-  factory CompanyUuid({
+  const factory CompanyUuid({
     _is.UuidValue? id,
     required String name,
     required int townId,
-    _i3qwzvq1.TownInt? town,
+    _i3qwzvq1.TownInt town,
   }) = _CompanyUuidImpl;
 
   factory CompanyUuid.fromJson(Map<String, dynamic> jsonSerialization) {
-    return CompanyUuid(
+    return _CompanyUuidImpl(
       id: jsonSerialization['id'] == null
           ? null
           : _is.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
@@ -55,26 +55,79 @@ abstract class CompanyUuid
   static const db = CompanyUuidRepository._();
 
   @override
-  _is.UuidValue? id;
+  final _is.UuidValue? id;
 
-  String name;
+  final String name;
 
-  int townId;
+  final int townId;
 
-  _i3qwzvq1.TownInt? town;
+  final _i3qwzvq1.TownInt? _town;
 
   @override
   _is.Table<_is.UuidValue?> get table => t;
+
+  /// Throws `RelationNotLoadedError` if this relation was not loaded.
+  _i3qwzvq1.TownInt get town {
+    final value = _town;
+    if (value == null) {
+      throw _iss.RelationNotLoadedError(
+        model: 'CompanyUuid',
+        relation: 'town',
+      );
+    }
+    return value;
+  }
 
   /// Returns a shallow copy of this [CompanyUuid]
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   CompanyUuid copyWith({
-    _is.UuidValue? id = const _issu.$UndefinedUuidValue(),
+    _is.UuidValue? id,
     String? name,
     int? townId,
-    _i3qwzvq1.TownInt? town = const _UndefinedCompanyUuid$town(),
+    Object? town = _Undefined,
   });
+  @override
+  bool operator ==(Object other) {
+    return identical(
+          other,
+          this,
+        ) ||
+        other.runtimeType == runtimeType &&
+            other is CompanyUuid &&
+            (identical(
+                  other.id,
+                  id,
+                ) ||
+                other.id == id) &&
+            (identical(
+                  other.name,
+                  name,
+                ) ||
+                other.name == name) &&
+            (identical(
+                  other.townId,
+                  townId,
+                ) ||
+                other.townId == townId) &&
+            (identical(
+                  other._town,
+                  _town,
+                ) ||
+                other._town == _town);
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(
+      runtimeType,
+      id,
+      name,
+      townId,
+      _town,
+    );
+  }
+
   @override
   Map<String, dynamic> toJson() {
     return {
@@ -82,7 +135,7 @@ abstract class CompanyUuid
       if (id != null) 'id': id?.toJson(),
       'name': name,
       'townId': townId,
-      if (town != null) 'town': town?.toJson(),
+      if (_town case final value?) 'town': value.toJson(),
     };
   }
 
@@ -93,7 +146,7 @@ abstract class CompanyUuid
       if (id != null) 'id': id?.toJson(),
       'name': name,
       'townId': townId,
-      if (town != null) 'town': town?.toJsonForProtocol(),
+      if (_town case final value?) 'town': value.toJsonForProtocol(),
     };
   }
 
@@ -125,13 +178,10 @@ abstract class CompanyUuid
   }
 }
 
-class _UndefinedCompanyUuid$town extends _issu.UndefinedSentinel
-    implements _i3qwzvq1.TownInt {
-  const _UndefinedCompanyUuid$town();
-}
+class _Undefined {}
 
 class _CompanyUuidImpl extends CompanyUuid {
-  _CompanyUuidImpl({
+  const _CompanyUuidImpl({
     _is.UuidValue? id,
     required String name,
     required int townId,
@@ -148,16 +198,18 @@ class _CompanyUuidImpl extends CompanyUuid {
   @_is.useResult
   @override
   CompanyUuid copyWith({
-    _is.UuidValue? id = const _issu.$UndefinedUuidValue(),
+    Object? id = _Undefined,
     String? name,
     int? townId,
-    _i3qwzvq1.TownInt? town = const _UndefinedCompanyUuid$town(),
+    Object? town = _Undefined,
   }) {
-    return CompanyUuid(
-      id: id is _issu.UndefinedSentinel ? this.id : id,
+    return _CompanyUuidImpl(
+      id: id is _is.UuidValue? ? id : this.id,
       name: name ?? this.name,
       townId: townId ?? this.townId,
-      town: town is _issu.UndefinedSentinel ? this.town?.copyWith() : town,
+      town: town is _i3qwzvq1.TownInt
+          ? town.copyWith()
+          : this._town?.copyWith(),
     );
   }
 }
