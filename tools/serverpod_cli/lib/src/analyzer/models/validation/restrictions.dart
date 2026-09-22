@@ -1824,10 +1824,10 @@ class Restrictions {
     var referenceClass = parsedModels.findByClassName(parsedType);
 
     var errors = <SourceSpanSeverityException>[];
-    if (!type.endsWith('?')) {
+    if (field.hasOptionalRelationGetter && !field.type.nullable) {
       errors.add(
         SourceSpanSeverityException(
-          'Fields with a model relations must be nullable (e.g. $parentNodeName: $type?).',
+          'Optional model relations must be nullable (e.g. $parentNodeName: $type?).',
           span,
         ),
       );

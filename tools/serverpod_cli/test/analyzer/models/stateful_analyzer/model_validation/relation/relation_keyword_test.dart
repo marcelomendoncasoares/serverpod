@@ -451,7 +451,9 @@ fields:
   );
 
   test(
-    'Given a class with a field with a relation on a complex datatype that is not nullable, then an error is collected that the datatype must be nullable.',
+    'Given a required relation with a non-nullable model type, '
+    'when validating the model, '
+    'then the safe declaration is accepted.',
     () {
       var models = [
         ModelSourceBuilder().withYaml(
@@ -469,16 +471,106 @@ fields:
         models,
         onErrorsCollector(collector),
       );
+      final definitions = analyzer.validateAll();
+      final model = definitions.single as ModelClassDefinition;
+
+      expect(collector.errors, isEmpty);
+      expect(model.findField('parent')!.type.nullable, isFalse);
+      expect(model.findField('parent')!.shouldPersist, isFalse);
+      expect(model.findField('parentId')!.type.nullable, isFalse);
+    },
+  );
+
+  test(
+    'Given a non-nullable list relation, '
+    'when validating the model, '
+    'then the safe declaration leaves its implicit foreign key nullable.',
+    () {
+      final models = [
+        ModelSourceBuilder().withYaml('''
+          class: Example
+          table: example
+          fields:
+            children: List<Example>, relation
+        ''').build(),
+      ];
+      final collector = CodeGenerationCollector();
+      final analyzer = StatefulAnalyzer(
+        config,
+        models,
+        onErrorsCollector(collector),
+      );
+
+      final definitions = analyzer.validateAll();
+      final model = definitions.single as ModelClassDefinition;
+      final children = model.findField('children')!;
+      final relation = children.relation as ListRelationDefinition;
+
+      expect(collector.errors, isEmpty);
+      expect(children.type.nullable, isFalse);
+      expect(children.shouldPersist, isFalse);
+      expect(model.findField(relation.foreignFieldName)!.type.nullable, isTrue);
+    },
+  );
+
+  test(
+    'Given a non-nullable to-one relation with an explicit nullable foreign key, '
+    'when validating the model, '
+    'then domain nullability is required.',
+    () {
+      final models = [
+        ModelSourceBuilder().withYaml('''
+          class: Example
+          table: example
+          fields:
+            parentId: int?
+            parent: Example, relation(field=parentId)
+        ''').build(),
+      ];
+      final collector = CodeGenerationCollector();
+      final analyzer = StatefulAnalyzer(
+        config,
+        models,
+        onErrorsCollector(collector),
+      );
+
       analyzer.validateAll();
 
+      expect(collector.errors, hasLength(1));
       expect(
-        collector.errors,
-        isNotEmpty,
-        reason: 'Expected an error',
+        collector.errors.single.message,
+        'Optional model relations must be nullable (e.g. parent: Example?).',
       );
+    },
+  );
+
+  test(
+    'Given an optional relation with a non-nullable model type, '
+    'when validating the model, '
+    'then the missing domain nullability is rejected.',
+    () {
+      var models = [
+        ModelSourceBuilder().withYaml(
+          '''
+          class: Example
+          table: example
+          fields:
+            parent: Example, relation(optional)
+          ''',
+        ).build(),
+      ];
+      var collector = CodeGenerationCollector();
+      StatefulAnalyzer analyzer = StatefulAnalyzer(
+        config,
+        models,
+        onErrorsCollector(collector),
+      );
+      analyzer.validateAll();
+
+      expect(collector.errors, hasLength(1));
       expect(
-        collector.errors.first.message,
-        'Fields with a model relations must be nullable (e.g. parent: Example?).',
+        collector.errors.single.message,
+        'Optional model relations must be nullable (e.g. parent: Example?).',
       );
     },
   );

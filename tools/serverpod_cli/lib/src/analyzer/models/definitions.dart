@@ -371,6 +371,19 @@ class SerializableModelFieldDefinition {
   bool get isSymbolicRelation =>
       relation != null && relation is! ForeignRelationDefinition;
 
+  /// Whether the relation distinguishes an unloaded value from domain null.
+  bool get hasSafeRelationGetter => switch (relation) {
+    ObjectRelationDefinition(:final nullableRelation) =>
+      nullableRelation || !type.nullable,
+    ListRelationDefinition() => !type.nullable,
+    _ => false,
+  };
+
+  /// Optional to-one relations need to distinguish unloaded from loaded null.
+  bool get hasOptionalRelationGetter =>
+      relation is ObjectRelationDefinition &&
+      (relation as ObjectRelationDefinition).nullableRelation;
+
   /// The documentation of this field, line by line.
   final List<String>? documentation;
 

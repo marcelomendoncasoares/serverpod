@@ -559,6 +559,10 @@ class SerializableModelLibraryGenerator {
         ),
       );
 
+      classBuilder.methods.addAll(
+        _buildRelationAccessors(classDefinition),
+      );
+
       classBuilder.constructors.addAll([
         _buildModelClassConstructor(
           fields,
@@ -680,10 +684,104 @@ class SerializableModelLibraryGenerator {
     });
   }
 
+  Expression _modelConstructionExpression(
+    bool hasImplicitClass,
+    String className,
+    List<SerializableModelFieldDefinition> fields,
+  ) {
+    if (!hasImplicitClass &&
+        fields.any((field) => field.hasSafeRelationGetter)) {
+      return refer('_${className}Impl');
+    }
+
+    return createClassExpression(hasImplicitClass, className);
+  }
+
+  Expression _relationState(
+    SerializableModelFieldDefinition field, {
+    required String receiver,
+  }) {
+    var value = refer(receiver).property('_${field.name}');
+    if (!field.hasOptionalRelationGetter) return value;
+
+    return refer(receiver)
+        .property('_${field.name}Loaded')
+        .conditional(
+          value,
+          refer('_Undefined'),
+        );
+  }
+
+  List<Method> _buildRelationAccessors(ModelClassDefinition definition) {
+    return [
+      for (var field in definition.fields.where(
+        (field) =>
+            field.hasSafeRelationGetter && field.shouldIncludeField(serverCode),
+      )) ...[
+        Method((m) {
+          m
+            ..name = field.name
+            ..type = MethodType.getter
+            ..returns = field.type.reference(
+              serverCode,
+              subDirParts: definition.subDirParts,
+              config: config,
+            )
+            ..docs.addAll([
+              ...?field.documentation,
+              '/// Throws `RelationNotLoadedError` if this relation was not loaded.',
+            ])
+            ..body = Block.of([
+              Code('final value = _${field.name};'),
+              Code(
+                field.hasOptionalRelationGetter
+                    ? 'if (!_${field.name}Loaded) {'
+                    : 'if (value == null) {',
+              ),
+              refer('RelationNotLoadedError', serverpodSerializationUrl)
+                  .call([], {
+                    'model': literalString(definition.className),
+                    'relation': literalString(field.name),
+                  })
+                  .thrown
+                  .statement,
+              const Code('}'),
+              const Code('return value;'),
+            ]);
+        }),
+        if (!definition.isImmutable)
+          Method((m) {
+            m
+              ..name = field.name
+              ..type = MethodType.setter
+              ..requiredParameters.add(
+                Parameter(
+                  (p) => p
+                    ..name = 'value'
+                    ..type = field.type.reference(
+                      serverCode,
+                      subDirParts: definition.subDirParts,
+                      config: config,
+                    ),
+                ),
+              )
+              ..body = Block.of([
+                Code('_${field.name} = value;'),
+                if (field.hasOptionalRelationGetter)
+                  Code('_${field.name}Loaded = true;'),
+              ]);
+          }),
+      ],
+    ];
+  }
+
   /// Nullable params and `dynamic` fields need to distinguish omission from null.
   bool _fieldUsesUndefinedCopyWithSentinel(
     SerializableModelFieldDefinition field,
-  ) => field.type.nullable || field.type.className == 'dynamic';
+  ) =>
+      field.type.nullable ||
+      field.type.className == 'dynamic' ||
+      field.hasSafeRelationGetter;
 
   bool _hasTypedCopyWithSentinel(TypeDefinition type) =>
       _hasPrivateCopyWithSentinel(type) ||
@@ -990,9 +1088,14 @@ class SerializableModelLibraryGenerator {
                         ...visibleFields.fold({}, (map, field) {
                           return {
                             ...map,
-                            field.name: refer(
-                              className.camelCase,
-                            ).property(field.name),
+                            field.name: field.hasSafeRelationGetter
+                                ? _relationState(
+                                    field,
+                                    receiver: className.camelCase,
+                                  )
+                                : refer(
+                                    className.camelCase,
+                                  ).property(field.name),
                           };
                         }),
                         ...hiddenFields.fold({}, (map, field) {
@@ -1137,17 +1240,22 @@ class SerializableModelLibraryGenerator {
           ),
         );
         m.returns = refer(className);
-        m.body = createClassExpression(hasImplicitClass, className)
-            .call(
-              [],
-              _buildCopyWithAssignment(
-                fields,
-                subDirParts: subDirParts,
-                tableName: tableName,
-              ),
-            )
-            .returned
-            .statement;
+        m.body =
+            _modelConstructionExpression(
+                  hasImplicitClass,
+                  className,
+                  fields,
+                )
+                .call(
+                  [],
+                  _buildCopyWithAssignment(
+                    fields,
+                    subDirParts: subDirParts,
+                    tableName: tableName,
+                  ),
+                )
+                .returned
+                .statement;
       },
     );
   }
@@ -1168,6 +1276,57 @@ class SerializableModelLibraryGenerator {
     );
 
     var visibleAssignments = visibleFields.fold({}, (map, field) {
+      if (field.hasSafeRelationGetter) {
+        var fieldType = field.type.reference(
+          serverCode,
+          subDirParts: subDirParts,
+          config: config,
+        );
+        var copiedValue = _buildDeepCloneTree(
+          field.type,
+          field.name,
+        );
+        if (field.type.isListType) {
+          // Object? parameters do not provide inference for an empty list
+          // literal. Accept List<dynamic> and check its elements while copying.
+          fieldType = refer('List');
+          copiedValue = refer(field.name)
+              .property('cast')
+              .call([], {}, [
+                field.type.generics.single.reference(
+                  serverCode,
+                  subDirParts: subDirParts,
+                  config: config,
+                ),
+              ])
+              .property('map')
+              .call([_buildListCloneCallback(field.type.generics.single, 0)])
+              .property('toList')
+              .call([]);
+        }
+
+        var preservedValue = _buildDeepCloneTree(
+          field.type.asNullable,
+          '_${field.name}',
+          isRoot: true,
+        );
+
+        if (field.hasOptionalRelationGetter) {
+          preservedValue = refer('_${field.name}Loaded').conditional(
+            preservedValue,
+            refer('_Undefined'),
+          );
+        }
+
+        return map
+          ..[field.name] = refer(field.name)
+              .isA(fieldType)
+              .conditional(
+                copiedValue,
+                preservedValue,
+              );
+      }
+
       Expression assignment = _buildDeepCloneTree(
         field.type,
         field.name,
@@ -1254,8 +1413,16 @@ class SerializableModelLibraryGenerator {
         var comparisons = [
           refer('other').property('runtimeType').equalTo(refer('runtimeType')),
           refer('other').isA(refer(classDefinition.className)),
+          for (var field in includedFields.where(
+            (field) => field.hasOptionalRelationGetter,
+          ))
+            refer('_${field.name}Loaded').equalTo(
+              refer('other').property('_${field.name}Loaded'),
+            ),
           ...includedFields.map((field) {
-            var name = field.name;
+            var name = field.hasSafeRelationGetter
+                ? '_${field.name}'
+                : field.name;
             var thisProperty = refer(name);
             var otherProperty = refer('other').property(name);
 
@@ -1308,15 +1475,23 @@ class SerializableModelLibraryGenerator {
 
         var expressions = [
           refer('runtimeType'),
+          for (var field in includedFields.where(
+            (field) => field.hasOptionalRelationGetter,
+          ))
+            refer('_${field.name}Loaded'),
           ...includedFields.map((field) {
+            var fieldName = field.hasSafeRelationGetter
+                ? '_${field.name}'
+                : field.name;
+
             if (field.type.isCollectionType) {
               return refer(
                 'DeepCollectionEquality',
                 serverpodSerializationUrl,
-              ).constInstance([]).property('hash').call([refer(field.name)]);
+              ).constInstance([]).property('hash').call([refer(fieldName)]);
             }
 
-            return refer(field.name);
+            return refer(fieldName);
           }),
         ];
 
@@ -1999,16 +2174,20 @@ class SerializableModelLibraryGenerator {
         tableName: tableName,
       );
 
+      var hasNonNullableRelation =
+          field.hasSafeRelationGetter && !field.hasOptionalRelationGetter;
       Expression fieldRef = _toJsonCallConversionMethod(
-        fieldName,
+        hasNonNullableRelation ? refer('value') : fieldName,
         field.type,
         toJsonMethodName,
         // Hidden serializable fields are final so no additional null check
         // is needed.
-        nullCheckedReference: field.shouldIncludeHiddenFieldInModelClass(
-          serverCode,
-          modelHasTable: tableName != null,
-        ),
+        nullCheckedReference:
+            hasNonNullableRelation ||
+            field.shouldIncludeHiddenFieldInModelClass(
+              serverCode,
+              modelHasTable: tableName != null,
+            ),
         currentSharedPackageName: currentSharedPackageName,
       );
 
@@ -2016,9 +2195,15 @@ class SerializableModelLibraryGenerator {
 
       return {
         ...map,
-        if (field.type.nullable)
-          Code("if (${fieldName.symbol} != null) '$fieldKey'"): fieldRef,
-        if (!field.type.nullable) Code("'$fieldKey'"): fieldRef,
+        if (field.hasOptionalRelationGetter)
+          Code("if (_${field.name}Loaded) '$fieldKey'"): fieldRef
+        else if (hasNonNullableRelation)
+          Code("if (${fieldName.symbol} case final value?) '$fieldKey'"):
+              fieldRef
+        else if (field.type.nullable)
+          Code("if (${fieldName.symbol} != null) '$fieldKey'"): fieldRef
+        else
+          Code("'$fieldKey'"): fieldRef,
       };
     });
 
@@ -2059,27 +2244,32 @@ class SerializableModelLibraryGenerator {
           p.type = refer('Map<String,dynamic>');
         }),
       ]);
-      c.body = createClassExpression(hasImplicitClass, className)
-          .call([], {
-            for (var field in visibleFields)
-              field.name: buildFromJsonForField(
-                field,
-                serverCode,
-                config,
-                subDirParts,
-                currentSharedPackageName,
-              ),
-            for (var field in hiddenSerializableFields)
-              createFieldName(serverCode, field): buildFromJsonForField(
-                field,
-                serverCode,
-                config,
-                subDirParts,
-                currentSharedPackageName,
-              ),
-          })
-          .returned
-          .statement;
+      c.body =
+          _modelConstructionExpression(
+                hasImplicitClass,
+                className,
+                fields,
+              )
+              .call([], {
+                for (var field in visibleFields)
+                  field.name: buildFromJsonForField(
+                    field,
+                    serverCode,
+                    config,
+                    subDirParts,
+                    currentSharedPackageName,
+                  ),
+                for (var field in hiddenSerializableFields)
+                  createFieldName(serverCode, field): buildFromJsonForField(
+                    field,
+                    serverCode,
+                    config,
+                    subDirParts,
+                    currentSharedPackageName,
+                  ),
+              })
+              .returned
+              .statement;
     });
   }
 
@@ -2112,6 +2302,39 @@ class SerializableModelLibraryGenerator {
       var classFields = fields
           .where((field) => !inheritedFields.contains(field))
           .toList();
+
+      for (var field in classFields.where(
+        (field) =>
+            field.hasSafeRelationGetter && field.shouldIncludeField(serverCode),
+      )) {
+        var value = refer(field.name);
+        Expression initialValue = value;
+
+        if (field.hasOptionalRelationGetter) {
+          var isLoaded = refer('identical').call([
+            value,
+            refer('_Undefined'),
+          ]).negate();
+
+          c.initializers.add(
+            refer('_${field.name}Loaded').assign(isLoaded).code,
+          );
+          initialValue = isLoaded.conditional(
+            value.asA(
+              field.type.reference(
+                serverCode,
+                subDirParts: subDirParts,
+                config: config,
+              ),
+            ),
+            literalNull,
+          );
+        }
+
+        c.initializers.add(
+          refer('_${field.name}').assign(initialValue).code,
+        );
+      }
 
       var defaultValueFields = classFields.where(
         (field) => field.hasDefaults && field.shouldIncludeField(serverCode),
@@ -2169,6 +2392,7 @@ class SerializableModelLibraryGenerator {
           fields,
           tableName,
           setAsToThis: false,
+          publicFactory: true,
           subDirParts: subDirParts,
           inheritedFields: inheritedFields,
         ),
@@ -2222,11 +2446,32 @@ class SerializableModelLibraryGenerator {
     String? tableName, {
     required List<String> subDirParts,
     required bool setAsToThis,
+    bool publicFactory = false,
     required List<SerializableModelFieldDefinition> inheritedFields,
   }) {
     return fields.where((field) => field.shouldIncludeField(serverCode)).map((
       field,
     ) {
+      if (field.hasSafeRelationGetter) {
+        return Parameter((p) {
+          p
+            ..named = true
+            ..name = field.name
+            ..type = !publicFactory && field.hasOptionalRelationGetter
+                ? refer('Object?')
+                : field.type.reference(
+                    serverCode,
+                    nullable: publicFactory ? field.type.nullable : true,
+                    subDirParts: subDirParts,
+                    config: config,
+                  );
+
+          if (!publicFactory && field.hasOptionalRelationGetter) {
+            p.defaultTo = const Code('_Undefined');
+          }
+        });
+      }
+
       bool shouldIncludeType =
           !setAsToThis ||
           (field.defaultModelValue != null) &&
@@ -2404,6 +2649,19 @@ class SerializableModelLibraryGenerator {
         .where((f) => !(f.name == 'id' && isTableOwner && tableName != null));
 
     for (var field in classFields) {
+      if (field.hasOptionalRelationGetter) {
+        modelClassFields.add(
+          Field(
+            (f) => f
+              ..name = '_${field.name}Loaded'
+              ..type = refer('bool')
+              ..modifier = isClassImmutable
+                  ? FieldModifier.final$
+                  : FieldModifier.var$,
+          ),
+        );
+      }
+
       modelClassFields.add(
         Field((f) {
           f
@@ -2411,6 +2669,7 @@ class SerializableModelLibraryGenerator {
               serverCode,
               subDirParts: subDirParts,
               config: config,
+              nullable: field.hasSafeRelationGetter ? true : null,
             )
             ..name = _createSerializableFieldNameReference(
               serverCode,
@@ -3770,6 +4029,8 @@ class SerializableModelLibraryGenerator {
     SerializableModelFieldDefinition field, {
     String? tableName,
   }) {
+    if (field.hasSafeRelationGetter) return '_${field.name}';
+
     if (field.shouldIncludeHiddenFieldInModelClass(
           serverCode,
           modelHasTable: tableName != null,

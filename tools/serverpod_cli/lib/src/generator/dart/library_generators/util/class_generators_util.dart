@@ -95,9 +95,9 @@ Expression buildFromJsonForField(
   String? currentSharedPackageName,
 ) {
   Reference jsonReference = refer('jsonSerialization');
-  return _buildFromJson(
+  var value = _buildFromJson(
     jsonReference,
-    field.type,
+    field.hasSafeRelationGetter ? field.type.asNullable : field.type,
     serverCode,
     config,
     fieldName: field.jsonKey,
@@ -105,6 +105,17 @@ Expression buildFromJsonForField(
     field: field,
     currentSharedPackageName: currentSharedPackageName,
   );
+
+  if (field.hasOptionalRelationGetter) {
+    return jsonReference
+        .property('containsKey')
+        .call([
+          literalString(field.jsonKey),
+        ])
+        .conditional(value, refer('_Undefined'));
+  }
+
+  return value;
 }
 
 TypeReference _typeWithTableCallback(
