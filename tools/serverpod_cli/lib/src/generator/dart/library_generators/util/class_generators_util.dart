@@ -112,7 +112,7 @@ Expression buildFromJsonForField(
         .call([
           literalString(field.jsonKey),
         ])
-        .conditional(value, refer('_Undefined'));
+        .conditional(value, refer('#serverpodUnloadedRelation'));
   }
 
   return value;

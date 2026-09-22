@@ -35,6 +35,10 @@ class SerializableModelLibraryGenerator {
   final _copyWithSentinels =
       <String, Map<ClassDefinition, ({String name, TypeDefinition type})>>{};
 
+  // Builders are evaluated synchronously for one library at a time. Retain the
+  // declaring class while selecting access to inherited relation storage.
+  ClassDefinition? _currentClass;
+
   SerializableModelLibraryGenerator({
     required this.serverCode,
     required this.config,
@@ -50,6 +54,8 @@ class SerializableModelLibraryGenerator {
   Library generateModelLibrary(
     SerializableModelDefinition modelDefinition,
   ) {
+    _currentClass = modelDefinition is ClassDefinition ? modelDefinition : null;
+
     switch (modelDefinition) {
       case ClassDefinition():
         return _generateClassLibrary(modelDefinition);
@@ -205,6 +211,13 @@ class SerializableModelLibraryGenerator {
           libraryBuilder.directives.add(Directive.partOf(topNodePath));
         }
 
+        if (classDefinition.inheritedFields.any(
+          (field) => field.hasSafeRelationGetter,
+        )) {
+          // Equality and implicit wrappers can inspect another inherited model.
+          libraryBuilder.ignoreForFile.add('invalid_use_of_protected_member');
+        }
+
         libraryBuilder.body.addAll([
           _buildModelClass(
             className,
@@ -219,7 +232,8 @@ class SerializableModelLibraryGenerator {
           if (_shouldCreateUndefinedClass(classDefinition, fields))
             _buildUndefinedClass(),
           ..._buildTypedUndefinedClasses(classDefinition),
-          if (!classDefinition.isParentClass)
+          if (!classDefinition.isSealed &&
+              (!classDefinition.isParentClass || _hasSafeRelations))
             _buildModelImplClass(
               className,
               tableName,
@@ -572,7 +586,8 @@ class SerializableModelLibraryGenerator {
           inheritedFields: classDefinition.inheritedFields,
           isImmutable: classDefinition.isImmutable,
         ),
-        if (!classDefinition.isParentClass)
+        if (!classDefinition.isSealed &&
+            (!classDefinition.isParentClass || _hasSafeRelations))
           _buildModelClassFactoryConstructor(
             className,
             fields,
@@ -684,6 +699,22 @@ class SerializableModelLibraryGenerator {
     });
   }
 
+  bool get _hasSafeRelations =>
+      _currentClass?.fieldsIncludingInherited.any(
+        (field) => field.hasSafeRelationGetter,
+      ) ??
+      false;
+
+  String _relationValueName(SerializableModelFieldDefinition field) =>
+      _currentClass!.inheritedFields.contains(field)
+      ? '\$${field.name}RelationValue'
+      : '_${field.name}';
+
+  String _relationLoadedName(SerializableModelFieldDefinition field) =>
+      _currentClass!.inheritedFields.contains(field)
+      ? '\$${field.name}RelationLoaded'
+      : '_${field.name}\$loaded';
+
   Expression _modelConstructionExpression(
     bool hasImplicitClass,
     String className,
@@ -701,14 +732,14 @@ class SerializableModelLibraryGenerator {
     SerializableModelFieldDefinition field, {
     required String receiver,
   }) {
-    var value = refer(receiver).property('_${field.name}');
+    var value = refer(receiver).property(_relationValueName(field));
     if (!field.hasOptionalRelationGetter) return value;
 
     return refer(receiver)
-        .property('_${field.name}Loaded')
+        .property(_relationLoadedName(field))
         .conditional(
           value,
-          refer('_Undefined'),
+          refer('#serverpodUnloadedRelation'),
         );
   }
 
@@ -718,6 +749,32 @@ class SerializableModelLibraryGenerator {
         (field) =>
             field.hasSafeRelationGetter && field.shouldIncludeField(serverCode),
       )) ...[
+        if (definition.isParentClass) ...[
+          Method(
+            (m) => m
+              ..name = '\$${field.name}RelationValue'
+              ..type = MethodType.getter
+              ..annotations.add(refer('protected', serverpodSerializationUrl))
+              ..returns = field.type.reference(
+                serverCode,
+                nullable: true,
+                subDirParts: definition.subDirParts,
+                config: config,
+              )
+              ..lambda = true
+              ..body = refer('_${field.name}').code,
+          ),
+          if (field.hasOptionalRelationGetter)
+            Method(
+              (m) => m
+                ..name = '\$${field.name}RelationLoaded'
+                ..type = MethodType.getter
+                ..annotations.add(refer('protected', serverpodSerializationUrl))
+                ..returns = refer('bool')
+                ..lambda = true
+                ..body = refer('_${field.name}\$loaded').code,
+            ),
+        ],
         Method((m) {
           m
             ..name = field.name
@@ -735,7 +792,7 @@ class SerializableModelLibraryGenerator {
               Code('final value = _${field.name};'),
               Code(
                 field.hasOptionalRelationGetter
-                    ? 'if (!_${field.name}Loaded) {'
+                    ? 'if (!_${field.name}\$loaded) {'
                     : 'if (value == null) {',
               ),
               refer('RelationNotLoadedError', serverpodSerializationUrl)
@@ -768,7 +825,7 @@ class SerializableModelLibraryGenerator {
               ..body = Block.of([
                 Code('_${field.name} = value;'),
                 if (field.hasOptionalRelationGetter)
-                  Code('_${field.name}Loaded = true;'),
+                  Code('_${field.name}\$loaded = true;'),
               ]);
           }),
       ],
@@ -1307,14 +1364,14 @@ class SerializableModelLibraryGenerator {
 
         var preservedValue = _buildDeepCloneTree(
           field.type.asNullable,
-          '_${field.name}',
+          _relationValueName(field),
           isRoot: true,
         );
 
         if (field.hasOptionalRelationGetter) {
-          preservedValue = refer('_${field.name}Loaded').conditional(
+          preservedValue = refer(_relationLoadedName(field)).conditional(
             preservedValue,
-            refer('_Undefined'),
+            refer('#serverpodUnloadedRelation'),
           );
         }
 
@@ -1416,12 +1473,12 @@ class SerializableModelLibraryGenerator {
           for (var field in includedFields.where(
             (field) => field.hasOptionalRelationGetter,
           ))
-            refer('_${field.name}Loaded').equalTo(
-              refer('other').property('_${field.name}Loaded'),
+            refer(_relationLoadedName(field)).equalTo(
+              refer('other').property(_relationLoadedName(field)),
             ),
           ...includedFields.map((field) {
             var name = field.hasSafeRelationGetter
-                ? '_${field.name}'
+                ? _relationValueName(field)
                 : field.name;
             var thisProperty = refer(name);
             var otherProperty = refer('other').property(name);
@@ -1478,10 +1535,10 @@ class SerializableModelLibraryGenerator {
           for (var field in includedFields.where(
             (field) => field.hasOptionalRelationGetter,
           ))
-            refer('_${field.name}Loaded'),
+            refer(_relationLoadedName(field)),
           ...includedFields.map((field) {
             var fieldName = field.hasSafeRelationGetter
-                ? '_${field.name}'
+                ? _relationValueName(field)
                 : field.name;
 
             if (field.type.isCollectionType) {
@@ -2196,7 +2253,7 @@ class SerializableModelLibraryGenerator {
       return {
         ...map,
         if (field.hasOptionalRelationGetter)
-          Code("if (_${field.name}Loaded) '$fieldKey'"): fieldRef
+          Code("if (${_relationLoadedName(field)}) '$fieldKey'"): fieldRef
         else if (hasNonNullableRelation)
           Code("if (${fieldName.symbol} case final value?) '$fieldKey'"):
               fieldRef
@@ -2284,6 +2341,9 @@ class SerializableModelLibraryGenerator {
     return Constructor((c) {
       if (!isParentClass) {
         c.name = '_';
+      } else if (_hasSafeRelations) {
+        c.name = r'$internal';
+        c.annotations.add(refer('internal', serverpodSerializationUrl));
       }
       c.optionalParameters.addAll(
         _buildModelClassConstructorParameters(
@@ -2313,11 +2373,11 @@ class SerializableModelLibraryGenerator {
         if (field.hasOptionalRelationGetter) {
           var isLoaded = refer('identical').call([
             value,
-            refer('_Undefined'),
+            refer('#serverpodUnloadedRelation'),
           ]).negate();
 
           c.initializers.add(
-            refer('_${field.name}Loaded').assign(isLoaded).code,
+            refer('_${field.name}\$loaded').assign(isLoaded).code,
           );
           initialValue = isLoaded.conditional(
             value.asA(
@@ -2372,6 +2432,23 @@ class SerializableModelLibraryGenerator {
             const Code('='),
             literalNull.code,
           ]),
+        );
+      }
+
+      var parent = _currentClass?.parentClass;
+      if (parent != null &&
+          parent.fieldsIncludingInherited.any(
+            (field) => field.hasSafeRelationGetter,
+          )) {
+        c.initializers.add(
+          refer(r'super.$internal').call([], {
+            for (var field in inheritedFields.where(
+              (field) =>
+                  field.hasSafeRelationGetter &&
+                  field.shouldIncludeField(serverCode),
+            ))
+              field.name: refer(field.name),
+          }).code,
         );
       }
     });
@@ -2437,7 +2514,13 @@ class SerializableModelLibraryGenerator {
         c.constant = true;
       }
 
-      c.initializers.add(refer('super._').call([], namedParams).code);
+      c.initializers.add(
+        refer(
+          _currentClass!.isParentClass && _hasSafeRelations
+              ? r'super.$internal'
+              : 'super._',
+        ).call([], namedParams).code,
+      );
     });
   }
 
@@ -2457,6 +2540,7 @@ class SerializableModelLibraryGenerator {
           p
             ..named = true
             ..name = field.name
+            ..required = publicFactory && field.isRequired
             ..type = !publicFactory && field.hasOptionalRelationGetter
                 ? refer('Object?')
                 : field.type.reference(
@@ -2467,7 +2551,7 @@ class SerializableModelLibraryGenerator {
                   );
 
           if (!publicFactory && field.hasOptionalRelationGetter) {
-            p.defaultTo = const Code('_Undefined');
+            p.defaultTo = const Code('#serverpodUnloadedRelation');
           }
         });
       }
@@ -2653,7 +2737,7 @@ class SerializableModelLibraryGenerator {
         modelClassFields.add(
           Field(
             (f) => f
-              ..name = '_${field.name}Loaded'
+              ..name = '_${field.name}\$loaded'
               ..type = refer('bool')
               ..modifier = isClassImmutable
                   ? FieldModifier.final$
@@ -4029,7 +4113,7 @@ class SerializableModelLibraryGenerator {
     SerializableModelFieldDefinition field, {
     String? tableName,
   }) {
-    if (field.hasSafeRelationGetter) return '_${field.name}';
+    if (field.hasSafeRelationGetter) return _relationValueName(field);
 
     if (field.shouldIncludeHiddenFieldInModelClass(
           serverCode,

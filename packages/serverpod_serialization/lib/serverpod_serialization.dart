@@ -1,5 +1,5 @@
 export 'package:collection/collection.dart' show DeepCollectionEquality;
-export 'package:meta/meta.dart' show useResult, immutable;
+export 'package:meta/meta.dart' show useResult, immutable, internal, protected;
 export 'package:uuid/uuid.dart';
 
 export 'src/auth_encoding.dart';
