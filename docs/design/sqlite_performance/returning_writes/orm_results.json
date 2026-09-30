@@ -1,0 +1,520 @@
+{
+  "baseline_revision": "f3bcd20f82c61af87c3e9c9c59b364e761a02064",
+  "intermediate_revision": "012d994d8e1281c4c2974dfec3ce5758e34a6597",
+  "final_implementation_revision": "e419b7714f41a61659a22bc49be8c5a675836e9d",
+  "environment": {
+    "host": "Linux/WSL2",
+    "configuration": "JIT, dart.vm.product=true, temporary disk database, WAL, synchronous NORMAL, statement cache disabled",
+    "concurrent_test_suites": false,
+    "native_loading": "LD_PRELOAD of the same workspace-built libsqlite3.so and libsqlite3_connection_pool.so for both package configurations",
+    "baseline_isolation": "git archive of packages/serverpod_database at baseline_revision, with only that package root changed in the otherwise shared package configuration"
+  },
+  "run_order": [
+    "baseline-1",
+    "current-1",
+    "current-2",
+    "baseline-2",
+    "final-1",
+    "final-2"
+  ],
+  "runs": [
+    {
+      "label": "baseline-1",
+      "adapter_source": "file:///tmp/sqlite-ordered-batch-baseline/packages/serverpod_database/lib/src/adapters/sqlite/database_connection.dart",
+      "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+      "sqlite": "3.53.4",
+      "rows": 1000,
+      "warmup": 5,
+      "samples": 7,
+      "results": {
+        "insert_1000_returning": {
+          "median_ms": 149.372,
+          "samples_ms": [
+            156.501,
+            151.711,
+            150.631,
+            149.372,
+            135.172,
+            126.21,
+            125.563
+          ]
+        },
+        "update_1000_returning": {
+          "median_ms": 124.753,
+          "samples_ms": [
+            124.349,
+            124.107,
+            125.487,
+            126.064,
+            125.619,
+            124.753,
+            119.395
+          ]
+        },
+        "upsert_1000_returning": {
+          "median_ms": 131.108,
+          "samples_ms": [
+            133.155,
+            131.108,
+            126.838,
+            124.878,
+            130.873,
+            137.122,
+            132.452
+          ]
+        },
+        "insert_1000_no_return": {
+          "median_ms": 2.023,
+          "samples_ms": [
+            2.324,
+            2.234,
+            2.001,
+            3.528,
+            2.023,
+            1.938,
+            1.99
+          ]
+        },
+        "update_1000_no_return": {
+          "median_ms": 1.727,
+          "samples_ms": [
+            1.798,
+            1.61,
+            1.727,
+            1.644,
+            1.645,
+            1.841,
+            2.13
+          ]
+        },
+        "upsert_wide_1000_no_return": {
+          "median_ms": 218.244,
+          "samples_ms": [
+            225.102,
+            212.684,
+            209.153,
+            218.244,
+            219.222,
+            214.08,
+            219.511
+          ]
+        }
+      }
+    },
+    {
+      "label": "current-1",
+      "adapter_source": "file:///home/msoares/Codes/GitHub/worktrees/general-ux-changes/packages/serverpod_database/lib/src/adapters/sqlite/database_connection.dart",
+      "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+      "sqlite": "3.53.4",
+      "rows": 1000,
+      "warmup": 5,
+      "samples": 7,
+      "results": {
+        "insert_1000_returning": {
+          "median_ms": 9.699,
+          "samples_ms": [
+            12.965,
+            14.265,
+            10.268,
+            9.129,
+            7.926,
+            7.608,
+            9.699
+          ]
+        },
+        "update_1000_returning": {
+          "median_ms": 6.201,
+          "samples_ms": [
+            8.914,
+            6.644,
+            6.185,
+            6.181,
+            6.157,
+            6.201,
+            8.19
+          ]
+        },
+        "upsert_1000_returning": {
+          "median_ms": 7.309,
+          "samples_ms": [
+            7.811,
+            7.309,
+            7.319,
+            6.446,
+            6.88,
+            7.808,
+            6.892
+          ]
+        },
+        "insert_1000_no_return": {
+          "median_ms": 3.026,
+          "samples_ms": [
+            3.035,
+            3.026,
+            3.754,
+            2.889,
+            3.182,
+            2.869,
+            2.935
+          ]
+        },
+        "update_1000_no_return": {
+          "median_ms": 2.768,
+          "samples_ms": [
+            3.293,
+            3.228,
+            2.768,
+            2.758,
+            2.668,
+            2.691,
+            2.788
+          ]
+        },
+        "upsert_wide_1000_no_return": {
+          "median_ms": 32.285,
+          "samples_ms": [
+            32.268,
+            31.373,
+            32.653,
+            32.285,
+            33.238,
+            37.148,
+            30.686
+          ]
+        }
+      }
+    },
+    {
+      "label": "current-2",
+      "adapter_source": "file:///home/msoares/Codes/GitHub/worktrees/general-ux-changes/packages/serverpod_database/lib/src/adapters/sqlite/database_connection.dart",
+      "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+      "sqlite": "3.53.4",
+      "rows": 1000,
+      "warmup": 5,
+      "samples": 7,
+      "results": {
+        "insert_1000_returning": {
+          "median_ms": 9.752,
+          "samples_ms": [
+            13.933,
+            12.396,
+            9.752,
+            8.99,
+            8.446,
+            8.705,
+            12.215
+          ]
+        },
+        "update_1000_returning": {
+          "median_ms": 7.455,
+          "samples_ms": [
+            13.611,
+            9.829,
+            7.987,
+            7.314,
+            6.311,
+            6.511,
+            7.455
+          ]
+        },
+        "upsert_1000_returning": {
+          "median_ms": 7.283,
+          "samples_ms": [
+            7.688,
+            7.114,
+            6.913,
+            6.715,
+            7.283,
+            10.659,
+            9.454
+          ]
+        },
+        "insert_1000_no_return": {
+          "median_ms": 3.114,
+          "samples_ms": [
+            3.228,
+            4.349,
+            3.051,
+            2.957,
+            3.114,
+            3.206,
+            2.952
+          ]
+        },
+        "update_1000_no_return": {
+          "median_ms": 2.738,
+          "samples_ms": [
+            4.033,
+            3.039,
+            2.936,
+            2.735,
+            2.64,
+            2.701,
+            2.738
+          ]
+        },
+        "upsert_wide_1000_no_return": {
+          "median_ms": 30.578,
+          "samples_ms": [
+            31.508,
+            30.832,
+            30.413,
+            30.443,
+            29.937,
+            30.578,
+            31.822
+          ]
+        }
+      }
+    },
+    {
+      "label": "baseline-2",
+      "adapter_source": "file:///tmp/sqlite-ordered-batch-baseline/packages/serverpod_database/lib/src/adapters/sqlite/database_connection.dart",
+      "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+      "sqlite": "3.53.4",
+      "rows": 1000,
+      "warmup": 5,
+      "samples": 7,
+      "results": {
+        "insert_1000_returning": {
+          "median_ms": 138.315,
+          "samples_ms": [
+            155.05,
+            145.047,
+            138.315,
+            140.392,
+            130.199,
+            125.805,
+            128.168
+          ]
+        },
+        "update_1000_returning": {
+          "median_ms": 123.256,
+          "samples_ms": [
+            120.863,
+            123.254,
+            122.265,
+            123.256,
+            129.404,
+            127.023,
+            142.468
+          ]
+        },
+        "upsert_1000_returning": {
+          "median_ms": 135.853,
+          "samples_ms": [
+            145.651,
+            132.128,
+            137.155,
+            130.632,
+            136.317,
+            135.853,
+            131.81
+          ]
+        },
+        "insert_1000_no_return": {
+          "median_ms": 2.476,
+          "samples_ms": [
+            2.617,
+            2.379,
+            2.096,
+            2.876,
+            2.476,
+            2.088,
+            2.807
+          ]
+        },
+        "update_1000_no_return": {
+          "median_ms": 1.697,
+          "samples_ms": [
+            1.979,
+            1.767,
+            1.688,
+            1.697,
+            1.608,
+            1.638,
+            2.124
+          ]
+        },
+        "upsert_wide_1000_no_return": {
+          "median_ms": 213.53,
+          "samples_ms": [
+            233.378,
+            226.854,
+            211.758,
+            218.716,
+            212.143,
+            213.53,
+            207.34
+          ]
+        }
+      }
+    },
+    {
+      "label": "final-1",
+      "adapter_source": "file:///home/msoares/Codes/GitHub/worktrees/general-ux-changes/packages/serverpod_database/lib/src/adapters/sqlite/database_connection.dart",
+      "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+      "sqlite": "3.53.4",
+      "rows": 1000,
+      "warmup": 5,
+      "samples": 7,
+      "results": {
+        "insert_1000_returning": {
+          "median_ms": 9.917,
+          "samples_ms": [
+            13.614,
+            17.026,
+            10.124,
+            7.817,
+            8.251,
+            7.907,
+            9.917
+          ]
+        },
+        "update_1000_returning": {
+          "median_ms": 7.382,
+          "samples_ms": [
+            11.441,
+            9.792,
+            7.382,
+            6.517,
+            6.731,
+            7.179,
+            8.695
+          ]
+        },
+        "upsert_1000_returning": {
+          "median_ms": 7.169,
+          "samples_ms": [
+            7.379,
+            7.518,
+            7.139,
+            6.846,
+            7.169,
+            8.038,
+            7.055
+          ]
+        },
+        "insert_1000_no_return": {
+          "median_ms": 2.807,
+          "samples_ms": [
+            3.405,
+            2.757,
+            2.841,
+            3.353,
+            2.681,
+            2.807,
+            2.746
+          ]
+        },
+        "update_1000_no_return": {
+          "median_ms": 2.346,
+          "samples_ms": [
+            2.346,
+            2.49,
+            2.159,
+            2.598,
+            2.289,
+            2.773,
+            2.145
+          ]
+        },
+        "upsert_wide_1000_no_return": {
+          "median_ms": 34.028,
+          "samples_ms": [
+            40.374,
+            34.299,
+            34.028,
+            31.709,
+            36.1,
+            32.804,
+            33.585
+          ]
+        }
+      }
+    },
+    {
+      "label": "final-2",
+      "adapter_source": "file:///home/msoares/Codes/GitHub/worktrees/general-ux-changes/packages/serverpod_database/lib/src/adapters/sqlite/database_connection.dart",
+      "dart": "3.12.2 (stable) (Tue Jun 9 01:11:39 2026 -0700) on \"linux_x64\"",
+      "sqlite": "3.53.4",
+      "rows": 1000,
+      "warmup": 5,
+      "samples": 7,
+      "results": {
+        "insert_1000_returning": {
+          "median_ms": 9.824,
+          "samples_ms": [
+            13.59,
+            16.04,
+            11.778,
+            7.876,
+            8.159,
+            8.411,
+            9.824
+          ]
+        },
+        "update_1000_returning": {
+          "median_ms": 7.124,
+          "samples_ms": [
+            9.903,
+            7.666,
+            6.859,
+            6.295,
+            6.687,
+            7.124,
+            8.308
+          ]
+        },
+        "upsert_1000_returning": {
+          "median_ms": 7.213,
+          "samples_ms": [
+            8.111,
+            7.802,
+            6.938,
+            7.026,
+            7.213,
+            7.849,
+            6.909
+          ]
+        },
+        "insert_1000_no_return": {
+          "median_ms": 2.838,
+          "samples_ms": [
+            3.102,
+            2.697,
+            2.838,
+            2.967,
+            3.601,
+            2.721,
+            2.774
+          ]
+        },
+        "update_1000_no_return": {
+          "median_ms": 2.545,
+          "samples_ms": [
+            2.545,
+            2.759,
+            2.403,
+            2.692,
+            2.501,
+            2.231,
+            3.613
+          ]
+        },
+        "upsert_wide_1000_no_return": {
+          "median_ms": 32.287,
+          "samples_ms": [
+            31.837,
+            32.72,
+            30.986,
+            32.287,
+            32.403,
+            32.503,
+            31.463
+          ]
+        }
+      }
+    }
+  ]
+}

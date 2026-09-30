@@ -82,8 +82,9 @@ dart --packages=.dart_tool/package_config.json -Ddart.vm.product=true \
 
 ## Preserved behavior
 
-- Batch only consecutive identical SQL shapes, retaining input/trigger order and
-  generated-ID behavior. All chunks share one transaction or savepoint.
+- Execute writes in input order, retaining trigger order and generated-ID
+  behavior. Returning batches reuse preparations across interleaved shapes
+  without reordering inputs. All chunks share one transaction or savepoint.
 - Bind data values, including binary views, JSON, UUIDs, and SQL punctuation.
 - Preserve upsert duplicate-target errors and `updateWhere` skips; UUID IDs are
   compared by value.
@@ -153,7 +154,8 @@ results.
 
 Investigated on September 30, 2026, at `f3bcd20f8`. The artifacts under
 [returning_writes](returning_writes/) are executable research and recorded
-results. This investigation changes no production code.
+results. That research revision changed no production code; the completed
+implementation and its validation are recorded below.
 
 **Recommendation:** add ordered execution batches that return one result set
 per input statement. Prepare and execute those statements beside SQLite, inside
@@ -282,8 +284,8 @@ The proposed changes are:
    IDs. Retain `_parameterizedUpdate`'s selected columns and NULL semantics.
    Add a parameterized SQLite upsert builder using the same insert omission
    rules, an independent conflict/update clause, and `excluded` references.
-   Handle zero-column/default-only inserts explicitly. No schema-default cache
-   is needed for this general solution.
+   Handle zero-column/default-only inserts explicitly. No long-lived schema
+   cache is needed; default-only UUID IDs require the actual schema expression.
 3. Replace the recursive returning paths with a common batch executor under
    `DatabaseUtil.runInTransactionOrSavepoint`. Bound transfer size by rows and
    payload bytes; keep preparation caches local and bounded. Preserve error
@@ -298,17 +300,20 @@ The proposed changes are:
    the transaction/savepoint. Decode UUID/BLOB IDs for value equality; object
    identity on raw byte buffers is insufficient. Skips do not count.
 
-There is also a reproduced current correctness defect, independent of batching:
+The research also reproduced a correctness defect, independent of batching:
 [builder_probe.dart](returning_writes/builder_probe.dart) exercises the production
 `InsertQueryBuilder` with the SQLite encoder and a defaulted nullable field.
 It emits `VALUES (1, DEFAULT)` and SQLite rejects it. The equivalent upsert
 omitting that field returns its declared default. The exact generated SQL and
 error are in [builder_results.json](returning_writes/builder_results.json).
-The ORM currently treats null on an insert-default column as a request for its
+The SQLite adapter now builds its own bound upserts and omits these columns,
+so it no longer passes this invalid SQL to SQLite. The generic builder probe
+remains a reproduction of the original dialect mismatch.
+The ORM treats null on an insert-default column as a request for its
 default; the dialect's ability to express explicit NULL does not create a new
 model API for distinguishing those intentions.
 
-### Driver work and validation still needed for implementation
+### Driver work identified by the investigation
 
 The native prototype works through the installed public driver API. However,
 `sqlite_async` 0.14.5's web `_UnscopedContext.computeWithDatabase` explicitly
@@ -363,3 +368,104 @@ repository's native library into Python segfaulted on connection creation, so
 the resolved build was validated through Dart instead. Both successful routes
 report their actual SQLite version. The final Dart probes passed static analysis
 and formatting checks.
+
+
+## Ordered returning batches implemented
+
+The adapter now builds bounded plans of at most 256 statements and approximately
+1 MiB of SQL plus bound input values. A single oversized input travels alone.
+All chunks execute under the existing transaction or savepoint. Preparation is
+reused by SQL text within each chunk, while execution follows the entire input
+sequence. This limits input transport and preparation memory; it does not cap
+the returned models retained by the public list-returning API.
+
+Each statement has its own result slot, including empty slots for ignored
+conflicts, conditional upsert skips, and missing update targets. The adapter
+normalizes column names and types, merges each input's non-persisted fields,
+and only then collects the successful models. Repeated updates retain their
+individual RETURNING snapshots. No positional guarantee from a multi-row
+SQLite RETURNING statement is assumed.
+
+Upserts share the validated conflict clause with PostgreSQL, but build bound
+SQLite inserts with defaulted columns omitted. The conflict update list remains
+independent of that omission, allowing `excluded` to provide database defaults.
+Default-only integer IDs use `VALUES(NULL)`; default-only UUID IDs read the actual
+ID default expression once per operation and evaluate it in SQLite for each
+input. There is no long-lived schema cache. Duplicate affected IDs are checked
+across every chunk, including UUID value equality and `noReturn` operations,
+before committing. A duplicate rolls back the entire batch.
+
+Native batches use the public `computeWithDatabase` callback. Browser writes
+use the standard `sqlite_async` worker and execute returning or mixed-shape
+statements sequentially through the existing transaction context. Each input
+still has its own result slot, preserving order, skipped rows, and rollback.
+The driver's existing worker URI and storage selection are unchanged.
+
+Uniform inserts/updates with `noReturn` retain the driver's `executeBatch` path
+on both platforms. Upserts collect IDs when required for duplicate detection.
+The native batching measurements below do not imply browser acceleration.
+
+Browser applications continue serving the standard `db_worker.js` alongside
+the matching `sqlite3.wasm`. The repository's `util/setup_sqlite_web_assets`
+downloads the assets matching the resolved dependencies for browser tests.
+
+### ORM measurements
+
+[orm_benchmark.dart](returning_writes/orm_benchmark.dart) exercises the actual
+client ORM, checks every returned row's ID and value in input order, and verifies
+stored data outside the timed operation. Each process uses five warmups and
+seven measured samples. Runs use Dart 3.12.2, SQLite 3.53.4, temporary disk
+storage, default WAL/NORMAL settings, the default disabled statement cache,
+and `-Ddart.vm.product=true`. No test suites ran concurrently with measurements;
+the host was not otherwise isolated.
+
+The baseline is `f3bcd20f8`. A source-only archive of its database package is
+selected through a separate package configuration, preserving all other resolved
+dependencies. Each result records the resolved adapter URI to verify which code
+ran. Two runs of each final configuration are shown as ranges of per-run medians;
+they are not confidence intervals. Full samples, including the intermediate
+version before restoring the uniform no-return fast path, are retained in
+[orm_results.json](returning_writes/orm_results.json).
+
+| Workload, 1,000 rows | Baseline median (ms) | Final median (ms) | Interpretation |
+| --- | ---: | ---: | --- |
+| Insert with returned models | 138.315–149.372 | 9.824–9.917 | About 14–15x faster |
+| Update with returned models | 123.256–124.753 | 7.124–7.382 | About 17x faster |
+| Upsert with returned models | 131.108–135.853 | 7.169–7.213 | About 18–19x faster |
+| Insert with `noReturn` | 2.023–2.476 | 2.807–2.838 | Additional bounded planning costs roughly 0.3–0.8 ms |
+| Update with `noReturn` | 1.697–1.727 | 2.346–2.545 | Roughly 0.6–0.8 ms additional overhead |
+| Upsert with 4 KB text, a 100-element list, and `noReturn` | 213.530–218.244 | 32.287–34.028 | About 6–7x faster |
+
+The no-return insert/update tradeoff is measurable and is not claimed as an
+improvement. The driver fast path avoids unnecessary result transport, while
+both paths retain the new input-byte bound. These are native measurements;
+browser validation establishes behavior, not a browser speedup figure.
+
+Run the harness from the repository root after a native client test has built
+its SQLite assets. When overriding `--packages` for a baseline, the direct VM
+invocation needs the same native libraries preloaded on Linux:
+
+```sh
+assets="$PWD/tests/serverpod_test_sqlite/serverpod_test_sqlite_client/.dart_tool/lib"
+LD_PRELOAD="$assets/libsqlite3.so:$assets/libsqlite3_connection_pool.so" \
+  dart --packages=.dart_tool/package_config.json -Ddart.vm.product=true \
+  docs/design/sqlite_performance/returning_writes/orm_benchmark.dart current
+```
+
+### Validation
+
+- Database package: all 871 tests passed.
+- SQLite native client: all 603 tests passed, with one existing skipped test.
+- SQLite server integration: all 1,445 tests passed, with one existing skip.
+- PostgreSQL insert, ignored-conflict insert, and upsert: all 43 tests passed.
+- Changed Dart production code, tests, and benchmark passed static analysis;
+  formatting and whitespace checks passed.
+
+Focused regressions cover interleaved generated/explicit IDs across chunks,
+skipped inputs with non-persisted fields, repeated update snapshots, UNIQUE
+value release order, AFTER-trigger snapshots, late failures with nested
+savepoints, typed values, conditional upsert skips, duplicate targets
+across chunks, omitted defaults on conflict updates, generated UUID defaults,
+and committed batch watch notifications. The full integration suite also covers
+transaction cancellation, column mappings, relations, and existing watch
+behavior.
