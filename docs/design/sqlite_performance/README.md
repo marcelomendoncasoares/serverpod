@@ -3,8 +3,9 @@
 Measured while implementing `perf/sqlite-execution`, based on
 `5410f872fd8ada1908524a8c915ae16588058567` (September 2026).
 The incremental table records each change when it was implemented. Review
-subsequently changed cache defaults and maintenance locking; final measurements
-are recorded separately below. Gains must not be added together.
+subsequently disabled driver statement caching and changed maintenance locking;
+measurements with those settings are recorded separately below. The public cache
+option was later removed. Gains must not be added together.
 
 ## Measurements
 
@@ -23,8 +24,8 @@ differences are inconclusive. Times are milliseconds per workload, not per row.
 | Batch bound writes | Update 1,000 rows with `noReturn` | 114.164 | 2.724 | 41.91x faster |
 | Normalize results once | Find 10,000 parents with nested includes | 303.453 | 301.433 | No clear timing gain |
 | Return only upsert IDs | Upsert 1,000 rows, each with 4 KB text and a 100-element list, `noReturn` | 690.548 | 464.851 | 1.49x faster |
-| Cache and bind returning writes | Insert 1,000 rows with returned models | 150.011 | 142.317 | Small, inconclusive |
-| Cache and bind returning writes | Update 1,000 rows with returned models | 139.936 | 127.133 | Small, inconclusive |
+| Bind returning writes with experimental caching | Insert 1,000 rows with returned models | 150.011 | 142.317 | Small, inconclusive |
+| Bind returning writes with experimental caching | Update 1,000 rows with returned models | 139.936 | 127.133 | Small, inconclusive |
 | Skip parsing generated SQL | Find 1,000 rows individually by ID | 239.837 | 146.248 | 1.64x faster |
 | Add literal-default columns directly | Add boolean default to a table containing 100,000 rows | 40.575 | 7.193 | 5.64x faster |
 | Maintain planner statistics | 100 lookups on 100,000 rows with competing indexes | 595.190 | 39.444 | 15.09x faster for this deliberately skewed fixture |
@@ -35,10 +36,13 @@ with five warmups and eleven samples per configuration. The medians for 1,000
 parameterized adapter reads were 163.283, 133.744, 134.085, and 143.217 ms.
 This supports a modest cache benefit, but the spread does not justify a precise
 percentage claim. Review found that the driver caches complete SQL text,
-including large literals still used by some ORM operations. Caching is therefore
-**disabled by default** in the final implementation. It remains available as an
-explicit `preparedStatementCacheSize` option; the bound counts statements, not
-bytes. Parameterized inserts and updates remain enabled independently.
+including large literals used by some ORM operations at that revision. The
+public cache option was subsequently removed: the modest, noisy benefit did not
+justify the additional API and memory-retention trade-off. The per-connection
+driver cache is explicitly disabled. Parameter binding and statement reuse
+within each bounded batch remain enabled; each batch closes its prepared
+statements before returning. The cache measurements above are historical
+experiments, not claimed improvements in the final implementation.
 
 The planner fixture has `a=1` for every row and a distinct `b` per row, indexed
 separately. Before maintenance, SQLite chose the `a` index; afterwards, it chose
@@ -48,7 +52,7 @@ cost. A separate five-reader empty-database open/close comparison measured
 22.811 ms before maintenance versus 30.003 ms afterwards (five warmups, eleven
 samples). The final maintenance design below replaces the exclusive pool lock,
 which review found could deadlock under contention. The reader regression
-verifies cached plans refresh; busy readers use a best-effort timed lease.
+verifies planner statistics refresh; busy readers use a best-effort timed lease.
 
 ## Final defaults after review
 
@@ -136,8 +140,9 @@ pass reported two significant open findings, both addressed:
   fails with a two-second timeout against `0f4f48841` and passes after the fix.
 - **Literal retention by the statement cache:** the review's 100 × 1 MiB blob
   update reproduction reported 540 MiB RSS growth with cache size 100 versus
-  57 MiB with caching disabled. Commit `3b3f06a07` restores the default to zero
-  and documents the opt-in memory trade-off.
+  57 MiB with caching disabled. Commit `3b3f06a07` restored the default to zero.
+  The public cache option was later removed, while retaining statement reuse
+  within each bounded batch.
 
 The follow-up Opus xhigh review of `594c9f9ab` reported **no remaining significant
 findings**. The reviewer independently reproduced completion with the revised
@@ -145,10 +150,9 @@ locking pattern (413 ms) and ran the four pool-maintenance tests successfully.
 Orca run `run_748f2cacf2c8` records both accepted reviews (dispatches
 `ctx_a7aa66d8f815` and `ctx_ad6380b718e2`).
 
-Remaining trade-offs: opting into caching can retain large literal SQL values,
-and shutdown can wait for active maintenance, including up to one second per
-reader lease attempt. Both are documented rather than hidden by the timing
-results.
+Shutdown can wait for active maintenance, including up to one second per reader
+lease attempt. Driver statement caching remains disabled; statement reuse
+within an ordered batch ends when that batch completes.
 
 ## Returning write investigation
 
