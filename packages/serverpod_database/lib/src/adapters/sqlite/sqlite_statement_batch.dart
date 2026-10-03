@@ -30,7 +30,8 @@ List<T> runPreparedSqliteBatch<T>(
       try {
         results.add(execute(statement, results.length));
       } finally {
-        // Reset before binding the next input so preparations can be reused.
+        // The web result encoder steps the raw statement. Reset before its
+        // next binding, just as sqlite3_web's prepared statement cache does.
         statement.reset();
       }
     }
