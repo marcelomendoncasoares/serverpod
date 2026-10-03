@@ -40,3 +40,4 @@ app.*.map.json
 # SQLite web assets provisioned by util/setup_sqlite_web_assets
 test/**/sqlite3.wasm
 test/**/db_worker.js
+test/**/serverpod_db_worker.js

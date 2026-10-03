@@ -7,15 +7,12 @@
 # page opening a database has to serve:
 #
 #   sqlite3.wasm  - released by the `sqlite3` package
-#   db_worker.js  - released by the `sqlite_async` package
+#   serverpod_db_worker.js - compiled from the `serverpod_database` package
 #
-# Both are downloaded at the version the package resolved to, since neither
-# carries a version negotiation. This is the setup applications follow too, as
-# documented in https://pub.dev/packages/sqlite_async#web - the only difference
-# is that an application puts the files in `web/` by hand.
+# The Serverpod worker extends sqlite_async with ordered returning batches.
+# Compile it against the same resolved dependencies as the application.
 #
-# `SqlitePoolManager` leaves `WebSqliteOptions` at its defaults, which name both
-# files relative to the page. `dart test` serves a browser suite from the
+# Serverpod loads both files relative to the page. `dart test` serves a suite from the
 # directory of its test file and `flutter test` serves the package's `test/`
 # directory, so both files are placed next to every test file. They are
 # gitignored - this script regenerates them.
@@ -36,7 +33,6 @@ PACKAGES=(
 )
 
 WASM_RELEASES="https://github.com/simolus3/sqlite3.dart/releases/download"
-WORKER_RELEASES="https://github.com/powersync-ja/sqlite_async.dart/releases/download"
 CACHE_DIR="$(pwd)/.serverpod/web_assets"
 
 mkdir -p "$CACHE_DIR"
@@ -83,22 +79,21 @@ link_or_copy() {
     ln "$source" "$target" 2>/dev/null || cp "$source" "$target"
 }
 
+worker="serverpod_db_worker.js"
+dart run serverpod_database:build_sqlite_web_worker "$CACHE_DIR/$worker"
+
 for package in "${PACKAGES[@]}"; do
     echo "### Provisioning SQLite web assets for $package"
 
     sqlite3_version="$(resolved_version sqlite3)"
-    sqlite_async_version="$(resolved_version sqlite_async)"
-    if [ -z "$sqlite3_version" ] || [ -z "$sqlite_async_version" ]; then
-        echo "### No resolved sqlite3/sqlite_async version in workspace pubspec.lock" >&2
+    if [ -z "$sqlite3_version" ]; then
+        echo "### No resolved sqlite3 version in workspace pubspec.lock" >&2
         exit 1
     fi
 
     wasm="sqlite3-$sqlite3_version.wasm"
-    worker="db_worker-$sqlite_async_version.js"
     download_asset "$wasm" \
         "$WASM_RELEASES/sqlite3-$sqlite3_version/sqlite3.wasm"
-    download_asset "$worker" \
-        "$WORKER_RELEASES/sqlite_async-v$sqlite_async_version/db_worker.js"
 
     # Both files go next to every test file, since that is where the browser
     # resolves them from.
@@ -118,9 +113,9 @@ for package in "${PACKAGES[@]}"; do
 
     for directory in "${directories[@]}"; do
         link_or_copy "$CACHE_DIR/$wasm" "$directory/sqlite3.wasm"
-        link_or_copy "$CACHE_DIR/$worker" "$directory/db_worker.js"
+        link_or_copy "$CACHE_DIR/$worker" "$directory/$worker"
     done
 
-    echo "### Placed sqlite3.wasm ($sqlite3_version) and db_worker.js" \
-        "($sqlite_async_version) in ${#directories[@]} directories"
+    echo "### Placed sqlite3.wasm ($sqlite3_version) and $worker" \
+        "in ${#directories[@]} directories"
 done

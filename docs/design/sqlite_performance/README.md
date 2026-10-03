@@ -399,19 +399,25 @@ input. There is no long-lived schema cache. Duplicate affected IDs are checked
 across every chunk, including UUID value equality and `noReturn` operations,
 before committing. A duplicate rolls back the entire batch.
 
-Native batches use the public `computeWithDatabase` callback. Browser writes
-use the standard `sqlite_async` worker and execute returning or mixed-shape
-statements sequentially through the existing transaction context. Each input
-still has its own result slot, preserving order, skipped rows, and rollback.
-The driver's existing worker URI and storage selection are unchanged.
+Native batches use the public `computeWithDatabase` callback. Browser batches
+use a Serverpod worker extension built entirely on public `sqlite_async` and
+`sqlite3_web` APIs. The extension carries typed parameters and result sets using
+the transaction's existing lock token and checks, and retains update
+subscriptions. Uniform inserts/updates with `noReturn` retain the driver's
+`executeBatch` path; mixed shapes use the ordered executor. Upserts still collect
+IDs when required for duplicate detection.
 
-Uniform inserts/updates with `noReturn` retain the driver's `executeBatch` path
-on both platforms. Upserts collect IDs when required for duplicate detection.
-The native batching measurements below do not imply browser acceleration.
+Browser applications must build and serve the matching worker:
 
-Browser applications continue serving the standard `db_worker.js` alongside
-the matching `sqlite3.wasm`. The repository's `util/setup_sqlite_web_assets`
-downloads the assets matching the resolved dependencies for browser tests.
+```sh
+dart run serverpod_database:build_sqlite_web_worker
+```
+
+The default output is `web/serverpod_db_worker.js`. Serve it alongside
+`sqlite3.wasm` from the resolved `sqlite3` version and rebuild on dependency
+upgrades. Its distinct filename isolates the controller from the driver's
+ordinary worker cache. The repository's `util/setup_sqlite_web_assets` builds
+this worker and provisions both test packages.
 
 ### ORM measurements
 
@@ -461,6 +467,9 @@ LD_PRELOAD="$assets/libsqlite3.so:$assets/libsqlite3_connection_pool.so" \
 - Database package: all 871 tests passed.
 - SQLite native client: all 603 tests passed, with one existing skipped test.
 - SQLite server integration: all 1,445 tests passed, with one existing skip.
+- Chrome client CRUD: all 215 tests passed, with one existing skip.
+- Flutter web: the app opens and migrates its database, collects a returning
+  batch, and verifies persisted rows after restarting.
 - PostgreSQL insert, ignored-conflict insert, and upsert: all 43 tests passed.
 - Changed Dart production code, tests, and benchmark passed static analysis;
   formatting and whitespace checks passed.
@@ -468,7 +477,7 @@ LD_PRELOAD="$assets/libsqlite3.so:$assets/libsqlite3_connection_pool.so" \
 Focused regressions cover interleaved generated/explicit IDs across chunks,
 skipped inputs with non-persisted fields, repeated update snapshots, UNIQUE
 value release order, AFTER-trigger snapshots, late failures with nested
-savepoints, typed values, conditional upsert skips, duplicate targets
+savepoints, typed worker transport, conditional upsert skips, duplicate targets
 across chunks, omitted defaults on conflict updates, generated UUID defaults,
 and committed batch watch notifications. The full integration suite also covers
 transaction cancellation, column mappings, relations, and existing watch
