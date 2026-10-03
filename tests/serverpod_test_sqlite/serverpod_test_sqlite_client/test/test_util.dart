@@ -19,7 +19,7 @@ ClientDatabaseSession get session => _session;
 /// a [tearDown].
 ///
 /// Suites using this run on the VM and in the browser. On the browser they need
-/// `sqlite3.wasm` and `db_worker.js` next to the test file - see
+/// `sqlite3.wasm` and `serverpod_db_worker.js` next to the test file - see
 /// `util/setup_sqlite_web_assets` in the repository root.
 void initTestClientSession() {
   setUpAll(() async {

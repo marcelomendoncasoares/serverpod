@@ -198,13 +198,32 @@ See SQLite's [INSERT syntax](https://www.sqlite.org/lang_insert.html),
   PRAGMA optimize. The writer is released before best-effort
   reader refresh through individual one-second leases. Shutdown waits for
   pending maintenance and rejects restarting while shutdown is in progress.
-- Web uses the standard sqlite_async worker and its configured URI. Returning
-  and mixed-shape writes execute sequentially in the existing transaction.
-  Custom-worker acceleration belongs to a separate branch.
+- Browser batches use a Serverpod worker extension built entirely on public
+  `sqlite_async` and `sqlite3_web` APIs. The extension carries typed parameters
+  and result sets using the transaction's existing lock token and checks, and
+  retains update subscriptions. Uniform inserts/updates with `noReturn` retain
+  the driver's `executeBatch` path; mixed shapes use the ordered executor.
+  Upserts still collect IDs when required for duplicate detection.
+
+Browser applications must build and serve the matching worker:
+
+```sh
+dart run serverpod_database:build_sqlite_web_worker
+```
+
+The default output is `web/serverpod_db_worker.js`. Serve it alongside
+`sqlite3.wasm` from the resolved `sqlite3` version and rebuild on dependency
+upgrades. Its distinct filename isolates the controller from the driver's
+ordinary worker cache. The repository's `util/setup_sqlite_web_assets` builds
+this worker and provisions both test packages.
 
 Focused regressions live in the SQLite client CRUD tests, SQLite server upsert
 and default tests, database pool/migration tests, and CLI literal-default
-migration tests. They cover typed values, generated IDs, ordered trigger
+migration tests. They cover typed worker transport, generated IDs, ordered trigger
 snapshots, skipped results, watch notifications, nested rollback, late failures,
 UUID duplicate detection, planner refresh, and pool lifecycle. Run affected
 suites for changes; historical test totals are not evidence for a new revision.
+
+Browser coverage includes Chrome client CRUD and a Flutter web integration test
+that opens and migrates its database, collects a returning batch, and verifies
+persisted rows after restarting.
