@@ -17,12 +17,26 @@ import 'package:serverpod_auth_server/serverpod_auth_server.dart' as _i1n3uhu0;
 import 'example.dart' as _itx02h2p;
 export 'example.dart';
 
-class Protocol extends _is.DatabaseSerializationManager {
+class Protocol extends _is.DatabaseSerializationManager
+    implements _is.DatabaseProtocolDeserializationProvider {
   Protocol._();
 
   factory Protocol() => _instance;
 
   static final Protocol _instance = Protocol._().._registerHostProtocols();
+
+  @override
+  late final _is.ProtocolDeserialization deserializationMetadata =
+      _is.ProtocolDeserialization(
+        types: <Type>[
+          _itx02h2p.Example,
+          _is.getType<_itx02h2p.Example?>(),
+        ],
+        modules: [
+          _i1n3uhu0.Protocol(),
+          _isp.Protocol(),
+        ],
+      );
 
   static List<_isp.TableDefinition> get targetTableDefinitions => [
     ..._i1n3uhu0.Protocol.targetTableDefinitions,
@@ -62,12 +76,15 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _is.getType<_itx02h2p.Example?>()) {
       return (data != null ? _itx02h2p.Example.fromJson(data) : null) as T;
     }
-    try {
-      return _i1n3uhu0.Protocol().deserialize<T>(data, t);
-    } on _is.DeserializationTypeNotFoundException catch (_) {}
-    try {
-      return _isp.Protocol().deserialize<T>(data, t);
-    } on _is.DeserializationTypeNotFoundException catch (_) {}
+    final modules = dataClassName == null
+        ? deserializationMetadata.modulesForType(t)
+        : deserializationMetadata.modules;
+    for (final module in modules) {
+      try {
+        return module.deserialize<T>(data, t);
+      } on _is.DeserializationTypeNotFoundException catch (_) {}
+    }
+
     return super.deserialize<T>(data, t);
   }
 

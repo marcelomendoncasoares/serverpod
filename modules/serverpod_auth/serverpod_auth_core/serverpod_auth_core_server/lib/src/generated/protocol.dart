@@ -54,7 +54,8 @@ export 'profile/models/user_profile_model.dart';
 export 'session/models/server_side_session.dart';
 export 'session/models/server_side_session_info.dart';
 
-class Protocol extends _is.DatabaseSerializationManager {
+class Protocol extends _is.DatabaseSerializationManager
+    implements _is.DatabaseProtocolDeserializationProvider {
   Protocol._();
 
   factory Protocol() => _instance;
@@ -62,6 +63,55 @@ class Protocol extends _is.DatabaseSerializationManager {
   static final Protocol _instance = Protocol._();
 
   final Set<_is.SerializationManager> _hostProtocols = {};
+
+  @override
+  late final _is.ProtocolDeserialization deserializationMetadata =
+      _is.ProtocolDeserialization(
+        types: <Type>[
+          _iwlenhk6.AuthUser,
+          _idjlnenv.AuthUserBlockedException,
+          _ievhec41.AuthUserModel,
+          _ihi15zs1.AuthUserNotFoundException,
+          _i52qy4mw.AuthStrategy,
+          _ioaqzt9u.AuthSuccess,
+          _iymqi1d6.SignInWhileAuthenticatedException,
+          _i8d4wdsw.JwtTokenInfo,
+          _i3ujynqb.RefreshToken,
+          _i35co9vj.RefreshTokenExpiredException,
+          _ik27atqz.RefreshTokenInvalidSecretException,
+          _i20y3j39.RefreshTokenMalformedException,
+          _in48f3pc.RefreshTokenNotFoundException,
+          _i6w0tdii.TokenPair,
+          _ichiyqlu.UserProfile,
+          _isbbac0p.UserProfileData,
+          _iu5nhigv.UserProfileImage,
+          _iw6ug6lb.UserProfileModel,
+          _ioukntxo.ServerSideSession,
+          _izgso6n0.ServerSideSessionInfo,
+          _is.getType<_iwlenhk6.AuthUser?>(),
+          _is.getType<_idjlnenv.AuthUserBlockedException?>(),
+          _is.getType<_ievhec41.AuthUserModel?>(),
+          _is.getType<_ihi15zs1.AuthUserNotFoundException?>(),
+          _is.getType<_i52qy4mw.AuthStrategy?>(),
+          _is.getType<_ioaqzt9u.AuthSuccess?>(),
+          _is.getType<_iymqi1d6.SignInWhileAuthenticatedException?>(),
+          _is.getType<_i8d4wdsw.JwtTokenInfo?>(),
+          _is.getType<_i3ujynqb.RefreshToken?>(),
+          _is.getType<_i35co9vj.RefreshTokenExpiredException?>(),
+          _is.getType<_ik27atqz.RefreshTokenInvalidSecretException?>(),
+          _is.getType<_i20y3j39.RefreshTokenMalformedException?>(),
+          _is.getType<_in48f3pc.RefreshTokenNotFoundException?>(),
+          _is.getType<_i6w0tdii.TokenPair?>(),
+          _is.getType<_ichiyqlu.UserProfile?>(),
+          _is.getType<_isbbac0p.UserProfileData?>(),
+          _is.getType<_iu5nhigv.UserProfileImage?>(),
+          _is.getType<_iw6ug6lb.UserProfileModel?>(),
+          _is.getType<_ioukntxo.ServerSideSession?>(),
+          _is.getType<_izgso6n0.ServerSideSessionInfo?>(),
+          Set<String>,
+        ],
+        modules: [_isp.Protocol()],
+      );
 
   static List<_isp.TableDefinition> get targetTableDefinitions => [
     _isp.TableDefinition(
@@ -619,9 +669,15 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == Set<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toSet() as T;
     }
-    try {
-      return _isp.Protocol().deserialize<T>(data, t);
-    } on _is.DeserializationTypeNotFoundException catch (_) {}
+    final modules = dataClassName == null
+        ? deserializationMetadata.modulesForType(t)
+        : deserializationMetadata.modules;
+    for (final module in modules) {
+      try {
+        return module.deserialize<T>(data, t);
+      } on _is.DeserializationTypeNotFoundException catch (_) {}
+    }
+
     return super.deserialize<T>(data, t);
   }
 

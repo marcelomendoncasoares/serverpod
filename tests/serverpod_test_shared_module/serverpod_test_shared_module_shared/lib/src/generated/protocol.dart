@@ -16,7 +16,8 @@ import 'package:serverpod_serialization/serverpod_serialization.dart' as _iss;
 import 'shared/shared_module_table.dart' as _i4nk8rtp;
 export 'shared/shared_module_table.dart';
 
-class Protocol extends _isd.DatabaseSerializationManager {
+class Protocol extends _isd.DatabaseSerializationManager
+    implements _isd.DatabaseProtocolDeserializationProvider {
   Protocol._();
 
   factory Protocol() => _instance;
@@ -24,6 +25,17 @@ class Protocol extends _isd.DatabaseSerializationManager {
   static final Protocol _instance = Protocol._();
 
   final Set<_iss.SerializationManager> _hostProtocols = {};
+
+  @override
+  late final _iss.ProtocolDeserialization deserializationMetadata =
+      _iss.ProtocolDeserialization(
+        types: <Type>[
+          _i4nk8rtp.SharedModuleTable,
+          _iss.getType<_i4nk8rtp.SharedModuleTable?>(),
+          dynamic,
+        ],
+        modules: [],
+      );
 
   static List<_isd.TableDefinition> get targetTableDefinitions => [
     _isd.TableDefinition(

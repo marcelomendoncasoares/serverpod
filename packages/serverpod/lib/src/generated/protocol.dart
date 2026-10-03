@@ -85,12 +85,108 @@ export 'session_log_filter.dart';
 export 'session_log_info.dart';
 export 'session_log_result.dart';
 
-class Protocol extends _is.DatabaseSerializationManager {
+class Protocol extends _is.DatabaseSerializationManager
+    implements _is.DatabaseProtocolDeserializationProvider {
   Protocol._();
 
   factory Protocol() => _instance;
 
   static final Protocol _instance = Protocol._().._registerHostProtocols();
+
+  @override
+  late final _is.ProtocolDeserialization deserializationMetadata =
+      _is.ProtocolDeserialization(
+        types: <Type>[
+          _i0ntvx71.RevokedAuthenticationAuthId,
+          _ivj17zej.RevokedAuthenticationScope,
+          _iubydmqj.RevokedAuthenticationUser,
+          _ihncus9g.CacheInfo,
+          _iuu4tkmh.CachesInfo,
+          _il44s43u.CloudStorageEntry,
+          _i97jjzdk.CloudStorageDirectDownloadEntry,
+          _ihrv9246.CloudStorageDirectUploadEntry,
+          _ix58cu06.ClusterInfo,
+          _i0iseagh.ClusterServerInfo,
+          _is8pd350.CronFutureCallScheduling,
+          _i2x83mx1.DatabaseMigrationVersion,
+          _imsb8zuu.DistributedCacheEntry,
+          _ier2zjtm.AccessDeniedException,
+          _icej9e0v.FileNotFoundException,
+          _iil91lk2.FutureCallClaimEntry,
+          _ipstj2hb.FutureCallEntry,
+          _is8pd350.IntervalFutureCallScheduling,
+          _iv7ld46g.LogEntry,
+          _iavjjqw5.LogLevel,
+          _i6wf5evp.LogResult,
+          _illv0ea4.LogSettings,
+          _i5sjxqb6.LogSettingsOverride,
+          _iky1nb92.MessageLogEntry,
+          _iphoy7x3.MethodInfo,
+          _inqjskye.QueryLogEntry,
+          _i2c0cuss.ReadWriteTestEntry,
+          _im7ye3v2.RuntimeSettings,
+          _igb3a02z.ServerHealthConnectionInfo,
+          _i8823art.ServerHealthMetric,
+          _ife0uun1.ServerHealthResult,
+          _i641wcmx.ServerpodSqlException,
+          _i3jtimpl.SessionLogEntry,
+          _i2jy9zag.SessionLogFilter,
+          _i783h20h.SessionLogInfo,
+          _idz92mnt.SessionLogResult,
+          _is.getType<_i0ntvx71.RevokedAuthenticationAuthId?>(),
+          _is.getType<_ivj17zej.RevokedAuthenticationScope?>(),
+          _is.getType<_iubydmqj.RevokedAuthenticationUser?>(),
+          _is.getType<_ihncus9g.CacheInfo?>(),
+          _is.getType<_iuu4tkmh.CachesInfo?>(),
+          _is.getType<_il44s43u.CloudStorageEntry?>(),
+          _is.getType<_i97jjzdk.CloudStorageDirectDownloadEntry?>(),
+          _is.getType<_ihrv9246.CloudStorageDirectUploadEntry?>(),
+          _is.getType<_ix58cu06.ClusterInfo?>(),
+          _is.getType<_i0iseagh.ClusterServerInfo?>(),
+          _is.getType<_is8pd350.CronFutureCallScheduling?>(),
+          _is.getType<_i2x83mx1.DatabaseMigrationVersion?>(),
+          _is.getType<_imsb8zuu.DistributedCacheEntry?>(),
+          _is.getType<_ier2zjtm.AccessDeniedException?>(),
+          _is.getType<_icej9e0v.FileNotFoundException?>(),
+          _is.getType<_iil91lk2.FutureCallClaimEntry?>(),
+          _is.getType<_ipstj2hb.FutureCallEntry?>(),
+          _is.getType<_is8pd350.IntervalFutureCallScheduling?>(),
+          _is.getType<_iv7ld46g.LogEntry?>(),
+          _is.getType<_iavjjqw5.LogLevel?>(),
+          _is.getType<_i6wf5evp.LogResult?>(),
+          _is.getType<_illv0ea4.LogSettings?>(),
+          _is.getType<_i5sjxqb6.LogSettingsOverride?>(),
+          _is.getType<_iky1nb92.MessageLogEntry?>(),
+          _is.getType<_iphoy7x3.MethodInfo?>(),
+          _is.getType<_inqjskye.QueryLogEntry?>(),
+          _is.getType<_i2c0cuss.ReadWriteTestEntry?>(),
+          _is.getType<_im7ye3v2.RuntimeSettings?>(),
+          _is.getType<_igb3a02z.ServerHealthConnectionInfo?>(),
+          _is.getType<_i8823art.ServerHealthMetric?>(),
+          _is.getType<_ife0uun1.ServerHealthResult?>(),
+          _is.getType<_i641wcmx.ServerpodSqlException?>(),
+          _is.getType<_i3jtimpl.SessionLogEntry?>(),
+          _is.getType<_i2jy9zag.SessionLogFilter?>(),
+          _is.getType<_i783h20h.SessionLogInfo?>(),
+          _is.getType<_idz92mnt.SessionLogResult?>(),
+          List<String>,
+          _is.getType<List<String>?>(),
+          List<_i0iseagh.ClusterServerInfo>,
+          List<_iv7ld46g.LogEntry>,
+          List<_i5sjxqb6.LogSettingsOverride>,
+          List<_i8823art.ServerHealthMetric>,
+          List<_igb3a02z.ServerHealthConnectionInfo>,
+          _is.getType<List<_iv7ld46g.LogEntry>?>(),
+          List<_inqjskye.QueryLogEntry>,
+          _is.getType<List<_inqjskye.QueryLogEntry>?>(),
+          List<_iky1nb92.MessageLogEntry>,
+          _is.getType<List<_iky1nb92.MessageLogEntry>?>(),
+          List<_i783h20h.SessionLogInfo>,
+          List<_isd.TableDefinition>,
+          List<String>,
+        ],
+        modules: [_isd.Protocol()],
+      );
 
   static List<_isp.TableDefinition> get targetTableDefinitions => [
     _isp.TableDefinition(
@@ -1743,9 +1839,15 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    try {
-      return _isd.Protocol().deserialize<T>(data, t);
-    } on _is.DeserializationTypeNotFoundException catch (_) {}
+    final modules = dataClassName == null
+        ? deserializationMetadata.modulesForType(t)
+        : deserializationMetadata.modules;
+    for (final module in modules) {
+      try {
+        return module.deserialize<T>(data, t);
+      } on _is.DeserializationTypeNotFoundException catch (_) {}
+    }
+
     return super.deserialize<T>(data, t);
   }
 

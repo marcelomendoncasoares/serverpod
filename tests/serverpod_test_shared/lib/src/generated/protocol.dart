@@ -39,7 +39,8 @@ export 'shared/sealed/parent.dart';
 export 'shared/shared_object_with_sealed_exception.dart';
 export 'shared/shared_table_record.dart';
 
-class Protocol extends _isd.DatabaseSerializationManager {
+class Protocol extends _isd.DatabaseSerializationManager
+    implements _isd.DatabaseProtocolDeserializationProvider {
   Protocol._();
 
   factory Protocol() => _instance;
@@ -47,6 +48,42 @@ class Protocol extends _isd.DatabaseSerializationManager {
   static final Protocol _instance = Protocol._();
 
   final Set<_iss.SerializationManager> _hostProtocols = {};
+
+  @override
+  late final _iss.ProtocolDeserialization deserializationMetadata =
+      _iss.ProtocolDeserialization(
+        types: <Type>[
+          _is2cqpjk.SharedContainer,
+          _ifwqhlpv.DynamicOnShared,
+          _i1mrs6ww.SharedEnum,
+          _i20a36el.SharedException,
+          _iw04p5m5.SharedExtendedAppException,
+          _ir5o94j1.SharedBaseAppException,
+          _iuvt222f.SharedSubclass,
+          _iwajn61k.SharedModel,
+          _iag9521n.SharedSealedChild,
+          _ieg0jtrp.SharedNotFoundException,
+          _ieg0jtrp.SharedValidationException,
+          _i4mzuyso.SharedObjectWithSealedException,
+          _itms6rpy.SharedTableRecord,
+          _iss.getType<_is2cqpjk.SharedContainer?>(),
+          _iss.getType<_ifwqhlpv.DynamicOnShared?>(),
+          _iss.getType<_i1mrs6ww.SharedEnum?>(),
+          _iss.getType<_i20a36el.SharedException?>(),
+          _iss.getType<_iw04p5m5.SharedExtendedAppException?>(),
+          _iss.getType<_ir5o94j1.SharedBaseAppException?>(),
+          _iss.getType<_iuvt222f.SharedSubclass?>(),
+          _iss.getType<_iwajn61k.SharedModel?>(),
+          _iss.getType<_iag9521n.SharedSealedChild?>(),
+          _iss.getType<_ieg0jtrp.SharedNotFoundException?>(),
+          _iss.getType<_ieg0jtrp.SharedValidationException?>(),
+          _iss.getType<_i4mzuyso.SharedObjectWithSealedException?>(),
+          _iss.getType<_itms6rpy.SharedTableRecord?>(),
+          dynamic,
+          List<_ilwf0zl1.SharedSealedAppException>,
+        ],
+        modules: [],
+      );
 
   static List<_isd.TableDefinition> get targetTableDefinitions => [
     _isd.TableDefinition(

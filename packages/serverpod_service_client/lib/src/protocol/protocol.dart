@@ -79,12 +79,102 @@ export 'session_log_info.dart';
 export 'session_log_result.dart';
 export 'client.dart';
 
-class Protocol extends _isc.SerializationManager {
+class Protocol extends _isc.SerializationManager
+    implements _isc.ProtocolDeserializationProvider {
   Protocol._();
 
   factory Protocol() => _instance;
 
   static final Protocol _instance = Protocol._().._registerHostProtocols();
+
+  @override
+  late final _isc.ProtocolDeserialization deserializationMetadata =
+      _isc.ProtocolDeserialization(
+        types: <Type>[
+          _ihncus9g.CacheInfo,
+          _iuu4tkmh.CachesInfo,
+          _il44s43u.CloudStorageEntry,
+          _i97jjzdk.CloudStorageDirectDownloadEntry,
+          _ihrv9246.CloudStorageDirectUploadEntry,
+          _ix58cu06.ClusterInfo,
+          _i0iseagh.ClusterServerInfo,
+          _is8pd350.CronFutureCallScheduling,
+          _i2x83mx1.DatabaseMigrationVersion,
+          _imsb8zuu.DistributedCacheEntry,
+          _ier2zjtm.AccessDeniedException,
+          _icej9e0v.FileNotFoundException,
+          _iil91lk2.FutureCallClaimEntry,
+          _ipstj2hb.FutureCallEntry,
+          _is8pd350.IntervalFutureCallScheduling,
+          _iv7ld46g.LogEntry,
+          _iavjjqw5.LogLevel,
+          _i6wf5evp.LogResult,
+          _illv0ea4.LogSettings,
+          _i5sjxqb6.LogSettingsOverride,
+          _iky1nb92.MessageLogEntry,
+          _iphoy7x3.MethodInfo,
+          _inqjskye.QueryLogEntry,
+          _i2c0cuss.ReadWriteTestEntry,
+          _im7ye3v2.RuntimeSettings,
+          _igb3a02z.ServerHealthConnectionInfo,
+          _i8823art.ServerHealthMetric,
+          _ife0uun1.ServerHealthResult,
+          _i641wcmx.ServerpodSqlException,
+          _i3jtimpl.SessionLogEntry,
+          _i2jy9zag.SessionLogFilter,
+          _i783h20h.SessionLogInfo,
+          _idz92mnt.SessionLogResult,
+          _isc.getType<_ihncus9g.CacheInfo?>(),
+          _isc.getType<_iuu4tkmh.CachesInfo?>(),
+          _isc.getType<_il44s43u.CloudStorageEntry?>(),
+          _isc.getType<_i97jjzdk.CloudStorageDirectDownloadEntry?>(),
+          _isc.getType<_ihrv9246.CloudStorageDirectUploadEntry?>(),
+          _isc.getType<_ix58cu06.ClusterInfo?>(),
+          _isc.getType<_i0iseagh.ClusterServerInfo?>(),
+          _isc.getType<_is8pd350.CronFutureCallScheduling?>(),
+          _isc.getType<_i2x83mx1.DatabaseMigrationVersion?>(),
+          _isc.getType<_imsb8zuu.DistributedCacheEntry?>(),
+          _isc.getType<_ier2zjtm.AccessDeniedException?>(),
+          _isc.getType<_icej9e0v.FileNotFoundException?>(),
+          _isc.getType<_iil91lk2.FutureCallClaimEntry?>(),
+          _isc.getType<_ipstj2hb.FutureCallEntry?>(),
+          _isc.getType<_is8pd350.IntervalFutureCallScheduling?>(),
+          _isc.getType<_iv7ld46g.LogEntry?>(),
+          _isc.getType<_iavjjqw5.LogLevel?>(),
+          _isc.getType<_i6wf5evp.LogResult?>(),
+          _isc.getType<_illv0ea4.LogSettings?>(),
+          _isc.getType<_i5sjxqb6.LogSettingsOverride?>(),
+          _isc.getType<_iky1nb92.MessageLogEntry?>(),
+          _isc.getType<_iphoy7x3.MethodInfo?>(),
+          _isc.getType<_inqjskye.QueryLogEntry?>(),
+          _isc.getType<_i2c0cuss.ReadWriteTestEntry?>(),
+          _isc.getType<_im7ye3v2.RuntimeSettings?>(),
+          _isc.getType<_igb3a02z.ServerHealthConnectionInfo?>(),
+          _isc.getType<_i8823art.ServerHealthMetric?>(),
+          _isc.getType<_ife0uun1.ServerHealthResult?>(),
+          _isc.getType<_i641wcmx.ServerpodSqlException?>(),
+          _isc.getType<_i3jtimpl.SessionLogEntry?>(),
+          _isc.getType<_i2jy9zag.SessionLogFilter?>(),
+          _isc.getType<_i783h20h.SessionLogInfo?>(),
+          _isc.getType<_idz92mnt.SessionLogResult?>(),
+          List<String>,
+          _isc.getType<List<String>?>(),
+          List<_i0iseagh.ClusterServerInfo>,
+          List<_iv7ld46g.LogEntry>,
+          List<_i5sjxqb6.LogSettingsOverride>,
+          List<_i8823art.ServerHealthMetric>,
+          List<_igb3a02z.ServerHealthConnectionInfo>,
+          _isc.getType<List<_iv7ld46g.LogEntry>?>(),
+          List<_inqjskye.QueryLogEntry>,
+          _isc.getType<List<_inqjskye.QueryLogEntry>?>(),
+          List<_iky1nb92.MessageLogEntry>,
+          _isc.getType<List<_iky1nb92.MessageLogEntry>?>(),
+          List<_i783h20h.SessionLogInfo>,
+          List<_isd.TableDefinition>,
+          List<String>,
+        ],
+        modules: [_isd.Protocol()],
+      );
 
   static String? getClassNameFromObjectJson(dynamic data) {
     if (data is! Map) return null;
@@ -452,9 +542,15 @@ class Protocol extends _isc.SerializationManager {
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    try {
-      return _isd.Protocol().deserialize<T>(data, t);
-    } on _isc.DeserializationTypeNotFoundException catch (_) {}
+    final modules = dataClassName == null
+        ? deserializationMetadata.modulesForType(t)
+        : deserializationMetadata.modules;
+    for (final module in modules) {
+      try {
+        return module.deserialize<T>(data, t);
+      } on _isc.DeserializationTypeNotFoundException catch (_) {}
+    }
+
     return super.deserialize<T>(data, t);
   }
 

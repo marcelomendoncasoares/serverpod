@@ -32,7 +32,8 @@ export 'module_streaming_class.dart';
 export 'project_streaming_class.dart';
 export 'client.dart';
 
-class Protocol extends _isc.SerializationManager {
+class Protocol extends _isc.SerializationManager
+    implements _isc.ProtocolDeserializationProvider {
   Protocol._();
 
   factory Protocol() => _instance;
@@ -40,6 +41,35 @@ class Protocol extends _isc.SerializationManager {
   static final Protocol _instance = Protocol._();
 
   final Set<_isc.SerializationManager> _hostProtocols = {};
+
+  @override
+  late final _isc.ProtocolDeserialization deserializationMetadata =
+      _isc.ProtocolDeserialization(
+        types: <Type>[
+          _ircaal6o.DynamicOnModule,
+          _i3gtzugh.ModulePolymorphicGrandChild,
+          _in13ph1t.ModulePolymorphicChild,
+          _is5pt2rl.ModulePolymorphicParent,
+          _izah8b1s.ModuleClass,
+          _iya6t7ee.MyModuleFeatureModel,
+          _idp5674x.ModuleStreamingClass,
+          _iqrw583n.ProjectStreamingClass,
+          _isc.getType<_ircaal6o.DynamicOnModule?>(),
+          _isc.getType<_i3gtzugh.ModulePolymorphicGrandChild?>(),
+          _isc.getType<_in13ph1t.ModulePolymorphicChild?>(),
+          _isc.getType<_is5pt2rl.ModulePolymorphicParent?>(),
+          _isc.getType<_izah8b1s.ModuleClass?>(),
+          _isc.getType<_iya6t7ee.MyModuleFeatureModel?>(),
+          _isc.getType<_idp5674x.ModuleStreamingClass?>(),
+          _isc.getType<_iqrw583n.ProjectStreamingClass?>(),
+          dynamic,
+          _isc.getType<(bool,)?>(),
+          _isc.getType<(int?, _ie8x2k8p.ModuleStreamingClass?)>(),
+          _isc.getType<(bool,)?>(),
+          _isc.getType<(int?, _ie8x2k8p.ModuleStreamingClass?)>(),
+        ],
+        modules: [],
+      );
 
   void registerHostProtocol(
     String projectName,

@@ -16,12 +16,23 @@ import 'greeting.dart' as _ig8bxnp5;
 export 'greeting.dart';
 export 'client.dart';
 
-class Protocol extends _isc.SerializationManager {
+class Protocol extends _isc.SerializationManager
+    implements _isc.ProtocolDeserializationProvider {
   Protocol._();
 
   factory Protocol() => _instance;
 
   static final Protocol _instance = Protocol._();
+
+  @override
+  late final _isc.ProtocolDeserialization deserializationMetadata =
+      _isc.ProtocolDeserialization(
+        types: <Type>[
+          _ig8bxnp5.Greeting,
+          _isc.getType<_ig8bxnp5.Greeting?>(),
+        ],
+        modules: [],
+      );
 
   static String? getClassNameFromObjectJson(dynamic data) {
     if (data is! Map) return null;

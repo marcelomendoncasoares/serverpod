@@ -26,12 +26,32 @@ import 'user_data.dart' as _iq4j08kb;
 export 'user_data.dart';
 export 'client.dart';
 
-class Protocol extends _isc.SerializationManager {
+class Protocol extends _isc.SerializationManager
+    implements _isc.ProtocolDeserializationProvider {
   Protocol._();
 
   factory Protocol() => _instance;
 
   static final Protocol _instance = Protocol._().._registerHostProtocols();
+
+  @override
+  late final _isc.ProtocolDeserialization deserializationMetadata =
+      _isc.ProtocolDeserialization(
+        types: <Type>[
+          _iq4j08kb.UserData,
+          _isc.getType<_iq4j08kb.UserData?>(),
+          List<String?>,
+          Set<String>,
+          _isc.getType<({_idt.ByteData challenge, _isc.UuidValue id})>(),
+        ],
+        modules: [
+          _iabc.Protocol(),
+          _iacc.Protocol(),
+          _iaic.Protocol(),
+          _iamc.Protocol(),
+          _i312scxx.Protocol(),
+        ],
+      );
 
   static String? getClassNameFromObjectJson(dynamic data) {
     if (data is! Map) return null;
@@ -81,21 +101,15 @@ class Protocol extends _isc.SerializationManager {
           )
           as T;
     }
-    try {
-      return _iabc.Protocol().deserialize<T>(data, t);
-    } on _isc.DeserializationTypeNotFoundException catch (_) {}
-    try {
-      return _iacc.Protocol().deserialize<T>(data, t);
-    } on _isc.DeserializationTypeNotFoundException catch (_) {}
-    try {
-      return _iaic.Protocol().deserialize<T>(data, t);
-    } on _isc.DeserializationTypeNotFoundException catch (_) {}
-    try {
-      return _iamc.Protocol().deserialize<T>(data, t);
-    } on _isc.DeserializationTypeNotFoundException catch (_) {}
-    try {
-      return _i312scxx.Protocol().deserialize<T>(data, t);
-    } on _isc.DeserializationTypeNotFoundException catch (_) {}
+    final modules = dataClassName == null
+        ? deserializationMetadata.modulesForType(t)
+        : deserializationMetadata.modules;
+    for (final module in modules) {
+      try {
+        return module.deserialize<T>(data, t);
+      } on _isc.DeserializationTypeNotFoundException catch (_) {}
+    }
+
     return super.deserialize<T>(data, t);
   }
 
