@@ -1,0 +1,6 @@
+class: DurationIdModel
+table: duration_id_model
+fields:
+  id: Duration
+  value: String
+  related: List<CustomIdRelated>?, relation(name=duration_id_model)

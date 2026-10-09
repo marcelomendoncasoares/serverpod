@@ -39,6 +39,14 @@ import 'changed_id_type/one_to_one/company.dart' as _i5vwm04a;
 import 'changed_id_type/one_to_one/town.dart' as _iu7osokh;
 import 'changed_id_type/self.dart' as _ixc9sah8;
 import 'changed_id_type/server_only.dart' as _irw3jmaq;
+import 'custom_ids/custom_id_related.dart' as _i0xynk61;
+import 'custom_ids/date_time_id_default_model.dart' as _ifrvxa90;
+import 'custom_ids/date_time_id_default_persist.dart' as _ihp4odw2;
+import 'custom_ids/date_time_id_model.dart' as _iczrutgt;
+import 'custom_ids/duration_id_model.dart' as _ipaqbs0q;
+import 'custom_ids/int_id_model.dart' as _irx335o3;
+import 'custom_ids/string_id_model.dart' as _izy2ul2j;
+import 'custom_ids/uuid_id_model.dart' as _iqx2n66g;
 import 'defaults/bigint/bigint_default.dart' as _icrmubzc;
 import 'defaults/bigint/bigint_default_mix.dart' as _i1xsun18;
 import 'defaults/bigint/bigint_default_model.dart' as _i332rqur;
@@ -197,6 +205,14 @@ export 'changed_id_type/one_to_one/company.dart';
 export 'changed_id_type/one_to_one/town.dart';
 export 'changed_id_type/self.dart';
 export 'changed_id_type/server_only.dart';
+export 'custom_ids/custom_id_related.dart';
+export 'custom_ids/date_time_id_default_model.dart';
+export 'custom_ids/date_time_id_default_persist.dart';
+export 'custom_ids/date_time_id_model.dart';
+export 'custom_ids/duration_id_model.dart';
+export 'custom_ids/int_id_model.dart';
+export 'custom_ids/string_id_model.dart';
+export 'custom_ids/uuid_id_model.dart';
 export 'defaults/bigint/bigint_default.dart';
 export 'defaults/bigint/bigint_default_mix.dart';
 export 'defaults/bigint/bigint_default_model.dart';
@@ -354,6 +370,14 @@ class Protocol extends _is.DatabaseSerializationManager
       _is.getType<_iu7osokh.TownInt>,
       _is.getType<_ixc9sah8.ChangedIdTypeSelf>,
       _is.getType<_irw3jmaq.ServerOnlyChangedIdFieldClass>,
+      _is.getType<_i0xynk61.CustomIdRelated>,
+      _is.getType<_ifrvxa90.DateTimeIdDefaultModel>,
+      _is.getType<_ihp4odw2.DateTimeIdDefaultPersist>,
+      _is.getType<_iczrutgt.DateTimeIdModel>,
+      _is.getType<_ipaqbs0q.DurationIdModel>,
+      _is.getType<_irx335o3.IntIdModel>,
+      _is.getType<_izy2ul2j.StringIdModel>,
+      _is.getType<_iqx2n66g.UuidIdModel>,
       _is.getType<_icrmubzc.BigIntDefault>,
       _is.getType<_i1xsun18.BigIntDefaultMix>,
       _is.getType<_i332rqur.BigIntDefaultModel>,
@@ -499,6 +523,14 @@ class Protocol extends _is.DatabaseSerializationManager
       _is.getType<_iu7osokh.TownInt?>,
       _is.getType<_ixc9sah8.ChangedIdTypeSelf?>,
       _is.getType<_irw3jmaq.ServerOnlyChangedIdFieldClass?>,
+      _is.getType<_i0xynk61.CustomIdRelated?>,
+      _is.getType<_ifrvxa90.DateTimeIdDefaultModel?>,
+      _is.getType<_ihp4odw2.DateTimeIdDefaultPersist?>,
+      _is.getType<_iczrutgt.DateTimeIdModel?>,
+      _is.getType<_ipaqbs0q.DurationIdModel?>,
+      _is.getType<_irx335o3.IntIdModel?>,
+      _is.getType<_izy2ul2j.StringIdModel?>,
+      _is.getType<_iqx2n66g.UuidIdModel?>,
       _is.getType<_icrmubzc.BigIntDefault?>,
       _is.getType<_i1xsun18.BigIntDefaultMix?>,
       _is.getType<_i332rqur.BigIntDefaultModel?>,
@@ -639,6 +671,8 @@ class Protocol extends _is.DatabaseSerializationManager
       _is.getType<List<_i3jtpxta.CommentInt>?>,
       _is.getType<List<_ixc9sah8.ChangedIdTypeSelf>>,
       _is.getType<List<_ixc9sah8.ChangedIdTypeSelf>?>,
+      _is.getType<List<_i0xynk61.CustomIdRelated>>,
+      _is.getType<List<_i0xynk61.CustomIdRelated>?>,
       _is.getType<List<_ikufh0vd.EmptyModelRelationItem>>,
       _is.getType<List<_ikufh0vd.EmptyModelRelationItem>?>,
       _is.getType<List<_ixlcmx78.Employee>>,
@@ -1871,6 +1905,72 @@ class Protocol extends _is.DatabaseSerializationManager
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'custom_id_related',
+      dartName: 'CustomIdRelated',
+      schema: 'public',
+      module: 'serverpod_test_sqlite',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'stringId',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'dateTimeId',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'durationId',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'Duration',
+        ),
+      ],
+      foreignKeys: [
+        _isp.ForeignKeyDefinition(
+          constraintName: 'custom_id_related_fk_0',
+          columns: ['stringId'],
+          referenceTable: 'string_id_model',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.noAction,
+          matchType: null,
+        ),
+        _isp.ForeignKeyDefinition(
+          constraintName: 'custom_id_related_fk_1',
+          columns: ['dateTimeId'],
+          referenceTable: 'date_time_id_model',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.noAction,
+          matchType: null,
+        ),
+        _isp.ForeignKeyDefinition(
+          constraintName: 'custom_id_related_fk_2',
+          columns: ['durationId'],
+          referenceTable: 'duration_id_model',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.noAction,
+          matchType: null,
+        ),
+      ],
+      indexes: [],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'customer',
       dartName: 'Customer',
       schema: 'public',
@@ -1909,6 +2009,77 @@ class Protocol extends _is.DatabaseSerializationManager
         ),
         _isp.ColumnDefinition(
           name: 'name',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'date_time_id_default_model',
+      dartName: 'DateTimeIdDefaultModel',
+      schema: 'public',
+      module: 'serverpod_test_sqlite',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+          columnDefault: 'now',
+        ),
+        _isp.ColumnDefinition(
+          name: 'value',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'date_time_id_default_persist',
+      dartName: 'DateTimeIdDefaultPersist',
+      schema: 'public',
+      module: 'serverpod_test_sqlite',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime?',
+          columnDefault: 'now',
+        ),
+        _isp.ColumnDefinition(
+          name: 'value',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'date_time_id_model',
+      dartName: 'DateTimeIdModel',
+      schema: 'public',
+      module: 'serverpod_test_sqlite',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'value',
           columnType: _isp.ColumnType.text,
           isNullable: false,
           dartType: 'String',
@@ -2437,6 +2608,29 @@ class Protocol extends _is.DatabaseSerializationManager
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'duration_id_model',
+      dartName: 'DurationIdModel',
+      schema: 'public',
+      module: 'serverpod_test_sqlite',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'Duration',
+        ),
+        _isp.ColumnDefinition(
+          name: 'value',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'employee',
       dartName: 'Employee',
       schema: 'public',
@@ -2953,6 +3147,29 @@ class Protocol extends _is.DatabaseSerializationManager
           isNullable: true,
           dartType: 'int?',
           columnDefault: '10',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'int_id_model',
+      dartName: 'IntIdModel',
+      schema: 'public',
+      module: 'serverpod_test_sqlite',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'value',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
         ),
       ],
       foreignKeys: [],
@@ -5182,6 +5399,29 @@ class Protocol extends _is.DatabaseSerializationManager
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'string_id_model',
+      dartName: 'StringIdModel',
+      schema: 'public',
+      module: 'serverpod_test_sqlite',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'value',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'student',
       dartName: 'Student',
       schema: 'public',
@@ -6214,6 +6454,29 @@ class Protocol extends _is.DatabaseSerializationManager
       indexes: [],
       managed: true,
     ),
+    _isp.TableDefinition(
+      name: 'uuid_id_model',
+      dartName: 'UuidIdModel',
+      schema: 'public',
+      module: 'serverpod_test_sqlite',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'value',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [],
+      managed: true,
+    ),
     ..._iacs.Protocol.targetTableDefinitions,
     ..._iais.Protocol.targetTableDefinitions,
     ..._iyx9etqn.Protocol.targetTableDefinitions,
@@ -6295,6 +6558,30 @@ class Protocol extends _is.DatabaseSerializationManager
     }
     if (t == _irw3jmaq.ServerOnlyChangedIdFieldClass) {
       return _irw3jmaq.ServerOnlyChangedIdFieldClass.fromJson(data) as T;
+    }
+    if (t == _i0xynk61.CustomIdRelated) {
+      return _i0xynk61.CustomIdRelated.fromJson(data) as T;
+    }
+    if (t == _ifrvxa90.DateTimeIdDefaultModel) {
+      return _ifrvxa90.DateTimeIdDefaultModel.fromJson(data) as T;
+    }
+    if (t == _ihp4odw2.DateTimeIdDefaultPersist) {
+      return _ihp4odw2.DateTimeIdDefaultPersist.fromJson(data) as T;
+    }
+    if (t == _iczrutgt.DateTimeIdModel) {
+      return _iczrutgt.DateTimeIdModel.fromJson(data) as T;
+    }
+    if (t == _ipaqbs0q.DurationIdModel) {
+      return _ipaqbs0q.DurationIdModel.fromJson(data) as T;
+    }
+    if (t == _irx335o3.IntIdModel) {
+      return _irx335o3.IntIdModel.fromJson(data) as T;
+    }
+    if (t == _izy2ul2j.StringIdModel) {
+      return _izy2ul2j.StringIdModel.fromJson(data) as T;
+    }
+    if (t == _iqx2n66g.UuidIdModel) {
+      return _iqx2n66g.UuidIdModel.fromJson(data) as T;
     }
     if (t == _icrmubzc.BigIntDefault) {
       return _icrmubzc.BigIntDefault.fromJson(data) as T;
@@ -6735,6 +7022,40 @@ class Protocol extends _is.DatabaseSerializationManager
               ? _irw3jmaq.ServerOnlyChangedIdFieldClass.fromJson(data)
               : null)
           as T;
+    }
+    if (t == _is.getType<_i0xynk61.CustomIdRelated?>()) {
+      return (data != null ? _i0xynk61.CustomIdRelated.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_ifrvxa90.DateTimeIdDefaultModel?>()) {
+      return (data != null
+              ? _ifrvxa90.DateTimeIdDefaultModel.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_ihp4odw2.DateTimeIdDefaultPersist?>()) {
+      return (data != null
+              ? _ihp4odw2.DateTimeIdDefaultPersist.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_iczrutgt.DateTimeIdModel?>()) {
+      return (data != null ? _iczrutgt.DateTimeIdModel.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_ipaqbs0q.DurationIdModel?>()) {
+      return (data != null ? _ipaqbs0q.DurationIdModel.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_irx335o3.IntIdModel?>()) {
+      return (data != null ? _irx335o3.IntIdModel.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_izy2ul2j.StringIdModel?>()) {
+      return (data != null ? _izy2ul2j.StringIdModel.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_iqx2n66g.UuidIdModel?>()) {
+      return (data != null ? _iqx2n66g.UuidIdModel.fromJson(data) : null) as T;
     }
     if (t == _is.getType<_icrmubzc.BigIntDefault?>()) {
       return (data != null ? _icrmubzc.BigIntDefault.fromJson(data) : null)
@@ -7351,6 +7672,20 @@ class Protocol extends _is.DatabaseSerializationManager
       return (data != null
               ? (data as List)
                     .map((e) => deserialize<_ixc9sah8.ChangedIdTypeSelf>(e))
+                    .toList()
+              : null)
+          as T;
+    }
+    if (t == List<_i0xynk61.CustomIdRelated>) {
+      return (data as List)
+              .map((e) => deserialize<_i0xynk61.CustomIdRelated>(e))
+              .toList()
+          as T;
+    }
+    if (t == _is.getType<List<_i0xynk61.CustomIdRelated>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_i0xynk61.CustomIdRelated>(e))
                     .toList()
               : null)
           as T;
@@ -7996,6 +8331,14 @@ class Protocol extends _is.DatabaseSerializationManager
       _ixc9sah8.ChangedIdTypeSelf => 'ChangedIdTypeSelf',
       _irw3jmaq.ServerOnlyChangedIdFieldClass =>
         'ServerOnlyChangedIdFieldClass',
+      _i0xynk61.CustomIdRelated => 'CustomIdRelated',
+      _ifrvxa90.DateTimeIdDefaultModel => 'DateTimeIdDefaultModel',
+      _ihp4odw2.DateTimeIdDefaultPersist => 'DateTimeIdDefaultPersist',
+      _iczrutgt.DateTimeIdModel => 'DateTimeIdModel',
+      _ipaqbs0q.DurationIdModel => 'DurationIdModel',
+      _irx335o3.IntIdModel => 'IntIdModel',
+      _izy2ul2j.StringIdModel => 'StringIdModel',
+      _iqx2n66g.UuidIdModel => 'UuidIdModel',
       _icrmubzc.BigIntDefault => 'BigIntDefault',
       _i1xsun18.BigIntDefaultMix => 'BigIntDefaultMix',
       _i332rqur.BigIntDefaultModel => 'BigIntDefaultModel',
@@ -8179,6 +8522,22 @@ class Protocol extends _is.DatabaseSerializationManager
         return 'ChangedIdTypeSelf';
       case _irw3jmaq.ServerOnlyChangedIdFieldClass():
         return 'ServerOnlyChangedIdFieldClass';
+      case _i0xynk61.CustomIdRelated():
+        return 'CustomIdRelated';
+      case _ifrvxa90.DateTimeIdDefaultModel():
+        return 'DateTimeIdDefaultModel';
+      case _ihp4odw2.DateTimeIdDefaultPersist():
+        return 'DateTimeIdDefaultPersist';
+      case _iczrutgt.DateTimeIdModel():
+        return 'DateTimeIdModel';
+      case _ipaqbs0q.DurationIdModel():
+        return 'DurationIdModel';
+      case _irx335o3.IntIdModel():
+        return 'IntIdModel';
+      case _izy2ul2j.StringIdModel():
+        return 'StringIdModel';
+      case _iqx2n66g.UuidIdModel():
+        return 'UuidIdModel';
       case _icrmubzc.BigIntDefault():
         return 'BigIntDefault';
       case _i1xsun18.BigIntDefaultMix():
@@ -8521,6 +8880,30 @@ class Protocol extends _is.DatabaseSerializationManager
     }
     if (dataClassName == 'ServerOnlyChangedIdFieldClass') {
       return deserialize<_irw3jmaq.ServerOnlyChangedIdFieldClass>(data['data']);
+    }
+    if (dataClassName == 'CustomIdRelated') {
+      return deserialize<_i0xynk61.CustomIdRelated>(data['data']);
+    }
+    if (dataClassName == 'DateTimeIdDefaultModel') {
+      return deserialize<_ifrvxa90.DateTimeIdDefaultModel>(data['data']);
+    }
+    if (dataClassName == 'DateTimeIdDefaultPersist') {
+      return deserialize<_ihp4odw2.DateTimeIdDefaultPersist>(data['data']);
+    }
+    if (dataClassName == 'DateTimeIdModel') {
+      return deserialize<_iczrutgt.DateTimeIdModel>(data['data']);
+    }
+    if (dataClassName == 'DurationIdModel') {
+      return deserialize<_ipaqbs0q.DurationIdModel>(data['data']);
+    }
+    if (dataClassName == 'IntIdModel') {
+      return deserialize<_irx335o3.IntIdModel>(data['data']);
+    }
+    if (dataClassName == 'StringIdModel') {
+      return deserialize<_izy2ul2j.StringIdModel>(data['data']);
+    }
+    if (dataClassName == 'UuidIdModel') {
+      return deserialize<_iqx2n66g.UuidIdModel>(data['data']);
     }
     if (dataClassName == 'BigIntDefault') {
       return deserialize<_icrmubzc.BigIntDefault>(data['data']);
@@ -9016,6 +9399,22 @@ class Protocol extends _is.DatabaseSerializationManager
         return _ixc9sah8.ChangedIdTypeSelf.t;
       case _irw3jmaq.ServerOnlyChangedIdFieldClass:
         return _irw3jmaq.ServerOnlyChangedIdFieldClass.t;
+      case _i0xynk61.CustomIdRelated:
+        return _i0xynk61.CustomIdRelated.t;
+      case _ifrvxa90.DateTimeIdDefaultModel:
+        return _ifrvxa90.DateTimeIdDefaultModel.t;
+      case _ihp4odw2.DateTimeIdDefaultPersist:
+        return _ihp4odw2.DateTimeIdDefaultPersist.t;
+      case _iczrutgt.DateTimeIdModel:
+        return _iczrutgt.DateTimeIdModel.t;
+      case _ipaqbs0q.DurationIdModel:
+        return _ipaqbs0q.DurationIdModel.t;
+      case _irx335o3.IntIdModel:
+        return _irx335o3.IntIdModel.t;
+      case _izy2ul2j.StringIdModel:
+        return _izy2ul2j.StringIdModel.t;
+      case _iqx2n66g.UuidIdModel:
+        return _iqx2n66g.UuidIdModel.t;
       case _icrmubzc.BigIntDefault:
         return _icrmubzc.BigIntDefault.t;
       case _i1xsun18.BigIntDefaultMix:

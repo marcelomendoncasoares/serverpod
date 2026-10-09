@@ -1,0 +1,6 @@
+class: DateTimeIdModel
+table: date_time_id_model
+fields:
+  id: DateTime
+  value: String
+  related: List<CustomIdRelated>?, relation(name=date_time_id_model)

@@ -1,0 +1,5 @@
+class: DateTimeIdDefaultModel
+table: date_time_id_default_model
+fields:
+  id: DateTime, defaultModel=now
+  value: String

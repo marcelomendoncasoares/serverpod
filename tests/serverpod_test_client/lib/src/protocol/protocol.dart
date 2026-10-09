@@ -41,6 +41,14 @@ import 'changed_id_type/one_to_one/citizen.dart' as _idhvg1zk;
 import 'changed_id_type/one_to_one/company.dart' as _i5vwm04a;
 import 'changed_id_type/one_to_one/town.dart' as _iu7osokh;
 import 'changed_id_type/self.dart' as _ixc9sah8;
+import 'custom_ids/custom_id_related.dart' as _i0xynk61;
+import 'custom_ids/date_time_id_default_model.dart' as _ifrvxa90;
+import 'custom_ids/date_time_id_default_persist.dart' as _ihp4odw2;
+import 'custom_ids/date_time_id_model.dart' as _iczrutgt;
+import 'custom_ids/duration_id_model.dart' as _ipaqbs0q;
+import 'custom_ids/int_id_model.dart' as _irx335o3;
+import 'custom_ids/string_id_model.dart' as _izy2ul2j;
+import 'custom_ids/uuid_id_model.dart' as _iqx2n66g;
 import 'defaults/bigint/bigint_default.dart' as _icrmubzc;
 import 'defaults/bigint/bigint_default_mix.dart' as _i1xsun18;
 import 'defaults/bigint/bigint_default_model.dart' as _i332rqur;
@@ -287,6 +295,14 @@ export 'changed_id_type/one_to_one/citizen.dart';
 export 'changed_id_type/one_to_one/company.dart';
 export 'changed_id_type/one_to_one/town.dart';
 export 'changed_id_type/self.dart';
+export 'custom_ids/custom_id_related.dart';
+export 'custom_ids/date_time_id_default_model.dart';
+export 'custom_ids/date_time_id_default_persist.dart';
+export 'custom_ids/date_time_id_model.dart';
+export 'custom_ids/duration_id_model.dart';
+export 'custom_ids/int_id_model.dart';
+export 'custom_ids/string_id_model.dart';
+export 'custom_ids/uuid_id_model.dart';
 export 'defaults/bigint/bigint_default.dart';
 export 'defaults/bigint/bigint_default_mix.dart';
 export 'defaults/bigint/bigint_default_model.dart';
@@ -526,6 +542,14 @@ class Protocol extends _isc.SerializationManager
       _isc.getType<_i5vwm04a.CompanyUuid>,
       _isc.getType<_iu7osokh.TownInt>,
       _isc.getType<_ixc9sah8.ChangedIdTypeSelf>,
+      _isc.getType<_i0xynk61.CustomIdRelated>,
+      _isc.getType<_ifrvxa90.DateTimeIdDefaultModel>,
+      _isc.getType<_ihp4odw2.DateTimeIdDefaultPersist>,
+      _isc.getType<_iczrutgt.DateTimeIdModel>,
+      _isc.getType<_ipaqbs0q.DurationIdModel>,
+      _isc.getType<_irx335o3.IntIdModel>,
+      _isc.getType<_izy2ul2j.StringIdModel>,
+      _isc.getType<_iqx2n66g.UuidIdModel>,
       _isc.getType<_icrmubzc.BigIntDefault>,
       _isc.getType<_i1xsun18.BigIntDefaultMix>,
       _isc.getType<_i332rqur.BigIntDefaultModel>,
@@ -752,6 +776,14 @@ class Protocol extends _isc.SerializationManager
       _isc.getType<_i5vwm04a.CompanyUuid?>,
       _isc.getType<_iu7osokh.TownInt?>,
       _isc.getType<_ixc9sah8.ChangedIdTypeSelf?>,
+      _isc.getType<_i0xynk61.CustomIdRelated?>,
+      _isc.getType<_ifrvxa90.DateTimeIdDefaultModel?>,
+      _isc.getType<_ihp4odw2.DateTimeIdDefaultPersist?>,
+      _isc.getType<_iczrutgt.DateTimeIdModel?>,
+      _isc.getType<_ipaqbs0q.DurationIdModel?>,
+      _isc.getType<_irx335o3.IntIdModel?>,
+      _isc.getType<_izy2ul2j.StringIdModel?>,
+      _isc.getType<_iqx2n66g.UuidIdModel?>,
       _isc.getType<_icrmubzc.BigIntDefault?>,
       _isc.getType<_i1xsun18.BigIntDefaultMix?>,
       _isc.getType<_i332rqur.BigIntDefaultModel?>,
@@ -972,6 +1004,8 @@ class Protocol extends _isc.SerializationManager
       _isc.getType<List<_i3jtpxta.CommentInt>?>,
       _isc.getType<List<_ixc9sah8.ChangedIdTypeSelf>>,
       _isc.getType<List<_ixc9sah8.ChangedIdTypeSelf>?>,
+      _isc.getType<List<_i0xynk61.CustomIdRelated>>,
+      _isc.getType<List<_i0xynk61.CustomIdRelated>?>,
       _isc.getType<List<_ikufh0vd.EmptyModelRelationItem>>,
       _isc.getType<List<_ikufh0vd.EmptyModelRelationItem>?>,
       _isc.getType<List<_ixlcmx78.Employee>>,
@@ -1669,6 +1703,30 @@ class Protocol extends _isc.SerializationManager
     if (t == _ixc9sah8.ChangedIdTypeSelf) {
       return _ixc9sah8.ChangedIdTypeSelf.fromJson(data) as T;
     }
+    if (t == _i0xynk61.CustomIdRelated) {
+      return _i0xynk61.CustomIdRelated.fromJson(data) as T;
+    }
+    if (t == _ifrvxa90.DateTimeIdDefaultModel) {
+      return _ifrvxa90.DateTimeIdDefaultModel.fromJson(data) as T;
+    }
+    if (t == _ihp4odw2.DateTimeIdDefaultPersist) {
+      return _ihp4odw2.DateTimeIdDefaultPersist.fromJson(data) as T;
+    }
+    if (t == _iczrutgt.DateTimeIdModel) {
+      return _iczrutgt.DateTimeIdModel.fromJson(data) as T;
+    }
+    if (t == _ipaqbs0q.DurationIdModel) {
+      return _ipaqbs0q.DurationIdModel.fromJson(data) as T;
+    }
+    if (t == _irx335o3.IntIdModel) {
+      return _irx335o3.IntIdModel.fromJson(data) as T;
+    }
+    if (t == _izy2ul2j.StringIdModel) {
+      return _izy2ul2j.StringIdModel.fromJson(data) as T;
+    }
+    if (t == _iqx2n66g.UuidIdModel) {
+      return _iqx2n66g.UuidIdModel.fromJson(data) as T;
+    }
     if (t == _icrmubzc.BigIntDefault) {
       return _icrmubzc.BigIntDefault.fromJson(data) as T;
     }
@@ -2356,6 +2414,40 @@ class Protocol extends _isc.SerializationManager
     if (t == _isc.getType<_ixc9sah8.ChangedIdTypeSelf?>()) {
       return (data != null ? _ixc9sah8.ChangedIdTypeSelf.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_i0xynk61.CustomIdRelated?>()) {
+      return (data != null ? _i0xynk61.CustomIdRelated.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ifrvxa90.DateTimeIdDefaultModel?>()) {
+      return (data != null
+              ? _ifrvxa90.DateTimeIdDefaultModel.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_ihp4odw2.DateTimeIdDefaultPersist?>()) {
+      return (data != null
+              ? _ihp4odw2.DateTimeIdDefaultPersist.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_iczrutgt.DateTimeIdModel?>()) {
+      return (data != null ? _iczrutgt.DateTimeIdModel.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ipaqbs0q.DurationIdModel?>()) {
+      return (data != null ? _ipaqbs0q.DurationIdModel.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_irx335o3.IntIdModel?>()) {
+      return (data != null ? _irx335o3.IntIdModel.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_izy2ul2j.StringIdModel?>()) {
+      return (data != null ? _izy2ul2j.StringIdModel.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_iqx2n66g.UuidIdModel?>()) {
+      return (data != null ? _iqx2n66g.UuidIdModel.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_icrmubzc.BigIntDefault?>()) {
       return (data != null ? _icrmubzc.BigIntDefault.fromJson(data) : null)
@@ -3360,6 +3452,20 @@ class Protocol extends _isc.SerializationManager
       return (data != null
               ? (data as List)
                     .map((e) => deserialize<_ixc9sah8.ChangedIdTypeSelf>(e))
+                    .toList()
+              : null)
+          as T;
+    }
+    if (t == List<_i0xynk61.CustomIdRelated>) {
+      return (data as List)
+              .map((e) => deserialize<_i0xynk61.CustomIdRelated>(e))
+              .toList()
+          as T;
+    }
+    if (t == _isc.getType<List<_i0xynk61.CustomIdRelated>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_i0xynk61.CustomIdRelated>(e))
                     .toList()
               : null)
           as T;
@@ -7481,6 +7587,14 @@ class Protocol extends _isc.SerializationManager
       _i5vwm04a.CompanyUuid => 'CompanyUuid',
       _iu7osokh.TownInt => 'TownInt',
       _ixc9sah8.ChangedIdTypeSelf => 'ChangedIdTypeSelf',
+      _i0xynk61.CustomIdRelated => 'CustomIdRelated',
+      _ifrvxa90.DateTimeIdDefaultModel => 'DateTimeIdDefaultModel',
+      _ihp4odw2.DateTimeIdDefaultPersist => 'DateTimeIdDefaultPersist',
+      _iczrutgt.DateTimeIdModel => 'DateTimeIdModel',
+      _ipaqbs0q.DurationIdModel => 'DurationIdModel',
+      _irx335o3.IntIdModel => 'IntIdModel',
+      _izy2ul2j.StringIdModel => 'StringIdModel',
+      _iqx2n66g.UuidIdModel => 'UuidIdModel',
       _icrmubzc.BigIntDefault => 'BigIntDefault',
       _i1xsun18.BigIntDefaultMix => 'BigIntDefaultMix',
       _i332rqur.BigIntDefaultModel => 'BigIntDefaultModel',
@@ -7770,6 +7884,22 @@ class Protocol extends _isc.SerializationManager
         return 'TownInt';
       case _ixc9sah8.ChangedIdTypeSelf():
         return 'ChangedIdTypeSelf';
+      case _i0xynk61.CustomIdRelated():
+        return 'CustomIdRelated';
+      case _ifrvxa90.DateTimeIdDefaultModel():
+        return 'DateTimeIdDefaultModel';
+      case _ihp4odw2.DateTimeIdDefaultPersist():
+        return 'DateTimeIdDefaultPersist';
+      case _iczrutgt.DateTimeIdModel():
+        return 'DateTimeIdModel';
+      case _ipaqbs0q.DurationIdModel():
+        return 'DurationIdModel';
+      case _irx335o3.IntIdModel():
+        return 'IntIdModel';
+      case _izy2ul2j.StringIdModel():
+        return 'StringIdModel';
+      case _iqx2n66g.UuidIdModel():
+        return 'UuidIdModel';
       case _icrmubzc.BigIntDefault():
         return 'BigIntDefault';
       case _i1xsun18.BigIntDefaultMix():
@@ -8358,6 +8488,30 @@ class Protocol extends _isc.SerializationManager
     }
     if (dataClassName == 'ChangedIdTypeSelf') {
       return deserialize<_ixc9sah8.ChangedIdTypeSelf>(data['data']);
+    }
+    if (dataClassName == 'CustomIdRelated') {
+      return deserialize<_i0xynk61.CustomIdRelated>(data['data']);
+    }
+    if (dataClassName == 'DateTimeIdDefaultModel') {
+      return deserialize<_ifrvxa90.DateTimeIdDefaultModel>(data['data']);
+    }
+    if (dataClassName == 'DateTimeIdDefaultPersist') {
+      return deserialize<_ihp4odw2.DateTimeIdDefaultPersist>(data['data']);
+    }
+    if (dataClassName == 'DateTimeIdModel') {
+      return deserialize<_iczrutgt.DateTimeIdModel>(data['data']);
+    }
+    if (dataClassName == 'DurationIdModel') {
+      return deserialize<_ipaqbs0q.DurationIdModel>(data['data']);
+    }
+    if (dataClassName == 'IntIdModel') {
+      return deserialize<_irx335o3.IntIdModel>(data['data']);
+    }
+    if (dataClassName == 'StringIdModel') {
+      return deserialize<_izy2ul2j.StringIdModel>(data['data']);
+    }
+    if (dataClassName == 'UuidIdModel') {
+      return deserialize<_iqx2n66g.UuidIdModel>(data['data']);
     }
     if (dataClassName == 'BigIntDefault') {
       return deserialize<_icrmubzc.BigIntDefault>(data['data']);

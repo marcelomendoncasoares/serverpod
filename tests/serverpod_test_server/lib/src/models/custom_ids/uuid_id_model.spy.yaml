@@ -1,0 +1,5 @@
+class: UuidIdModel
+table: uuid_id_model
+fields:
+  id: UuidValue
+  value: String

@@ -1,0 +1,6 @@
+class: StringIdModel
+table: string_id_model
+fields:
+  id: String
+  value: String
+  related: List<CustomIdRelated>?, relation(name=string_id_model)

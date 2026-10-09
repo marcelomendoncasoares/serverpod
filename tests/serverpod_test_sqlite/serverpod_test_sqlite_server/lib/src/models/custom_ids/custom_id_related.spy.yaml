@@ -1,0 +1,10 @@
+class: CustomIdRelated
+table: custom_id_related
+fields:
+  id: String
+  stringId: String
+  string: StringIdModel?, relation(name=string_id_model, field=stringId)
+  dateTimeId: DateTime
+  dateTime: DateTimeIdModel?, relation(name=date_time_id_model, field=dateTimeId)
+  durationId: Duration
+  duration: DurationIdModel?, relation(name=duration_id_model, field=durationId)
