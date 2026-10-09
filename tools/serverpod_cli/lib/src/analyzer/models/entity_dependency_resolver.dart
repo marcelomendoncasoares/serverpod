@@ -143,8 +143,9 @@ class ModelDependencyResolver {
         ? maybeIdField.defaultPersistValue
         : defaultIdType.defaultValue;
 
-    // The 'int' id type can be specified without a default value.
-    if (maybeIdField?.type.className == 'int') {
+    // Nullable integer IDs retain their implicit auto-increment generator.
+    // Required IDs without defaults are supplied by the caller.
+    if (idFieldType.className == 'int' && idFieldType.nullable) {
       defaultPersistValue ??= SupportedIdType.int.defaultValue;
     }
 

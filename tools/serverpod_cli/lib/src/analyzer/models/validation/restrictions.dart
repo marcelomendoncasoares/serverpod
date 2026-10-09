@@ -1630,7 +1630,7 @@ class Restrictions {
           span,
         ),
       );
-    } else if (!field.hasDefaults) {
+    } else if (!field.hasDefaults && field.type.nullable) {
       errors.add(
         SourceSpanSeverityException(
           'The type "$typeClassName" must have a default value. Use '
@@ -1639,7 +1639,8 @@ class Restrictions {
           span,
         ),
       );
-    } else if (field.type.className == 'int' && !field.type.nullable) {
+    } else if (field.defaultPersistValue == defaultIntSerial &&
+        !field.type.nullable) {
       errors.add(
         SourceSpanSeverityException(
           'The type "$typeClassName" must be nullable for the field '

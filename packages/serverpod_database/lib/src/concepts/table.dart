@@ -90,6 +90,7 @@ class Table<T_ID> {
   Table({
     required this.tableName,
     this.tableRelation,
+    bool idHasDefault = true,
   }) {
     if (T_ID == dynamic) {
       throw Exception(
@@ -102,7 +103,7 @@ class Table<T_ID> {
           ColumnInt(
                 'id',
                 this,
-                hasDefault: true,
+                hasDefault: idHasDefault,
               )
               as ColumnComparable<T_ID>;
     } else if (equalsType<T_ID, UuidValue>()) {
@@ -110,8 +111,20 @@ class Table<T_ID> {
           ColumnUuid(
                 'id',
                 this,
-                hasDefault: true,
+                hasDefault: idHasDefault,
               )
+              as ColumnComparable<T_ID>;
+    } else if (equalsType<T_ID, String>()) {
+      id =
+          ColumnString('id', this, hasDefault: idHasDefault)
+              as ColumnComparable<T_ID>;
+    } else if (equalsType<T_ID, DateTime>()) {
+      id =
+          ColumnDateTime('id', this, hasDefault: idHasDefault)
+              as ColumnComparable<T_ID>;
+    } else if (equalsType<T_ID, Duration>()) {
+      id =
+          ColumnDuration('id', this, hasDefault: idHasDefault)
               as ColumnComparable<T_ID>;
     } else {
       throw Exception('Unsupported id type: $T_ID');

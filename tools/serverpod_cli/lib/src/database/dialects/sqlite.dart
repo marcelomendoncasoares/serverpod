@@ -117,7 +117,17 @@ extension SqliteTableDefinitionSqlGeneration on TableDefinition {
     }
 
     out += definitions.join(',\n');
-    out += '\n) STRICT;\n';
+    // Only serial IDs should alias SQLite's rowid. Other integer-backed IDs
+    // must retain their defaults and reject missing caller-supplied values.
+    final idColumn = columns.where((column) => column.isPrimary).firstOrNull;
+    final withoutRowid =
+        idColumn != null &&
+        idColumn.columnDefault != defaultIntSerial &&
+        (idColumn.columnType == ColumnType.integer ||
+            idColumn.columnType == ColumnType.bigint ||
+            idColumn.columnType == ColumnType.timestampWithoutTimeZone);
+
+    out += withoutRowid ? '\n) STRICT, WITHOUT ROWID;\n' : '\n) STRICT;\n';
 
     if (!skipIndexes) {
       // Indexes
@@ -211,7 +221,7 @@ extension SqliteColumnDefinitionSqlGeneration on ColumnDefinition {
         throw const FormatException('The id column must be non-nullable');
       }
       // SQLite "INTEGER PRIMARY KEY" is an alias for ROWID.
-      if (type == 'INTEGER') {
+      if (columnDefault == defaultIntSerial) {
         defaultValue = '';
       }
       type = '$type PRIMARY KEY';

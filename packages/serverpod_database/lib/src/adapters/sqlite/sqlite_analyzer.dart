@@ -60,6 +60,13 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
       'PRAGMA table_info($quotedTable)',
     );
 
+    // A rowid alias has no separate primary-key index. WITHOUT ROWID tables
+    // have one, including tables with caller-supplied integer-backed IDs.
+    final indexes = await database.unsafeQuery(
+      'PRAGMA index_list($quotedTable)',
+    );
+    final hasPrimaryKeyIndex = indexes.any((row) => row[3] == 'pk');
+
     final columnTypes = {
       for (var row in await database.unsafeQuery('''
         SELECT "column_name",
@@ -84,6 +91,7 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
         name: columnName,
         columnDefault:
             isIdColumn &&
+                !hasPrimaryKeyIndex &&
                 (columnType == ColumnType.integer ||
                     columnType == ColumnType.bigint)
             ? defaultIntSerial

@@ -982,17 +982,17 @@ class TypeDefinition {
 
 /// Supported ID type definitions.
 /// All configuration to support other types is done only on this class. A
-/// supported id type is a combination of a type and a default value. It is
+/// supported id type is a combination of a type and an optional generator. It is
 /// possible to support multiple default values for a same type (e.g. uuid type
 /// with default of versions 4 and 7), with each having its getter. For new
 /// entries, add a new static getter and update the [all] getter. If the entry
 /// contains a type not yet used by existing id types, it's necessary to update
-/// the `Table` constructor at `packages:serverpod/src/database/concepts/table.dart`.
+/// the `Table` constructor in `serverpod_database/lib/src/concepts/table.dart`.
 class SupportedIdType {
   const SupportedIdType({
     required this.type,
     required this.aliases,
-    required this.defaultValue,
+    this.defaultValue,
   });
 
   /// The supported id type.
@@ -1003,8 +1003,8 @@ class SupportedIdType {
   final List<String> aliases;
 
   /// The default value for the column on the database definition. Must be one
-  /// of the supported defaults for the type.
-  final String defaultValue;
+  /// of the supported generators for the type, or null for caller-supplied IDs.
+  final String? defaultValue;
 
   /// Id type that generates sequential integer values.
   static SupportedIdType get int => SupportedIdType(
@@ -1027,8 +1027,34 @@ class SupportedIdType {
     defaultValue: defaultUuidValueRandomV7,
   );
 
+  /// Id type with caller-supplied string values.
+  static SupportedIdType get string => SupportedIdType(
+    type: TypeDefinition(className: 'String', nullable: false),
+    aliases: ['String'],
+  );
+
+  /// Id type that can generate the current timestamp.
+  static SupportedIdType get dateTime => SupportedIdType(
+    type: TypeDefinition(className: 'DateTime', nullable: false),
+    aliases: ['DateTime'],
+    defaultValue: defaultDateTimeValueNow,
+  );
+
+  /// Id type with caller-supplied duration values.
+  static SupportedIdType get duration => SupportedIdType(
+    type: TypeDefinition(className: 'Duration', nullable: false),
+    aliases: ['Duration'],
+  );
+
   /// All supported id types.
-  static List<SupportedIdType> get all => [int, uuidV4, uuidV7];
+  static List<SupportedIdType> get all => [
+    int,
+    uuidV4,
+    uuidV7,
+    string,
+    dateTime,
+    duration,
+  ];
 
   /// All aliases exposed to the user.
   static List<String> get userOptions => all.expand((e) => e.aliases).toList();

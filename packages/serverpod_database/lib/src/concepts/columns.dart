@@ -1145,6 +1145,12 @@ extension IdColumnIterable on Iterable {
       return cast<int>();
     } else if (first is UuidValue) {
       return cast<UuidValue>();
+    } else if (first is String) {
+      return cast<String>();
+    } else if (first is DateTime) {
+      return cast<DateTime>();
+    } else if (first is Duration) {
+      return cast<Duration>();
     }
 
     throw Exception('Unsupported id column type: ${first.runtimeType}');

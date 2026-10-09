@@ -7,195 +7,359 @@ import '../../../../../test_util/builders/generator_config_builder.dart';
 import '../../../../../test_util/builders/model_source_builder.dart';
 
 void main() {
-  var config = GeneratorConfigBuilder().build();
-
-  group('Given a class with a table defined and no id field', () {
-    var models = [
-      ModelSourceBuilder().withYaml(
-        '''
-        class: Example
-        table: example
-        fields:
-          name: String
-        ''',
-      ).build(),
-    ];
-
-    var collector = CodeGenerationCollector();
-    var analyzer = StatefulAnalyzer(
-      config,
-      models,
-      onErrorsCollector(collector),
-    );
-    late final definitions = analyzer.validateAll();
-
-    late final definition = definitions.first as ClassDefinition;
-
-    test('then an id field is added to the generated model.', () {
-      expect(definition.fields.first.name, 'id');
-    });
-
-    test('then the id type is "int".', () {
-      expect(definition.fields.first.type.className, 'int');
-    });
-
-    test('then the id type is nullable.', () {
-      expect(definition.fields.first.type.nullable, true);
-    });
-
-    test('then the default model value is null.', () {
-      expect(definition.fields.first.defaultModelValue, isNull);
-    });
-
-    test('then the default persist is "serial".', () {
-      expect(definition.fields.first.defaultPersistValue, defaultIntSerial);
-    });
-  });
-
   test(
-    'Given a class with the int id type set as non-nullable then an error is collected',
+    'Given a table with an implicit ID, '
+    'when analyzing the model, '
+    'then the ID type and defaults are preserved.',
     () {
-      var models = [
-        ModelSourceBuilder().withYaml(
-          '''
-        class: Example
-        table: example
-        fields:
-          id: int
-        ''',
-        ).build(),
-      ];
+      const field = 'name: String';
 
-      var collector = CodeGenerationCollector();
-      StatefulAnalyzer(
-        config,
-        models,
-        onErrorsCollector(collector),
-      ).validateAll();
+      final (model, collector) = _analyzeId(field);
 
-      expect(
-        collector.errors.first.message,
-        'The type "int" must be nullable for the field "id". Use the "?" '
-        'operator to make it nullable (e.g. id: int?).',
-      );
-    },
-  );
-
-  group(
-    'Given a class with the int id type set as nullable with no default value',
-    () {
-      var models = [
-        ModelSourceBuilder().withYaml(
-          '''
-        class: Example
-        table: example
-        fields:
-          id: int?
-        ''',
-        ).build(),
-      ];
-
-      var collector = CodeGenerationCollector();
-      late final definitions = StatefulAnalyzer(
-        config,
-        models,
-        onErrorsCollector(collector),
-      ).validateAll();
-      late final definition = definitions.first as ModelClassDefinition;
-
-      test('then the id of the table is "int".', () {
-        expect(definition.idField.type.className, 'int');
-      });
-
-      test('then the id type is nullable.', () {
-        expect(definition.idField.type.nullable, true);
-      });
+      expect(collector.errors, isEmpty);
+      expect(model!.idField.type.className, 'int');
+      expect(model.idField.type.nullable, true);
+      expect(model.idField.defaultPersistValue, 'serial');
+      expect(model.idField.defaultModelValue, isNull);
     },
   );
 
   test(
-    'Given a class with the UUID id type and no default value, then an error is collected.',
+    'Given a table with a nullable integer ID without an explicit default, '
+    'when analyzing the model, '
+    'then the ID type and defaults are preserved.',
     () {
-      var models = [
-        ModelSourceBuilder().withYaml(
-          '''
-        class: Example
-        table: example
-        fields:
-          id: UuidValue
-        ''',
-        ).build(),
-      ];
+      const field = 'id: int?';
 
-      var collector = CodeGenerationCollector();
-      StatefulAnalyzer(
-        config,
-        models,
-        onErrorsCollector(collector),
-      ).validateAll();
+      final (model, collector) = _analyzeId(field);
 
+      expect(collector.errors, isEmpty);
+      expect(model!.idField.type.className, 'int');
+      expect(model.idField.type.nullable, true);
+      expect(model.idField.defaultPersistValue, 'serial');
+      expect(model.idField.defaultModelValue, isNull);
+    },
+  );
+
+  test(
+    'Given a table with a required integer ID without a default, '
+    'when analyzing the model, '
+    'then the ID type and defaults are preserved.',
+    () {
+      const field = 'id: int';
+
+      final (model, collector) = _analyzeId(field);
+
+      expect(collector.errors, isEmpty);
+      expect(model!.idField.type.className, 'int');
+      expect(model.idField.type.nullable, false);
+      expect(model.idField.defaultPersistValue, isNull);
+      expect(model.idField.defaultModelValue, isNull);
+    },
+  );
+
+  test(
+    'Given a table with a required UUID ID without a default, '
+    'when analyzing the model, '
+    'then the ID type and defaults are preserved.',
+    () {
+      const field = 'id: UuidValue';
+
+      final (model, collector) = _analyzeId(field);
+
+      expect(collector.errors, isEmpty);
+      expect(model!.idField.type.className, 'UuidValue');
+      expect(model.idField.type.nullable, false);
+      expect(model.idField.defaultPersistValue, isNull);
+      expect(model.idField.defaultModelValue, isNull);
+    },
+  );
+
+  test(
+    'Given a table with a required String ID without a default, '
+    'when analyzing the model, '
+    'then the ID type and defaults are preserved.',
+    () {
+      const field = 'id: String';
+
+      final (model, collector) = _analyzeId(field);
+
+      expect(collector.errors, isEmpty);
+      expect(model!.idField.type.className, 'String');
+      expect(model.idField.type.nullable, false);
+      expect(model.idField.defaultPersistValue, isNull);
+      expect(model.idField.defaultModelValue, isNull);
+    },
+  );
+
+  test(
+    'Given a table with a required DateTime ID without a default, '
+    'when analyzing the model, '
+    'then the ID type and defaults are preserved.',
+    () {
+      const field = 'id: DateTime';
+
+      final (model, collector) = _analyzeId(field);
+
+      expect(collector.errors, isEmpty);
+      expect(model!.idField.type.className, 'DateTime');
+      expect(model.idField.type.nullable, false);
+      expect(model.idField.defaultPersistValue, isNull);
+      expect(model.idField.defaultModelValue, isNull);
+    },
+  );
+
+  test(
+    'Given a table with a required Duration ID without a default, '
+    'when analyzing the model, '
+    'then the ID type and defaults are preserved.',
+    () {
+      const field = 'id: Duration';
+
+      final (model, collector) = _analyzeId(field);
+
+      expect(collector.errors, isEmpty);
+      expect(model!.idField.type.className, 'Duration');
+      expect(model.idField.type.nullable, false);
+      expect(model.idField.defaultPersistValue, isNull);
+      expect(model.idField.defaultModelValue, isNull);
+    },
+  );
+
+  test(
+    'Given a table with a nullable UUID ID with a random generator, '
+    'when analyzing the model, '
+    'then the ID type and defaults are preserved.',
+    () {
+      const field = 'id: UuidValue?, defaultPersist=random';
+
+      final (model, collector) = _analyzeId(field);
+
+      expect(collector.errors, isEmpty);
+      expect(model!.idField.type.className, 'UuidValue');
+      expect(model.idField.type.nullable, true);
+      expect(model.idField.defaultPersistValue, 'random');
+      expect(model.idField.defaultModelValue, isNull);
+    },
+  );
+
+  test(
+    'Given a table with a required UUID ID with a random_v7 generator, '
+    'when analyzing the model, '
+    'then the ID type and defaults are preserved.',
+    () {
+      const field = 'id: UuidValue, defaultModel=random_v7';
+
+      final (model, collector) = _analyzeId(field);
+
+      expect(collector.errors, isEmpty);
+      expect(model!.idField.type.className, 'UuidValue');
+      expect(model.idField.type.nullable, false);
+      expect(model.idField.defaultPersistValue, 'random_v7');
+      expect(model.idField.defaultModelValue, 'random_v7');
+    },
+  );
+
+  test(
+    'Given a table with a nullable DateTime ID with a database now generator, '
+    'when analyzing the model, '
+    'then the ID type and defaults are preserved.',
+    () {
+      const field = 'id: DateTime?, defaultPersist=now';
+
+      final (model, collector) = _analyzeId(field);
+
+      expect(collector.errors, isEmpty);
+      expect(model!.idField.type.className, 'DateTime');
+      expect(model.idField.type.nullable, true);
+      expect(model.idField.defaultPersistValue, 'now');
+      expect(model.idField.defaultModelValue, isNull);
+    },
+  );
+
+  test(
+    'Given a table with a required DateTime ID with a model now generator, '
+    'when analyzing the model, '
+    'then the ID type and defaults are preserved.',
+    () {
+      const field = 'id: DateTime, defaultModel=now';
+
+      final (model, collector) = _analyzeId(field);
+
+      expect(collector.errors, isEmpty);
+      expect(model!.idField.type.className, 'DateTime');
+      expect(model.idField.type.nullable, false);
+      expect(model.idField.defaultPersistValue, 'now');
+      expect(model.idField.defaultModelValue, 'now');
+    },
+  );
+
+  test(
+    'Given a nullable UuidValue ID without a default, '
+    'when analyzing the model, '
+    'then a missing default error is reported.',
+    () {
+      const field = 'id: UuidValue?';
+
+      final (_, collector) = _analyzeId(field);
+
+      expect(collector.errors, hasLength(1));
       expect(
-        collector.errors.first.message,
+        collector.errors.single.message,
         'The type "UuidValue" must have a default value. Use either the '
         '"defaultModel" key or the "defaultPersist" key to set it.',
       );
     },
   );
 
-  group('Given a class with the UUID id type correctly set', () {
-    var models = [
-      ModelSourceBuilder().withYaml(
-        '''
-        class: Example
-        table: example
-        fields:
-          id: UuidValue?, defaultModel=random
-        ''',
-      ).build(),
-    ];
-
-    var collector = CodeGenerationCollector();
-    late final definitions = StatefulAnalyzer(
-      config,
-      models,
-      onErrorsCollector(collector),
-    ).validateAll();
-    late final definition = definitions.first as ModelClassDefinition;
-
-    test('then the id of the table is "UuidValue".', () {
-      expect(definition.idField.type.className, 'UuidValue');
-    });
-
-    test('then the id type is nullable.', () {
-      expect(definition.idField.type.nullable, true);
-    });
-  });
-
   test(
-    'Given a class without a table defined, then no id field is added.',
+    'Given a nullable String ID without a default, '
+    'when analyzing the model, '
+    'then a missing default error is reported.',
     () {
-      var models = [
-        ModelSourceBuilder().withYaml(
-          '''
-          class: Example
-          fields:
-            name: String
-          ''',
-        ).build(),
-      ];
+      const field = 'id: String?';
 
-      var collector = CodeGenerationCollector();
-      var analyzer = StatefulAnalyzer(
-        config,
-        models,
-        onErrorsCollector(collector),
+      final (_, collector) = _analyzeId(field);
+
+      expect(collector.errors, hasLength(1));
+      expect(
+        collector.errors.single.message,
+        'The type "String" must have a default value. Use either the '
+        '"defaultModel" key or the "defaultPersist" key to set it.',
       );
-      var definitions = analyzer.validateAll();
-
-      var definition = definitions.first as ClassDefinition;
-
-      expect(definition.fields.first.name, isNot('id'));
-      expect(definition.fields, hasLength(1));
     },
   );
+
+  test(
+    'Given a nullable DateTime ID without a default, '
+    'when analyzing the model, '
+    'then a missing default error is reported.',
+    () {
+      const field = 'id: DateTime?';
+
+      final (_, collector) = _analyzeId(field);
+
+      expect(collector.errors, hasLength(1));
+      expect(
+        collector.errors.single.message,
+        'The type "DateTime" must have a default value. Use either the '
+        '"defaultModel" key or the "defaultPersist" key to set it.',
+      );
+    },
+  );
+
+  test(
+    'Given a nullable Duration ID without a default, '
+    'when analyzing the model, '
+    'then a missing default error is reported.',
+    () {
+      const field = 'id: Duration?';
+
+      final (_, collector) = _analyzeId(field);
+
+      expect(collector.errors, hasLength(1));
+      expect(
+        collector.errors.single.message,
+        'The type "Duration" must have a default value. Use either the '
+        '"defaultModel" key or the "defaultPersist" key to set it.',
+      );
+    },
+  );
+
+  test(
+    'Given a String ID with a literal String default, '
+    'when analyzing the model, '
+    'then the constant default is rejected.',
+    () {
+      const field = 'id: String, defaultModel=\'constant\'';
+
+      final (_, collector) = _analyzeId(field);
+
+      expect(collector.errors, hasLength(1));
+      expect(
+        collector.errors.single.message,
+        'The default value "\'constant\'" is not supported for the id type '
+        '"String". This type does not support default generators.',
+      );
+    },
+  );
+
+  test(
+    'Given a DateTime ID with a literal DateTime default, '
+    'when analyzing the model, '
+    'then the constant default is rejected.',
+    () {
+      const field = 'id: DateTime, defaultModel=2026-01-01T00:00:00.000Z';
+
+      final (_, collector) = _analyzeId(field);
+
+      expect(collector.errors, hasLength(1));
+      expect(
+        collector.errors.single.message,
+        'The default value "2026-01-01T00:00:00.000Z" is not supported for the id type '
+        '"DateTime". Valid options are: "now".',
+      );
+    },
+  );
+
+  test(
+    'Given a Duration ID with a literal Duration default, '
+    'when analyzing the model, '
+    'then the constant default is rejected.',
+    () {
+      const field = 'id: Duration, defaultModel=1d';
+
+      final (_, collector) = _analyzeId(field);
+
+      expect(collector.errors, hasLength(1));
+      expect(
+        collector.errors.single.message,
+        'The default value "1d" is not supported for the id type '
+        '"Duration". This type does not support default generators.',
+      );
+    },
+  );
+
+  test(
+    'Given a class without a table, '
+    'when analyzing the model, '
+    'then no ID field is added.',
+    () {
+      final source = ModelSourceBuilder().withYaml('''
+class: Example
+fields:
+  name: String
+''').build();
+      final collector = CodeGenerationCollector();
+
+      final definitions = StatefulAnalyzer(
+        GeneratorConfigBuilder().build(),
+        [source],
+        onErrorsCollector(collector),
+      ).validateAll();
+
+      expect(collector.errors, isEmpty);
+      expect(
+        (definitions.single as ClassDefinition).fields.single.name,
+        'name',
+      );
+    },
+  );
+}
+
+(ModelClassDefinition?, CodeGenerationCollector) _analyzeId(String field) {
+  final source = ModelSourceBuilder().withYaml('''
+class: Example
+table: example
+fields:
+  $field
+''').build();
+  final collector = CodeGenerationCollector();
+  final definitions = StatefulAnalyzer(
+    GeneratorConfigBuilder().build(),
+    [source],
+    onErrorsCollector(collector),
+  ).validateAll();
+
+  return (definitions.firstOrNull as ModelClassDefinition?, collector);
 }

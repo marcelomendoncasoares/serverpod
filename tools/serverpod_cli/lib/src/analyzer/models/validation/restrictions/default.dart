@@ -182,14 +182,18 @@ class DefaultValueRestriction extends ValueRestriction {
 
     var supportedDefaults = SupportedIdType.all
         .where((e) => e.type.className == typeClassName)
-        .map((e) => e.defaultValue);
+        .map((e) => e.defaultValue)
+        .nonNulls;
 
     if (!supportedDefaults.contains(value)) {
       var options = supportedDefaults.map((e) => '"$e"').join(', ');
+      var guidance = supportedDefaults.isEmpty
+          ? 'This type does not support default generators.'
+          : 'Valid options are: $options.';
       errors.add(
         SourceSpanSeverityException(
           'The default value "$value" is not supported for the id type '
-          '"$typeClassName". Valid options are: $options.',
+          '"$typeClassName". $guidance',
           span,
         ),
       );

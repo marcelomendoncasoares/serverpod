@@ -519,7 +519,7 @@ void main() {
           '''
           class: ParentClass
           fields:
-            id: String, default='test'
+            id: bool, default=true
             name: String
           ''',
         ).build(),
@@ -549,8 +549,8 @@ void main() {
         expect(
           collector.errors.first.message,
           'The "table" property is not allowed due to invalid "id" field defined '
-          'on parent classes. The type "String" is not a valid id type. Valid '
-          'options are: int, UuidValue.',
+          'on parent classes. The type "bool" is not a valid id type. Valid '
+          'options are: int, UuidValue, String, DateTime, Duration.',
         );
       });
     },

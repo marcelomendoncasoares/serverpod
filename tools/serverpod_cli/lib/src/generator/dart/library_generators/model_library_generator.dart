@@ -3048,7 +3048,11 @@ class SerializableModelLibraryGenerator {
         ),
       );
       constructorBuilder.initializers.add(
-        refer('super').call([], {'tableName': literalString(tableName)}).code,
+        refer('super').call([], {
+          'tableName': literalString(tableName),
+          if (!classDefinition.idField.hasDefaults)
+            'idHasDefault': literalFalse,
+        }).code,
       );
 
       constructorBuilder.body = Block.of([
