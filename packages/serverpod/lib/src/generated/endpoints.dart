@@ -214,8 +214,13 @@ class Endpoints extends _is.EndpointDispatch {
             ),
             'startingId': _is.ParameterDescription(
               name: 'startingId',
-              type: _is.getType<int>(),
-              nullable: false,
+              type: _is.getType<int?>(),
+              nullable: true,
+            ),
+            'startingIdText': _is.ParameterDescription(
+              name: 'startingIdText',
+              type: _is.getType<String?>(),
+              nullable: true,
             ),
             'limit': _is.ParameterDescription(
               name: 'limit',
@@ -237,6 +242,7 @@ class Endpoints extends _is.EndpointDispatch {
                     session,
                     table: params['table'],
                     startingId: params['startingId'],
+                    startingIdText: params['startingIdText'],
                     limit: params['limit'],
                     filter: params['filter'],
                   ),

@@ -68,7 +68,7 @@ void main() {
 
   test(
     'Given a table matching its declaration, '
-    'when exporting its data, '
+    'when exporting its data without a cursor, '
     'then the rows are returned.',
     () async {
       serializationManager.tables.add(_table());
@@ -82,7 +82,6 @@ void main() {
       final bulkData = await DatabaseBulkData.exportTableData(
         database: session.db,
         table: 'example',
-        lastId: 0,
       );
 
       expect(bulkData.data, contains('first'));

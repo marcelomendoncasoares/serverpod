@@ -10,10 +10,16 @@ import '../serverpod_database.dart';
 /// using JSON. Primarily used for Serverpod Insights.
 class DatabaseBulkData {
   /// Exports data from the provided [table].
+  ///
+  /// Omitting both cursors exports from the beginning, including negative and
+  /// zero IDs. [lastIdText] accepts the ID's string representation: ISO 8601 for
+  /// DateTime, UUID text, integer milliseconds for Duration, or the String ID
+  /// itself. Supply only one of [lastId] and [lastIdText].
   static Future<BulkData> exportTableData({
     required Database database,
     required String table,
     Object? lastId,
+    String? lastIdText,
     int limit = 100,
     Filter? filter,
   }) async {
@@ -53,25 +59,48 @@ class DatabaseBulkData {
       }
     }
 
-    var filterQuery = '';
+    var predicates = <String>[];
     try {
+      if (lastId != null && lastIdText != null) {
+        throw ArgumentError('Supply only one ID cursor.');
+      }
+
+      var cursor = lastId;
+      if (lastIdText != null) {
+        var idColumn = targetTableDefinition.columns.singleWhere(
+          (column) => column.name == 'id',
+        );
+        cursor = switch (idColumn.columnType) {
+          ColumnType.text => lastIdText,
+          ColumnType.bigint => int.parse(lastIdText),
+          ColumnType.timestampWithoutTimeZone => DateTime.parse(lastIdText),
+          ColumnType.uuid => UuidValue.fromString(lastIdText),
+          _ => throw ArgumentError('Unsupported ID cursor type.'),
+        };
+      }
+
+      if (cursor != null) {
+        predicates.add('"id" > ${ValueEncoder.instance.convert(cursor)}');
+      }
+
       if (filter != null) {
-        filterQuery = filter.toQuery(targetTableDefinition);
-        filterQuery = ' AND $filterQuery';
+        predicates.add('(${filter.toQuery(targetTableDefinition)})');
       }
     } catch (e) {
       throw BulkDataException(
-        message: 'Failed to create filter query ($e).',
+        message: 'Failed to create export query ($e).',
       );
     }
 
-    String strLastId = ValueEncoder.instance.convert(lastId);
+    var whereClause = predicates.isEmpty
+        ? ''
+        : ' WHERE ${predicates.join(' AND ')}';
 
     List<List<dynamic>> data;
     var query =
         'SELECT ${columnSelects.join(', ')} '
-        'FROM "${liveTableDefinition.schema}"."${liveTableDefinition.name}" '
-        'WHERE id > $strLastId$filterQuery ORDER BY "id" LIMIT $limit';
+        'FROM "${liveTableDefinition.schema}"."${liveTableDefinition.name}"'
+        '$whereClause ORDER BY "id" LIMIT $limit';
     try {
       data = await database.unsafeQuery(query);
     } catch (e) {

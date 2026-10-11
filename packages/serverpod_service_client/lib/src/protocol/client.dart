@@ -166,11 +166,17 @@ class EndpointInsights extends _isc.EndpointRef {
 
   /// Exports raw data serialized in JSON from the database.
   ///
+  /// Omit both cursors for the first page, including negative and zero IDs.
+  /// Use [startingId] for integer IDs or [startingIdText] for custom IDs:
+  /// String values, ISO 8601 DateTime, integer milliseconds for Duration,
+  /// or UUID text. Supply only one cursor; subsequent pages start after it.
+  ///
   /// Requires database access to be enabled through the server configuration,
   /// see [_requireDatabaseAccess].
   _ida.Future<_isd.BulkData> fetchDatabaseBulkData({
     required String table,
-    required int startingId,
+    int? startingId,
+    String? startingIdText,
     required int limit,
     _isd.Filter? filter,
   }) => caller.callServerEndpoint<_isd.BulkData>(
@@ -179,6 +185,7 @@ class EndpointInsights extends _isc.EndpointRef {
     {
       'table': table,
       'startingId': startingId,
+      'startingIdText': startingIdText,
       'limit': limit,
       'filter': filter,
     },

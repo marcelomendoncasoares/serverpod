@@ -270,12 +270,18 @@ class InsightsEndpoint extends Endpoint {
 
   /// Exports raw data serialized in JSON from the database.
   ///
+  /// Omit both cursors for the first page, including negative and zero IDs.
+  /// Use [startingId] for integer IDs or [startingIdText] for custom IDs:
+  /// String values, ISO 8601 DateTime, integer milliseconds for Duration,
+  /// or UUID text. Supply only one cursor; subsequent pages start after it.
+  ///
   /// Requires database access to be enabled through the server configuration,
   /// see [_requireDatabaseAccess].
   Future<BulkData> fetchDatabaseBulkData(
     Session session, {
     required String table,
-    required int startingId,
+    int? startingId,
+    String? startingIdText,
     required int limit,
     Filter? filter,
   }) async {
@@ -285,6 +291,7 @@ class InsightsEndpoint extends Endpoint {
         database: session.db,
         table: table,
         lastId: startingId,
+        lastIdText: startingIdText,
         limit: limit,
         filter: filter,
       );
