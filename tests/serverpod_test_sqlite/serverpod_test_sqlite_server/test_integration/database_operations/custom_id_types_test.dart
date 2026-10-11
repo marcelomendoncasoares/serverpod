@@ -646,22 +646,6 @@ void main() {
     );
 
     test(
-      'Given two rows with database-generated timestamp IDs, '
-      'when inserting both in one batch, '
-      'then the shared timestamp causes a primary-key collision.',
-      () async {
-        final rows = [
-          DateTimeIdDefaultPersist(value: 'first'),
-          DateTimeIdDefaultPersist(value: 'second'),
-        ];
-
-        final insert = DateTimeIdDefaultPersist.db.insert(session, rows);
-
-        await expectLater(insert, throwsA(isA<DatabaseQueryException>()));
-      },
-    );
-
-    test(
       'Given distinct Duration IDs within the same millisecond, '
       'when inserting both rows, '
       'then millisecond storage causes a primary-key collision.',

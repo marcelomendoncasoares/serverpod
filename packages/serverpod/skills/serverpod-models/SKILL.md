@@ -87,8 +87,9 @@ fields:
 
 Relations to a model with a custom id type use the same type on the foreign key field.
 
-DateTime IDs also accept `defaultModel=now`, `default=now`, or nullable
-`DateTime?, defaultPersist=now`. These defaults generate timestamps, not unique
+DateTime IDs also accept `defaultModel=now` or nullable
+`DateTime?, defaultPersist=now`. Use `defaultModel` or `defaultPersist` for ID
+defaults; the combined `default` keyword is not allowed on IDs. These defaults generate timestamps, not unique
 identifiers. A batch can produce duplicate keys. PostgreSQL database defaults
 use the transaction's start time, so even separate inserts in one transaction
 collide. SQLite stores DateTime values in milliseconds, so model-generated
