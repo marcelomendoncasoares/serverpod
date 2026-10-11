@@ -6,6 +6,7 @@ import 'package:serverpod_database/serverpod_database.dart'
     show
         BulkData,
         BulkDataException,
+        DatabaseBulkData,
         Filter,
         FilterConstraint,
         FilterConstraintType;
@@ -46,7 +47,7 @@ void main() {
           final second = await endpoint.fetchDatabaseBulkData(
             session,
             table: 'string_id_model',
-            startingIdText: "a'b",
+            startingIdText: _lastId(first),
             limit: 2,
           );
 
@@ -74,7 +75,7 @@ void main() {
           final second = await endpoint.fetchDatabaseBulkData(
             session,
             table: 'date_time_id_model',
-            startingIdText: DateTime.utc(1970).toIso8601String(),
+            startingIdText: _lastId(first),
             limit: 2,
           );
 
@@ -102,7 +103,7 @@ void main() {
           final second = await endpoint.fetchDatabaseBulkData(
             session,
             table: 'duration_id_model',
-            startingIdText: '0',
+            startingIdText: _lastId(first),
             limit: 2,
           );
 
@@ -130,7 +131,7 @@ void main() {
           final second = await endpoint.fetchDatabaseBulkData(
             session,
             table: 'int_id_model',
-            startingId: 0,
+            startingId: int.parse(_lastId(first)),
             limit: 2,
           );
 
@@ -165,7 +166,7 @@ void main() {
           final second = await endpoint.fetchDatabaseBulkData(
             session,
             table: 'uuid_id_model',
-            startingIdText: middle,
+            startingIdText: _lastId(first),
             limit: 2,
           );
 
@@ -173,6 +174,7 @@ void main() {
           expect(_values(second), ['third']);
         },
       );
+
       test(
         'Given a filtered export with String IDs, '
         'when reading the first page without a cursor, '
@@ -221,6 +223,42 @@ void main() {
           await expectLater(page, throwsA(isA<BulkDataException>()));
         },
       );
+
+      test(
+        'Given a UUID cursor containing SQL syntax, '
+        'when exporting through the public bulk API, '
+        'then the malformed cursor is rejected.',
+        () async {
+          const cursor = "00000000-0000-4000-8000-000000000002' or 'a'='a";
+
+          final page = DatabaseBulkData.exportTableData(
+            database: session.db,
+            table: 'uuid_id_model',
+            lastIdText: cursor,
+          );
+
+          await expectLater(page, throwsA(isA<BulkDataException>()));
+        },
+      );
+
+      test(
+        'Given an unchecked UUID value containing SQL syntax, '
+        'when exporting through the object cursor API, '
+        'then the malformed cursor is rejected.',
+        () async {
+          final cursor = UuidValue.fromString(
+            "00000000-0000-4000-8000-000000000002' or 'a'='a",
+          );
+
+          final page = DatabaseBulkData.exportTableData(
+            database: session.db,
+            table: 'uuid_id_model',
+            lastId: cursor,
+          );
+
+          await expectLater(page, throwsA(isA<BulkDataException>()));
+        },
+      );
     },
   );
 }
@@ -232,4 +270,11 @@ List<String> _values(BulkData data) {
   return (jsonDecode(data.data) as List)
       .map((row) => (row as List)[valueIndex] as String)
       .toList();
+}
+
+String _lastId(BulkData data) {
+  final idIndex = data.tableDefinition.columns.indexWhere(
+    (column) => column.name == 'id',
+  );
+  return ((jsonDecode(data.data) as List).last as List)[idIndex].toString();
 }

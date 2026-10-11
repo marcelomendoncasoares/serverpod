@@ -14,7 +14,9 @@ class DatabaseBulkData {
   /// Omitting both cursors exports from the beginning, including negative and
   /// zero IDs. [lastIdText] accepts the ID's string representation: ISO 8601 for
   /// DateTime, UUID text, integer milliseconds for Duration, or the String ID
-  /// itself. Supply only one of [lastId] and [lastIdText].
+  /// itself. Exported IDs use these same JSON representations on both backends,
+  /// so the final row's ID can be reused as the next cursor.
+  /// Supply only one of [lastId] and [lastIdText].
   static Future<BulkData> exportTableData({
     required Database database,
     required String table,
@@ -60,6 +62,7 @@ class DatabaseBulkData {
     }
 
     var predicates = <String>[];
+    QueryParameters? parameters;
     try {
       if (lastId != null && lastIdText != null) {
         throw ArgumentError('Supply only one ID cursor.');
@@ -74,13 +77,26 @@ class DatabaseBulkData {
           ColumnType.text => lastIdText,
           ColumnType.bigint => int.parse(lastIdText),
           ColumnType.timestampWithoutTimeZone => DateTime.parse(lastIdText),
-          ColumnType.uuid => UuidValue.fromString(lastIdText),
+          ColumnType.uuid => UuidValue.withFormatValidation(lastIdText),
           _ => throw ArgumentError('Unsupported ID cursor type.'),
         };
       }
 
       if (cursor != null) {
-        predicates.add('"id" > ${ValueEncoder.instance.convert(cursor)}');
+        if (cursor is UuidValue) {
+          cursor = UuidValue.withFormatValidation(cursor.uuid);
+        }
+
+        var sqlite = database.dialect == DatabaseDialect.sqlite;
+        var value = switch (cursor) {
+          DateTime() => sqlite ? cursor.millisecondsSinceEpoch : cursor.toUtc(),
+          Duration() => cursor.inMilliseconds,
+          UuidValue() => sqlite ? cursor.toBytes() : cursor.uuid,
+          _ => cursor,
+        };
+
+        parameters = QueryParameters.named({'lastId': value});
+        predicates.add('"id" > @lastId');
       }
 
       if (filter != null) {
@@ -102,12 +118,30 @@ class DatabaseBulkData {
         'FROM "${liveTableDefinition.schema}"."${liveTableDefinition.name}"'
         '$whereClause ORDER BY "id" LIMIT $limit';
     try {
-      data = await database.unsafeQuery(query);
+      data = await database.unsafeQuery(query, parameters: parameters);
     } catch (e) {
       throw BulkDataException(
         message: 'Failed to query database ($e).',
         query: query,
       );
+    }
+
+    if (database.dialect == DatabaseDialect.sqlite) {
+      var idIndex = columns.indexWhere((column) => column.name == 'id');
+      if (idIndex >= 0) {
+        data = data.map((row) {
+          var normalized = row.toList();
+          normalized[idIndex] = switch (columns[idIndex].columnType) {
+            ColumnType.timestampWithoutTimeZone =>
+              DateTimeJsonExtension.fromJson(
+                row[idIndex],
+              ),
+            ColumnType.uuid => UuidValueJsonExtension.fromJson(row[idIndex]),
+            _ => row[idIndex],
+          };
+          return normalized;
+        }).toList();
+      }
     }
 
     return BulkData(
