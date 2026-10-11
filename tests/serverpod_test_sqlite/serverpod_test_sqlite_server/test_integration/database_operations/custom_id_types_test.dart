@@ -646,6 +646,66 @@ void main() {
     );
 
     test(
+      'Given two rows with database-generated timestamp IDs, '
+      'when inserting both in one batch, '
+      'then the shared timestamp causes a primary-key collision.',
+      () async {
+        final rows = [
+          DateTimeIdDefaultPersist(value: 'first'),
+          DateTimeIdDefaultPersist(value: 'second'),
+        ];
+
+        final insert = DateTimeIdDefaultPersist.db.insert(session, rows);
+
+        await expectLater(insert, throwsA(isA<DatabaseQueryException>()));
+      },
+    );
+
+    test(
+      'Given distinct Duration IDs within the same millisecond, '
+      'when inserting both rows, '
+      'then millisecond storage causes a primary-key collision.',
+      () async {
+        final rows = [
+          DurationIdModel(
+            id: const Duration(microseconds: 1100),
+            value: 'first',
+          ),
+          DurationIdModel(
+            id: const Duration(microseconds: 1900),
+            value: 'second',
+          ),
+        ];
+
+        final insert = DurationIdModel.db.insert(session, rows);
+
+        await expectLater(insert, throwsA(isA<DatabaseQueryException>()));
+      },
+    );
+
+    test(
+      'Given distinct DateTime IDs within the same millisecond, '
+      'when inserting both rows, '
+      'then SQLite millisecond storage causes a primary-key collision.',
+      () async {
+        final rows = [
+          DateTimeIdModel(
+            id: DateTime.utc(2026, 1, 1, 0, 0, 0, 0, 100),
+            value: 'first',
+          ),
+          DateTimeIdModel(
+            id: DateTime.utc(2026, 1, 1, 0, 0, 0, 0, 900),
+            value: 'second',
+          ),
+        ];
+
+        final insert = DateTimeIdModel.db.insert(session, rows);
+
+        await expectLater(insert, throwsA(isA<DatabaseQueryException>()));
+      },
+    );
+
+    test(
       'Given migrated tables with caller-supplied and generated IDs, '
       'when inspecting their database definitions, '
       'then only generated IDs have database defaults.',

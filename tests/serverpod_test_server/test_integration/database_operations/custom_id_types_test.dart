@@ -646,6 +646,69 @@ void main() {
     );
 
     test(
+      'Given two rows with database-generated timestamp IDs, '
+      'when inserting both in one batch, '
+      'then the shared timestamp causes a primary-key collision.',
+      () async {
+        final rows = [
+          DateTimeIdDefaultPersist(value: 'first'),
+          DateTimeIdDefaultPersist(value: 'second'),
+        ];
+
+        final insert = DateTimeIdDefaultPersist.db.insert(session, rows);
+
+        await expectLater(insert, throwsA(isA<DatabaseQueryException>()));
+      },
+    );
+
+    test(
+      'Given distinct Duration IDs within the same millisecond, '
+      'when inserting both rows, '
+      'then millisecond storage causes a primary-key collision.',
+      () async {
+        final rows = [
+          DurationIdModel(
+            id: const Duration(microseconds: 1100),
+            value: 'first',
+          ),
+          DurationIdModel(
+            id: const Duration(microseconds: 1900),
+            value: 'second',
+          ),
+        ];
+
+        final insert = DurationIdModel.db.insert(session, rows);
+
+        await expectLater(insert, throwsA(isA<DatabaseQueryException>()));
+      },
+    );
+
+    test(
+      'Given two rows with database-generated timestamp IDs, '
+      'when inserting them separately within one PostgreSQL transaction, '
+      'then the transaction timestamp causes a primary-key collision.',
+      () async {
+        final first = DateTimeIdDefaultPersist(value: 'first');
+        final second = DateTimeIdDefaultPersist(value: 'second');
+
+        final insert = session.db.transaction((transaction) async {
+          await DateTimeIdDefaultPersist.db.insertRow(
+            session,
+            first,
+            transaction: transaction,
+          );
+          await DateTimeIdDefaultPersist.db.insertRow(
+            session,
+            second,
+            transaction: transaction,
+          );
+        });
+
+        await expectLater(insert, throwsA(isA<DatabaseQueryException>()));
+      },
+    );
+
+    test(
       'Given migrated tables with caller-supplied and generated IDs, '
       'when inspecting their database definitions, '
       'then only generated IDs have database defaults.',

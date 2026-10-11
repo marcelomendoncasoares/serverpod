@@ -1,3 +1,4 @@
+import 'package:serverpod_cli/src/analyzer/code_analysis_collector.dart';
 import 'package:serverpod_cli/src/analyzer/models/definitions.dart';
 import 'package:serverpod_cli/src/analyzer/models/stateful_analyzer.dart';
 import 'package:serverpod_cli/src/generator/code_generation_collector.dart';
@@ -5,6 +6,12 @@ import 'package:test/test.dart';
 
 import '../../../../../test_util/builders/generator_config_builder.dart';
 import '../../../../../test_util/builders/model_source_builder.dart';
+
+const _timestampCollisionMessage =
+    'The "now" default does not guarantee unique IDs. Batched inserts '
+    'can collide, and PostgreSQL database defaults reuse the same '
+    'timestamp within a transaction. Use caller-supplied IDs or a UUID '
+    'generator to avoid timestamp collisions.';
 
 void main() {
   test(
@@ -163,13 +170,18 @@ void main() {
   test(
     'Given a table with a nullable DateTime ID with a database now generator, '
     'when analyzing the model, '
-    'then the ID type and defaults are preserved.',
+    'then the generator is accepted with a timestamp collision diagnostic.',
     () {
       const field = 'id: DateTime?, defaultPersist=now';
 
       final (model, collector) = _analyzeId(field);
 
-      expect(collector.errors, isEmpty);
+      expect(collector.hasSevereErrors, isFalse);
+      expect(collector.errors.single.message, _timestampCollisionMessage);
+      expect(
+        (collector.errors.single as SourceSpanSeverityException).severity,
+        SourceSpanSeverity.info,
+      );
       expect(model!.idField.type.className, 'DateTime');
       expect(model.idField.type.nullable, true);
       expect(model.idField.defaultPersistValue, 'now');
@@ -180,17 +192,60 @@ void main() {
   test(
     'Given a table with a required DateTime ID with a model now generator, '
     'when analyzing the model, '
-    'then the ID type and defaults are preserved.',
+    'then the generator is accepted with a timestamp collision diagnostic.',
     () {
       const field = 'id: DateTime, defaultModel=now';
 
       final (model, collector) = _analyzeId(field);
 
-      expect(collector.errors, isEmpty);
+      expect(collector.hasSevereErrors, isFalse);
+      expect(collector.errors.single.message, _timestampCollisionMessage);
+      expect(
+        (collector.errors.single as SourceSpanSeverityException).severity,
+        SourceSpanSeverity.info,
+      );
       expect(model!.idField.type.className, 'DateTime');
       expect(model.idField.type.nullable, false);
       expect(model.idField.defaultPersistValue, 'now');
       expect(model.idField.defaultModelValue, 'now');
+    },
+  );
+
+  test(
+    'Given a table inheriting a DateTime ID with a now generator, '
+    'when analyzing the models, '
+    'then the collision diagnostic does not prevent generation.',
+    () {
+      final sources = [
+        ModelSourceBuilder().withFileName('parent').withYaml('''
+class: Parent
+fields:
+  id: DateTime, defaultModel=now
+''').build(),
+        ModelSourceBuilder().withFileName('child').withYaml('''
+class: Child
+extends: Parent
+table: child
+''').build(),
+      ];
+      final collector = CodeGenerationCollector();
+
+      final definitions = StatefulAnalyzer(
+        GeneratorConfigBuilder().build(),
+        sources,
+        onErrorsCollector(collector),
+      ).validateAll();
+
+      expect(definitions, hasLength(2));
+      expect(collector.hasSevereErrors, isFalse);
+      expect(
+        collector.errors.single.message,
+        'The inherited "id" field: $_timestampCollisionMessage',
+      );
+      expect(
+        (collector.errors.single as SourceSpanSeverityException).severity,
+        SourceSpanSeverity.info,
+      );
     },
   );
 
@@ -215,7 +270,7 @@ void main() {
   test(
     'Given a nullable String ID without a default, '
     'when analyzing the model, '
-    'then a missing default error is reported.',
+    'then the diagnostic explains that the ID must be non-nullable.',
     () {
       const field = 'id: String?';
 
@@ -224,8 +279,8 @@ void main() {
       expect(collector.errors, hasLength(1));
       expect(
         collector.errors.single.message,
-        'The type "String" must have a default value. Use either the '
-        '"defaultModel" key or the "defaultPersist" key to set it.',
+        'The id type "String" has no default generator and must be non-nullable. '
+        'Remove the "?" operator (e.g. id: String).',
       );
     },
   );
@@ -251,7 +306,7 @@ void main() {
   test(
     'Given a nullable Duration ID without a default, '
     'when analyzing the model, '
-    'then a missing default error is reported.',
+    'then the diagnostic explains that the ID must be non-nullable.',
     () {
       const field = 'id: Duration?';
 
@@ -260,8 +315,8 @@ void main() {
       expect(collector.errors, hasLength(1));
       expect(
         collector.errors.single.message,
-        'The type "Duration" must have a default value. Use either the '
-        '"defaultModel" key or the "defaultPersist" key to set it.',
+        'The id type "Duration" has no default generator and must be non-nullable. '
+        'Remove the "?" operator (e.g. id: Duration).',
       );
     },
   );

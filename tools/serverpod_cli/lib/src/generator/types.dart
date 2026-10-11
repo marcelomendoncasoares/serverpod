@@ -1034,6 +1034,9 @@ class SupportedIdType {
   );
 
   /// Id type that can generate the current timestamp.
+  /// Timestamp defaults are not unique: batches can collide, and PostgreSQL
+  /// database defaults reuse the transaction start time. SQLite stores DateTime
+  /// values in milliseconds; PostgreSQL preserves microseconds.
   static SupportedIdType get dateTime => SupportedIdType(
     type: TypeDefinition(className: 'DateTime', nullable: false),
     aliases: ['DateTime'],
@@ -1041,6 +1044,7 @@ class SupportedIdType {
   );
 
   /// Id type with caller-supplied duration values.
+  /// Duration values are stored as whole milliseconds on both database backends.
   static SupportedIdType get duration => SupportedIdType(
     type: TypeDefinition(className: 'Duration', nullable: false),
     aliases: ['Duration'],

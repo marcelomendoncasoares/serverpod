@@ -64,7 +64,14 @@ fields:
 
 ## Custom id types
 
-The `id` field is `int` with a `serial` default unless declared explicitly. Declare it to opt into UUID primary keys:
+The implicit `id` field is a nullable `int` with a `serial` database default.
+Explicit IDs support `int`, `UuidValue`, `String`, `DateTime`, and `Duration`.
+A non-nullable ID can omit a default; callers must then supply it to the constructor.
+For example, `id: String` accepts an external identifier and `id: int` accepts a
+caller-assigned integer without generating one. String and Duration IDs must be
+non-nullable because they have no default generator.
+
+For generated UUID primary keys:
 
 ```yaml
 class: Company
@@ -79,6 +86,20 @@ fields:
 - `id: int?, defaultPersist=serial` — the explicit form of the default behavior.
 
 Relations to a model with a custom id type use the same type on the foreign key field.
+
+DateTime IDs also accept `defaultModel=now`, `default=now`, or nullable
+`DateTime?, defaultPersist=now`. These defaults generate timestamps, not unique
+identifiers. A batch can produce duplicate keys. PostgreSQL database defaults
+use the transaction's start time, so even separate inserts in one transaction
+collide. SQLite stores DateTime values in milliseconds, so model-generated
+timestamps within the same millisecond can also collide. Use UUID generators
+for generated identifiers that must support batches or concurrent writers.
+
+DateTime IDs are read back in UTC. PostgreSQL preserves microseconds; SQLite
+stores milliseconds. Duration IDs use whole milliseconds on both backends.
+Values differing only in discarded precision address the same stored key and
+cannot coexist. For portable caller-supplied time keys, use distinct whole
+milliseconds and UTC DateTime values.
 
 ## Scope
 

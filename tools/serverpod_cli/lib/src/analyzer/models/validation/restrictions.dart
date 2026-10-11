@@ -1337,6 +1337,22 @@ class Restrictions {
 
     var parentDefinition = parsedModels.findByTableName(content);
     if (parentDefinition is ModelClassDefinition) {
+      var foreignKeyField = definition.findField(parentNodeName);
+      var referenceField = parentDefinition.findField(defaultPrimaryKeyName);
+      if (foreignKeyField != null &&
+          foreignKeyField.type.isIdType &&
+          referenceField != null &&
+          foreignKeyField.type.className != referenceField.type.className) {
+        return [
+          SourceSpanSeverityException(
+            'The field "$parentNodeName" is of type '
+            '"${foreignKeyField.type.className}" but reference field "id" '
+            'on table "$content" is of type "${referenceField.type.className}".',
+            span,
+          ),
+        ];
+      }
+
       var syncBoundaryError = validateSyncRelationBoundary(
         model: definition,
         relatedModel: parentDefinition,
@@ -1560,9 +1576,12 @@ class Restrictions {
     errors = [
       for (var error in errors)
         SourceSpanSeverityException(
-          'The "table" property is not allowed due to invalid "id" field '
-          'defined on parent classes. ${error.message}',
+          error.severity == SourceSpanSeverity.error
+              ? 'The "table" property is not allowed due to invalid "id" field '
+                    'defined on parent classes. ${error.message}'
+              : 'The inherited "id" field: ${error.message}',
           error.span,
+          severity: error.severity,
         ),
     ];
 
@@ -1631,11 +1650,19 @@ class Restrictions {
         ),
       );
     } else if (!field.hasDefaults && field.type.nullable) {
+      var hasGenerator = SupportedIdType.all.any(
+        (type) =>
+            type.type.className == typeClassName && type.defaultValue != null,
+      );
       errors.add(
         SourceSpanSeverityException(
-          'The type "$typeClassName" must have a default value. Use '
-          'either the "${Keyword.defaultModelKey}" key or the '
-          '"${Keyword.defaultPersistKey}" key to set it.',
+          hasGenerator
+              ? 'The type "$typeClassName" must have a default value. Use '
+                    'either the "${Keyword.defaultModelKey}" key or the '
+                    '"${Keyword.defaultPersistKey}" key to set it.'
+              : 'The id type "$typeClassName" has no default generator and '
+                    'must be non-nullable. Remove the "?" operator '
+                    '(e.g. ${field.name}: $typeClassName).',
           span,
         ),
       );
@@ -1653,6 +1680,21 @@ class Restrictions {
 
     if (classDefinition.isSyncTable && !isSyncIdFieldValid(field)) {
       errors.add(SourceSpanSeverityException(syncIdFieldError, span));
+    }
+
+    if (typeClassName == 'DateTime' &&
+        (field.defaultModelValue == defaultDateTimeValueNow ||
+            field.defaultPersistValue == defaultDateTimeValueNow)) {
+      errors.add(
+        SourceSpanSeverityException(
+          'The "now" default does not guarantee unique IDs. Batched inserts '
+          'can collide, and PostgreSQL database defaults reuse the same '
+          'timestamp within a transaction. Use caller-supplied IDs or a UUID '
+          'generator to avoid timestamp collisions.',
+          span,
+          severity: SourceSpanSeverity.info,
+        ),
+      );
     }
 
     return errors;
