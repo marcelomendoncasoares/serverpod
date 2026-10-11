@@ -727,12 +727,19 @@ class SqliteDatabaseConnection extends DatabaseConnection<SqlitePoolManager> {
         session.db,
         transaction,
         (tx) async {
-          final orderedIds = (await _mappedResultsQuery(
-            session,
-            selectIdsQuery,
-            readOnly: true,
-            transaction: tx,
-          )).map((row) => row.values.first as Object).toList();
+          final orderedIds =
+              (await _mappedResultsQuery(
+                session,
+                selectIdsQuery,
+                readOnly: true,
+                transaction: tx,
+              )).map((row) {
+                return poolManager.encoder.coerceColumnValue(
+                      table.id,
+                      row.values.first,
+                    )
+                    as Object;
+              }).toList();
 
           return await _deleteWhereOrdered<T>(
             session,
