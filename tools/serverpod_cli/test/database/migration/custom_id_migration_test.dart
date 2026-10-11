@@ -30,8 +30,8 @@ void main() {
 
       final sql = table.tableCreationToSql();
 
-      expect(sql, contains('"id" INTEGER PRIMARY KEY DEFAULT ('));
-      expect(sql, contains('STRICT, WITHOUT ROWID'));
+      expect(sql, contains('"id" INTEGER PRIMARY KEY DESC NOT NULL DEFAULT ('));
+      expect(sql, isNot(contains('WITHOUT ROWID')));
     },
   );
 
@@ -44,8 +44,8 @@ void main() {
 
       final sql = table.tableCreationToSql();
 
-      expect(sql, contains('"id" INTEGER PRIMARY KEY'));
-      expect(sql, contains('STRICT, WITHOUT ROWID'));
+      expect(sql, contains('"id" INTEGER PRIMARY KEY DESC NOT NULL'));
+      expect(sql, isNot(contains('WITHOUT ROWID')));
       expect(sql, isNot(contains('DEFAULT')));
     },
   );

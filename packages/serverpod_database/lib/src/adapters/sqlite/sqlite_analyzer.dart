@@ -60,8 +60,8 @@ class SqliteDatabaseAnalyzer extends DatabaseAnalyzer {
       'PRAGMA table_info($quotedTable)',
     );
 
-    // A rowid alias has no separate primary-key index. WITHOUT ROWID tables
-    // have one, including tables with caller-supplied integer-backed IDs.
+    // A rowid alias has no separate primary-key index. Other primary keys
+    // have one, including caller-supplied integer-backed IDs.
     final indexes = await database.unsafeQuery(
       'PRAGMA index_list($quotedTable)',
     );

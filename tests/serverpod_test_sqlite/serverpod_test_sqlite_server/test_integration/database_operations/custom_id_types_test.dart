@@ -607,6 +607,45 @@ void main() {
     );
 
     test(
+      'Given a required integer ID without a default, '
+      'when inserting through SQL without an ID, '
+      'then the database rejects the missing primary key.',
+      () async {
+        final insert = session.db.unsafeExecute(
+          'INSERT INTO "int_id_model" ("value") VALUES (\'missing ID\')',
+        );
+
+        await expectLater(insert, throwsA(isA<DatabaseQueryException>()));
+      },
+    );
+
+    test(
+      'Given a required DateTime ID without a default, '
+      'when inserting through SQL without an ID, '
+      'then the database rejects the missing primary key.',
+      () async {
+        final insert = session.db.unsafeExecute(
+          'INSERT INTO "date_time_id_model" ("value") VALUES (\'missing ID\')',
+        );
+
+        await expectLater(insert, throwsA(isA<DatabaseQueryException>()));
+      },
+    );
+
+    test(
+      'Given a required Duration ID without a default, '
+      'when inserting through SQL without an ID, '
+      'then the database rejects the missing primary key.',
+      () async {
+        final insert = session.db.unsafeExecute(
+          'INSERT INTO "duration_id_model" ("value") VALUES (\'missing ID\')',
+        );
+
+        await expectLater(insert, throwsA(isA<DatabaseQueryException>()));
+      },
+    );
+
+    test(
       'Given migrated tables with caller-supplied and generated IDs, '
       'when inspecting their database definitions, '
       'then only generated IDs have database defaults.',

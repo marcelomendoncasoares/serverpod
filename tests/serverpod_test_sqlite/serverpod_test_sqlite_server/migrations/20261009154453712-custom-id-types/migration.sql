@@ -17,41 +17,41 @@ CREATE TABLE "custom_id_related" (
 -- ACTION CREATE TABLE
 --
 CREATE TABLE "date_time_id_default_model" (
-    "id" INTEGER PRIMARY KEY DEFAULT (CAST(unixepoch('subsecond') * 1000 AS INTEGER)),
+    "id" INTEGER PRIMARY KEY DESC NOT NULL DEFAULT (CAST(unixepoch('subsecond') * 1000 AS INTEGER)),
     "value" TEXT NOT NULL
-) STRICT, WITHOUT ROWID;
+) STRICT;
 
 --
 -- ACTION CREATE TABLE
 --
 CREATE TABLE "date_time_id_default_persist" (
-    "id" INTEGER PRIMARY KEY DEFAULT (CAST(unixepoch('subsecond') * 1000 AS INTEGER)),
+    "id" INTEGER PRIMARY KEY DESC NOT NULL DEFAULT (CAST(unixepoch('subsecond') * 1000 AS INTEGER)),
     "value" TEXT NOT NULL
-) STRICT, WITHOUT ROWID;
+) STRICT;
 
 --
 -- ACTION CREATE TABLE
 --
 CREATE TABLE "date_time_id_model" (
-    "id" INTEGER PRIMARY KEY,
+    "id" INTEGER PRIMARY KEY DESC NOT NULL,
     "value" TEXT NOT NULL
-) STRICT, WITHOUT ROWID;
+) STRICT;
 
 --
 -- ACTION CREATE TABLE
 --
 CREATE TABLE "duration_id_model" (
-    "id" INTEGER PRIMARY KEY,
+    "id" INTEGER PRIMARY KEY DESC NOT NULL,
     "value" TEXT NOT NULL
-) STRICT, WITHOUT ROWID;
+) STRICT;
 
 --
 -- ACTION CREATE TABLE
 --
 CREATE TABLE "int_id_model" (
-    "id" INTEGER PRIMARY KEY,
+    "id" INTEGER PRIMARY KEY DESC NOT NULL,
     "value" TEXT NOT NULL
-) STRICT, WITHOUT ROWID;
+) STRICT;
 
 --
 -- ACTION CREATE TABLE

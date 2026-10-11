@@ -357,27 +357,27 @@ CREATE TABLE "customer_int" (
 -- Class DateTimeIdDefaultModel as table date_time_id_default_model
 --
 CREATE TABLE "date_time_id_default_model" (
-    "id" INTEGER PRIMARY KEY DEFAULT (CAST(unixepoch('subsecond') * 1000 AS INTEGER)),
+    "id" INTEGER PRIMARY KEY DESC NOT NULL DEFAULT (CAST(unixepoch('subsecond') * 1000 AS INTEGER)),
     "value" TEXT NOT NULL
-) STRICT, WITHOUT ROWID;
+) STRICT;
 
 
 --
 -- Class DateTimeIdDefaultPersist as table date_time_id_default_persist
 --
 CREATE TABLE "date_time_id_default_persist" (
-    "id" INTEGER PRIMARY KEY DEFAULT (CAST(unixepoch('subsecond') * 1000 AS INTEGER)),
+    "id" INTEGER PRIMARY KEY DESC NOT NULL DEFAULT (CAST(unixepoch('subsecond') * 1000 AS INTEGER)),
     "value" TEXT NOT NULL
-) STRICT, WITHOUT ROWID;
+) STRICT;
 
 
 --
 -- Class DateTimeIdModel as table date_time_id_model
 --
 CREATE TABLE "date_time_id_model" (
-    "id" INTEGER PRIMARY KEY,
+    "id" INTEGER PRIMARY KEY DESC NOT NULL,
     "value" TEXT NOT NULL
-) STRICT, WITHOUT ROWID;
+) STRICT;
 
 
 --
@@ -545,9 +545,9 @@ CREATE TABLE "duration_default_persist" (
 -- Class DurationIdModel as table duration_id_model
 --
 CREATE TABLE "duration_id_model" (
-    "id" INTEGER PRIMARY KEY,
+    "id" INTEGER PRIMARY KEY DESC NOT NULL,
     "value" TEXT NOT NULL
-) STRICT, WITHOUT ROWID;
+) STRICT;
 
 
 --
@@ -699,9 +699,9 @@ CREATE TABLE "int_default_persist" (
 -- Class IntIdModel as table int_id_model
 --
 CREATE TABLE "int_id_model" (
-    "id" INTEGER PRIMARY KEY,
+    "id" INTEGER PRIMARY KEY DESC NOT NULL,
     "value" TEXT NOT NULL
-) STRICT, WITHOUT ROWID;
+) STRICT;
 
 
 --

@@ -117,17 +117,7 @@ extension SqliteTableDefinitionSqlGeneration on TableDefinition {
     }
 
     out += definitions.join(',\n');
-    // Only serial IDs should alias SQLite's rowid. Other integer-backed IDs
-    // must retain their defaults and reject missing caller-supplied values.
-    final idColumn = columns.where((column) => column.isPrimary).firstOrNull;
-    final withoutRowid =
-        idColumn != null &&
-        idColumn.columnDefault != defaultIntSerial &&
-        (idColumn.columnType == ColumnType.integer ||
-            idColumn.columnType == ColumnType.bigint ||
-            idColumn.columnType == ColumnType.timestampWithoutTimeZone);
-
-    out += withoutRowid ? '\n) STRICT, WITHOUT ROWID;\n' : '\n) STRICT;\n';
+    out += '\n) STRICT;\n';
 
     if (!skipIndexes) {
       // Indexes
@@ -220,12 +210,20 @@ extension SqliteColumnDefinitionSqlGeneration on ColumnDefinition {
       if (isNullable) {
         throw const FormatException('The id column must be non-nullable');
       }
-      // SQLite "INTEGER PRIMARY KEY" is an alias for ROWID.
       if (columnDefault == defaultIntSerial) {
         defaultValue = '';
       }
-      type = '$type PRIMARY KEY';
-      nullable = '';
+
+      if (type == 'INTEGER' && columnDefault != defaultIntSerial) {
+        // Inline DESC prevents the primary key from aliasing SQLite's rowid,
+        // so caller-supplied IDs and timestamp defaults retain their semantics.
+        // Keep a rowid table: WITHOUT ROWID suppresses the update hooks used
+        // by database watches. Non-rowid primary keys need explicit NOT NULL.
+        type = '$type PRIMARY KEY DESC';
+      } else {
+        type = '$type PRIMARY KEY';
+        nullable = '';
+      }
     }
 
     return '"$name" $type$nullable$defaultValue';
