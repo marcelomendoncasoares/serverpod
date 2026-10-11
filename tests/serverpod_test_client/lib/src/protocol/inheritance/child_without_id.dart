@@ -20,7 +20,7 @@ abstract class ChildClassWithoutId extends _iv35mfmj.ParentClassWithoutId
     required super.grandParentField,
     required super.parentField,
     required this.childField,
-  });
+  }) : super(id: id);
 
   factory ChildClassWithoutId({
     _isc.UuidValue? id,

@@ -26,7 +26,8 @@ abstract class ChildWithInheritedId extends _iv35mfmj.ParentWithChangedId
     this.parentId,
     super.createdAt,
     super.updatedAt,
-  }) : id = id ?? const _is.Uuid().v7obj();
+  }) : id = id ?? const _is.Uuid().v7obj(),
+       super(id: id);
 
   factory ChildWithInheritedId({
     _is.UuidValue? id,

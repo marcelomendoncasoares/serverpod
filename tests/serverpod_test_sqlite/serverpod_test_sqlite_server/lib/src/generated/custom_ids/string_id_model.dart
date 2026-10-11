@@ -16,14 +16,15 @@ import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_test_sqlite_server/src/generated/protocol.dart'
     as _i08l111i;
 import '../custom_ids/custom_id_related.dart' as _i2m035mh;
+import '../protocol.dart' as _iv35mfmj;
 
-abstract class StringIdModel
+abstract class StringIdModel extends _iv35mfmj.StringIdBase
     implements _is.TableRow<String>, _is.ProtocolSerialization {
   StringIdModel._({
     required this.id,
     required this.value,
     this.related,
-  });
+  }) : super(id: id);
 
   factory StringIdModel({
     required String id,
@@ -59,6 +60,7 @@ abstract class StringIdModel
 
   /// Returns a shallow copy of this [StringIdModel]
   /// with some or all fields replaced by the given arguments.
+  @override
   @_is.useResult
   StringIdModel copyWith({
     String? id,

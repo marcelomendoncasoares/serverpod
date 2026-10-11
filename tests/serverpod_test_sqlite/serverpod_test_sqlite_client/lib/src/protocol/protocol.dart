@@ -46,6 +46,7 @@ import 'custom_ids/date_time_id_default_persist.dart' as _ihp4odw2;
 import 'custom_ids/date_time_id_model.dart' as _iczrutgt;
 import 'custom_ids/duration_id_model.dart' as _ipaqbs0q;
 import 'custom_ids/int_id_model.dart' as _irx335o3;
+import 'custom_ids/string_id_base.dart' as _i9zz7sfv;
 import 'custom_ids/string_id_model.dart' as _izy2ul2j;
 import 'custom_ids/uuid_id_model.dart' as _iqx2n66g;
 import 'defaults/bigint/bigint_default.dart' as _icrmubzc;
@@ -212,6 +213,7 @@ export 'custom_ids/date_time_id_model.dart';
 export 'custom_ids/duration_id_model.dart';
 export 'custom_ids/int_id_model.dart';
 export 'custom_ids/string_id_model.dart';
+export 'custom_ids/string_id_base.dart';
 export 'custom_ids/uuid_id_model.dart';
 export 'defaults/bigint/bigint_default.dart';
 export 'defaults/bigint/bigint_default_mix.dart';
@@ -377,6 +379,7 @@ class Protocol extends _isd.DatabaseSerializationManager
       _isc.getType<_ipaqbs0q.DurationIdModel>,
       _isc.getType<_irx335o3.IntIdModel>,
       _isc.getType<_izy2ul2j.StringIdModel>,
+      _isc.getType<_i9zz7sfv.StringIdBase>,
       _isc.getType<_iqx2n66g.UuidIdModel>,
       _isc.getType<_icrmubzc.BigIntDefault>,
       _isc.getType<_i1xsun18.BigIntDefaultMix>,
@@ -529,6 +532,7 @@ class Protocol extends _isd.DatabaseSerializationManager
       _isc.getType<_ipaqbs0q.DurationIdModel?>,
       _isc.getType<_irx335o3.IntIdModel?>,
       _isc.getType<_izy2ul2j.StringIdModel?>,
+      _isc.getType<_i9zz7sfv.StringIdBase?>,
       _isc.getType<_iqx2n66g.UuidIdModel?>,
       _isc.getType<_icrmubzc.BigIntDefault?>,
       _isc.getType<_i1xsun18.BigIntDefaultMix?>,
@@ -2328,6 +2332,9 @@ class Protocol extends _isd.DatabaseSerializationManager
     if (t == _izy2ul2j.StringIdModel) {
       return _izy2ul2j.StringIdModel.fromJson(data) as T;
     }
+    if (t == _i9zz7sfv.StringIdBase) {
+      return _i9zz7sfv.StringIdBase.fromJson(data) as T;
+    }
     if (t == _iqx2n66g.UuidIdModel) {
       return _iqx2n66g.UuidIdModel.fromJson(data) as T;
     }
@@ -2795,6 +2802,9 @@ class Protocol extends _isd.DatabaseSerializationManager
     if (t == _isc.getType<_izy2ul2j.StringIdModel?>()) {
       return (data != null ? _izy2ul2j.StringIdModel.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_i9zz7sfv.StringIdBase?>()) {
+      return (data != null ? _i9zz7sfv.StringIdBase.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_iqx2n66g.UuidIdModel?>()) {
       return (data != null ? _iqx2n66g.UuidIdModel.fromJson(data) : null) as T;
@@ -4080,6 +4090,7 @@ class Protocol extends _isd.DatabaseSerializationManager
       _ipaqbs0q.DurationIdModel => 'DurationIdModel',
       _irx335o3.IntIdModel => 'IntIdModel',
       _izy2ul2j.StringIdModel => 'StringIdModel',
+      _i9zz7sfv.StringIdBase => 'StringIdBase',
       _iqx2n66g.UuidIdModel => 'UuidIdModel',
       _icrmubzc.BigIntDefault => 'BigIntDefault',
       _i1xsun18.BigIntDefaultMix => 'BigIntDefaultMix',
@@ -4276,6 +4287,8 @@ class Protocol extends _isd.DatabaseSerializationManager
         return 'IntIdModel';
       case _izy2ul2j.StringIdModel():
         return 'StringIdModel';
+      case _i9zz7sfv.StringIdBase():
+        return 'StringIdBase';
       case _iqx2n66g.UuidIdModel():
         return 'UuidIdModel';
       case _icrmubzc.BigIntDefault():
@@ -4634,6 +4647,9 @@ class Protocol extends _isd.DatabaseSerializationManager
     }
     if (dataClassName == 'StringIdModel') {
       return deserialize<_izy2ul2j.StringIdModel>(data['data']);
+    }
+    if (dataClassName == 'StringIdBase') {
+      return deserialize<_i9zz7sfv.StringIdBase>(data['data']);
     }
     if (dataClassName == 'UuidIdModel') {
       return deserialize<_iqx2n66g.UuidIdModel>(data['data']);

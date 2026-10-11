@@ -358,6 +358,7 @@ class SerializableModelLibraryGenerator {
           subDirParts: classDefinition.subDirParts,
           inheritedFields: classDefinition.inheritedFields,
           isImmutable: false,
+          isIdRedeclared: false,
         ),
         if (!classDefinition.isParentClass)
           _buildModelClassFactoryConstructor(
@@ -556,6 +557,9 @@ class SerializableModelLibraryGenerator {
           subDirParts: classDefinition.subDirParts,
           inheritedFields: classDefinition.inheritedFields,
           isImmutable: classDefinition.isImmutable,
+          isIdRedeclared:
+              classDefinition.tableName != null &&
+              classDefinition.isIdInherited,
         ),
         if (!classDefinition.isParentClass)
           _buildModelClassFactoryConstructor(
@@ -2076,6 +2080,7 @@ class SerializableModelLibraryGenerator {
     List<SerializableModelFieldDefinition> fields,
     String? tableName, {
     required bool isImmutable,
+    required bool isIdRedeclared,
     required bool isParentClass,
     required List<String> subDirParts,
     required List<SerializableModelFieldDefinition> inheritedFields,
@@ -2139,6 +2144,12 @@ class SerializableModelLibraryGenerator {
             literalNull.code,
           ]),
         );
+      }
+
+      if (isIdRedeclared) {
+        // Table models redeclare the ID, but the parent constructor still
+        // needs its value when the inherited ID has no default.
+        c.initializers.add(refer('super').call([], {'id': refer('id')}).code);
       }
     });
   }

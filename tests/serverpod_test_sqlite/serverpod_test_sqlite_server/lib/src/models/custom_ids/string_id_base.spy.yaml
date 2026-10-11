@@ -1,0 +1,3 @@
+class: StringIdBase
+fields:
+  id: String
