@@ -16,6 +16,7 @@ import 'package:serverpod_cli/src/commands/messages.dart';
 import 'package:serverpod_cli/src/commands/runner_options.dart';
 import 'package:serverpod_cli/src/commands/serverpod_command.dart';
 import 'package:serverpod_cli/src/commands/serverpod_command_runner.dart';
+import 'package:serverpod_cli/src/commands/start/development_notifications.dart';
 import 'package:serverpod_cli/src/commands/start/file_watcher.dart';
 import 'package:serverpod_cli/src/commands/start/flutter_app_manager.dart';
 import 'package:serverpod_cli/src/commands/start/kernel_compiler.dart';
@@ -1317,6 +1318,9 @@ Future<WatchLoopSetupResult> setupWatchLoop({
     late final WatchSession session;
     VmServiceProxy? proxy;
     Future<ServerProcess> serverProcessFactory(String? dillPath) async {
+      final notifications = DevelopmentNotifications(
+        runMode: runModeFromServerArgs(serverArgs.value),
+      );
       final serverProcess = ServerProcess(
         serverDir: serverDir,
         target: target,
@@ -1326,10 +1330,14 @@ Future<WatchLoopSetupResult> setupWatchLoop({
         vmServiceInfoFile: podInfoFile,
         stdoutSink: serverStdoutSink,
         stderrSink: serverStderrSink,
-        onDispose: logHistory.discardActiveServerScopes,
-        environment: portOverrides.isEmpty
-            ? null
-            : portOverrideEnvironment(portOverrides),
+        onDispose: () {
+          notifications.close();
+          logHistory.discardActiveServerScopes();
+        },
+        environment: {
+          ...portOverrideEnvironment(portOverrides),
+          ...notifications.environment,
+        },
       );
       await serverProcess.start(dillPath: dillPath);
       await serverProcess.connectToVmService();
@@ -1337,6 +1345,7 @@ Future<WatchLoopSetupResult> setupWatchLoop({
         event,
       ) {
         logHistory.recordServerLogEvent(event);
+        notifications.handleEvent(event);
         if (event.extensionKind == serverpodAddressesEvent) {
           reportServerAddresses(
             ServerpodAddresses.fromJson(event.extensionData?.data ?? const {}),
