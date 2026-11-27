@@ -44,6 +44,9 @@ void run(List<String> args) async {
       // `EmailIdpConfigFromPasswords`.
       ServerpodCloudEmailIdpConfig(
         appDisplayName: 'projectname',
+        // Show codes on this desktop for direct local development requests.
+        // Ignored in test, staging, and production; console logs remain available.
+        enableDevelopmentNotifications: true,
       ),
     ],
   );

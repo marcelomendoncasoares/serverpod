@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:serverpod/serverpod.dart';
 
 import '../../../utils/get_passwords_extension.dart';
+import '../util/development_email_notification.dart';
 import 'email_idp_config.dart';
 import 'util/serverpod_cloud_email_client.dart';
 
@@ -59,6 +60,12 @@ class ServerpodCloudEmailIdpConfig extends EmailIdpConfigFromPasswords {
   factory ServerpodCloudEmailIdpConfig({
     required String appDisplayName,
 
+    /// Also shows codes as desktop notifications through the local CLI runner.
+    /// Defaults to false for existing projects. Requires development run mode,
+    /// a direct loopback request, local Host/Origin, and a runner capability.
+    /// Ignored in test, staging, and production. Console logging is preserved.
+    bool enableDevelopmentNotifications = false,
+
     /// The client used to send emails in staging/production. Defaults to a
     /// [ServerpodCloudEmailClient] targeting the hosted service; override it to
     /// target a different endpoint or for testing.
@@ -99,6 +106,9 @@ class ServerpodCloudEmailIdpConfig extends EmailIdpConfigFromPasswords {
           client: client,
           emailType: ServerpodCloudEmailType.signup,
           logLabel: 'Registration',
+          enableDevelopmentNotifications:
+              enableDevelopmentNotifications &&
+              resolvedRunMode == ServerpodRunMode.development,
         ),
       ),
       sendPasswordResetVerificationCode: _passwordResetSender(
@@ -107,6 +117,9 @@ class ServerpodCloudEmailIdpConfig extends EmailIdpConfigFromPasswords {
           client: client,
           emailType: ServerpodCloudEmailType.lostpassword,
           logLabel: 'Password reset',
+          enableDevelopmentNotifications:
+              enableDevelopmentNotifications &&
+              resolvedRunMode == ServerpodRunMode.development,
         ),
       ),
       sendOtpLoginVerificationCode: _otpLoginSender(
@@ -115,6 +128,9 @@ class ServerpodCloudEmailIdpConfig extends EmailIdpConfigFromPasswords {
           client: client,
           emailType: ServerpodCloudEmailType.signup,
           logLabel: 'Login',
+          enableDevelopmentNotifications:
+              enableDevelopmentNotifications &&
+              resolvedRunMode == ServerpodRunMode.development,
         ),
       ),
       onPasswordResetCompleted: onPasswordResetCompleted,
@@ -142,6 +158,7 @@ class ServerpodCloudEmailIdpConfig extends EmailIdpConfigFromPasswords {
     required ServerpodCloudEmailClient? client,
     required ServerpodCloudEmailType emailType,
     required String logLabel,
+    required bool enableDevelopmentNotifications,
   }) {
     return (
       Session session, {
@@ -153,6 +170,15 @@ class ServerpodCloudEmailIdpConfig extends EmailIdpConfigFromPasswords {
         // CLI's terminal UI and auto-copies the `<...>` segment to the
         // clipboard. Other log destinations treat it as a regular log message.
         session.alert('$logLabel code for $email: <$code>');
+        if (enableDevelopmentNotifications) {
+          notifyDevelopmentEmailCode(
+            session,
+            appName: appDisplayName,
+            email: email,
+            code: code,
+            purpose: logLabel,
+          );
+        }
         return;
       }
 

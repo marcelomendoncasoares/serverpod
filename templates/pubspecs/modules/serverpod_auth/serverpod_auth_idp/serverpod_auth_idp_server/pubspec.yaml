@@ -27,6 +27,7 @@ dev_dependencies:
   serverpod_test: SERVERPOD_VERSION
   test: ^1.25.5
   test_descriptor: ^2.0.2
+  vm_service: '>=13.0.0 <16.0.0'
 
 false_secrets:
   - test/config/from_passwords_config_test.dart
