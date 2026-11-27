@@ -61,8 +61,19 @@ does require a longer-lived process and Windows-specific scripting.
 
 Subscription success alone does not establish delivery from Notification
 Center. Microsoft's [desktop sample][windows-desktop-sample] uses COM activation
-for that path. A live body-click experiment is pending; do not advertise
-click-to-copy until both banner and Notification Center interactions are proven.
+for that path. In the live experiment, the user clicked the notification body
+from Notification Center while the ten-minute listener was still running.
+No activation event arrived and no clipboard write was attempted; the user
+confirmed that nothing was copied. Separately invoking the delegate confirmed
+that it signals the listener, without accessing the clipboard. Banner clicks
+were not tested. The unregistered listener therefore does not satisfy the
+Notification Center requirement on this host.
+
+Reliable body-click handling needs a supported activation route, such as an
+application-owned COM activator. It can be headless: a window or Flutter app is
+not required. It does add Windows registration, callback handling, and cleanup,
+beyond the current one-shot command. No such registration or callback is shipped
+by this change.
 
 ### Linux: an optional capability
 
@@ -95,10 +106,11 @@ a Copy button would be a separate, more intrusive UX.
 
 Keep text delivery as the common baseline. Treat Windows' automatic Copy as a
 possible OS-provided bonus, and validate it before changing wording specifically
-for detection. Explore body-click handling in the existing Windows process and
-Linux's default action before adding a separate helper application. Neither
-route is yet validated end to end. A consistent click-to-copy experience across
-all platforms still needs platform-specific activation and clipboard handling.
+for detection. The unregistered Windows listener failed the Notification Center
+interaction; do not ship it as click-to-copy. A registered, headless Windows
+activation route and Linux's default action remain possible follow-ups. A
+consistent click-to-copy experience across all platforms needs platform-specific
+activation and clipboard handling.
 
 For any future callback, use an opaque notification identifier mapped to a
 short-lived code in the runner, never a command or URL containing the code.
